@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>../../utils;c:/program files/openssl/include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>TPM_BITFIELD_LE;TPM_WINDOWS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;TPM_ENCRYPT_SESSIONS_DEFAULT="0";TPM_WINDOWS_TBSI;TPM_WINDOWS_TBSI_WIN8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>c:/progra~1/openssl/lib/VC/libeay32MDd.lib;c:/progra~1/openssl/lib/VC/ssleay32MDd.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>

@@ -1,0 +1,324 @@
+#################################################################################
+#										#
+#		Linux TPM2 Utilities Makefile					#
+#			     Written by Ken Goldman				#
+#		       IBM Thomas J. Watson Research Center			#
+#	      $Id: makefile-win10 638 2016-06-10 16:21:24Z kgoldman $		#
+#										#
+# (c) Copyright IBM Corporation 2014						#
+# 										#
+# All rights reserved.								#
+# 										#
+# Redistribution and use in source and binary forms, with or without		#
+# modification, are permitted provided that the following conditions are	#
+# met:										#
+# 										#
+# Redistributions of source code must retain the above copyright notice,	#
+# this list of conditions and the following disclaimer.				#
+# 										#
+# Redistributions in binary form must reproduce the above copyright		#
+# notice, this list of conditions and the following disclaimer in the		#
+# documentation and/or other materials provided with the distribution.		#
+# 										#
+# Neither the names of the IBM Corporation nor the names of its			#
+# contributors may be used to endorse or promote products derived from		#
+# this software without specific prior written permission.			#
+# 										#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS		#
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT		#
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR		#
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT		#
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,	#
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT		#
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,		#
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY		#
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT		#
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE		#
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		#
+#										#
+#################################################################################
+
+CC = /usr/bin/gcc
+
+CCFLAGS = 	-DTPM_POSIX					\
+		-DTPM_SERVER_NAME_DEFAULT="\"9.2.202.106\""	\
+		-DTPM_SERVER_TYPE_DEFAULT="\"raw\""
+
+# for shared library
+
+LNFLAGS = 	-DTPM_POSIX		\
+		-L.			
+
+# for applications, TSS path, TSS and OpenSSl libraries
+
+LNAFLAGS = -Wl,-rpath,.
+
+LNALIBS =  -ltss -lcrypto
+
+# shared library
+
+LIBTSS=libtss.so
+
+# executable extension
+
+EXE=
+
+include makefile-common
+
+# default build target
+
+all:	$(ALL)
+
+# TSS library source shared with TPM
+
+Marshal.c:			../src/Marshal.c
+				ln -s ../src/Marshal.c .
+Unmarshal.c:			../src/Unmarshal.c
+				ln -s ../src/Unmarshal.c .
+CpriSym.c:			../src/CpriSym.c
+				ln -s ../src/CpriSym.c .
+CpriHash.c:			../src/CpriHash.c
+				ln -s ../src/CpriHash.c .
+Commands.c:			../src/Commands.c
+				ln -s ../src/Commands.c .
+CommandCodeAttributes.c:	../src/CommandCodeAttributes.c
+				ln -s ../src/CommandCodeAttributes.c .
+
+# TSS shared library source
+
+tss.o: 		$(TSS_HEADERS) tss.c
+		$(CC) $(CCFLAGS) -fPIC tss.c
+tssproperties.o: $(TSS_HEADERS) tssproperties.c
+		$(CC) $(CCFLAGS) -fPIC tssproperties.c
+tssauth.o:	$(TSS_HEADERS) tssauth.c
+		$(CC) $(CCFLAGS) -fPIC tssauth.c
+tssmarshal.o: 	$(TSS_HEADERS) tssmarshal.c
+		$(CC) $(CCFLAGS) -fPIC tssmarshal.c
+tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
+		$(CC) $(CCFLAGS) -fPIC tsscrypto.c
+tssutils.o: 	$(TSS_HEADERS) tssutils.c
+		$(CC) $(CCFLAGS) -fPIC tssutils.c
+tsssocket.o: 	$(TSS_HEADERS) tsssocket.c
+		$(CC) $(CCFLAGS) -fPIC tsssocket.c
+tssdev.o: 	$(TSS_HEADERS) tssdev.c
+		$(CC) $(CCFLAGS) -fPIC tssdev.c
+tsstransmit.o: 	$(TSS_HEADERS) tsstransmit.c
+		$(CC) $(CCFLAGS) -fPIC tsstransmit.c
+tssresponsecode.o: $(TSS_HEADERS) tssresponsecode.c
+		$(CC) $(CCFLAGS) -fPIC tssresponsecode.c
+fail.o: 	$(TSS_HEADERS) fail.c
+		$(CC) $(CCFLAGS) -fPIC fail.c
+tssprint.o: 	$(TSS_HEADERS) tssprint.c
+		$(CC) $(CCFLAGS) -fPIC tssprint.c
+Marshal.o: 	$(TSS_HEADERS) Marshal.c
+		$(CC) $(CCFLAGS) -fPIC Marshal.c
+Unmarshal.o: 	$(TSS_HEADERS) Unmarshal.c
+		$(CC) $(CCFLAGS) -fPIC Unmarshal.c
+Commands.o: 	$(TSS_HEADERS) Commands.c
+		$(CC) $(CCFLAGS) -fPIC Commands.c
+CommandCodeAttributes.o: 	$(TSS_HEADERS) CommandCodeAttributes.c
+		$(CC) $(CCFLAGS) -fPIC CommandCodeAttributes.c
+CpriHash.o: 	$(TSS_HEADERS) CpriHash.c
+		$(CC) $(CCFLAGS) -fPIC CpriHash.c
+CpriSym.o: 	$(TSS_HEADERS) CpriSym.c
+		$(CC) $(CCFLAGS) -fPIC CpriSym.c
+
+# TSS shared library build
+
+$(LIBTSS): 	$(TSS_OBJS)
+		$(CC) $(LNFLAGS) -shared -o $(LIBTSS) $(TSS_OBJS)
+
+.PHONY:		clean
+.PRECIOUS:	%.o
+
+clean:		
+		rm -f *.o  *~ 	\
+		../src/*.o	\
+		h*.bin		\
+		$(ALL)
+
+# applications
+
+certify:		tss.h certify.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) certify.o $(LNALIBS) -o certify
+changeeps:		tss.h changeeps.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) changeeps.o $(LNALIBS) -o changeeps
+changepps:		tss.h changepps.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) changepps.o $(LNALIBS) -o changepps
+clear:			tss.h clear.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) clear.o $(LNALIBS) -o clear
+clearcontrol:		tss.h clearcontrol.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) clearcontrol.o $(LNALIBS) -o clearcontrol
+clockrateadjust:	tss.h clockrateadjust.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) clockrateadjust.o $(LNALIBS) -o clockrateadjust
+clockset:		tss.h clockset.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) clockset.o $(LNALIBS) -o clockset
+contextload:		tss.h contextload.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) contextload.o $(LNALIBS) -o contextload
+contextsave:		tss.h contextsave.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) contextsave.o $(LNALIBS) -o contextsave
+create:			tss.h create.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o $(LNALIBS) -o create
+createprimary:		tss.h createprimary.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o $(LNALIBS) -o createprimary
+dictionaryattacklockreset:		tss.h dictionaryattacklockreset.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) dictionaryattacklockreset.o $(LNALIBS) -o dictionaryattacklockreset
+dictionaryattackparameters:		tss.h dictionaryattackparameters.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) dictionaryattackparameters.o $(LNALIBS) -o dictionaryattackparameters
+duplicate:		tss.h duplicate.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) duplicate.o $(LNALIBS) -o duplicate 
+eccparameters:		tss.h eccparameters.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eccparameters.o $(LNALIBS) -o eccparameters 
+encryptdecrypt:		tss.h encryptdecrypt.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) encryptdecrypt.o $(LNALIBS) -o encryptdecrypt	
+eventsequencecomplete:	tss.h eventsequencecomplete.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eventsequencecomplete.o $(LNALIBS) -o eventsequencecomplete	
+evictcontrol:		tss.h evictcontrol.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) evictcontrol.o $(LNALIBS) -o evictcontrol	
+flushcontext:		tss.h flushcontext.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) flushcontext.o $(LNALIBS) -o flushcontext
+getcommandauditdigest:	tss.h getcommandauditdigest.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) getcommandauditdigest.o $(LNALIBS) -o getcommandauditdigest
+getcapability:		tss.h getcapability.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) getcapability.o $(LNALIBS) -o getcapability
+getrandom:		tss.h getrandom.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) getrandom.o $(LNALIBS) -o getrandom
+getsessionauditdigest:	tss.h getsessionauditdigest.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) getsessionauditdigest.o $(LNALIBS) -o getsessionauditdigest
+gettime:		tss.h gettime.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) gettime.o $(LNALIBS) -o gettime
+hashsequencestart:	tss.h hashsequencestart.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) hashsequencestart.o $(LNALIBS) -o hashsequencestart
+hash:			tss.h hash.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) hash.o $(LNALIBS) -o hash
+hierarchycontrol:	tss.h hierarchycontrol.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) hierarchycontrol.o $(LNALIBS) -o hierarchycontrol
+hierarchychangeauth:	tss.h hierarchychangeauth.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) hierarchychangeauth.o $(LNALIBS) -o hierarchychangeauth
+hmac:			tss.h hmac.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) hmac.o $(LNALIBS) -o hmac
+hmacstart:		tss.h hmacstart.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) hmacstart.o $(LNALIBS) -o hmacstart
+import:			tss.h import.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) import.o $(LNALIBS) -o import
+load:			tss.h load.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) load.o $(LNALIBS) -o load
+loadexternal:		tss.h loadexternal.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) loadexternal.o $(LNALIBS) -o loadexternal
+nvcertify:		tss.h nvcertify.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvcertify.o $(LNALIBS) -o nvcertify
+nvchangeauth:		tss.h nvchangeauth.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvchangeauth.o $(LNALIBS) -o nvchangeauth
+nvdefinespace:		tss.h nvdefinespace.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvdefinespace.o $(LNALIBS) -o nvdefinespace
+nvextend:		tss.h nvextend.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvextend.o $(LNALIBS) -o nvextend
+nvglobalwritelock:	tss.h nvglobalwritelock.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvglobalwritelock.o $(LNALIBS) -o nvglobalwritelock
+nvincrement:		tss.h nvincrement.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvincrement.o $(LNALIBS) -o nvincrement
+nvread:			tss.h nvread.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvread.o $(LNALIBS) -o nvread
+nvreadlock:		tss.h nvreadlock.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadlock.o $(LNALIBS) -o nvreadlock
+nvreadpublic:		tss.h nvreadpublic.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadpublic.o $(LNALIBS) -o nvreadpublic
+nvsetbits:		tss.h nvsetbits.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvsetbits.o $(LNALIBS) -o nvsetbits
+nvundefinespace:	tss.h nvundefinespace.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespace.o $(LNALIBS) -o nvundefinespace
+nvundefinespacespecial:	tss.h nvundefinespacespecial.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespacespecial.o $(LNALIBS) -o nvundefinespacespecial
+nvwrite:		tss.h nvwrite.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwrite.o $(LNALIBS) -o nvwrite
+nvwritelock:		tss.h nvwritelock.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwritelock.o $(LNALIBS) -o nvwritelock
+objectchangeauth:	tss.h objectchangeauth.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) objectchangeauth.o $(LNALIBS) -o objectchangeauth
+pcrallocate: 		tss.h pcrallocate.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrallocate.o $(LNALIBS) -o pcrallocate
+pcrevent: 		tss.h pcrevent.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrevent.o $(LNALIBS) -o pcrevent
+pcrextend: 		tss.h pcrextend.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrextend.o $(LNALIBS) -o pcrextend
+pcrread: 		tss.h pcrread.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrread.o $(LNALIBS) -o pcrread
+pcrreset: 		tss.h pcrreset.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrreset.o $(LNALIBS) -o pcrreset
+policyauthorize:	tss.h policyauthorize.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthorize.o $(LNALIBS) -o policyauthorize
+policyauthvalue:	tss.h policyauthvalue.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthvalue.o $(LNALIBS) -o policyauthvalue
+policycommandcode:	tss.h policycommandcode.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policycommandcode.o $(LNALIBS) -o policycommandcode
+policycphash:		tss.h policycphash.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policycphash.o $(LNALIBS) -o policycphash
+policycountertimer :	tss.h policycountertimer.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policycountertimer.o $(LNALIBS) -o policycountertimer
+policygetdigest:	tss.h policygetdigest.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policygetdigest.o $(LNALIBS) -o policygetdigest
+policymaker:		tss.h policymaker.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policymaker.o $(LNALIBS) -o policymaker
+policymakerpcr:		tss.h policymakerpcr.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policymakerpcr.o $(LNALIBS) -o policymakerpcr
+policynv:		tss.h policynv.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policynv.o $(LNALIBS) -o policynv
+policynvwritten:	tss.h policynvwritten.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policynvwritten.o $(LNALIBS) -o policynvwritten
+policyor:		tss.h policyor.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyor.o $(LNALIBS) -o policyor
+policypassword:		tss.h policypassword.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policypassword.o $(LNALIBS) -o policypassword
+policypcr:		tss.h policypcr.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policypcr.o $(LNALIBS) -o policypcr
+policyrestart:		tss.h policyrestart.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyrestart.o $(LNALIBS) -o policyrestart
+policysigned:		tss.h policysigned.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policysigned.o $(LNALIBS) -o policysigned
+policysecret:		tss.h policysecret.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policysecret.o $(LNALIBS) -o policysecret
+policyticket:		tss.h policyticket.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyticket.o $(LNALIBS) -o policyticket
+quote:			tss.h quote.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) quote.o $(LNALIBS) -o quote
+powerup:		tss.h powerup.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) powerup.o $(LNALIBS) -o powerup
+readclock:		tss.h readclock.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) readclock.o $(LNALIBS) -o readclock
+readpublic:		tss.h readpublic.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) readpublic.o $(LNALIBS) -o readpublic
+returncode:		tss.h returncode.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) returncode.o $(LNALIBS) -o returncode
+rewrap:			tss.h rewrap.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) rewrap.o $(LNALIBS) -o rewrap
+rsadecrypt: 		tss.h rsadecrypt.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) rsadecrypt.o $(LNALIBS) -o rsadecrypt
+rsaencrypt: 		tss.h rsaencrypt.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) rsaencrypt.o $(LNALIBS) -o rsaencrypt
+sequenceupdate:		tss.h sequenceupdate.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) sequenceupdate.o $(LNALIBS) -o sequenceupdate
+sequencecomplete:	tss.h sequencecomplete.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) sequencecomplete.o $(LNALIBS) -o sequencecomplete
+setprimarypolicy:	tss.h setprimarypolicy.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) setprimarypolicy.o $(LNALIBS) -o setprimarypolicy
+shutdown:		tss.h shutdown.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) shutdown.o $(LNALIBS) -o shutdown
+sign:			tss.h sign.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) sign.o $(LNALIBS) -o sign
+startauthsession:	tss.h startauthsession.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) startauthsession.o $(LNALIBS) -o startauthsession
+startup:		tss.h startup.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) startup.o $(LNALIBS) -o startup
+stirrandom:		tss.h stirrandom.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) stirrandom.o $(LNALIBS) -o stirrandom
+unseal:			tss.h unseal.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) unseal.o $(LNALIBS) -o unseal
+verifysignature:	tss.h verifysignature.o
+			$(CC) $(LNFLAGS) $(LNAFLAGS) verifysignature.o $(LNALIBS) -o verifysignature
+signapp:		tss.h signapp.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o $(LNALIBS) -o signapp
+writeapp:		tss.h writeapp.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o $(LNALIBS) -o writeapp
+%.o:		%.c
+		$(CC) $(CCFLAGS) $< -o $@
+

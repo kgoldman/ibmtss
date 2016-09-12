@@ -1,0 +1,51 @@
+#################################################################################
+#										#
+#			   	TPM 2.0 makefile - Linux, to run beam		#
+#			     Written by Ken Goldman				#
+#		       IBM Thomas J. Watson Research Center			#
+#	      $Id: makefile-beam 656 2016-06-28 16:49:29Z kgoldman $		#
+#										#
+#			       IBM Confidential					#
+#			     OCO Source Materials				#
+#			 (c) Copyright IBM Corp. 2010				#
+#			      All Rights Reserved			        #
+#										#
+#	   The source code for this program is not published or otherwise	#
+#	   divested of its trade secrets, irrespective of what has been		#
+#	   deposited with the U.S. Copyright Office.				#
+#										#
+#################################################################################
+
+BEAM_OPTIONS = 
+
+CCFLAGS = 	\
+	-DTPM_POSIX			\
+	-Wall  -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
+	-ggdb -O0 -c 			\
+	-DTPM_BITFIELD_LE		\
+	-I.				\
+	-I../src			\
+	-DTPM_ENCRYPT_SESSIONS_DEFAULT="\"0\""
+
+beam_targets = 				\
+		tss.berr		\
+		tsscrypto.berr		\
+		tssprint.berr		\
+		tssproperties.berr	\
+		tssresponsecode.berr	\
+		tssutils.berr		\
+		tssauth.berr		\
+		tssmarshal.berr		\
+		tssdev.berr		\
+		tsssocket.berr		\
+		tsstbsi.berr		\
+		tsstransmit.berr
+
+all:	$(beam_targets)
+
+$(beam_targets): %.berr : %.c
+	beam_compile --beam::prefixcc gcc -c $< \
+	$(CCFLAGS) $(BEAM_OPTIONS) > $@
+
+clean:
+	rm tpm_*.beam tpm_*.berr

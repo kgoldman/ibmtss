@@ -1,0 +1,12 @@
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/Infineon-OPTIGA(TM)_ECC_Manufacturing_CA_011.crt-C-v01_00-EN.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/Infineon-OPTIGA(TM)_RSA_Manufacturing_CA_011.crt-C-v01_00-EN.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/Infineon-TPM_ECC_Root_CA-C-v01_00-EN.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/Infineon-TPM_RSA_Root_CA-C-v01_00-EN.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/InfineonECCChain010.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/InfineonOPTIGAECCManufacturingCA010.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/InfineonOPTIGARSAManufacturingCA010.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/InfineonRSAChain010.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/NuvotonTPMRootCA0100.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/NuvotonTPMRootCA1110.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/NuvotonTPMRootCA2110.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/cacert.pem

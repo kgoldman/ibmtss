@@ -1,0 +1,362 @@
+#################################################################################
+#										#
+#		Linux TPM2 Makefile Sample for Fedora Installed rpms		#
+#			     Written by Ken Goldman				#
+#		       IBM Thomas J. Watson Research Center			#
+#	      $Id: makefile.sample 691 2016-07-21 21:22:57Z kgoldman $		#
+#										#
+# (c) Copyright IBM Corporation 2014						#
+# 										#
+# All rights reserved.								#
+# 										#
+# Redistribution and use in source and binary forms, with or without		#
+# modification, are permitted provided that the following conditions are	#
+# met:										#
+# 										#
+# Redistributions of source code must retain the above copyright notice,	#
+# this list of conditions and the following disclaimer.				#
+# 										#
+# Redistributions in binary form must reproduce the above copyright		#
+# notice, this list of conditions and the following disclaimer in the		#
+# documentation and/or other materials provided with the distribution.		#
+# 										#
+# Neither the names of the IBM Corporation nor the names of its			#
+# contributors may be used to endorse or promote products derived from		#
+# this software without specific prior written permission.			#
+# 										#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS		#
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT		#
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR		#
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT		#
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,	#
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT		#
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,		#
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY		#
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT		#
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE		#
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		#
+#										#
+#################################################################################
+
+# This is a sample application makefile using the /usr/include and /usr/lib64
+# directory paths from the Fedora rpm install.
+
+CC = /usr/bin/gcc
+
+CCFLAGS = 	-DTPM_POSIX \
+		-Wall  -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
+		-ggdb -O0 -c 			\
+		-DTPM_BITFIELD_LE		\
+		-DTPM_ENCRYPT_SESSIONS_DEFAULT="\"0\"" \
+		-I/usr/include/tss2
+
+# for shared library
+
+LNFLAGS = 	-DTPM_POSIX		\
+		-ggdb 			\
+		-DTPM_BITFIELD_LE	\
+		-ltss -lcrypto
+
+# default build target
+
+ALL = 	activatecredential			\
+	eventextend				\
+	certify					\
+	changeeps				\
+	changepps				\
+	clear					\
+	clearcontrol				\
+	clockrateadjust				\
+	clockset				\
+	contextload				\
+	contextsave				\
+	create					\
+	createprimary				\
+	dictionaryattacklockreset	 	\
+	dictionaryattackparameters	 	\
+	duplicate				\
+	eccparameters				\
+	encryptdecrypt				\
+	evictcontrol				\
+	eventsequencecomplete			\
+	flushcontext				\
+	getcommandauditdigest			\
+	getcapability				\
+	getrandom				\
+	getsessionauditdigest			\
+	gettime					\
+	hash					\
+	hashsequencestart	 		\
+	hierarchycontrol	 		\
+	hierarchychangeauth	 		\
+	hmac					\
+	hmacstart				\
+	import					\
+	load					\
+	loadexternal				\
+	makecredential				\
+	nvcertify				\
+	nvchangeauth				\
+	nvdefinespace				\
+	nvextend	 			\
+	nvglobalwritelock			\
+	nvincrement	 			\
+	nvread					\
+	nvreadlock				\
+	nvreadpublic				\
+	nvsetbits				\
+	nvundefinespace				\
+	nvundefinespacespecial			\
+	nvwrite					\
+	nvwritelock				\
+	objectchangeauth	 		\
+	pcrallocate				\
+	pcrevent				\
+	pcrextend				\
+	pcrread					\
+	pcrreset				\
+	policyauthorize				\
+	policyauthvalue				\
+	policycommandcode	 		\
+	policycphash		 		\
+	policycountertimer			\
+	policygetdigest				\
+	policymaker				\
+	policymakerpcr				\
+	policynv				\
+	policynvwritten				\
+	policypassword				\
+	policypcr				\
+	policyor				\
+	policyrestart				\
+	policysigned				\
+	policysecret				\
+	policyticket				\
+	powerup					\
+	quote					\
+	readclock				\
+	readpublic				\
+	returncode				\
+	rewrap					\
+	rsadecrypt				\
+	rsaencrypt				\
+	sequencecomplete			\
+	sequenceupdate				\
+	setprimarypolicy	 		\
+	shutdown	 			\
+	sign					\
+	startauthsession			\
+	startup	 				\
+	stirrandom				\
+	unseal					\
+	verifysignature				\
+						\
+	signapp					\
+	writeapp				\
+	createek	
+
+all:	$(ALL)
+
+.PHONY:		clean
+.PRECIOUS:	%.o
+
+clean:		
+		rm -f *.o \
+		$(ALL)
+
+# applications
+
+activatecredential:	activatecredential.o
+			$(CC) $(LNFLAGS) activatecredential.o -o activatecredential
+eventextend:		eventextend.o eventlib.o
+			$(CC) $(LNFLAGS) eventextend.o eventlib.o -o eventextend
+certify:		certify.o
+			$(CC) $(LNFLAGS) certify.o -o certify
+changeeps:		changeeps.o
+			$(CC) $(LNFLAGS) changeeps.o -o changeeps
+changepps:		changepps.o
+			$(CC) $(LNFLAGS) changepps.o -o changepps
+clear:			clear.o
+			$(CC) $(LNFLAGS) clear.o -o clear
+clearcontrol:		clearcontrol.o
+			$(CC) $(LNFLAGS) clearcontrol.o -o clearcontrol
+clockrateadjust:	clockrateadjust.o
+			$(CC) $(LNFLAGS) clockrateadjust.o -o clockrateadjust
+clockset:		clockset.o
+			$(CC) $(LNFLAGS) clockset.o -o clockset
+contextload:		contextload.o
+			$(CC) $(LNFLAGS) contextload.o -o contextload
+contextsave:		contextsave.o
+			$(CC) $(LNFLAGS) contextsave.o -o contextsave
+create:			create.o
+			$(CC) $(LNFLAGS) create.o -o create
+createprimary:		createprimary.o
+			$(CC) $(LNFLAGS) createprimary.o -o createprimary
+dictionaryattacklockreset:		dictionaryattacklockreset.o
+			$(CC) $(LNFLAGS) dictionaryattacklockreset.o -o dictionaryattacklockreset
+dictionaryattackparameters:		dictionaryattackparameters.o
+			$(CC) $(LNFLAGS) dictionaryattackparameters.o -o dictionaryattackparameters
+duplicate:		duplicate.o
+			$(CC) $(LNFLAGS) duplicate.o -o duplicate 
+eccparameters:		eccparameters.o
+			$(CC) $(LNFLAGS) eccparameters.o -o eccparameters 
+encryptdecrypt:		encryptdecrypt.o
+			$(CC) $(LNFLAGS) encryptdecrypt.o -o encryptdecrypt	
+eventsequencecomplete:	eventsequencecomplete.o
+			$(CC) $(LNFLAGS) eventsequencecomplete.o -o eventsequencecomplete	
+evictcontrol:		evictcontrol.o
+			$(CC) $(LNFLAGS) evictcontrol.o -o evictcontrol	
+flushcontext:		flushcontext.o
+			$(CC) $(LNFLAGS) flushcontext.o -o flushcontext
+getcommandauditdigest:	getcommandauditdigest.o
+			$(CC) $(LNFLAGS) getcommandauditdigest.o -o getcommandauditdigest
+getcapability:		getcapability.o
+			$(CC) $(LNFLAGS) getcapability.o -o getcapability
+getrandom:		getrandom.o
+			$(CC) $(LNFLAGS) getrandom.o -o getrandom
+getsessionauditdigest:	getsessionauditdigest.o
+			$(CC) $(LNFLAGS) getsessionauditdigest.o -o getsessionauditdigest
+gettime:		gettime.o
+			$(CC) $(LNFLAGS) gettime.o -o gettime
+hashsequencestart:	hashsequencestart.o
+			$(CC) $(LNFLAGS) hashsequencestart.o -o hashsequencestart
+hash:			hash.o
+			$(CC) $(LNFLAGS) hash.o -o hash
+hierarchycontrol:	hierarchycontrol.o
+			$(CC) $(LNFLAGS) hierarchycontrol.o -o hierarchycontrol
+hierarchychangeauth:	hierarchychangeauth.o
+			$(CC) $(LNFLAGS) hierarchychangeauth.o -o hierarchychangeauth
+hmac:			hmac.o
+			$(CC) $(LNFLAGS) hmac.o -o hmac
+hmacstart:		hmacstart.o
+			$(CC) $(LNFLAGS) hmacstart.o -o hmacstart
+import:			import.o
+			$(CC) $(LNFLAGS) import.o -o import
+load:			load.o
+			$(CC) $(LNFLAGS) load.o -o load
+loadexternal:		loadexternal.o
+			$(CC) $(LNFLAGS) loadexternal.o -o loadexternal
+makecredential:		makecredential.o
+			$(CC) $(LNFLAGS) makecredential.o -o makecredential
+nvcertify:		nvcertify.o
+			$(CC) $(LNFLAGS) nvcertify.o -o nvcertify
+nvchangeauth:		nvchangeauth.o
+			$(CC) $(LNFLAGS) nvchangeauth.o -o nvchangeauth
+nvdefinespace:		nvdefinespace.o
+			$(CC) $(LNFLAGS) nvdefinespace.o -o nvdefinespace
+nvextend:		nvextend.o
+			$(CC) $(LNFLAGS) nvextend.o -o nvextend
+nvglobalwritelock:	nvglobalwritelock.o
+			$(CC) $(LNFLAGS) nvglobalwritelock.o -o nvglobalwritelock
+nvincrement:		nvincrement.o
+			$(CC) $(LNFLAGS) nvincrement.o -o nvincrement
+nvread:			nvread.o
+			$(CC) $(LNFLAGS) nvread.o -o nvread
+nvreadlock:		nvreadlock.o
+			$(CC) $(LNFLAGS) nvreadlock.o -o nvreadlock
+nvreadpublic:		nvreadpublic.o
+			$(CC) $(LNFLAGS) nvreadpublic.o -o nvreadpublic
+nvsetbits:		nvsetbits.o
+			$(CC) $(LNFLAGS) nvsetbits.o -o nvsetbits
+nvundefinespace:	nvundefinespace.o
+			$(CC) $(LNFLAGS) nvundefinespace.o -o nvundefinespace
+nvundefinespacespecial:	nvundefinespacespecial.o
+			$(CC) $(LNFLAGS) nvundefinespacespecial.o -o nvundefinespacespecial
+nvwrite:		nvwrite.o
+			$(CC) $(LNFLAGS) nvwrite.o -o nvwrite
+nvwritelock:		nvwritelock.o
+			$(CC) $(LNFLAGS) nvwritelock.o -o nvwritelock
+objectchangeauth:	objectchangeauth.o
+			$(CC) $(LNFLAGS) objectchangeauth.o -o objectchangeauth
+pcrallocate: 		pcrallocate.o
+			$(CC) $(LNFLAGS) pcrallocate.o -o pcrallocate
+pcrevent: 		pcrevent.o
+			$(CC) $(LNFLAGS) pcrevent.o -o pcrevent
+pcrextend: 		pcrextend.o
+			$(CC) $(LNFLAGS) pcrextend.o -o pcrextend
+pcrread: 		pcrread.o
+			$(CC) $(LNFLAGS) pcrread.o -o pcrread
+pcrreset: 		pcrreset.o
+			$(CC) $(LNFLAGS) pcrreset.o -o pcrreset
+policyauthorize:	policyauthorize.o
+			$(CC) $(LNFLAGS) policyauthorize.o -o policyauthorize
+policyauthvalue:	policyauthvalue.o
+			$(CC) $(LNFLAGS) policyauthvalue.o -o policyauthvalue
+policycommandcode:	policycommandcode.o
+			$(CC) $(LNFLAGS) policycommandcode.o -o policycommandcode
+policycphash:		policycphash.o
+			$(CC) $(LNFLAGS) policycphash.o -o policycphash
+policycountertimer :	policycountertimer.o
+			$(CC) $(LNFLAGS) policycountertimer.o -o policycountertimer
+policygetdigest:	policygetdigest.o
+			$(CC) $(LNFLAGS) policygetdigest.o -o policygetdigest
+policymaker:		policymaker.o
+			$(CC) $(LNFLAGS) policymaker.o -o policymaker
+policymakerpcr:		policymakerpcr.o
+			$(CC) $(LNFLAGS) policymakerpcr.o -o policymakerpcr
+policynv:		policynv.o
+			$(CC) $(LNFLAGS) policynv.o -o policynv
+policynvwritten:	policynvwritten.o
+			$(CC) $(LNFLAGS) policynvwritten.o -o policynvwritten
+policyor:		policyor.o
+			$(CC) $(LNFLAGS) policyor.o -o policyor
+policypassword:		policypassword.o
+			$(CC) $(LNFLAGS) policypassword.o -o policypassword
+policypcr:		policypcr.o
+			$(CC) $(LNFLAGS) policypcr.o -o policypcr
+policyrestart:		policyrestart.o
+			$(CC) $(LNFLAGS) policyrestart.o -o policyrestart
+policysigned:		policysigned.o
+			$(CC) $(LNFLAGS) policysigned.o -o policysigned
+policysecret:		policysecret.o
+			$(CC) $(LNFLAGS) policysecret.o -o policysecret
+policyticket:		policyticket.o
+			$(CC) $(LNFLAGS) policyticket.o -o policyticket
+quote:			quote.o
+			$(CC) $(LNFLAGS) quote.o -o quote
+powerup:		powerup.o
+			$(CC) $(LNFLAGS) powerup.o -o powerup
+readclock:		readclock.o
+			$(CC) $(LNFLAGS) readclock.o -o readclock
+readpublic:		readpublic.o
+			$(CC) $(LNFLAGS) readpublic.o -o readpublic
+returncode:		returncode.o
+			$(CC) $(LNFLAGS) returncode.o -o returncode
+rewrap:			rewrap.o
+			$(CC) $(LNFLAGS) rewrap.o -o rewrap
+rsadecrypt: 		rsadecrypt.o
+			$(CC) $(LNFLAGS) rsadecrypt.o -o rsadecrypt
+rsaencrypt: 		rsaencrypt.o
+			$(CC) $(LNFLAGS) rsaencrypt.o -o rsaencrypt
+sequenceupdate:		sequenceupdate.o
+			$(CC) $(LNFLAGS) sequenceupdate.o -o sequenceupdate
+sequencecomplete:	sequencecomplete.o
+			$(CC) $(LNFLAGS) sequencecomplete.o -o sequencecomplete
+setprimarypolicy:	setprimarypolicy.o
+			$(CC) $(LNFLAGS) setprimarypolicy.o -o setprimarypolicy
+shutdown:		shutdown.o
+			$(CC) $(LNFLAGS) shutdown.o -o shutdown
+sign:			sign.o
+			$(CC) $(LNFLAGS) sign.o -o sign
+startauthsession:	startauthsession.o
+			$(CC) $(LNFLAGS) startauthsession.o -o startauthsession
+startup:		startup.o
+			$(CC) $(LNFLAGS) startup.o -o startup
+stirrandom:		stirrandom.o
+			$(CC) $(LNFLAGS) stirrandom.o -o stirrandom
+unseal:			unseal.o
+			$(CC) $(LNFLAGS) unseal.o -o unseal
+verifysignature:	verifysignature.o
+			$(CC) $(LNFLAGS) verifysignature.o -o verifysignature
+signapp:		signapp.o
+			$(CC) $(LNFLAGS) signapp.o -o signapp
+writeapp:		writeapp.o
+			$(CC) $(LNFLAGS) writeapp.o -o writeapp
+createek:		createek.o ekutils.o
+			$(CC) $(LNFLAGS) createek.o ekutils.o -o createek		
+
+# object files
+
+%.o:		%.c
+		$(CC) $(CCFLAGS) $< -o $@
+

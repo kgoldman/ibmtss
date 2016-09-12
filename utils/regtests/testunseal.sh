@@ -1,0 +1,174 @@
+#!/bin/bash
+#
+
+#################################################################################
+#										#
+#			TPM2 regression test					#
+#			     Written by Ken Goldman				#
+#		       IBM Thomas J. Watson Research Center			#
+#	$Id: testunseal.sh 663 2016-06-30 18:58:18Z kgoldman $			#
+#										#
+# (c) Copyright IBM Corporation 2015						#
+# 										#
+# All rights reserved.								#
+# 										#
+# Redistribution and use in source and binary forms, with or without		#
+# modification, are permitted provided that the following conditions are	#
+# met:										#
+# 										#
+# Redistributions of source code must retain the above copyright notice,	#
+# this list of conditions and the following disclaimer.				#
+# 										#
+# Redistributions in binary form must reproduce the above copyright		#
+# notice, this list of conditions and the following disclaimer in the		#
+# documentation and/or other materials provided with the distribution.		#
+# 										#
+# Neither the names of the IBM Corporation nor the names of its			#
+# contributors may be used to endorse or promote products derived from		#
+# this software without specific prior written permission.			#
+# 										#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS		#
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT		#
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR		#
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT		#
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,	#
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT		#
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,		#
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY		#
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT		#
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE		#
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		#
+#										#
+#################################################################################
+
+echo ""
+echo "Seal and Unseal to Password"
+echo ""
+
+echo "Create a sealed data object"
+${PREFIX}create -hp 80000000 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin > run.out
+checkSuccess $?
+
+echo "Load the sealed data object"
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Unseal the data blob"
+${PREFIX}unseal -ha 80000001 -pwd sea -of tmp.bin > run.out
+checkSuccess $?
+
+echo "Verify the unsealed result"
+diff msg.bin tmp.bin > run.out
+checkSuccess $?
+
+echo "Unseal with bad password - should fail"
+${PREFIX}unseal -ha 80000001 -pwd xxx > run.out
+checkFailure $?
+
+echo "Flush the sealed object"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+# SHA-1
+
+# extend of aaa + 0 pad to digest length
+# 1d 47 f6 8a ce d5 15 f7 79 73 71 b5 54 e3 2d 47 
+# 98 1a a0 a0 
+
+# paste that with no white space to file policypcr16aaasha1.txt
+
+# create AND term for policy PCR, PCR 16
+# > policymakerpcr -halg sha1 -bm 10000 -if policies/policypcr16aaasha1.txt -v -pr -of policies/policypcr.txt
+# 0000017f00000001000403000001cbf1e9f771d215a017e17979cfd7184f4b674a4d
+
+# convert to binary policy
+# > policymaker -halg sha1 -if policies/policypcr.txt -of policies/policypcr16aaasha1.bin -pr -v
+# 12 b6 dd 16 43 82 ca e4 5d 0e d0 7f 9e 51 d1 63 
+# a4 24 f5 f2 
+
+# SHA-256
+
+# extend of aaa + 0 pad to digest length
+# c2 11 97 64 d1 16 13 bf 07 b7 e2 04 c3 5f 93 73 
+# 2b 4a e3 36 b4 35 4e bc 16 e8 d0 c3 96 3e be bb 
+
+# paste that with no white space to file policypcr16aaasha256.txt
+
+# create AND term for policy PCR, PCR 16
+# > policymakerpcr -bm 10000 -if policies/policypcr16aaasha256.txt -v -pr -of policies/policypcr.txt
+# 0000017f00000001000b030000012c28901f71751debfba3f3b5bf3be9c54b8b2f8c1411f2c117a0e838ee4e6c13
+
+# convert to binary policy
+# > policymaker -if policies/policypcr.txt -of policies/policypcr16aaasha256.bin -pr -v
+# 76 44 f6 11 ea 10 d7 60 da b9 36 c3 95 1e 1d 85 
+# ec db 84 ce 9a 79 03 dd e1 c7 e0 a2 d9 09 a0 13 
+
+# sealed blob    80000001
+# policy session 03000000
+
+echo ""
+echo "Seal and Unseal to PCRs"
+echo ""
+
+for HALG in "sha1" "sha256"
+do
+
+    echo "Create a sealed data object ${HALG}"
+    ${PREFIX}create -hp 80000000 -nalg ${HALG} -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin -pol policies/policypcr16aaa${HALG}.bin > run.out
+    checkSuccess $?
+
+    echo "Load the sealed data object"
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    checkSuccess $?
+
+    echo "Start a policy session ${HALG}"
+    ${PREFIX}startauthsession -se p -halg ${HALG} > run.out
+    checkSuccess $?
+
+    echo "PCR 16 Reset"
+    ${PREFIX}pcrreset -ha 16 > run.out
+    checkSuccess $?
+
+    echo "Unseal the data blob - policy failure, policypcr not run"
+    ${PREFIX}unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out
+    checkFailure $?
+
+    echo "Policy PCR, update with the wrong PCR 16 value"
+    ${PREFIX}policypcr -halg ${HALG} -ha 03000000 -bm 10000 > run.out
+    checkSuccess $?
+
+    echo "Unseal the data blob - policy failure, PCR 16 incorrect"
+    ${PREFIX}unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out
+    checkFailure $?
+
+    echo "Extend PCR 16 to correct value"
+    ${PREFIX}pcrextend -halg ${HALG} -ha 16 -if policies/aaa
+    checkSuccess $?
+
+    echo "Policy restart, set back to zero"
+    ${PREFIX}policyrestart -ha 03000000 > run.out 
+    checkSuccess $?
+
+    echo "Policy PCR, update with the correct PCR 16 value"
+    ${PREFIX}policypcr -halg ${HALG} -ha 03000000 -bm 10000 > run.out
+    checkSuccess $?
+
+    echo "Unseal the data blob"
+    ${PREFIX}unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out
+    checkSuccess $?
+
+    echo "Verify the unsealed result"
+    diff msg.bin tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the sealed object"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "Flush the policy session"
+    ${PREFIX}flushcontext -ha 03000000 > run.out
+    checkSuccess $?
+
+done
+
+# ${PREFIX}getcapability -cap 1 -pr 80000000
