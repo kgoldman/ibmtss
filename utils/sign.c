@@ -3,7 +3,7 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 682 2016-07-15 18:49:19Z kgoldman $			*/
+/*	      $Id: sign.c 730 2016-08-23 21:09:53Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
     TPMI_DH_OBJECT		keyHandle = 0;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     int 			nid = NID_sha256;
+    TPMI_ALG_SIG_SCHEME		scheme = TPM_ALG_RSASSA;
     const char			*messageFilename = NULL;
     const char			*ticketFilename = NULL;
     const char			*publicKeyFilename = NULL;
@@ -156,6 +157,12 @@ int main(int argc, char *argv[])
 		printf("-halg option needs a value\n");
 		printUsage();
 	    }
+	}
+	else if (strcmp(argv[i], "-rsa") == 0) {
+	    scheme = TPM_ALG_RSASSA;
+	}
+	else if (strcmp(argv[i], "-ecc") == 0) {
+	    scheme = TPM_ALG_ECDSA;
 	}
 	else if (strcmp(argv[i],"-if") == 0) {
 	    i++;
@@ -314,12 +321,17 @@ int main(int argc, char *argv[])
 	in.digest.t.size = sizeInBytes;
 	memcpy(&in.digest.t.buffer, (uint8_t *)&digest.digest, sizeInBytes);
 	/* Table 145 - Definition of TPMT_SIG_SCHEME inscheme */
-	in.inScheme.scheme = TPM_ALG_RSASSA;
+	in.inScheme.scheme = scheme;
 	/* Table 144 - Definition of TPMU_SIG_SCHEME details > */
 	/* Table 142 - Definition of {RSA} Types for RSA Signature Schemes */
 	/* Table 135 - Definition of TPMS_SCHEME_HASH Structure */
 	/* Table 59 - Definition of (TPM_ALG_ID) TPMI_ALG_HASH Type  */
-	in.inScheme.details.rsassa.hashAlg = halg;
+	if (scheme == TPM_ALG_RSASSA) {
+	    in.inScheme.details.rsassa.hashAlg = halg;
+	}
+	else {
+	    in.inScheme.details.ecdsa.hashAlg = halg;
+	}
     }
     if (rc == 0) {
 	if (ticketFilename == NULL) {
@@ -394,14 +406,16 @@ int main(int argc, char *argv[])
 	/* if a PEM file was also specified, use openssl to verify the signature using a PEM
 	   format key token.  This simulates remote verification where the public key is transported
 	   in PEM format. */
-	if (pemFilename != NULL) {
-	    rc = RSAVerifyPEM((uint8_t *)&in.digest.t.buffer,
-			      in.digest.t.size,
-			      (uint8_t *)&out.signature.signature.rsassa.sig.t.buffer,
-			      out.signature.signature.rsassa.sig.t.size,
-			      rsa_pub_key,
-			      nid,
-			      pemFilename);
+	if (rc == 0) {
+	    if (pemFilename != NULL) {
+		rc = RSAVerifyPEM((uint8_t *)&in.digest.t.buffer,
+				  in.digest.t.size,
+				  (uint8_t *)&out.signature.signature.rsassa.sig.t.buffer,
+				  out.signature.signature.rsassa.sig.t.size,
+				  rsa_pub_key,
+				  nid,
+				  pemFilename);
+	    }
 	}
 	/* the PEM call frees the RSA key token */
 	if (pemFilename == NULL) {
@@ -476,7 +490,7 @@ static TPM_RC RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
             rc = TSS_RC_ALLOC_INPUT;
 	}
     }
-    /* construct the OpenSSL private key object */
+    /* construct the OpenSSL RSA key object */
     if (rc == 0) {
         *rsa_pub_key = RSA_new();                        	/* freed by caller */
         if (*rsa_pub_key == NULL) {
@@ -645,10 +659,14 @@ static void printUsage(void)
     printf("\t-hk key handle\n");
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-rsa (default RSASSA scheme)]\n");
+    printf("\t[-ecc (ECDSA scheme)]\n");
+    printf("\t\tVerify only supported for RSA now\n");
     printf("\t-if input message to hash and sign\n");
     printf("\t[-ipu public key file name to verify signature (default no verify)]\n");
     printf("\t[-ipem public key PEM format file name to verify signature (default no verify)]\n");
     printf("\t\trequires -ipu\n");
+    printf("\t\tThis program writes the PEM file.  It is not supplied as an input\n");
     printf("\t[-os signature file name]\n");
     printf("\t[-tk ticket file name]\n");
     printf("\n");

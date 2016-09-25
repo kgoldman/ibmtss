@@ -3,7 +3,7 @@
 /*			     TPM2 Response Code Printer				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.c 682 2016-07-15 18:49:19Z kgoldman $	*/
+/*	      $Id: tssresponsecode.c 753 2016-09-23 17:03:21Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -271,8 +271,8 @@ const RC_TABLE tssTable [] = {
 
 /* Test cases
 
-   TPM 1.2	001
-   TPM	param	1c1
+   TPM 	1.2	001
+   TPM 	param	1c1
    TPM	handle  181
    TPM	session	981
    TSS		b0001
@@ -291,8 +291,11 @@ void TSS_ResponseCode_toString(const char **msg, const char **submsg,  const cha
     *submsg = "";	/* sometimes no sub-message */
     *num = "";		/* sometime no number */
 
+    if (rc == 0) {
+	*msg = "TPM_RC_SUCCESS";
+    }
     /* if TSS 11 << 16 */
-    if ((rc & TSSMASK) == TSS_ERROR_LEVEL) {
+    else if ((rc & TSSMASK) == TSS_ERROR_LEVEL) {
 	*msg = TSS_ResponseCode_RcToText(tssTable, sizeof(tssTable) / sizeof(RC_TABLE), rc);
     }
     /* if bits 8:7 are 00 */
@@ -315,15 +318,15 @@ void TSS_ResponseCode_toString(const char **msg, const char **submsg,  const cha
 		if ((rc & BIT11) != 0) {
 		    /* warning 1001 0xxx xxxx RC_WARN */
 		    *msg = TSS_ResponseCode_RcToText(warnTable,
-						 sizeof(warnTable) / sizeof(RC_TABLE),
-						 rc & (BITS0600 | RC_WARN));
+						     sizeof(warnTable) / sizeof(RC_TABLE),
+						     rc & (BITS0600 | RC_WARN));
 		}
 		/* if bit 11 is 0 */
 		else {
 		    /* error 0001 0xxx xxxx  RC_VER1 */
 		    *msg = TSS_ResponseCode_RcToText(ver1Table,
-						 sizeof(ver1Table) / sizeof(RC_TABLE),
-						 rc & (BITS0600 | RC_VER1));
+						     sizeof(ver1Table) / sizeof(RC_TABLE),
+						     rc & (BITS0600 | RC_VER1));
 		}
 	    }
 	}
@@ -333,8 +336,8 @@ void TSS_ResponseCode_toString(const char **msg, const char **submsg,  const cha
 	    if ((rc & BIT6) != 0) {
 		/* error xxxx 11xx xxxx */
 		*msg = TSS_ResponseCode_RcToText(fmt1Table,
-					     sizeof(fmt1Table) / sizeof(RC_TABLE),
-					     rc & (BITS0500 | RC_FMT1));
+						 sizeof(fmt1Table) / sizeof(RC_TABLE),
+						 rc & (BITS0500 | RC_FMT1));
 		*submsg = " Parameter number ";
 		*num = TSS_ResponseCode_NumberToText((rc & BITS1108) >> BITS1108SHIFT); 
 	    }
@@ -344,8 +347,8 @@ void TSS_ResponseCode_toString(const char **msg, const char **submsg,  const cha
 		if ((rc & BIT11) != 0) {
 		    /* error 1xxx 10xx xxxx */
 		    *msg = TSS_ResponseCode_RcToText(fmt1Table,
-						 sizeof(fmt1Table) / sizeof(RC_TABLE),
-						 rc & (BITS0500 | RC_FMT1));
+						     sizeof(fmt1Table) / sizeof(RC_TABLE),
+						     rc & (BITS0500 | RC_FMT1));
 		    *submsg = " Session number ";
 		    *num = TSS_ResponseCode_NumberToText((rc & BITS1008) >> BITS1008SHIFT); 
 		}
@@ -353,8 +356,8 @@ void TSS_ResponseCode_toString(const char **msg, const char **submsg,  const cha
 		else {
 		    /* error 0xxx 10xx xxxx */
 		    *msg = TSS_ResponseCode_RcToText(fmt1Table,
-						 sizeof(fmt1Table) / sizeof(RC_TABLE),
-						 rc & (BITS0500 | RC_FMT1));
+						     sizeof(fmt1Table) / sizeof(RC_TABLE),
+						     rc & (BITS0500 | RC_FMT1));
 		    *submsg = " Handle number ";
 		    *num = TSS_ResponseCode_NumberToText((rc & BITS1008) >> BITS1008SHIFT); 
 		}

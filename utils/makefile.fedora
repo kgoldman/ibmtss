@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile - for Fedora source RPM ONLY!	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.fedora 706 2016-08-01 21:04:24Z kgoldman $		#
+#	      $Id: makefile.fedora 753 2016-09-23 17:03:21Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -71,30 +71,34 @@ CC = /usr/bin/gcc
 
 # compile - common flags for TSS library and applications
 
-CCFLAGS = 	-DTPM_POSIX
+CCFLAGS += 	-DTPM_POSIX
 
 #	-DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
 
 # compile - for TSS library
+# which includes the hardening flag PIC needed for compiling for dynamic linking
 
-CCLFLAGS = 	-I. -I../src
+CCLFLAGS = 	-I. -I../src	\
+		-fPIC
 
 # compile - for applications
+# which includes the hardening flag PIE needed for compiling for static linking
 
-CCAFLAGS = 	-I.
+CCAFLAGS = 	-I.	\
+		-fPIE
 
 # link - common flags flags TSS library and applications
 
-LNFLAGS = 	-DTPM_POSIX		\
+LNFLAGS += 	-DTPM_POSIX		\
 		-L.
 
 # link - for TSS library
-
-LNLFLAGS = 
+# hardening flags for linking shared objects
+LNLFLAGS =	-shared -Wl,-z,now
 
 # link - for applications, TSS path, TSS and OpenSSl libraries
-
-LNAFLAGS =
+# hardening flags for linking executables
+LNAFLAGS =	-pie -Wl,-z,now
 
 LNALIBS =  -ltss -lcrypto
 
@@ -136,44 +140,44 @@ CommandCodeAttributes.c:	../src/CommandCodeAttributes.c
 # TSS shared library source
 
 tss.o: 		$(TSS_HEADERS) tss.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tss.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tss.c
 tssproperties.o: $(TSS_HEADERS) tssproperties.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssproperties.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssproperties.c
 tssauth.o: 	$(TSS_HEADERS) tssauth.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssauth.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth.c
 tssmarshal.o: 	$(TSS_HEADERS) tssmarshal.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssmarshal.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssmarshal.c
 tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsscrypto.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscrypto.c
 tssutils.o: 	$(TSS_HEADERS) tssutils.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssutils.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssutils.c
 tsssocket.o: 	$(TSS_HEADERS) tsssocket.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsssocket.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsssocket.c
 tssdev.o: 	$(TSS_HEADERS) tssdev.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssdev.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssdev.c
 tsstransmit.o: 	$(TSS_HEADERS) tsstransmit.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsstransmit.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsstransmit.c
 tssresponsecode.o: $(TSS_HEADERS) tssresponsecode.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssresponsecode.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssresponsecode.c
 fail.o: 	$(TSS_HEADERS) fail.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC fail.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) fail.c
 tssprint.o: 	$(TSS_HEADERS) tssprint.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssprint.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssprint.c
 Unmarshal.o: 	$(TSS_HEADERS) Unmarshal.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC Unmarshal.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) Unmarshal.c
 Commands.o: 	$(TSS_HEADERS) Commands.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC Commands.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) Commands.c
 CommandCodeAttributes.o: 	$(TSS_HEADERS) CommandCodeAttributes.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CommandCodeAttributes.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) CommandCodeAttributes.c
 CpriHash.o: 	$(TSS_HEADERS) CpriHash.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CpriHash.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) CpriHash.c
 CpriSym.o: 	$(TSS_HEADERS) CpriSym.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CpriSym.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) CpriSym.c
 
 # TSS shared library build
 
 $(LIBTSS): 	$(TSS_OBJS)
-		$(CC) $(LNFLAGS) $(LNLFLAGS) -shared -fPIC -Wl,-soname,$(LIBTSSSONAME) -o $(LIBTSSVERSIONED) $(TSS_OBJS)
+		$(CC) $(LNFLAGS) $(LNLFLAGS) -Wl,-soname,$(LIBTSSSONAME) -o $(LIBTSSVERSIONED) $(TSS_OBJS)
 		rm -f $(LIBTSSSONAME)
 		ln -sf $(LIBTSSVERSIONED) $(LIBTSSSONAME)
 		rm -f $(LIBTSS)

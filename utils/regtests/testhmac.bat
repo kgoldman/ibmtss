@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testhmac.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testhmac.bat 717 2016-08-12 18:34:15Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -50,15 +50,20 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+REM session 02000000
+REM loaded HMAC key 80000001
+REM primary HMAC key 80000001
+REM sequence object 80000002
+
 for %%H in (sha1 sha256 sha384) do (
 
-    echo "Load the %%H keyed hash key under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr khpriv%%H.bin -ipu khpub%%H.bin -pwdp pps > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
-
     for %%S in ("" "-se0 02000000 1") do (
+
+    	echo "Load the %%H keyed hash key under the primary key"
+    	%TPM_EXE_PATH%load -hp 80000000 -ipr khpriv%%H.bin -ipu khpub%%H.bin -pwdp pps > run.out
+    	IF !ERRORLEVEL! NEQ 0 (
+           exit /B 1
+    	)
 
 	echo "HMAC %%H using the keyed hash key %%~S"
 	%TPM_EXE_PATH%hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khk -halg %%H %%~S > run.out
@@ -90,14 +95,54 @@ for %%H in (sha1 sha256 sha384) do (
 	   exit /B 1
 	)
 
-    )
+	echo "Flush the %%H HMAC key"
+	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
 
-    echo "Flush the %%H symmetric cipher key"
-    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
+	echo "Create primary HMAC key - $HALG"
+	%TPM_EXE_PATH%createprimary -kh -halg %%H -pwdk khp > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
 
+	echo "HMAC %%H using the keyed hash primary key %%~S"
+	%TPM_EXE_PATH%hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khp -halg %%H %%~S > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "HMAC %%H start using the keyed hash primary key %%~S"
+	%TPM_EXE_PATH%hmacstart -hk 80000001 -pwdk khp -pwda aaa %%~S -halg %%H > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "HMAC %%H sequence update %%~S"
+	%TPM_EXE_PATH%sequenceupdate -hs 80000002 -pwds aaa -if msg.bin %%~S > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "HMAC %%H sequence complete %%~S"
+	%TPM_EXE_PATH%sequencecomplete -hs 80000002 -pwds aaa -of tmp.bin %%~S > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "Verify the HMAC %%H using the two methods"
+	diff sig.bin tmp.bin
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "Flush the %%H primary HMAC key"
+	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+    )
 )
 
 echo ""

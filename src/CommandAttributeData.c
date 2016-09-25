@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: CommandAttributeData.c 489 2016-02-02 19:58:19Z kgoldman $	*/
+/*            $Id: CommandAttributeData.c 745 2016-09-06 19:06:08Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -86,8 +86,13 @@
    reserved
 */
    
-
+#ifndef TPM_TSS
 const TPMA_CC    s_ccAttr [] = {
+#else
+#include "tssccattributes.h"
+const TPMA_CC_TSS    s_ccAttr [] = {
+#endif
+    
 #if (PAD_LIST || CC_NV_UndefineSpaceSpecial)
     {{0x011f, 0, 1, 0, 0, 2, 0, 0, 0}},     // TPM_CC_NV_UndefineSpaceSpecial
 #endif
@@ -886,9 +891,12 @@ const COMMAND_ATTRIBUTES    s_commandAttributes [] = {
     (COMMAND_ATTRIBUTES)(CC_PolicyNvWritten            *  // 0x018f
 			 (IS_IMPLEMENTED+ALLOW_TRIAL)),
 #endif
+    
 #if (PAD_LIST || CC_Vendor_TCG_Test)
     (COMMAND_ATTRIBUTES)(CC_Vendor_TCG_Test            *  // 0x0000
 			 (IS_IMPLEMENTED+DECRYPT_2+ENCRYPT_2)),
 #endif
+
+    
     0
 };

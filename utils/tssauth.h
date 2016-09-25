@@ -3,7 +3,7 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.h 684 2016-07-18 21:22:01Z kgoldman $		*/
+/*            $Id: tssauth.h 730 2016-08-23 21:09:53Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -43,8 +43,8 @@
 #define TSS_AUTH_H
 
 #include <tss2/tss.h>
-#include "Global.h"
 #include "Commands_fp.h"
+#include <tssccattributes.h>
 
 typedef struct TSS_AUTH_CONTEXT TSS_AUTH_CONTEXT;
 

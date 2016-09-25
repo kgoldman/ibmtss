@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testunseal.sh 663 2016-06-30 18:58:18Z kgoldman $			#
+#	$Id: testunseal.sh 714 2016-08-11 21:46:03Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -67,6 +67,22 @@ checkFailure $?
 
 echo "Flush the sealed object"
 ${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Create a primary sealed data object"
+${PREFIX}createprimary -bl -kt f -kt p -pwdk seap -if msg.bin  > run.out
+checkSuccess $?
+
+echo "Unseal the primary data blob"
+${PREFIX}unseal -ha 80000001 -pwd seap -of tmp.bin > run.out
+checkSuccess $?
+
+echo "Verify the unsealed result"
+diff msg.bin tmp.bin
+checkSuccess $?
+
+echo "Flush the primary sealed object"
+${PREFIX}flushcontext -ha 80000001
 checkSuccess $?
 
 # SHA-1

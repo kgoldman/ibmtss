@@ -3,7 +3,7 @@
 /*			    Create Primary	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createprimary.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: createprimary.c 714 2016-08-11 21:46:03Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -49,7 +49,10 @@
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
+#include <tss2/tssmarshal.h>
 #include <tss2/tssprint.h>
+
+#include "objecttemplates.h"
 
 static void printUsage(void);
 
@@ -64,8 +67,18 @@ int main(int argc, char *argv[])
     CreatePrimary_Out 		out;
     char 			hierarchyChar = 'n';
     TPMI_RH_HIERARCHY		primaryHandle = TPM_RH_NULL;
+    TPMA_OBJECT			objectAttributes;
+    int				keyType = TYPE_ST;
+    uint32_t 			keyTypeSpecified = 0;
+    int				rev116 = FALSE;
     const char 			*uniqueFilename = NULL;
+    TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
+    TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_HASH		nalg = TPM_ALG_SHA256;
+    TPMI_ECC_CURVE		curveID = TPM_ECC_NONE;
+    const char			*policyFilename = NULL;
+    const char			*publicKeyFilename = NULL;
+    const char 			*dataFilename = NULL;
     const char			*keyPassword = NULL; 
     const char			*parentPassword = NULL; 
     const char			*parentPasswordFilename = NULL; 
@@ -81,6 +94,18 @@ int main(int argc, char *argv[])
     
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
+    /* command line argument defaults */
+    objectAttributes.val = 0;
+    objectAttributes.val |= TPMA_OBJECT_NODA;
+    objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
+    objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
+    objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
+    objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
+    objectAttributes.val |= TPMA_OBJECT_DECRYPT;
+    objectAttributes.val &= ~TPMA_OBJECT_SIGN;
+    objectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
+    objectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-hi") == 0) {
 	    i++;
@@ -89,6 +114,138 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("Missing parameter for -hi\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i], "-bl") == 0) {
+	    keyType = TYPE_BL;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-den") == 0) {
+	    keyType = TYPE_DEN;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-deo") == 0) {
+	    keyType = TYPE_DEO;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-des") == 0) {
+	    keyType = TYPE_DES;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-st") == 0) {
+	    keyType = TYPE_ST;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-si") == 0) {
+	    keyType = TYPE_SI;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-sir") == 0) {
+	    keyType = TYPE_SIR;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-kh") == 0) {
+	    keyType = TYPE_KH;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-gp") == 0) {
+	    keyType = TYPE_GP;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-116") == 0) {
+	    rev116 = TRUE;
+	}
+	else if (strcmp(argv[i], "-rsa") == 0) {
+	    algPublic = TPM_ALG_RSA;
+	}
+	else if (strcmp(argv[i], "-ecc") == 0) {
+	    algPublic = TPM_ALG_ECC;
+	    i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"bnp256") == 0) {
+		    curveID = TPM_ECC_BN_P256;
+		}
+		else if (strcmp(argv[i],"nistp256") == 0) {
+		    curveID = TPM_ECC_NIST_P256;
+		}
+		else if (strcmp(argv[i],"nistp384") == 0) {
+		    curveID = TPM_ECC_NIST_P384;
+		}
+		else {
+		    printf("Bad parameter for -ecc\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("-ecc option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i], "-kt") == 0) {
+	    i++;
+	    if (i < argc) {
+		switch (argv[i][0]) {
+		  case 'f':
+		    objectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
+		    break;
+		  case 'p':
+		    objectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+		    break;
+		  default:
+		    printf("Bad parameter for -kt\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -kt\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i], "-da") == 0) {
+	    objectAttributes.val &= ~TPMA_OBJECT_NODA;
+	}
+	else if (strcmp(argv[i],"-halg") == 0) {
+	    i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"sha1") == 0) {
+		    halg = TPM_ALG_SHA1;
+		}
+		else if (strcmp(argv[i],"sha256") == 0) {
+		    halg = TPM_ALG_SHA256;
+		}
+		else if (strcmp(argv[i],"sha384") == 0) {
+		    halg = TPM_ALG_SHA384;
+		}
+		else {
+		    printf("Bad parameter for -halg\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("-halg option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-nalg") == 0) {
+	    i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"sha1") == 0) {
+		    nalg = TPM_ALG_SHA1;
+		}
+		else if (strcmp(argv[i],"sha256") == 0) {
+		    nalg = TPM_ALG_SHA256;
+		}
+		else if (strcmp(argv[i],"sha384") == 0) {
+		    nalg = TPM_ALG_SHA384;
+		}
+		else {
+		    printf("Bad parameter for -nalg\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("-nalg option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -132,25 +289,33 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
-	else if (strcmp(argv[i],"-nalg") == 0) {
+	else if (strcmp(argv[i],"-opu") == 0) {
 	    i++;
 	    if (i < argc) {
-		if (strcmp(argv[i],"sha1") == 0) {
-		    nalg = TPM_ALG_SHA1;
-		}
-		else if (strcmp(argv[i],"sha256") == 0) {
-		    nalg = TPM_ALG_SHA256;
-		}
-		else if (strcmp(argv[i],"sha384") == 0) {
-		    nalg = TPM_ALG_SHA384;
-		}
-		else {
-		    printf("Bad parameter for -nalg\n");
-		    printUsage();
-		}
+		publicKeyFilename = argv[i];
 	    }
 	    else {
-		printf("-nalg option needs a value\n");
+		printf("-opu option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-pol") == 0) {
+	    i++;
+	    if (i < argc) {
+		policyFilename = argv[i];
+	    }
+	    else {
+		printf("-pol option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-if") == 0) {
+	    i++;
+	    if (i < argc) {
+		dataFilename = argv[i];
+	    }
+	    else {
+		printf("-if option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -232,6 +397,32 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
+    if (keyTypeSpecified > 1) {
+	printf("Too many key attributes\n");
+	printUsage();
+    }
+    switch (keyType) {
+      case TYPE_BL:
+	if (dataFilename == NULL) {
+	    printf("-bl needs -if (sealed data object needs data to seal)\n");
+	    printUsage();
+	}
+	break;
+      case TYPE_ST:
+      case TYPE_DEN:
+      case TYPE_DEO:
+      case TYPE_SI:
+      case TYPE_SIR:
+      case TYPE_GP:
+	if (dataFilename != NULL) {
+	    printf("asymmetric key cannot have -if (sensitive data)\n");
+	    printUsage();
+	}
+      case TYPE_DES:
+      case TYPE_KH:
+	/* inSensitive optional for symmetric keys */
+	break;
+    }
     if (rc == 0) {
 	if ((parentPassword != NULL) && (parentPasswordFilename != NULL)) {
 	    printf("Cannot specify both -pwdp and -pwdpi\n");
@@ -298,43 +489,45 @@ int main(int argc, char *argv[])
 					  keyPassword, sizeof(TPMU_HA));
 	    }
 	}
-	in.inSensitive.t.sensitive.data.t.size = 0;
+    }
+    if (rc == 0) {
+	/* Table 132 - Definition of TPM2B_SENSITIVE_DATA Structure data */
+	if (dataFilename != NULL) {
+	    rc = TSS_File_Read2B(&in.inSensitive.t.sensitive.data.b,
+				 MAX_SYM_DATA,
+				 dataFilename);
+	}
+	else {
+	    in.inSensitive.t.sensitive.data.t.size = 0;
+	}
     }
     /* Table 185 - TPM2B_PUBLIC	inPublic */
     if (rc == 0) {
-	/* Table 184 - TPMT_PUBLIC publicArea */
-	in.inPublic.t.publicArea.type = TPM_ALG_RSA;
-	in.inPublic.t.publicArea.nameAlg = nalg;
-	/* Table 32 - TPMA_OBJECT objectAttributes */
-	in.inPublic.t.publicArea.objectAttributes.val = 0;
-	in.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
-	in.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
-	in.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
-	in.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
-	in.inPublic.t.publicArea.objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
-	in.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_NODA;
-	in.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
-	in.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_DECRYPT;
-	in.inPublic.t.publicArea.objectAttributes.val &= ~TPMA_OBJECT_SIGN;
-	/* Table 72 -  TPM2B_DIGEST authPolicy */
-	in.inPublic.t.publicArea.authPolicy.t.size = 0;	/* empty policy */
-	/* Table 182 - TPMU_PUBLIC_PARMS parameters */
-	/* Table 180 - TPMS_RSA_PARMS rsaDetail */
-	{
-	    /* Table 129 - TPMT_SYM_DEF_OBJECT symmetric */
-	    {
-		in.inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
-		/* Table 125 - TPMU_SYM_KEY_BITS keyBits */
-		in.inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-		/* Table 126 - TPMU_SYM_MODE mode */
-		in.inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
-	    }
-	    /* Table 155 - TPMT_RSA_SCHEME scheme */
-	    {
-		in.inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-	    }
-	    in.inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
-	    in.inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
+	switch (keyType) {
+	  case TYPE_BL:
+	    rc = blPublicTemplate(&in.inPublic.t.publicArea, objectAttributes,
+				  nalg,
+				  policyFilename);
+	    break;
+	  case TYPE_ST:
+	  case TYPE_DEN:
+	  case TYPE_DEO:
+	  case TYPE_SI:
+	  case TYPE_SIR:
+	  case TYPE_GP:
+	    rc = asymPublicTemplate(&in.inPublic.t.publicArea, objectAttributes,
+				    keyType, algPublic, curveID, nalg, halg,
+				    policyFilename);
+	    break;
+	  case TYPE_DES:
+	    rc = symmetricCipherTemplate(&in.inPublic.t.publicArea, objectAttributes,
+					 nalg, rev116,
+					 policyFilename);
+	    break;
+	  case TYPE_KH:
+	    rc = keyedHashPublicTemplate(&in.inPublic.t.publicArea, objectAttributes,
+					 nalg, halg,
+					 policyFilename);
 	}
     }
     /* Table 177 - TPMU_PUBLIC_ID unique */
@@ -380,6 +573,12 @@ int main(int argc, char *argv[])
 	    rc = rc1;
 	}
     }
+    /* save the public key */
+    if ((rc == 0) && (publicKeyFilename != NULL)) {
+	rc = TSS_File_WriteStructure(&out.outPublic,
+				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
+				     publicKeyFilename);
+    }
     if (rc == 0) {
 	printf("Handle %08x\n", out.objectHandle);
 	if (verbose) TSS_PrintAll("createprimary: public key",
@@ -413,7 +612,9 @@ static void printUsage(void)
     printf("\t[-pwdpi password file name for hierarchy (default empty)]\n");
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t[-iu inPublic unique field file (default none)]\n");
-    printf("\t[-nalg name hash algorithm [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-opu public key file name (default do not save)]\n");
+    printf("\n");
+    printUsageTemplate();
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

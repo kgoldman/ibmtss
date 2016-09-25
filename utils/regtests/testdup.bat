@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testdup.bat 752 2016-09-23 14:18:20Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -108,7 +108,7 @@ for %%E in ("" "-salg aes -ik tmprnd.bin") do (
 	)
 
 	echo "Get random AES encryption key"
-	%TPM_EXE_PATH%getrandom -by 16 -of tmprnd.bin
+	%TPM_EXE_PATH%getrandom -by 16 -of tmprnd.bin > run.out 
 	IF !ERRORLEVEL! NEQ 0 (
 	    exit /B 1
 	)

@@ -3,7 +3,7 @@
 /*			    TSS and Application Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssutils.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*		$Id: tssutils.c 729 2016-08-23 20:42:13Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -284,8 +284,9 @@ TPM_RC TSS_File_ReadStructure(void 			*structure,
 				     filename);
     }
     if (rc == 0) {
+	int32_t ilength = length;
 	buffer1 = buffer;
-	rc = unmarshalFunction(structure, &buffer1, (int32_t *)&length);
+	rc = unmarshalFunction(structure, &buffer1, &ilength);
     }
     free(buffer);
     return rc;

@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsalt.bat 687 2016-07-20 17:07:38Z kgoldman $		#
+REM #		$Id: testsalt.bat 752 2016-09-23 14:18:20Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -119,7 +119,7 @@ for %%H in (sha1 sha256) do (
 )
 
 echo ""
-echo "Salt Session - CreatePrimary"
+echo "Salt Session - CreatePrimary storage key"
 echo ""
 
 for %%H in (sha1 sha256) do (
@@ -148,6 +148,43 @@ for %%H in (sha1 sha256) do (
        exit /B 1
     )
 
+)
+
+echo ""
+echo "Salt Session - CreatePrimary RSA key"
+echo ""
+
+for %%H in (sha1 sha256) do (
+    
+    echo "Create a primary RSA key - %%H"
+    %TPM_EXE_PATH%createprimary -nalg %%H -halg %%H -hi p -deo > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Start a salted HMAC auth session"
+    %TPM_EXE_PATH%startauthsession -se h -hs 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Create a primary HMAC key using the salt"
+    %TPM_EXE_PATH%createprimary -kh -se0 02000000 0 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Flush the HMAC key"
+    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Flush the RSA key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
 )
 
 echo ""
@@ -194,26 +231,32 @@ echo ""
 echo "Salt Session - ContextSave and ContextLoad"
 echo ""
 
-echo "Load the storage key"
+echo "Load the storage key at 80000001"
 %TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Save context for the key"
+echo "Save context for the key at 80000001"
 %TPM_EXE_PATH%contextsave -ha 80000001 -of tmp.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Load context, new handle"
+echo "Flush the storage key at 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load context, new storage key at 80000001"
 %TPM_EXE_PATH%contextload -if tmp.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Start a salted HMAC auth session"
-%TPM_EXE_PATH%startauthsession -se h -hs 80000002 > run.out
+%TPM_EXE_PATH%startauthsession -se h -hs 80000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -224,14 +267,8 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Flush the storage key"
-%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
 echo "Flush the context loaded key"
-%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

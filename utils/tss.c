@@ -3,7 +3,7 @@
 /*			    TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss.c 698 2016-07-25 20:38:44Z kgoldman $			*/
+/*	      $Id: tss.c 749 2016-09-20 17:10:53Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -58,7 +58,7 @@
 #include <tss2/tssmarshal.h>
 #include <tss2/Unmarshal_fp.h>
 #include <tss2/CpriHash_fp.h>
-#include <tss2/CommandCodeAttributes_fp.h>
+#include <tssccattributes.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/tssprint.h>
 
@@ -1122,8 +1122,9 @@ static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
 	}
     }
     if (rc == 0) {
+	int32_t ilength = inLength;
 	buffer1 = inData;
-	rc = TSS_HmacSession_Unmarshal(session, &buffer1, (INT32 *)&inLength);
+	rc = TSS_HmacSession_Unmarshal(session, &buffer1, &ilength);
     }
     free(buffer);
     if (tssContext->tssEncryptSessions) {
@@ -2199,7 +2200,7 @@ static TPM_RC TSS_Command_Decrypt(TSS_AUTH_CONTEXT *tssAuthContext,
 	/* get the index into the TPM command attributes table */
 	tpmCommandIndex = CommandCodeToCommandIndex(commandCode);
 	/* can this be a decrypt command (this is size of TPM2B size, not size of parameter) */
-	decryptSize = DecryptSize(tpmCommandIndex);
+	decryptSize = getDecryptSize(tpmCommandIndex);
 	if (decryptSize != 2) {		/* only handle TPM2B */
 	    printf("TSS_Command_Decrypt: Error, command cannot be encrypted\n");
 	    rc = TSS_RC_NO_DECRYPT_PARAMETER;
@@ -2467,7 +2468,7 @@ static TPM_RC TSS_Response_Encrypt(TSS_AUTH_CONTEXT *tssAuthContext,
 	/* get the index into the TPM command attributes table */
 	tpmCommandIndex = CommandCodeToCommandIndex(commandCode);
 	/* can this be a decrypt command */
-	encryptSize = EncryptSize(tpmCommandIndex);
+	encryptSize = getEncryptSize(tpmCommandIndex);
 	if (encryptSize == 0) {
 	    if (tssVerbose) printf("TSS_Response_Encrypt: Error, response cannot be encrypted\n");
 	    rc = TSS_RC_NO_ENCRYPT_PARAMETER;

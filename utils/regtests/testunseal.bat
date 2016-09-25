@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testunseal.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testunseal.bat 717 2016-08-12 18:34:15Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -76,6 +76,30 @@ IF !ERRORLEVEL! EQU 0 (
 
 echo "Flush the sealed object"
 %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Create a primary sealed data object"
+%TPM_EXE_PATH%createprimary -bl -kt f -kt p -pwdk seap -if msg.bin  > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Unseal the primary data blob"
+%TPM_EXE_PATH%unseal -ha 80000001 -pwd seap -of tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Verify the unsealed result"
+diff msg.bin tmp.bin
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the primary sealed object"
+%TPM_EXE_PATH%flushcontext -ha 80000001
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )

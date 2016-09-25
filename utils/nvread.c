@@ -3,7 +3,7 @@
 /*			    NV Read		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvread.c 682 2016-07-15 18:49:19Z kgoldman $			*/
+/*	      $Id: nvread.c 730 2016-08-23 21:09:53Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -243,10 +243,15 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	readBuffer = malloc(readLength);		/* freed @1 */
-	if (readBuffer == NULL) {
-	    printf("Cannot malloc %u bytes for read buffer\n", readLength);
-	    exit(1);	
+	if (readLength > 0) {	
+	    readBuffer = malloc(readLength);		/* freed @1 */
+	    if (readBuffer == NULL) {
+		printf("Cannot malloc %u bytes for read buffer\n", readLength);
+		exit(1);	
+	    }
+	}
+	else {
+	    readBuffer = NULL;
 	}
     }
     /* Start a TSS context */

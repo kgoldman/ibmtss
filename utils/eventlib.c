@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: eventlib.c 729 2016-08-23 20:42:13Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -313,8 +313,9 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	event->eventType = Uint32_Convert(event->eventType);
     }
     /* read the TPML_DIGEST_VALUES count */
+    uint32_t maxCount; 
     if (!*endOfFile && (rc == 0)) {
-	uint32_t maxCount = sizeof((TPML_DIGEST_VALUES *)NULL)->digests / sizeof(TPMT_HA);
+	maxCount = sizeof((TPML_DIGEST_VALUES *)NULL)->digests / sizeof(TPMT_HA);
 	readSize = fread(&(event->digests.count),
 			 sizeof(((TPML_DIGEST_VALUES *)NULL)->count), 1, inFile);
 	if (readSize != 1) {
@@ -322,7 +323,14 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 		   (unsigned long)readSize);
 	    rc = ERR_STRUCTURE;
 	}
-	else if (event->digests.count > maxCount) {
+    }
+    /* do the endian conversion from stream to uint32_t */
+    if (!*endOfFile && (rc == 0)) {
+	event->digests.count = Uint32_Convert(event->digests.count);
+    }
+    /* range check the digest count */
+    if (!*endOfFile && (rc == 0)) {
+	if (event->digests.count > maxCount) {
 	    printf("TSS_EVENT2_Line_Read: Error, digest count %u is greater than structure %u\n",
 		   event->digests.count, maxCount);
 	    rc = ERR_STRUCTURE;

@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: InternalRoutines.h 684 2016-07-18 21:22:01Z kgoldman $	*/
+/*            $Id: InternalRoutines.h 730 2016-08-23 21:09:53Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -106,7 +106,7 @@
 
 // Internal support functions
 
-#include "tss2/CommandCodeAttributes_fp.h"
+#include "CommandCodeAttributes_fp.h"
 #include "MemoryLib_fp.h"
 #include "Marshal_fp.h"
 #include "Time_fp.h"

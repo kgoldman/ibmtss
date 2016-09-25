@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 684 2016-07-18 21:22:01Z kgoldman $		#
+#	      $Id: makefile.mak 730 2016-08-23 21:09:53Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015.						#
 # 										#
@@ -46,9 +46,13 @@ CC = "c:/program files/mingw/bin/gcc.exe"
 
 CCFLAGS = 					\
 	-DTPM_WINDOWS				\
+	-I. 					\
 	-I"c:/program files/MinGW/include"	\
 	-I"c:/program files/openssl/include"	\
-	-I. -I../src
+
+# compile - for TSS library
+
+CCLFLAGS = 	-I../src -DTPM_TSS
 
 # link - common flags flags TSS library and applications
 
@@ -96,16 +100,45 @@ include makefile-common
 
 all:	$(ALL)
 
-# TSS library source shared with TPM
+# TSS shared library source
 
-Commands.o: 			../src/Commands.c
-				$(CC) $(CCFLAGS) ../src/Commands.c
-CommandCodeAttributes.o: 	../src/CommandCodeAttributes.c
-				$(CC) $(CCFLAGS) ../src/CommandCodeAttributes.c
-CpriHash.o: 			../src/CpriHash.c
-				$(CC) $(CCFLAGS) ../src/CpriHash.c
-CpriSym.o: 			../src/CpriSym.c
-				$(CC) $(CCFLAGS) ../src/CpriSym.c
+tss.o: 		$(TSS_HEADERS) tss.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tss.c
+tssproperties.o: $(TSS_HEADERS) tssproperties.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssproperties.c
+tssauth.o: 	$(TSS_HEADERS) tssauth.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth.c
+tssmarshal.o: 	$(TSS_HEADERS) tssmarshal.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssmarshal.c
+tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscrypto.c
+tssutils.o: 	$(TSS_HEADERS) tssutils.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssutils.c
+tsssocket.o: 	$(TSS_HEADERS) tsssocket.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsssocket.c
+tssdev.o: 	$(TSS_HEADERS) tssdev.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssdev.c
+tsstransmit.o: 	$(TSS_HEADERS) tsstransmit.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsstransmit.c
+tssresponsecode.o: $(TSS_HEADERS) tssresponsecode.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssresponsecode.c
+tssccattributes.o: $(TSS_HEADERS) tssccattributes.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssccattributes.c
+fail.o: 	$(TSS_HEADERS) fail.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) fail.c
+tssprint.o: 	$(TSS_HEADERS) tssprint.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssprint.c
+Unmarshal.o: 	$(TSS_HEADERS) Unmarshal.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) Unmarshal.c
+
+CommandAttributeData.o: 	$(TSS_HEADERS) ../src/CommandAttributeData.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) ../src/CommandAttributeData.c
+Commands.o: 	../src/Commands.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) ../src/Commands.c
+CpriHash.o: 	../src/CpriHash.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) ../src/CpriHash.c
+CpriSym.o: 	../src/CpriSym.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) ../src/CpriSym.c
 
 # TSS shared library build
 
@@ -120,6 +153,12 @@ clean:
 		rm -f *.o  *~ 	\
 		$(LIBTSS)	\
 		$(ALL)
+
+create.exe:	create.o objecttemplates.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o $(LNLIBS) $(LIBTSS) 
+
+createprimary.exe:	createprimary.o objecttemplates.o  $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o $(LNLIBS) $(LIBTSS) 
 
 eventextend.exe:	eventextend.o eventlib.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o eventlib.o $(LNLIBS) $(LIBTSS) 

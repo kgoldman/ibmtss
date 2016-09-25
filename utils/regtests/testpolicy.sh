@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy.sh 686 2016-07-20 16:30:54Z kgoldman $		#
+#		$Id: testpolicy.sh 751 2016-09-22 20:00:12Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -272,23 +272,30 @@ echo ""
 # > openssl pkey -inform pem -outform pem -in rsaprivkey.pem -passin pass:rrrr -pubout -out rsapubkey.pem 
 # sign a test message msg.bin
 # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
+#
 # create the policy, after loadexternal, get the name from ${TPM_DATA_DIR}/h80000001.bin
 # 00000160 plus the above name as text, add a blank line for empty policyRef
-# > policymaker -if policysigned.txt -of policysigned.bin -pr
+#
+# > policymaker -if policies/policysigned.txt -of policies/policysigned.bin -pr
+#
+# 000001600004c8481987a024d6a47c14df9515908f1a7ec05815
+#
+# f877 5115 bc62 bd3f 0047 9083 5bc8 b24f
+# 7df2 d426 6141 03e6 10dd d61a 345c 4a7b
 #
 # 80000000 primary key
 # 80000001 verification public key
 # 80000002 signing key with policy
 # 03000000 policy session
 
-echo "Load external just the public part of PEM"
+echo "Load external just the public part of PEM at 80000001"
 ${PREFIX}loadexternal -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
 checkSuccess $?
 
 echo "Sign a test message with openssl"
 openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 
-echo "Verify the signature"
+echo "Verify the signature with 80000001"
 ${PREFIX}verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw > run.out
 checkSuccess $?
 
@@ -296,7 +303,7 @@ echo "Create a signing key under the primary key - policy signed"
 ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysigned.bin > run.out
 checkSuccess $?
 
-echo "Load the signing key under the primary key"
+echo "Load the signing key under the primary key at 80000002"
 ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
 checkSuccess $?
 
@@ -310,6 +317,10 @@ checkFailure $?
 
 echo "Policy signed - callback to signer"
 ${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg sha1 -pwdk rrrr > run.out
+checkSuccess $?
+
+echo "Get policy digest, should be f877 ..."
+${PREFIX}policygetdigest -ha 03000000 -of tmppol.bin > run.out
 checkSuccess $?
 
 echo "Sign a digest - policy signed"
@@ -355,7 +366,7 @@ checkSuccess $?
 # exit 0
 
 echo ""
-echo "Policy Secret"
+echo "Policy Secret with Platform Auth"
 echo ""
 
 # 4000000c platform
@@ -438,6 +449,55 @@ checkSuccess $?
 
 echo "Flush the signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo ""
+echo "Policy Secret with NV Auth"
+echo ""
+
+# Name is 
+# 00 0b e0 65 10 81 c2 fc da 30 69 93 da 43 d1 de 
+# 5b 24 be 42 6e 2d 61 90 7b 42 83 54 69 13 6c 97 
+# 68 1f 
+
+# Policy is
+# c6 93 f9 b0 ef 1a b7 1e ca ae 00 af 1f 0b f4 88 
+# 37 9e ab 16 c1 f8 0d 9f f9 6d 90 41 4e 2f c6 b3 
+
+echo "NV Define Space 0100000"
+${PREFIX}nvdefinespace -hi p -ha 01000000 -pwdn nnn -sz 16 -pwdn nnn > run.out
+checkSuccess $?
+
+echo "Create a signing key under the primary key - policy secret NV auth"
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysecretnv.bin > run.out
+checkSuccess $?
+
+echo "Load the signing key under the primary key"
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Start a policy session"
+${PREFIX}startauthsession -se p -on noncetpm.bin > run.out
+checkSuccess $?
+
+echo "Sign a digest - policy, should fail"
+${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+checkFailure $?
+
+echo "Policy Secret with PWAP session"
+${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde nnn -in noncetpm.bin > run.out
+checkSuccess $?
+
+echo "Sign a digest - policy secret"
+${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+checkSuccess $?
+
+echo "Flush the signing key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "NV Undefine Space 0100000"
+${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
 checkSuccess $?
 
 echo ""
@@ -1131,6 +1191,8 @@ checkSuccess $?
 echo "Flush signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
+
+rm -f tmppol.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 01000000

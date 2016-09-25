@@ -40,7 +40,9 @@
 #ifndef TSS_H
 #define TSS_H
 
+#ifndef TPM_TSS
 #define TPM_TSS
+#endif
 
 #include <tss2/TPM_Types.h>
 #include <tss2/Parameters.h>

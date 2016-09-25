@@ -3,7 +3,7 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.c 684 2016-07-18 21:22:01Z kgoldman $		*/
+/*            $Id: tssauth.c 730 2016-08-23 21:09:53Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -55,7 +55,6 @@
 #include <tss2/tsserror.h>
 #include <tss2/tssmarshal.h>
 #include <tss2/Unmarshal_fp.h>
-#include <tss2/CommandCodeAttributes_fp.h>
 
 #include <tss2/tsstransmit.h>
 #include <tss2/tssproperties.h>
@@ -729,8 +728,20 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     /* get the number of command and response handles from the TPM table */
     if (rc == 0) {
 	tssAuthContext->tpmCommandIndex = CommandCodeToCommandIndex(commandCode);
+	if (tssAuthContext->tpmCommandIndex == UNIMPLEMENTED_COMMAND_INDEX) {
+	    printf("TSS_Marshal: commandCode %08x not found\n", commandCode);
+	    rc = TSS_RC_COMMAND_UNIMPLEMENTED;
+	}
+    }
+    if (rc == 0) {
+#if 0
 	tssAuthContext->commandHandleCount = s_ccAttr[tssAuthContext->tpmCommandIndex].cHandles;
 	tssAuthContext->responseHandleCount = s_ccAttr[tssAuthContext->tpmCommandIndex].rHandle;
+#endif
+	tssAuthContext->commandHandleCount =
+	    getCommandHandleCount(tssAuthContext->tpmCommandIndex);
+	tssAuthContext->responseHandleCount =
+	    getresponseHandleCount(tssAuthContext->tpmCommandIndex);
     }
     if (rc == 0) {
 	/* make a copy of the command buffer and size since the marshal functions move them */
@@ -754,7 +765,8 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
 	if (tssAuthContext->marshalFunction != NULL) {
 	    /* if there is a structure to marshal */
 	    if (in != NULL) {
-		rc = tssAuthContext->marshalFunction(in, &tssAuthContext->commandSize, &buffer, &size);
+		rc = tssAuthContext->marshalFunction(in, &tssAuthContext->commandSize,
+						     &buffer, &size);
 	    }
 	    /* caller error, no structure supplied to marshal */
 	    else {
@@ -1123,7 +1135,7 @@ AUTH_ROLE TSS_GetAuthRole(TSS_AUTH_CONTEXT *tssAuthContext,
 			  uint32_t handleIndex)
 {
     AUTH_ROLE authRole;
-    authRole = CommandAuthRole(tssAuthContext->tpmCommandIndex, handleIndex);
+    authRole = getCommandAuthRole(tssAuthContext->tpmCommandIndex, handleIndex);
     return authRole;
 }
 

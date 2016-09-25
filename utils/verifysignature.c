@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 686 2016-07-20 16:30:54Z kgoldman $	*/
+/*	      $Id: verifysignature.c 729 2016-08-23 20:42:13Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -236,8 +236,9 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	if (!raw) {
+	    int32_t ilength = length;
 	    buffer1 = buffer;
-	    rc = TPMT_SIGNATURE_Unmarshal(&in.signature, &buffer1, (INT32 *)&length, NO);
+	    rc = TPMT_SIGNATURE_Unmarshal(&in.signature, &buffer1, &ilength, NO);
 	}
 	else {
 	    rc = rawUnmarshal(&in.signature, algPublic, halg, buffer, length);

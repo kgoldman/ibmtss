@@ -3,7 +3,7 @@
 /*			     Structure Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.h 703 2016-07-28 17:21:46Z kgoldman $		*/
+/*	      $Id: tssprint.h 741 2016-08-29 21:14:24Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -48,7 +48,9 @@
 
 #include <stdint.h>
 
+#ifndef TPM_TSS
 #define TPM_TSS
+#endif
 #include <tss2/TPM_Types.h>
 
 #ifdef __cplusplus
@@ -123,6 +125,8 @@ LIB_EXPORT
 void TSS_TPMU_PUBLIC_PARMS_Print(TPMU_PUBLIC_PARMS *source, UINT32 selector, unsigned int indent);
 LIB_EXPORT
 void TSS_TPMT_PUBLIC_Print(TPMT_PUBLIC *source, unsigned int indent);
+LIB_EXPORT
+void TSS_TPMA_NV_Print(TPMA_NV source, unsigned int indent);
 
 #ifdef __cplusplus
 }

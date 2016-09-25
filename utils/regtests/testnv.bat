@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testnv.bat 510 2016-03-14 20:03:12Z kgoldman $		#
+REM #		$Id: testnv.bat 742 2016-08-30 15:54:30Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -394,7 +394,7 @@ for %%S in ("" "-se0 02000000 1") do (
        exit /B 1
     )
 
-    echo "NV write with owner password %%~S"
+    echo "NV read with owner password %%~S"
     %TPM_EXE_PATH%nvread -ha 01000000 -hia o -pwdn ooo %%~S > run.out 
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1

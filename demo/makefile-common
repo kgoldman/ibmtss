@@ -1,0 +1,225 @@
+#										#
+#			   TPM2 demo common makefile				#
+#			     Written by Ken Goldman				#
+#		       IBM Thomas J. Watson Research Center			#
+#	      $Id: makefile-common 737 2016-08-29 16:34:54Z kgoldman $		#
+#										#
+# (c) Copyright IBM Corporation 2016						#
+# 										#
+# All rights reserved.								#
+# 										#
+# Redistribution and use in source and binary forms, with or without		#
+# modification, are permitted provided that the following conditions are	#
+# met:										#
+# 										#
+# Redistributions of source code must retain the above copyright notice,	#
+# this list of conditions and the following disclaimer.				#
+# 										#
+# Redistributions in binary form must reproduce the above copyright		#
+# notice, this list of conditions and the following disclaimer in the		#
+# documentation and/or other materials provided with the distribution.		#
+# 										#
+# Neither the names of the IBM Corporation nor the names of its			#
+# contributors may be used to endorse or promote products derived from		#
+# this software without specific prior written permission.			#
+# 										#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS		#
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT		#
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR		#
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT		#
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,	#
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT		#
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,		#
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY		#
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT		#
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE		#
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		#
+#										#
+#################################################################################
+
+$(DEST)/%.php:	%.php
+		cp $< $@
+		chmod a+r $@
+$(DEST)/%.html:	%.html
+		cp $< $@
+		chmod a+r $@
+$(DEST)/%.css:	%.css
+		cp $< $@
+		chmod a+r $@
+$(DEST)/%.png:	%.png
+		cp $< $@
+		chmod a+r $@
+
+all:					\
+	$(DEST)/nav.html		\
+	$(DEST)/footer.html		\
+	$(DEST)/index.php		\
+	$(DEST)/admin.php		\
+	$(DEST)/nvram.php		\
+	$(DEST)/pcr.php			\
+	$(DEST)/handles.php		\
+	$(DEST)/nv.php			\
+	$(DEST)/keycreate.php		\
+	$(DEST)/nvram.php		\
+	$(DEST)/sign.php		\
+	$(DEST)/unseal.php		\
+	$(DEST)/quote.php		\
+					\
+	$(DEST)/halg.inc		\
+	$(DEST)/demo.css		\
+	$(DEST)/block.png		\
+					\
+	$(DEST)/policies/policypcr16aaasha256.bin	\
+	$(DEST)/policies/policypcr16aaasha1.bin	\
+					\
+	$(DEST)/libtss.so		\
+					\
+	$(DEST)/clockset		\
+	$(DEST)/create			\
+	$(DEST)/createprimary		\
+	$(DEST)/evictcontrol		\
+	$(DEST)/flushcontext 		\
+	$(DEST)/getcapability 		\
+	$(DEST)/getrandom 		\
+	$(DEST)/hierarchychangeauth	\
+	$(DEST)/hierarchycontrol	\
+	$(DEST)/load			\
+	$(DEST)/nvreadpublic		\
+	$(DEST)/nvdefinespace		\
+	$(DEST)/nvundefinespace		\
+	$(DEST)/nvwrite			\
+	$(DEST)/nvwritelock		\
+	$(DEST)/nvread			\
+	$(DEST)/nvincrement		\
+	$(DEST)/pcrextend		\
+	$(DEST)/pcrread			\
+	$(DEST)/pcrreset		\
+	$(DEST)/policypcr		\
+	$(DEST)/quote 			\
+	$(DEST)/readclock		\
+	$(DEST)/sign			\
+	$(DEST)/startauthsession 	\
+	$(DEST)/verifysignature		\
+	$(DEST)/unseal
+
+$(DEST)/policies/policypcr16aaasha256.bin:	$(SRCUTILS)/policies/policypcr16aaasha256.bin
+	mkdir -p $(DEST)/policies
+	cp $(SRCUTILS)/policies/policypcr16aaasha256.bin $(DEST)/policies/policypcr16aaasha256.bin
+	chmod a+r					$(DEST)/policies/policypcr16aaasha256.bin		
+
+$(DEST)/policies/policypcr16aaasha1.bin:	$(SRCUTILS)/policies/policypcr16aaasha1.bin
+	mkdir -p $(DEST)/policies
+	cp $(SRCUTILS)/policies/policypcr16aaasha1.bin $(DEST)/policies/policypcr16aaasha1.bin
+	chmod a+r				$(DEST)/policies/policypcr16aaasha1.bin
+
+$(DEST)/libtss.so: 			$(SRCUTILS)/libtss.so
+	cp $(SRCUTILS)/libtss.so 	$(DEST)/libtss.so
+	chmod 777 			$(DEST)/libtss.so
+
+$(DEST)/pcrread:			$(SRCUTILS)/pcrread	
+	cp $(SRCUTILS)/pcrread		$(DEST)/pcrread
+	chmod 777 			$(DEST)/pcrread
+
+$(DEST)/readclock:			$(SRCUTILS)/readclock	
+	cp $(SRCUTILS)/readclock	$(DEST)/readclock
+	chmod 777 			$(DEST)/readclock
+
+$(DEST)/clockset:			$(SRCUTILS)/clockset	
+	cp $(SRCUTILS)/clockset		$(DEST)/clockset
+	chmod 777 			$(DEST)/clockset
+
+$(DEST)/getcapability:			$(SRCUTILS)/getcapability	
+	cp $(SRCUTILS)/getcapability	$(DEST)/getcapability
+	chmod 777 			$(DEST)/getcapability
+
+$(DEST)/getrandom:			$(SRCUTILS)/getrandom	
+	cp $(SRCUTILS)/getrandom	$(DEST)/getrandom
+	chmod 777 			$(DEST)/getrandom
+
+$(DEST)/nvreadpublic:			$(SRCUTILS)/nvreadpublic	
+	cp $(SRCUTILS)/nvreadpublic	$(DEST)/nvreadpublic
+	chmod 777 			$(DEST)/nvreadpublic
+
+$(DEST)/create:				$(SRCUTILS)/create	
+	cp $(SRCUTILS)/create		$(DEST)/create
+	chmod 777 			$(DEST)/create
+
+$(DEST)/createprimary:			$(SRCUTILS)/createprimary	
+	cp $(SRCUTILS)/createprimary	$(DEST)/createprimary
+	chmod 777 			$(DEST)/createprimary
+
+$(DEST)/nvdefinespace:			$(SRCUTILS)/nvdefinespace	
+	cp $(SRCUTILS)/nvdefinespace	$(DEST)/nvdefinespace
+	chmod 777 			$(DEST)/nvdefinespace
+
+$(DEST)/nvundefinespace:		$(SRCUTILS)/nvundefinespace	
+	cp $(SRCUTILS)/nvundefinespace	$(DEST)/nvundefinespace
+	chmod 777 			$(DEST)/nvundefinespace
+
+$(DEST)/nvwrite:			$(SRCUTILS)/nvwrite	
+	cp $(SRCUTILS)/nvwrite		$(DEST)/nvwrite
+	chmod 777 			$(DEST)/nvwrite
+
+$(DEST)/nvwritelock:			$(SRCUTILS)/nvwritelock	
+	cp $(SRCUTILS)/nvwritelock	$(DEST)/nvwritelock
+	chmod 777 			$(DEST)/nvwritelock
+
+$(DEST)/nvread:				$(SRCUTILS)/nvread	
+	cp $(SRCUTILS)/nvread		$(DEST)/nvread
+	chmod 777 			$(DEST)/nvread
+
+$(DEST)/nvincrement:			$(SRCUTILS)/nvincrement	
+	cp $(SRCUTILS)/nvincrement	$(DEST)/nvincrement
+	chmod 777 			$(DEST)/nvincrement
+
+$(DEST)/sign:				$(SRCUTILS)/sign
+	cp $(SRCUTILS)/sign		$(DEST)/sign
+	chmod 777 			$(DEST)/sign
+
+$(DEST)/verifysignature:		$(SRCUTILS)/verifysignature
+	cp $(SRCUTILS)/verifysignature	$(DEST)/verifysignature
+	chmod 777 			$(DEST)/verifysignature
+
+$(DEST)/hierarchychangeauth:			$(SRCUTILS)/hierarchychangeauth
+	cp $(SRCUTILS)/hierarchychangeauth	$(DEST)/hierarchychangeauth
+	chmod 777 			$(DEST)/hierarchychangeauth
+
+$(DEST)/hierarchycontrol:			$(SRCUTILS)/hierarchycontrol
+	cp $(SRCUTILS)/hierarchycontrol	$(DEST)/hierarchycontrol
+	chmod 777 			$(DEST)/hierarchycontrol
+
+$(DEST)/pcrextend:			$(SRCUTILS)/pcrextend
+	cp $(SRCUTILS)/pcrextend	$(DEST)/pcrextend
+	chmod 777 			$(DEST)/pcrextend
+
+$(DEST)/pcrreset:			$(SRCUTILS)/pcrreset
+	cp $(SRCUTILS)/pcrreset		$(DEST)/pcrreset
+	chmod 777 			$(DEST)/pcrreset
+
+$(DEST)/load:				$(SRCUTILS)/load
+	cp $(SRCUTILS)/load		$(DEST)/load
+	chmod 777			$(DEST)/load
+
+$(DEST)/startauthsession:		$(SRCUTILS)/startauthsession
+	cp $(SRCUTILS)/startauthsession	$(DEST)/startauthsession
+	chmod 777 			$(DEST)/startauthsession
+
+$(DEST)/unseal:				$(SRCUTILS)/unseal
+	cp $(SRCUTILS)/unseal		$(DEST)/unseal
+	chmod 777 			$(DEST)/unseal
+
+$(DEST)/policypcr:			$(SRCUTILS)/policypcr		
+	cp $(SRCUTILS)/policypcr	$(DEST)/policypcr		
+	chmod 777 			$(DEST)/policypcr		
+
+$(DEST)/flushcontext:			$(SRCUTILS)/flushcontext
+	cp $(SRCUTILS)/flushcontext	$(DEST)/flushcontext
+	chmod 777 			$(DEST)/flushcontext
+
+$(DEST)/quote:				$(SRCUTILS)/quote
+	cp $(SRCUTILS)/quote		$(DEST)/quote
+	chmod 777 			$(DEST)/quote
+
+$(DEST)/evictcontrol:			$(SRCUTILS)/evictcontrol
+	cp $(SRCUTILS)/evictcontrol	$(DEST)/evictcontrol
+	chmod 777 			$(DEST)/evictcontrol

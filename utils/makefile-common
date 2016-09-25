@@ -44,14 +44,12 @@
 CCFLAGS += 				\
 	-Wall -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
 	-ggdb -O0 -c 			\
-	-DTPM_BITFIELD_LE		\
 	-DTPM_ENCRYPT_SESSIONS_DEFAULT="\"0\""
 
 
 # link - common flags for Posix and Windows, for TSS library and applications
 
-LNFLAGS += 	-ggdb 			\
-		-DTPM_BITFIELD_LE	\
+LNFLAGS += 	-ggdb
 
 
 ALL = 	$(LIBTSS)				\
@@ -182,11 +180,12 @@ TSS_OBJS = 	tss.o			\
 		tssdev.o 		\
 		tsstransmit.o 		\
 		tssresponsecode.o 	\
+		tssccattributes.o	\
 		fail.o			\
 		tssprint.o		\
 		Unmarshal.o 		\
 		Commands.o 		\
-		CommandCodeAttributes.o \
+		CommandAttributeData.o 	\
 		CpriHash.o		\
 		CpriSym.o
 

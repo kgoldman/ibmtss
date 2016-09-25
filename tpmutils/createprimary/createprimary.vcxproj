@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\utils\applink.c" />
     <ClCompile Include="..\..\utils\createprimary.c" />
+    <ClCompile Include="..\..\utils\objecttemplates.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\tss\tss.vcxproj">

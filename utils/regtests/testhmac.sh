@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testhmac.sh 663 2016-06-30 18:58:18Z kgoldman $		#
+#		$Id: testhmac.sh 714 2016-08-11 21:46:03Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -49,15 +49,20 @@ echo "Start an HMAC auth session"
 ${PREFIX}startauthsession -se h > run.out
 checkSuccess $?
 
+# session 02000000
+# loaded HMAC key 80000001
+# primary HMAC key 80000001
+# sequence object 80000002
+
 for HALG in sha1 sha256 sha384
 do
 
-    echo "Load the ${HALG} keyed hash key under the primary key"
-    ${PREFIX}load -hp 80000000 -ipr khpriv${HALG}.bin -ipu khpub${HALG}.bin -pwdp pps > run.out
-    checkSuccess $?
-
     for SESS in "" "-se0 02000000 1"
     do
+
+	echo "Load the ${HALG} keyed hash key under the primary key"
+	${PREFIX}load -hp 80000000 -ipr khpriv${HALG}.bin -ipu khpub${HALG}.bin -pwdp pps > run.out
+	checkSuccess $?
 
 	echo "HMAC ${HALG} using the keyed hash key ${SESS}"
 	${PREFIX}hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khk -halg ${HALG} ${SESS} > run.out
@@ -79,12 +84,39 @@ do
 	diff sig.bin tmp.bin
 	checkSuccess $?
 
+	echo "Flush the ${HALG} HMAC key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
+
+	echo "Create primary HMAC key - $HALG"
+	${PREFIX}createprimary -kh -halg ${HALG} -pwdk khp > run.out
+	checkSuccess $?
+
+	echo "HMAC ${HALG} using the keyed hash primary key ${SESS}"
+	${PREFIX}hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khp -halg ${HALG} ${SESS} > run.out
+	checkSuccess $?
+
+	echo "HMAC ${HALG} start using the keyed hash primary key ${SESS}"
+	${PREFIX}hmacstart -hk 80000001 -pwdk khp -pwda aaa ${SESS} -halg ${HALG} > run.out
+	checkSuccess $?
+
+	echo "HMAC ${HALG} sequence update ${SESS}"
+	${PREFIX}sequenceupdate -hs 80000002 -pwds aaa -if msg.bin ${SESS} > run.out
+	checkSuccess $?
+
+	echo "HMAC ${HALG} sequence complete ${SESS}"
+	${PREFIX}sequencecomplete -hs 80000002 -pwds aaa -of tmp.bin ${SESS} > run.out
+	checkSuccess $?
+
+	echo "Verify the HMAC ${HALG} using the two methods"
+	diff sig.bin tmp.bin
+	checkSuccess $?
+
+	echo "Flush the ${HALG} primary HMAC key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
+
     done
-
-    echo "Flush the ${HALG} symmetric cipher key"
-    ${PREFIX}flushcontext -ha 80000001 > run.out
-    checkSuccess $?
-
 done
 
 echo ""

@@ -3,7 +3,7 @@
 #			TPM2 regression test Directory of files			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: Policies.txt 495 2016-02-16 22:49:10Z kgoldman $		#
+#		$Id: Policies.txt 741 2016-08-29 21:14:24Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -38,6 +38,9 @@
 #										#
 #################################################################################
 
+Note that PolicySecret uses a double hash, with the second hash being
+the policyRef.  An empty policyRef is represented by a blank line.
+
 aaa					the characters aaa
 bits48321601.bin			uint64 with those bits set
 msgtpmgen.bin				message with TPM_GENERATED
@@ -59,6 +62,7 @@ policypcr0.txt				20 zeros
 policypcraaasha1.txt			sha1 PCR extend of aaa
 policypcraaasha256.txt			sha256 PCR extend of aaa
 policysecretp.txt			policy secret using platform auth
+policysecretnv.txt			policy secret using nv index
 policysecretnvppp.txt			policy secret using NV PIN pass index
 policysecretnvppf.txt			policy secret using NV PIN fail index
 policysigned.txt			policy signed using pubkey.pem Name

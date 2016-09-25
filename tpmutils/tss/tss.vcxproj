@@ -52,7 +52,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TSS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;TPM_TSS;_DEBUG;_WINDOWS;_USRDLL;TSS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../utils;../../src;c:/program files/openssl/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -68,7 +68,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TSS_EXPORTS;TPM_WINDOWS_TBSI;TPM_WINDOWS_TBSI_WIN7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;TPM_TSS;NDEBUG;_WINDOWS;_USRDLL;TSS_EXPORTS;TPM_WINDOWS_TBSI;TPM_WINDOWS_TBSI_WIN7;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../utils;../../src;c:/program files/openssl/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -84,13 +84,14 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\CommandCodeAttributes.c" />
+    <ClCompile Include="..\..\src\CommandAttributeData.c" />
     <ClCompile Include="..\..\src\Commands.c" />
     <ClCompile Include="..\..\src\CpriHash.c" />
     <ClCompile Include="..\..\src\CpriSym.c" />
     <ClCompile Include="..\..\utils\fail.c" />
     <ClCompile Include="..\..\utils\tss.c" />
     <ClCompile Include="..\..\utils\tssauth.c" />
+    <ClCompile Include="..\..\utils\tssccattributes.c" />
     <ClCompile Include="..\..\utils\tsscrypto.c" />
     <ClCompile Include="..\..\utils\tssmarshal.c" />
     <ClCompile Include="..\..\utils\tssprint.c" />

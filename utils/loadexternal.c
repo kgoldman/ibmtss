@@ -3,7 +3,7 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 686 2016-07-20 16:30:54Z kgoldman $		*/
+/*	      $Id: loadexternal.c 751 2016-09-22 20:00:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -449,11 +449,12 @@ TPM_RC loadExternalDer(LoadExternal_In 	*in,
 	/* Table 184 - Definition of TPMT_PUBLIC Structure */
 	in->inPublic.t.publicArea.type = TPM_ALG_RSA;
 	in->inPublic.t.publicArea.nameAlg = nalg;
+	in->inPublic.t.publicArea.objectAttributes.val = TPMA_OBJECT_NODA;
 	if (keyType == TYPE_SI) {
-	    in->inPublic.t.publicArea.objectAttributes.val = TPMA_OBJECT_SIGN;
+	    in->inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_SIGN;
 	}
 	else {
-	    in->inPublic.t.publicArea.objectAttributes.val = TPMA_OBJECT_DECRYPT;
+	    in->inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_DECRYPT;
 	}
 	in->inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
 	in->inPublic.t.publicArea.authPolicy.t.size = 0;

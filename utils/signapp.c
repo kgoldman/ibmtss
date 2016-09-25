@@ -3,7 +3,7 @@
 /*			    Sign Application					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: signapp.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: signapp.c 753 2016-09-23 17:03:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     const char			*messageFilename = NULL;
     unsigned char 		*message = NULL;	/* message */
     size_t 			messageLength;
-    TPMT_HA 			digest;		/* digest of the message */
+    TPMT_HA 			digest;			/* digest of the message */
     const char			*primaryPassword = NULL; 
     const char			*keyPassword = NULL; 
 
@@ -213,12 +213,10 @@ int main(int argc, char *argv[])
       Start an authorization session
     */
     if (rc == 0) {
-	startAuthSessionIn.sessionType = TPM_SE_HMAC;
-	startAuthSessionIn.tpmKey = TPM_RH_NULL;
-	startAuthSessionIn.encryptedSalt.b.size = 0;
-	startAuthSessionIn.bind = TPM_RH_NULL;
-	startAuthSessionIn.nonceCaller.t.size = 0;
-	startAuthSessionIn.symmetric.algorithm = TPM_ALG_XOR;
+	startAuthSessionIn.sessionType = TPM_SE_HMAC;		/* HMAC session */
+	startAuthSessionIn.tpmKey = TPM_RH_NULL;		/* no salt */
+	startAuthSessionIn.bind = TPM_RH_NULL;			/* no bind */
+	startAuthSessionIn.symmetric.algorithm = TPM_ALG_XOR;	/* parameter encryption */	
 	startAuthSessionIn.symmetric.keyBits.xorr = halg;
 	startAuthSessionIn.symmetric.mode.sym = TPM_ALG_NULL;
 	startAuthSessionIn.authHash = halg;
@@ -238,7 +236,8 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	createPrimaryIn.primaryHandle = primaryHandle;
 	createPrimaryIn.inSensitive.t.sensitive.data.t.size = 0;
-   }
+    }
+    /* primary key password */
     if (rc == 0) {
 	if (primaryPassword == NULL) {
 	    createPrimaryIn.inSensitive.t.sensitive.userAuth.t.size = 0;
@@ -285,8 +284,9 @@ int main(int argc, char *argv[])
       Create the signing key
     */
     if (rc == 0) {
-	createIn.parentHandle = createPrimaryOut.objectHandle;
+	createIn.parentHandle = createPrimaryOut.objectHandle;	/* parent is primary key */
     }
+    /* signing key password */
     if (rc == 0) {
 	if (keyPassword == NULL) {
 	    createIn.inSensitive.t.sensitive.userAuth.t.size = 0;
@@ -353,7 +353,7 @@ int main(int argc, char *argv[])
 	memcpy(&signIn.digest.t.buffer, (uint8_t *)&digest.digest, sizeInBytes);
 	signIn.inScheme.scheme = TPM_ALG_RSASSA;
 	signIn.inScheme.details.rsassa.hashAlg = halg;
-	signIn.validation.tag = TPM_ST_HASHCHECK;
+	signIn.validation.tag = TPM_ST_HASHCHECK;	/* optional, to make a ticket */
 	signIn.validation.hierarchy = TPM_RH_NULL;
 	signIn.validation.digest.t.size = 0;
     }

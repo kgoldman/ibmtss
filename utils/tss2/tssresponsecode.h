@@ -3,7 +3,7 @@
 /*			  TSS Response Code Printer  				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.h 683 2016-07-15 20:53:46Z kgoldman $	*/
+/*	      $Id: tssresponsecode.h 730 2016-08-23 21:09:53Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -46,7 +46,9 @@
 #ifndef TSSRESPONSECODE_H
 #define TSSRESPONSECODE_H
 
+#ifndef TPM_TSS
 #define TPM_TSS
+#endif
 #include <tss2/TPM_Types.h>
 
 #ifdef __cplusplus

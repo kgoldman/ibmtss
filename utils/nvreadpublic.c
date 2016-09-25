@@ -3,7 +3,7 @@
 /*			    NV ReadPublic					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadpublic.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: nvreadpublic.c 746 2016-09-07 17:57:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -184,6 +184,7 @@ int main(int argc, char *argv[])
 	printf("nvreadpublic: name algorithm %04x\n", out.nvPublic.t.nvPublic.nameAlg);
 	printf("nvreadpublic: data size %u\n", out.nvPublic.t.nvPublic.dataSize);
 	printf("nvreadpublic: attributes %08x\n", out.nvPublic.t.nvPublic.attributes.val);
+	TSS_TPMA_NV_Print(out.nvPublic.t.nvPublic.attributes, 0);
 	TSS_PrintAll("nvreadpublic: policy",
 		     out.nvPublic.t.nvPublic.authPolicy.t.buffer,
 		     out.nvPublic.t.nvPublic.authPolicy.t.size);

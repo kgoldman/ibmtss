@@ -3,7 +3,7 @@
 /*			     Structure Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 703 2016-07-28 17:21:46Z kgoldman $		*/
+/*	      $Id: tssprint.c 746 2016-09-07 17:57:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -765,5 +765,63 @@ void TSS_TPMT_PUBLIC_Print(TPMT_PUBLIC *source, unsigned int indent)
     TSS_TPMU_PUBLIC_ID_Print(&source->unique, source->type, indent+2);			
     return;
 }
- 
 
+/* Table 205 - Definition of (UINT32) TPMA_NV Bits */
+
+void TSS_TPMA_NV_Print(TPMA_NV source, unsigned int indent)
+{
+    uint32_t nvType;
+
+    if (source.val & TPMA_NVA_PPWRITE) printf("%*s" "TPMA_NV_PPWRITE\n", indent, "");
+    if (source.val & TPMA_NVA_OWNERWRITE) printf("%*s" "TPMA_NV_OWNERWRITE\n", indent, "");
+    if (source.val & TPMA_NVA_AUTHWRITE) printf("%*s" "TPMA_NV_AUTHWRITE\n", indent, "");
+    if (source.val & TPMA_NVA_POLICYWRITE) printf("%*s" "TPMA_NV_POLICYWRITE\n", indent, "");
+
+    nvType = (source.val & TPMA_NVA_TPM_NT_MASK) >> 4;
+    switch (nvType) {
+      case TPM_NT_ORDINARY:
+	printf("%*s" "TPM_NT_ORDINARY\n", indent, "");
+	break;
+      case TPM_NT_COUNTER:
+	printf("%*s" "TPM_NT_COUNTER\n", indent, "");
+	break;
+	break;
+      case TPM_NT_BITS:
+	printf("%*s" "TPM_NT_COUNTER\n", indent, "");
+	break;
+	break;
+      case TPM_NT_EXTEND:
+	printf("%*s" "TPM_NT_EXTEND\n", indent, "");
+	break;
+	break;
+      case TPM_NT_PIN_FAIL:
+	printf("%*s" "TPM_NT_PIN_FAIL\n", indent, "");
+	break;
+	break;
+      case TPM_NT_PIN_PASS:
+	printf("%*s" "TPM_NT_PIN_PASS\n", indent, "");
+	break;
+	break;
+      default:
+	printf("%*s %02x" "type unknown\n", indent, "", nvType);
+    }
+
+    if (source.val & TPMA_NVA_POLICY_DELETE) printf("%*s" "TPMA_NV_POLICY_DELETE\n", indent, "");
+    if (source.val & TPMA_NVA_WRITELOCKED) printf("%*s" "TPMA_NV_WRITELOCKED\n", indent, "");
+    if (source.val & TPMA_NVA_WRITEALL) printf("%*s" "TPMA_NV_WRITEALL\n", indent, "");
+    if (source.val & TPMA_NVA_WRITEDEFINE) printf("%*s" "TPMA_NV_WRITEDEFINE\n", indent, "");
+    if (source.val & TPMA_NVA_WRITE_STCLEAR) printf("%*s" "TPMA_NV_WRITE_STCLEAR\n", indent, "");
+    if (source.val & TPMA_NVA_GLOBALLOCK) printf("%*s" "TPMA_NV_GLOBALLOCK\n", indent, "");
+    if (source.val & TPMA_NVA_PPREAD) printf("%*s" "TPMA_NV_PPREAD\n", indent, "");
+    if (source.val & TPMA_NVA_OWNERREAD) printf("%*s" "TPMA_NV_OWNERREAD\n", indent, "");
+    if (source.val & TPMA_NVA_AUTHREAD) printf("%*s" "TPMA_NV_AUTHREAD\n", indent, "");
+    if (source.val & TPMA_NVA_POLICYREAD) printf("%*s" "TPMA_NV_POLICYREAD\n", indent, "");
+    if (source.val & TPMA_NVA_NO_DA) printf("%*s" "TPMA_NV_NO_DA\n", indent, "");
+    if (source.val & TPMA_NVA_ORDERLY) printf("%*s" "TPMA_NV_ORDERLY\n", indent, "");
+    if (source.val & TPMA_NVA_CLEAR_STCLEAR) printf("%*s" "TPMA_NV_CLEAR_STCLEAR\n", indent, "");
+    if (source.val & TPMA_NVA_READLOCKED) printf("%*s" "TPMA_NV_READLOCKED\n", indent, "");
+    if (source.val & TPMA_NVA_WRITTEN) printf("%*s" "TPMA_NV_WRITTEN\n", indent, "");
+    if (source.val & TPMA_NVA_PLATFORMCREATE) printf("%*s" "TPMA_NV_PLATFORMCREATE\n", indent, "");
+    if (source.val & TPMA_NVA_READ_STCLEAR) printf("%*s" "TPMA_NV_READ_STCLEAR\n", indent, "");
+    return;
+}

@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testaes.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testaes.bat 717 2016-08-12 18:34:15Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -88,6 +88,36 @@ for %%S in ("" "-se0 02000000 1") do (
 
     echo "Verify the decrypt result"
     diff zero.bin dec.bin
+    IF !ERRORLEVEL! NEQ 0 (
+       	exit /B 1
+    )
+
+    echo "Flush the symmetric cipher key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       	exit /B 1
+    )
+
+    echo "Create a primary symmetric cipher key %%~S"
+    %TPM_EXE_PATH%createprimary -des -pwdk aesp %%~S > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       	exit /B 1
+    )
+ 
+    echo "Encrypt using the symmetric cipher primary key %%~S"
+    %TPM_EXE_PATH%encryptdecrypt -hk 80000001 -if msg.bin -of enc.bin -pwdk aesp %%~S > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       	exit /B 1
+    )
+
+    echo "Decrypt using the symmetric cipher primary key %%~S"
+    %TPM_EXE_PATH%encryptdecrypt -hk 80000001 -d -if enc.bin -of dec.bin -pwdk aesp %%~S > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       	exit /B 1
+    )
+
+    echo "Verify the decrypt result"
+    diff msg.bin dec.bin
     IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
     )

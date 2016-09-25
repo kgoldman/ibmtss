@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 684 2016-07-18 21:22:01Z kgoldman $		*/
+/*            $Id: TPM_Types.h 730 2016-08-23 21:09:53Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -790,9 +790,11 @@ typedef union {
     UINT32 val;
 } TPMA_ALGORITHM;
 
-#else 
+#else
 
-typedef uint32_t TPMA_ALGORITHM;
+typedef struct {
+    UINT32 val;
+} TPMA_ALGORITHM;
 
 #endif
 
@@ -868,8 +870,10 @@ typedef union {
 
 #else 
 
-typedef uint32_t TPMA_OBJECT;
-	
+typedef struct {
+    UINT32 val;
+} TPMA_OBJECT;
+
 #endif
 
 #define TPMA_OBJECT_RESERVED1			0x00000001
@@ -930,7 +934,9 @@ typedef union {
 
 #else 
 
-typedef uint8_t TPMA_SESSION;
+typedef struct {
+    UINT8 val;
+} TPMA_SESSION;
 
 #endif
 
@@ -975,7 +981,11 @@ typedef union {
 
 #else 
 
-typedef uint8_t TPMA_LOCALITY;
+typedef struct {
+    UINT8 val;
+} TPMA_LOCALITY;
+
+#endif
 
 #define TPMA_LOCALITY_ZERO		0x01
 #define TPMA_LOCALITY_ONE		0x02
@@ -983,8 +993,6 @@ typedef uint8_t TPMA_LOCALITY;
 #define TPMA_LOCALITY_THREE		0x08
 #define TPMA_LOCALITY_FOUR		0x10
 #define TPMA_LOCALITY_EXTENDED		0xe0
-
-#endif
 
 /* Table 34 - Definition of (UINT32) TPMA_PERMANENT Bits <OUT> */
 
@@ -1023,7 +1031,11 @@ typedef union {
 
 #else
 
-typedef uint32_t TPMA_PERMANENT;
+typedef struct {
+    UINT32 val;
+} TPMA_PERMANENT;
+
+#endif
 
 #define TPMA_PERMANENT_OWNERAUTHSET		0x00000001
 #define TPMA_PERMANENT_ENDORSEMENTAUTHSET	0x00000002
@@ -1033,8 +1045,6 @@ typedef uint32_t TPMA_PERMANENT;
 #define TPMA_PERMANENT_INLOCKOUT		0x00000200
 #define TPMA_PERMANENT_TPMGENERATEDEPS		0x00000400
 #define TPMA_PERMANENT_RESERVED2		0xfffff800
-
-#endif
 
 /* Table 35 - Definition of (UINT32) TPMA_STARTUP_CLEAR Bits <OUT> */
 
@@ -1068,7 +1078,11 @@ typedef union {
 
 #else 
 
-typedef uint32_t TPMA_STARTUP_CLEAR;
+typedef struct {
+    UINT32 val;
+} TPMA_STARTUP_CLEAR;
+
+#endif
 
 #define TPMA_STARTUP_CLEAR_PHENABLE		0x00000001
 #define TPMA_STARTUP_CLEAR_SHENABLE		0x00000002
@@ -1076,8 +1090,6 @@ typedef uint32_t TPMA_STARTUP_CLEAR;
 #define TPMA_STARTUP_CLEAR_PHENABLENV		0x00000008
 #define TPMA_STARTUP_CLEAR_RESERVED		0x7ffffff0
 #define TPMA_STARTUP_CLEAR_ORDERLY		0x80000000
-
-#endif
 
 /* Table 36 - Definition of (UINT32) TPMA_MEMORY Bits <Out> */
 
@@ -1107,14 +1119,16 @@ typedef union {
 
 #else 
 
-typedef uint32_t TPMA_MEMORY;
+typedef struct {
+    UINT32 val;
+} TPMA_MEMORY;
+
+#endif
 
 #define TPMA_MEMORY_SHAREDRAM		0x00000001
 #define TPMA_MEMORY_SHAREDNV		0x00000002
 #define TPMA_MEMORY_OBJECTCOPIEDTORAM	0x00000004
 #define TPMA_MEMORY_RESERVED		0xfffffff8
-
-#endif
 
 /* Table 37 - Definition of (TPM_CC) TPMA_CC Bits <OUT> */
 
@@ -1154,7 +1168,13 @@ typedef union {
 
 #else
 
-typedef uint32_t TPMA_CC;
+typedef union {
+    struct {
+	UINT32 val;
+    };
+} TPMA_CC;
+    
+#endif
 
 #define TPMA_CC_COMMANDINDEX	0x0000ffff
 #define TPMA_CC_RESERVED1	0x003f0000
@@ -1165,9 +1185,6 @@ typedef uint32_t TPMA_CC;
 #define TPMA_CC_RHANDLE		0x10000000
 #define TPMA_CC_V		0x20000000
 #define TPMA_CC_RES		0xc0000000
-
-#endif
-
 #define TPMA_CC_RESERVED	(0x003f0000 | 0xc0000000)
 
 /* Table 38 - Definition of (BYTE) TPMI_YES_NO Type */
@@ -2475,12 +2492,14 @@ typedef union {
 
 #else 
 
-typedef uint32_t TPM_NV_INDEX;
+typedef struct {
+    UINT32 val;
+} TPM_NV_INDEX;
+
+#endif
 
 #define TPM_NV_INDEX_INDEX	0x00ffffff
 #define TPM_NV_INDEX_RH_NV	0xff000000
-
-#endif
 
 /* Table 194 - Definition of TPM_NT Constants */
 
@@ -2574,7 +2593,9 @@ typedef union {
 
 #else 
 
-typedef uint32_t TPMA_NV;
+typedef struct {
+    UINT32 val;
+} TPMA_NV;
 
 #endif
 
@@ -2608,6 +2629,7 @@ typedef uint32_t TPMA_NV;
 #define TPMA_NVA_PLATFORMCREATE	0x40000000
 #define TPMA_NVA_READ_STCLEAR	0x80000000
 
+#define TPMA_NVA_TPM_NT_MASK	0x000000f0
 #define TPMA_NV_RESERVED	(TPMA_NVA_RESERVED1 | TPMA_NVA_RESERVED2)
 
 /* Table 197 - Definition of TPMS_NV_PUBLIC Structure */

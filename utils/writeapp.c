@@ -3,7 +3,7 @@
 /*			    NV Write Application				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: writeapp.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: writeapp.c 753 2016-09-23 17:03:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -66,6 +66,10 @@
 #include <tss2/tss.h>
 #include <tss2/tssresponsecode.h>
 
+static void printUsage(void);
+
+int verbose = FALSE;
+
 int main(int argc, char *argv[])
 {
     TPM_RC			rc = 0;
@@ -75,9 +79,22 @@ int main(int argc, char *argv[])
     StartAuthSession_Extra	startAuthSessionExtra;
     NV_Write_In			nvWriteIn;
  
-    argc = argc;
-    argv = argv;
+    int				i;    /* argc iterator */
 
+    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+    for (i=1 ; (i<argc) && (rc == 0) ; i++) {
+	if (strcmp(argv[i],"-h") == 0) {
+	    printUsage();
+	}
+	else if (strcmp(argv[i],"-v") == 0) {
+	    verbose = TRUE;
+	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
+	}
+	else {
+	    printf("\n%s is not a valid option\n", argv[i]);
+	    printUsage();
+	}
+    }
     /*	Start an authorization session */
     if (rc == 0) {
 	startAuthSessionIn.tpmKey = 0x80000001;		/* salt key */
@@ -141,3 +158,24 @@ int main(int argc, char *argv[])
     return rc;
 }
     
+
+static void printUsage(void)
+{
+    printf("\n");
+    printf("writeapp\n");
+    printf("\n");
+    printf("writeapp is a sample NV write application.  It does a write\n");
+    printf("to a provisioned NV location with password 'pwd' using a bound, salted\n");
+    printf("HMAC session using AES CFB parameter encryption.\n");
+    printf("\n");
+    printf("Provisioning assumes an NV index defined at 01000000 and an encryption\n");
+    printf("key loaded at 80000001.  Provisioning can be as follows:\n");
+    printf("\n");
+    printf("> nvdefinespace -hi o -ha 01000000 -pwdn pwd -sz 1\n");
+    printf("> nvreadpublic -ha 01000000\n");
+    printf("> createprimary -hi o\n");
+    printf("> create -den -hp 80000000 -opu tmppub.bin -opr tmppriv.bin\n");
+    printf("> load -hp 80000000 -ipu tmppub.bin -ipr tmppriv.bin\n");
+    printf("\n");
+    exit(1);	
+}

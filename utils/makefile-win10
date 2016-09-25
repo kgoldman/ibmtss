@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile-win10 638 2016-06-10 16:21:24Z kgoldman $		#
+#	      $Id: makefile-win10 730 2016-08-23 21:09:53Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -81,8 +81,6 @@ CpriHash.c:			../src/CpriHash.c
 				ln -s ../src/CpriHash.c .
 Commands.c:			../src/Commands.c
 				ln -s ../src/Commands.c .
-CommandCodeAttributes.c:	../src/CommandCodeAttributes.c
-				ln -s ../src/CommandCodeAttributes.c .
 
 # TSS shared library source
 
@@ -106,6 +104,8 @@ tsstransmit.o: 	$(TSS_HEADERS) tsstransmit.c
 		$(CC) $(CCFLAGS) -fPIC tsstransmit.c
 tssresponsecode.o: $(TSS_HEADERS) tssresponsecode.c
 		$(CC) $(CCFLAGS) -fPIC tssresponsecode.c
+tssccattributes.o: $(TSS_HEADERS) tssccattributes.c
+		$(CC) $(CCFLAGS) -fPIC tssccattributes.c
 fail.o: 	$(TSS_HEADERS) fail.c
 		$(CC) $(CCFLAGS) -fPIC fail.c
 tssprint.o: 	$(TSS_HEADERS) tssprint.c
@@ -116,8 +116,6 @@ Unmarshal.o: 	$(TSS_HEADERS) Unmarshal.c
 		$(CC) $(CCFLAGS) -fPIC Unmarshal.c
 Commands.o: 	$(TSS_HEADERS) Commands.c
 		$(CC) $(CCFLAGS) -fPIC Commands.c
-CommandCodeAttributes.o: 	$(TSS_HEADERS) CommandCodeAttributes.c
-		$(CC) $(CCFLAGS) -fPIC CommandCodeAttributes.c
 CpriHash.o: 	$(TSS_HEADERS) CpriHash.c
 		$(CC) $(CCFLAGS) -fPIC CpriHash.c
 CpriSym.o: 	$(TSS_HEADERS) CpriSym.c

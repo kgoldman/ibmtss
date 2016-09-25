@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testnv.sh 663 2016-06-30 18:58:18Z kgoldman $		#
+#		$Id: testnv.sh 730 2016-08-23 21:09:53Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -296,7 +296,7 @@ do
     ${PREFIX}nvread -ha 01000000 ${SESS} -pwdn nnn > run.out
     checkFailure $?
 
-    echo "NV write with owner password ${SESS}"
+    echo "NV read with owner password ${SESS}"
     ${PREFIX}nvread -ha 01000000 -hia o -pwdn ooo ${SESS} > run.out 
     checkSuccess $?
 

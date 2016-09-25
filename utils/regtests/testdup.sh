@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 663 2016-06-30 18:58:18Z kgoldman $		#
+#		$Id: testdup.sh 751 2016-09-22 20:00:12Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -98,7 +98,7 @@ do
 	checkSuccess $?
 
 	echo "Get random AES encryption key"
-	${PREFIX}getrandom -by 16 -of tmprnd.bin
+	${PREFIX}getrandom -by 16 -of tmprnd.bin > run.out 
 	checkSuccess $?
 
 	echo "Duplicate K2 under K1, ${ENC}"

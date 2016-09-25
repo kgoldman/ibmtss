@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testsalt.sh 687 2016-07-20 17:07:38Z kgoldman $			#
+#	$Id: testsalt.sh 751 2016-09-22 20:00:12Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -104,7 +104,7 @@ do
 done
 
 echo ""
-echo "Salt Session - CreatePrimary"
+echo "Salt Session - CreatePrimary storage key"
 echo ""
 
 for HALG in sha1 sha256
@@ -123,6 +123,35 @@ do
     checkSuccess $?
 
     echo "Flush the storage key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+echo ""
+echo "Salt Session - CreatePrimary RSA key"
+echo ""
+
+for HALG in sha1 sha256
+do
+    
+    echo "Create a primary RSA key - $HALG"
+    ${PREFIX}createprimary -nalg $HALG -halg $HALG -hi p -deo > run.out
+    checkSuccess $?
+
+    echo "Start a salted HMAC auth session"
+    ${PREFIX}startauthsession -se h -hs 80000001 > run.out
+    checkSuccess $?
+
+    echo "Create a primary HMAC key using the salt"
+    ${PREFIX}createprimary -kh -se0 02000000 0 > run.out
+    checkSuccess $?
+
+    echo "Flush the HMAC key"
+    ${PREFIX}flushcontext -ha 80000002 > run.out
+    checkSuccess $?
+
+    echo "Flush the RSA key"
     ${PREFIX}flushcontext -ha 80000001 > run.out
     checkSuccess $?
 
@@ -160,32 +189,32 @@ echo ""
 echo "Salt Session - ContextSave and ContextLoad"
 echo ""
 
-echo "Load the storage key"
+echo "Load the storage key at 80000001"
 ${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
 checkSuccess $?
 
-echo "Save context for the key"
+echo "Save context for the key at 80000001"
 ${PREFIX}contextsave -ha 80000001 -of tmp.bin > run.out
 checkSuccess $?
 
-echo "Load context, new handle"
+echo "Flush the storage key at 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Load context, new storage key at 80000001"
 ${PREFIX}contextload -if tmp.bin > run.out
 checkSuccess $?
 
 echo "Start a salted HMAC auth session"
-${PREFIX}startauthsession -se h -hs 80000002 > run.out
+${PREFIX}startauthsession -se h -hs 80000001 > run.out
 checkSuccess $?
 
 echo "Create a signing key using the salt"
 ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
 checkSuccess $?
 
-echo "Flush the storage key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
-
 echo "Flush the context loaded key"
-${PREFIX}flushcontext -ha 80000002 > run.out
+${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 rm -f tmpkeypair.pem

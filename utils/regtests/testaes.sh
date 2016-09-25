@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testaes.sh 663 2016-06-30 18:58:18Z kgoldman $			#
+#	$Id: testaes.sh 714 2016-08-11 21:46:03Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -78,6 +78,26 @@ do
 
     echo "Verify the decrypt result"
     diff zero.bin dec.bin
+    checkSuccess $?
+
+    echo "Flush the symmetric cipher key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "Create a primary symmetric cipher key ${SESS}"
+    ${PREFIX}createprimary -des -pwdk aesp ${SESS} > run.out
+    checkSuccess $?
+ 
+    echo "Encrypt using the symmetric cipher primary key ${SESS}"
+    ${PREFIX}encryptdecrypt -hk 80000001 -if msg.bin -of enc.bin -pwdk aesp ${SESS}> run.out
+    checkSuccess $?
+
+    echo "Decrypt using the symmetric cipher primary key ${SESS}"
+    ${PREFIX}encryptdecrypt -hk 80000001 -d -if enc.bin -of dec.bin -pwdk aesp ${SESS}> run.out
+    checkSuccess $?
+
+    echo "Verify the decrypt result"
+    diff msg.bin dec.bin
     checkSuccess $?
 
     echo "Flush the symmetric cipher key"

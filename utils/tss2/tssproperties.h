@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.h 684 2016-07-18 21:22:01Z kgoldman $		*/
+/*	      $Id: tssproperties.h 730 2016-08-23 21:09:53Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -42,7 +42,9 @@
 #ifndef TSSPROPERTIES_H
 #define TSSPROPERTIES_H
 
+#ifndef TPM_TSS
 #define TPM_TSS
+#endif
 #include <tss2/TPM_Types.h>
 
 #ifdef TPM_WINDOWS

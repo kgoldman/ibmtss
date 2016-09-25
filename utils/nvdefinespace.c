@@ -3,7 +3,7 @@
 /*			    NV Define Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: nvdefinespace.c 730 2016-08-23 21:09:53Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -451,8 +451,8 @@ int main(int argc, char *argv[])
 	/* if there was a password specified, permit index authorization */
 	else {
 	    /* PIN index cannot use index AUTHWRITE authorization */
-	    if ((nvAttributes.TPM_NT != TPM_NT_PIN_FAIL) &&
-		(nvAttributes.TPM_NT != TPM_NT_PIN_PASS)) {
+	    if (((nvAttributes.val & TPMA_NVA_TPM_NT_MASK) != TPMA_NVA_PIN_FAIL) &&
+		((nvAttributes.val & TPMA_NVA_TPM_NT_MASK) != TPMA_NVA_PIN_PASS)) {
 		nvAttributes.val |= TPMA_NVA_AUTHWRITE;
 	    }
 	    nvAttributes.val |= TPMA_NVA_AUTHREAD;

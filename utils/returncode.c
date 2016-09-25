@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: returncode.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: returncode.c 753 2016-09-23 17:03:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -44,6 +44,8 @@
 #include <tss2/tss.h>
 #include <tss2/tssresponsecode.h>
 
+static void printUsage(void);
+
 int main(int argc, char *argv[])
 {
     TPM_RC rc;
@@ -55,9 +57,22 @@ int main(int argc, char *argv[])
 	printf("returncode: needs argument\n");
 	return EXIT_FAILURE;
     }
+    if (strcmp(argv[1], "-h") == 0) {
+	printUsage();
+    }	    
 
     rc = strtoul(argv[1], NULL, 16);
     TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
     printf("%s%s%s\n", msg, submsg, num);
     return 0;
+}
+
+static void printUsage(void)
+{
+    printf("\n");
+    printf("returncode hex-number\n");
+    printf("\n");
+    printf("Returns the TPM_RC name and text for the return code\n");
+    printf("\n");
+    exit(1);	
 }

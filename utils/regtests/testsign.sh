@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testsign.sh 687 2016-07-20 17:07:38Z kgoldman $		#
+#		$Id: testsign.sh 717 2016-08-12 18:34:15Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -42,12 +42,12 @@
 #################################################################################
 
 echo ""
-echo "Signing key"
+echo "RSA Signing key"
 echo ""
 
 # loop over unrestricted hash algorithms
 
-echo "Load the signing key under the primary key"
+echo "Load the RSA signing key under the primary key"
 ${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
 checkSuccess $?
 
@@ -88,8 +88,84 @@ do
 
 done
 
-echo "Flush the signing key"
+echo "Flush the RSA signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo ""
+echo "ECC Signing key"
+echo ""
+
+echo "Load the ECC signing key under the primary key"
+${PREFIX}load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp pps > run.out
+checkSuccess $?
+
+for HALG in sha1 sha256
+do
+
+    echo "Sign a digest - $HALG"
+    ${PREFIX}sign -hk 80000001 -halg $HALG -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
+    checkSuccess $?
+
+    echo "Verify the ECC signature - $HALG"
+    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -ecc -if policies/aaa -is sig.bin  > run.out
+    checkSuccess $?
+
+done
+
+echo "Flush the ECC signing key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo ""
+echo "Primary Signing Key"
+echo ""
+
+# primary signing key 80000001
+
+for HALG in sha1 sha256
+do
+    
+    echo "Create primary signing key - RSA, $HALG"
+    ${PREFIX}createprimary -si -opu tmppub.bin -pwdk sig > run.out
+    checkSuccess $?
+
+    echo "Sign a digest - $HALG"
+    ${PREFIX}sign -hk 80000001 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig -ipu tmppub.bin -ipem tmppub.pem > run.out
+    checkSuccess $?
+
+    echo "Verify the signature - $HALG"
+    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the primary signing key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+echo "Create primary signing key - ECC"
+${PREFIX}createprimary -si -opu tmppub.bin -ecc nistp256 -pwdk sig > run.out
+checkSuccess $?
+
+echo "Sign a digest - SHA1"
+${PREFIX}sign -hk 80000001 -halg sha1 -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
+checkSuccess $?
+
+echo "Flush the signing key"
+flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Create primary signing key - restricted"
+${PREFIX}createprimary -sir -opu tmppub.bin -pwdk sig  > run.out
+checkSuccess $?
+
+echo "Sign a digest - SHA256 - should fail TPM_RC_TICKET"
+${PREFIX}sign -hk 80000001 -halg sha256  -if policies/aaa -os sig.bin  -pwdk sig -ipu tmppub.bin -ipem signpub.pem > run.out
+checkFailure $?
+
+echo "Flush the signing key"
+flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo ""
@@ -142,6 +218,8 @@ rm -f tmpkeypair.pem
 rm -f tmpkeypair.der
 rm -f signpub.pem
 rm -r pssig.bin
+rm -r tmppub.bin
+rm -r tmppub.pem
 
 # ${PREFIX}getcapability  -cap 1 -pr 80000000
 # ${PREFIX}getcapability  -cap 1 -pr 02000000

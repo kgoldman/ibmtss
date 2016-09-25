@@ -1,0 +1,28 @@
+/* $Id: demo.css 486 2016-01-08 21:03:06Z kgoldman $: */
+
+#header {
+    background-color:#7889fb;
+    color:white;
+    text-align:center;
+    padding:5px;
+}
+#nav {
+    line-height:30px;
+    background-color:#eeeeee;
+    height:400px;
+    width:150px;
+    float:left;
+    padding:5px;	      
+}
+#section {
+    width:850px;
+    float:left; 
+    padding:10px;	 	 
+}
+#footer {
+    background-color:#7889fb;
+    color:white;
+    clear:both;
+    text-align:center;
+    padding:5px;	 	 
+}

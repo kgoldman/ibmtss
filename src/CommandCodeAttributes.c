@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: CommandCodeAttributes.c 489 2016-02-02 19:58:19Z kgoldman $	*/
+/*            $Id: CommandCodeAttributes.c 730 2016-08-23 21:09:53Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -275,7 +275,7 @@ GetClosestCommandIndex(
 // 9.4.3.3	CommandCodeToComandIndex()
 // This function returns the index in the various attributes arrays of the command.
 // Return Value	Meaning
-// UNIMPLEMNED_COMMAND_INDEX	command is not implemented
+// UNIMPLEMENTED_COMMAND_INDEX	command is not implemented
 // other	index of the command
 
 COMMAND_INDEX

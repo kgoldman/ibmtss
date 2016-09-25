@@ -3,7 +3,7 @@
 /*			   Load 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: load.c 682 2016-07-15 18:49:19Z kgoldman $			*/
+/*	      $Id: load.c 714 2016-08-11 21:46:03Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -269,7 +269,6 @@ static void printUsage(void)
     printf("\n");
     printf("\t-ipu public key file name\n");
     printf("\t-ipr private key file name\n");
-    printf("\t-na  name file name\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

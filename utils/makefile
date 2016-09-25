@@ -3,9 +3,9 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 684 2016-07-18 21:22:01Z kgoldman $			#
+#	      $Id: makefile 740 2016-08-29 18:26:38Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2014						#
+# (c) Copyright IBM Corporation 2016						#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -50,7 +50,7 @@ CCFLAGS = 	-DTPM_POSIX
 
 # compile - for TSS library
 
-CCLFLAGS = 	-I. -I../src
+CCLFLAGS = 	-I. -I../src -DTPM_TSS
 
 # compile - for applications
 
@@ -95,8 +95,8 @@ CpriHash.c:			../src/CpriHash.c
 				ln -s ../src/CpriHash.c .
 Commands.c:			../src/Commands.c
 				ln -s ../src/Commands.c .
-CommandCodeAttributes.c:	../src/CommandCodeAttributes.c
-				ln -s ../src/CommandCodeAttributes.c .
+CommandAttributeData.c:		../src/CommandAttributeData.c
+				ln -s ../src/CommandAttributeData.c .
 
 # TSS shared library source
 
@@ -120,6 +120,8 @@ tsstransmit.o: 	$(TSS_HEADERS) tsstransmit.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsstransmit.c
 tssresponsecode.o: $(TSS_HEADERS) tssresponsecode.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssresponsecode.c
+tssccattributes.o: $(TSS_HEADERS) tssccattributes.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssccattributes.c
 fail.o: 	$(TSS_HEADERS) fail.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC fail.c
 tssprint.o: 	$(TSS_HEADERS) tssprint.c
@@ -128,8 +130,8 @@ Unmarshal.o: 	$(TSS_HEADERS) Unmarshal.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC Unmarshal.c
 Commands.o: 	$(TSS_HEADERS) Commands.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC Commands.c
-CommandCodeAttributes.o: 	$(TSS_HEADERS) CommandCodeAttributes.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CommandCodeAttributes.c
+CommandAttributeData.o: 	$(TSS_HEADERS) CommandAttributeData.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CommandAttributeData.c
 CpriHash.o: 	$(TSS_HEADERS) CpriHash.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CpriHash.c
 CpriSym.o: 	$(TSS_HEADERS) CpriSym.c
@@ -173,10 +175,10 @@ contextload:		tss2/tss.h contextload.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextload.o $(LNALIBS) -o contextload
 contextsave:		tss2/tss.h contextsave.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextsave.o $(LNALIBS) -o contextsave
-create:			tss2/tss.h create.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o $(LNALIBS) -o create
-createprimary:		tss2/tss.h createprimary.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o $(LNALIBS) -o createprimary
+create:			tss2/tss.h create.o objecttemplates.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o objecttemplates.o $(LNALIBS) -o create
+createprimary:		tss2/tss.h createprimary.o objecttemplates.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o objecttemplates.o $(LNALIBS) -o createprimary
 dictionaryattacklockreset:		tss2/tss.h dictionaryattacklockreset.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) dictionaryattacklockreset.o $(LNALIBS) -o dictionaryattacklockreset
 dictionaryattackparameters:		tss2/tss.h dictionaryattackparameters.o libtss.so
