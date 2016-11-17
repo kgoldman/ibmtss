@@ -3,7 +3,7 @@
 /*			    PolicyOR	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyor.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: policyor.c 778 2016-10-19 15:21:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -245,7 +245,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyOR\n");
     printf("\n");
-    printf("\t-ha session handle\n");
-    printf("\t-if policy digest (2-8 required)\n");
+    printf("\t-ha policy session handle\n");
+    printf("\t-if policy digest file (2-8 -if specifiers required)\n");
     exit(1);	
 }

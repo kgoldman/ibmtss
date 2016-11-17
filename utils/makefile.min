@@ -1,0 +1,172 @@
+#################################################################################
+#										#
+#		Linux TPM2 Utilities Makefile for minimal TSS			#
+#			     Written by Ken Goldman				#
+#		       IBM Thomas J. Watson Research Center			#
+#	      $Id: makefile.min 813 2016-11-16 22:24:37Z kgoldman $		#
+#										#
+# (c) Copyright IBM Corporation 2016						#
+# 										#
+# All rights reserved.								#
+# 										#
+# Redistribution and use in source and binary forms, with or without		#
+# modification, are permitted provided that the following conditions are	#
+# met:										#
+# 										#
+# Redistributions of source code must retain the above copyright notice,	#
+# this list of conditions and the following disclaimer.				#
+# 										#
+# Redistributions in binary form must reproduce the above copyright		#
+# notice, this list of conditions and the following disclaimer in the		#
+# documentation and/or other materials provided with the distribution.		#
+# 										#
+# Neither the names of the IBM Corporation nor the names of its			#
+# contributors may be used to endorse or promote products derived from		#
+# this software without specific prior written permission.			#
+# 										#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS		#
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT		#
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR		#
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT		#
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,	#
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT		#
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,		#
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY		#
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT		#
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE		#
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		#
+#										#
+#################################################################################
+
+# C compiler
+
+CC = /usr/bin/gcc
+
+# compile - for TSS library
+
+CCFLAGS  = \
+	-Wall -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
+	-ggdb -O0 -c 			\
+	-DTPM_POSIX			\
+	-I. -DTPM_TSS -DTPM_TSS_NOFILE -DTPM_TSS_NOCRYPTO
+
+# -DTPM_NOSOCKET
+
+# link - common flags flags TSS library and applications
+
+LNFLAGS = 	-DTPM_POSIX		\
+		-L.
+
+# shared library
+
+LIBTSS=libtssmin.so
+
+# 
+
+ALL = $(LIBTSS)
+
+# default TSS library
+
+TSS_OBJS += 	tss.o			\
+		tssproperties.o		\
+		tssmarshal.o		\
+		tssauth.o 		\
+		tssutils.o 		\
+		tsssocket.o 		\
+		tssdev.o 		\
+		tsstransmit.o 		\
+		tssresponsecode.o 	\
+		tssccattributes.o	\
+		fail.o			\
+		tssprint.o		\
+		Unmarshal.o 		\
+		Commands.o 		\
+		CommandAttributeData.o 	\
+		CpriHash.o		\
+		CpriSym.o
+
+# TSS shared library headers 
+
+TSS_HEADERS += 	tssauth.h 			\
+		tss2/tssmarshal.h		\
+		tss2/tss.h			\
+		tss2/tssproperties.h		\
+		tss2/tssutils.h			\
+		tss2/tsserror.h			\
+		tss2/tssresponsecode.h		\
+		tsssocket.h  			\
+		tssdev.h  			\
+		tss2/tsstransmit.h		\
+		fail.h				\
+		tss2/tssprint.h	
+
+# default build target
+
+all:	$(ALL)
+
+# TSS library source shared with TPM (for TSS library)
+
+Unmarshal.c:			../src/Unmarshal.c
+				sed '/TPM_TSS/a #define TPM_TSS' ../src/Unmarshal.c > Unmarshal.c
+CpriSym.c:			../src/CpriSym.c
+				ln -s ../src/CpriSym.c .
+CpriHash.c:			../src/CpriHash.c
+				ln -s ../src/CpriHash.c .
+Commands.c:			../src/Commands.c
+				ln -s ../src/Commands.c .
+CommandAttributeData.c:		../src/CommandAttributeData.c
+				ln -s ../src/CommandAttributeData.c .
+
+# TSS shared library source
+
+tss.o: 			$(TSS_HEADERS) tss.c
+			$(CC) $(CCFLAGS) -fPIC tss.c
+tssproperties.o: 	$(TSS_HEADERS) tssproperties.c
+			$(CC) $(CCFLAGS) -fPIC tssproperties.c
+tssauth.o: 		$(TSS_HEADERS) tssauth.c
+			$(CC) $(CCFLAGS) -fPIC tssauth.c
+tssmarshal.o: 		$(TSS_HEADERS) tssmarshal.c
+			$(CC) $(CCFLAGS) -fPIC tssmarshal.c
+tsscrypto.o: 		$(TSS_HEADERS) tsscrypto.c
+			$(CC) $(CCFLAGS) -fPIC tsscrypto.c
+tssutils.o: 		$(TSS_HEADERS) tssutils.c
+			$(CC) $(CCFLAGS) -fPIC tssutils.c
+tsssocket.o: 		$(TSS_HEADERS) tsssocket.c
+			$(CC) $(CCFLAGS) -fPIC tsssocket.c
+tssdev.o: 		$(TSS_HEADERS) tssdev.c
+			$(CC) $(CCFLAGS) -fPIC tssdev.c
+tsstransmit.o: 		$(TSS_HEADERS) tsstransmit.c
+			$(CC) $(CCFLAGS) -fPIC tsstransmit.c
+tssresponsecode.o: 	$(TSS_HEADERS) tssresponsecode.c
+			$(CC) $(CCFLAGS) -fPIC tssresponsecode.c
+tssccattributes.o: 	$(TSS_HEADERS) tssccattributes.c
+			$(CC) $(CCFLAGS) -fPIC tssccattributes.c
+fail.o: 		$(TSS_HEADERS) fail.c
+			$(CC) $(CCFLAGS) -fPIC fail.c
+tssprint.o: 		$(TSS_HEADERS) tssprint.c
+			$(CC) $(CCFLAGS) -fPIC tssprint.c
+Unmarshal.o: 		$(TSS_HEADERS) Unmarshal.c
+			$(CC) $(CCFLAGS) -fPIC Unmarshal.c
+Commands.o: 		$(TSS_HEADERS) Commands.c
+			$(CC) $(CCFLAGS) -fPIC Commands.c
+CommandAttributeData.o: $(TSS_HEADERS) CommandAttributeData.c
+			$(CC) $(CCFLAGS) -fPIC CommandAttributeData.c
+CpriHash.o: 		$(TSS_HEADERS) CpriHash.c
+			$(CC) $(CCFLAGS) -fPIC CpriHash.c
+CpriSym.o: 		$(TSS_HEADERS) CpriSym.c
+			$(CC) $(CCFLAGS) -fPIC CpriSym.c
+
+# TSS shared library build
+
+$(LIBTSS): 	$(TSS_OBJS)
+		$(CC) $(LNFLAGS) -shared -o $(LIBTSS) $(TSS_OBJS)
+
+.PHONY:		clean
+.PRECIOUS:	%.o
+
+clean:		
+		rm -f $(TSS_OBJS)	\
+		$(ALL)
+
+
+

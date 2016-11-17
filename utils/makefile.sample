@@ -3,7 +3,7 @@
 #		Linux TPM2 Makefile Sample for Fedora Installed rpms		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.sample 691 2016-07-21 21:22:57Z kgoldman $		#
+#	      $Id: makefile.sample 799 2016-11-14 18:53:34Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -71,6 +71,7 @@ ALL = 	activatecredential			\
 	contextload				\
 	contextsave				\
 	create					\
+	createloaded				\
 	createprimary				\
 	dictionaryattacklockreset	 	\
 	dictionaryattackparameters	 	\
@@ -124,6 +125,7 @@ ALL = 	activatecredential			\
 	policymaker				\
 	policymakerpcr				\
 	policynv				\
+	policyauthorizenv			\
 	policynvwritten				\
 	policypassword				\
 	policypcr				\
@@ -131,6 +133,7 @@ ALL = 	activatecredential			\
 	policyrestart				\
 	policysigned				\
 	policysecret				\
+	policytemplate		 		\
 	policyticket				\
 	powerup					\
 	quote					\
@@ -190,6 +193,8 @@ contextsave:		contextsave.o
 			$(CC) $(LNFLAGS) contextsave.o -o contextsave
 create:			create.o
 			$(CC) $(LNFLAGS) create.o -o create
+createloaded:		createloaded.o
+			$(CC) $(LNFLAGS) createloaded.o -o createloaded
 createprimary:		createprimary.o
 			$(CC) $(LNFLAGS) createprimary.o -o createprimary
 dictionaryattacklockreset:		dictionaryattacklockreset.o
@@ -250,8 +255,8 @@ nvglobalwritelock:	nvglobalwritelock.o
 			$(CC) $(LNFLAGS) nvglobalwritelock.o -o nvglobalwritelock
 nvincrement:		nvincrement.o
 			$(CC) $(LNFLAGS) nvincrement.o -o nvincrement
-nvread:			nvread.o
-			$(CC) $(LNFLAGS) nvread.o -o nvread
+nvread:			nvread.o ekutils.o 
+			$(CC) $(LNFLAGS) nvread.o ekutils.o -o nvread
 nvreadlock:		nvreadlock.o
 			$(CC) $(LNFLAGS) nvreadlock.o -o nvreadlock
 nvreadpublic:		nvreadpublic.o
@@ -262,8 +267,8 @@ nvundefinespace:	nvundefinespace.o
 			$(CC) $(LNFLAGS) nvundefinespace.o -o nvundefinespace
 nvundefinespacespecial:	nvundefinespacespecial.o
 			$(CC) $(LNFLAGS) nvundefinespacespecial.o -o nvundefinespacespecial
-nvwrite:		nvwrite.o
-			$(CC) $(LNFLAGS) nvwrite.o -o nvwrite
+nvwrite:		nvwrite.o ekutils.o 
+			$(CC) $(LNFLAGS) nvwrite.o ekutils.o -o nvwrite
 nvwritelock:		nvwritelock.o
 			$(CC) $(LNFLAGS) nvwritelock.o -o nvwritelock
 objectchangeauth:	objectchangeauth.o
@@ -296,6 +301,8 @@ policymakerpcr:		policymakerpcr.o
 			$(CC) $(LNFLAGS) policymakerpcr.o -o policymakerpcr
 policynv:		policynv.o
 			$(CC) $(LNFLAGS) policynv.o -o policynv
+policyauthorizenv:	policyauthorizenv.o
+			$(CC) $(LNFLAGS) policyauthorizenv.o -o policyauthorizenv
 policynvwritten:	policynvwritten.o
 			$(CC) $(LNFLAGS) policynvwritten.o -o policynvwritten
 policyor:		policyor.o
@@ -310,6 +317,8 @@ policysigned:		policysigned.o
 			$(CC) $(LNFLAGS) policysigned.o -o policysigned
 policysecret:		policysecret.o
 			$(CC) $(LNFLAGS) policysecret.o -o policysecret
+policytemplate:		policytemplate.o
+			$(CC) $(LNFLAGS) policytemplate.o -o policytemplate
 policyticket:		policyticket.o
 			$(CC) $(LNFLAGS) policyticket.o -o policyticket
 quote:			quote.o

@@ -3,7 +3,7 @@
 /*			    NV Read		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvread.c 730 2016-08-23 21:09:53Z kgoldman $			*/
+/*	      $Id: nvread.c 799 2016-11-14 18:53:34Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -50,9 +50,8 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssprint.h>
+#include "ekutils.h"
 
-static TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
-			      uint32_t *nvBufferMax);
 static void printUsage(void);
 
 int verbose = FALSE;
@@ -272,7 +271,7 @@ int main(int argc, char *argv[])
     while ((rc == 0) && !done) {
 	if (rc == 0) {
 	    /* read a chunk */
-	    in.offset += bytesRead;
+	    in.offset = offset + bytesRead;
 	    if ((uint32_t)(readLength - bytesRead) < nvBufferMax) {
 		in.size = readLength - bytesRead;	/* last chunk */
 	    }
@@ -281,6 +280,7 @@ int main(int argc, char *argv[])
 	    }
 	}
 	if (rc == 0) {
+	    if (verbose) printf("nvread: reading %u bytes\n", in.size);
 	    rc = TSS_Execute(tssContext,
 			     (RESPONSE_PARAMETERS *)&out,
 			     (COMMAND_PARAMETERS *)&in,
@@ -323,48 +323,6 @@ int main(int argc, char *argv[])
 	rc = EXIT_FAILURE;
     }
     free(readBuffer);	/* @1 */
-    return rc;
-}
-
-static TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
-			      uint32_t *nvBufferMax)
-{
-    TPM_RC			rc = 0;
-    GetCapability_In 		in;
-    GetCapability_Out		out;
-
-    in.capability = TPM_CAP_TPM_PROPERTIES;
-    in.property = TPM_PT_NV_BUFFER_MAX;
-    in.propertyCount = 1;	/* ask for one property */
-    if (rc == 0) {
-	rc = TSS_Execute(tssContext,
-			 (RESPONSE_PARAMETERS *)&out, 
-			 (COMMAND_PARAMETERS *)&in,
-			 NULL,
-			 TPM_CC_GetCapability,
-			 TPM_RH_NULL, NULL, 0);
-    }
-    /* sanity check that the property name is correct, demo of how to parse the structure */
-    if (rc == 0) {
-	if (out.capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_NV_BUFFER_MAX) {
-	    *nvBufferMax = out.capabilityData.data.tpmProperties.tpmProperty[0].value;
-	    if (verbose) printf("readNvBufferMax: %u\n", *nvBufferMax);
-	}
-	else {
-	    printf("readNvBufferMax: wrong property returned: %08x\n",
-		   out.capabilityData.data.tpmProperties.tpmProperty[0].property);
-	    *nvBufferMax = 512;
-	}
-    }
-    else {
-	const char *msg;
-	const char *submsg;
-	const char *num;
-	printf("getcapability: failed, rc %08x\n", rc);
-	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
-	printf("%s%s%s\n", msg, submsg, num);
-	rc = EXIT_FAILURE;
-    }
     return rc;
 }
 

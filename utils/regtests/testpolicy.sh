@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy.sh 751 2016-09-22 20:00:12Z kgoldman $		#
+#		$Id: testpolicy.sh 800 2016-11-15 15:05:25Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -65,6 +65,8 @@ ${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -pwdk sig > run.out
 checkSuccess $?
 
 # sign with correct policy command code
+# cc69 18b2 2627 3b08 f5bd 406d 7f10 cf16
+# 0f0a 7d13 dfd8 3b77 70cc bcd1 aa80 d811
 
 echo "Start a policy session"
 ${PREFIX}startauthsession -se p > run.out
@@ -76,6 +78,10 @@ checkFailure $?
 
 echo "Policy command code - sign"
 ${PREFIX}policycommandcode -ha 03000000 -cc 15d > run.out
+checkSuccess $?
+
+echo "Policy get digest - should be cc69 ..."
+${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Sign a digest - policy and wrong password"
@@ -273,8 +279,10 @@ echo ""
 # sign a test message msg.bin
 # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 #
-# create the policy, after loadexternal, get the name from ${TPM_DATA_DIR}/h80000001.bin
+# create the policy:
+# after loadexternal, get the name from ${TPM_DATA_DIR}/h80000001.bin
 # 00000160 plus the above name as text, add a blank line for empty policyRef
+# to create policies/policysigned.txt
 #
 # > policymaker -if policies/policysigned.txt -of policies/policysigned.bin -pr
 #
@@ -303,7 +311,7 @@ echo "Create a signing key under the primary key - policy signed"
 ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysigned.bin > run.out
 checkSuccess $?
 
-echo "Load the signing key under the primary key at 80000002"
+echo "Load the signing key under the primary key, at 80000002"
 ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
 checkSuccess $?
 
@@ -315,7 +323,7 @@ echo "Sign a digest - policy, should fail"
 ${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
 checkFailure $?
 
-echo "Policy signed - callback to signer"
+echo "Policy signed"
 ${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg sha1 -pwdk rrrr > run.out
 checkSuccess $?
 
@@ -537,7 +545,7 @@ echo "Get policy digest, should be policy to approve, aHash input"
 ${PREFIX}policygetdigest -ha 03000000 -of policyapproved.bin > run.out
 checkSuccess $?
 
-echo "Openssl generate aHash"
+echo "Openssl generate and sign aHash (empty policyRef)"
 openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policyapproved.bin
 
 echo "Verify the signature to generate ticket"

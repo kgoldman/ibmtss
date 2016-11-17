@@ -3,7 +3,7 @@
 /*			    Create 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: create.c 714 2016-08-11 21:46:03Z kgoldman $			*/
+/*	      $Id: create.c 802 2016-11-15 20:06:21Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -133,6 +133,10 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-kh") == 0) {
 	    keyType = TYPE_KH;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-dp") == 0) {
+	    keyType = TYPE_DP;
 	    keyTypeSpecified++;
 	}
 	else if (strcmp(argv[i], "-gp") == 0) {
@@ -400,6 +404,7 @@ int main(int argc, char *argv[])
 	}
       case TYPE_DES:
       case TYPE_KH:
+      case TYPE_DP:
 	/* inSensitive optional for symmetric keys */
 	break;
     }
@@ -411,29 +416,29 @@ int main(int argc, char *argv[])
 	/* Table 133 - Definition of TPMS_SENSITIVE_CREATE Structure <IN>sensitive  */
 	/* Table 75 - Definition of Types for TPM2B_AUTH userAuth */
 	if (keyPassword == NULL) {
-	    in.inSensitive.t.sensitive.userAuth.t.size = 0;
+	    in.inSensitive.sensitive.userAuth.t.size = 0;
 	}
 	else {
-	    rc = TSS_TPM2B_StringCopy(&in.inSensitive.t.sensitive.userAuth.b,
+	    rc = TSS_TPM2B_StringCopy(&in.inSensitive.sensitive.userAuth.b,
 				      keyPassword, sizeof(TPMU_HA));
 	}
     }
     if (rc == 0) {
 	/* Table 132 - Definition of TPM2B_SENSITIVE_DATA Structure data */
 	if (dataFilename != NULL) {
-	    rc = TSS_File_Read2B(&in.inSensitive.t.sensitive.data.b,
+	    rc = TSS_File_Read2B(&in.inSensitive.sensitive.data.b,
 				 MAX_SYM_DATA,
 				 dataFilename);
 	}
 	else {
-	    in.inSensitive.t.sensitive.data.t.size = 0;
+	    in.inSensitive.sensitive.data.t.size = 0;
 	}
     }
     /* TPM2B_PUBLIC */
     if (rc == 0) {
 	switch (keyType) {
 	  case TYPE_BL:
-	    rc = blPublicTemplate(&in.inPublic.t.publicArea, objectAttributes,
+	    rc = blPublicTemplate(&in.inPublic.publicArea, objectAttributes,
 				  nalg,
 				  policyFilename);
 	    break;
@@ -443,20 +448,24 @@ int main(int argc, char *argv[])
 	  case TYPE_SI:
 	  case TYPE_SIR:
 	  case TYPE_GP:
-	    rc = asymPublicTemplate(&in.inPublic.t.publicArea, objectAttributes,
+	    rc = asymPublicTemplate(&in.inPublic.publicArea, objectAttributes,
 				    keyType, algPublic, curveID, nalg, halg,
 				    policyFilename);
 	    break;
 	  case TYPE_DES:
-	    rc = symmetricCipherTemplate(&in.inPublic.t.publicArea, objectAttributes,
+	    rc = symmetricCipherTemplate(&in.inPublic.publicArea, objectAttributes,
 					 nalg, rev116,
 					 policyFilename);
 	    break;
 	  case TYPE_KH:
-	    rc = keyedHashPublicTemplate(&in.inPublic.t.publicArea, objectAttributes,
+	    rc = keyedHashPublicTemplate(&in.inPublic.publicArea, objectAttributes,
 					 nalg, halg,
 					 policyFilename);
 	    break;
+	  case TYPE_DP:
+	    rc = derivationParentPublicTemplate(&in.inPublic.publicArea, objectAttributes,
+						nalg, halg,
+						policyFilename);
 	} 
     }
     if (rc == 0) {

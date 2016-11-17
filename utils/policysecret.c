@@ -3,7 +3,7 @@
 /*			    PolicySecret	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysecret.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: policysecret.c 778 2016-10-19 15:21:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -341,7 +341,7 @@ static void printUsage(void)
     printf("Runs TPM2_PolicySecret\n");
     printf("\n");
     printf("\t-ha authorizing entity handle\n");
-    printf("\t-hs session handle\n");
+    printf("\t-hs policy session handle\n");
     printf("\t-in nonceTPM file (default none)\n");
     printf("\t-cp cpHash file (default none)\n");
     printf("\t-pref policyRef file (default none)\n");

@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.h 730 2016-08-23 21:09:53Z kgoldman $		*/
+/*	      $Id: tssmarshal.h 794 2016-11-10 22:07:50Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -68,6 +68,7 @@
 #include "ContextSave_fp.h"
 #include "CreatePrimary_fp.h"
 #include "Create_fp.h"
+#include "CreateLoaded_fp.h"
 #include "DictionaryAttackLockReset_fp.h"
 #include "DictionaryAttackParameters_fp.h"
 #include "Duplicate_fp.h"
@@ -76,6 +77,7 @@
 #include "ECDH_ZGen_fp.h"
 #include "EC_Ephemeral_fp.h"
 #include "EncryptDecrypt_fp.h"
+#include "EncryptDecrypt2_fp.h"
 #include "EventSequenceComplete_fp.h"
 #include "EvictControl_fp.h"
 #include "FlushContext_fp.h"
@@ -121,6 +123,7 @@
 #include "PP_Commands_fp.h"
 #include "PolicyAuthValue_fp.h"
 #include "PolicyAuthorize_fp.h"
+#include "PolicyAuthorizeNV_fp.h"
 #include "PolicyCommandCode_fp.h"
 #include "PolicyCounterTimer_fp.h"
 #include "PolicyCpHash_fp.h"
@@ -128,6 +131,7 @@
 #include "PolicyGetDigest_fp.h"
 #include "PolicyLocality_fp.h"
 #include "PolicyNV_fp.h"
+#include "PolicyAuthorizeNV_fp.h"
 #include "PolicyNvWritten_fp.h"
 #include "PolicyNameHash_fp.h"
 #include "PolicyOR_fp.h"
@@ -137,6 +141,7 @@
 #include "PolicyRestart_fp.h"
 #include "PolicySecret_fp.h"
 #include "PolicySigned_fp.h"
+#include "PolicyTemplate_fp.h"
 #include "PolicyTicket_fp.h"
 #include "Quote_fp.h"
 #include "RSA_Decrypt_fp.h"
@@ -189,6 +194,8 @@ TSS_Unseal_In_Marshal(Unseal_In *source, UINT16 *written, BYTE **buffer, INT32 *
 TPM_RC
 TSS_ObjectChangeAuth_In_Marshal(ObjectChangeAuth_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
+TSS_CreateLoaded_In_Marshal(CreateLoaded_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TPM_RC
 TSS_Duplicate_In_Marshal(Duplicate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
 TSS_Rewrap_In_Marshal(Rewrap_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
@@ -208,6 +215,8 @@ TPM_RC
 TSS_ZGen_2Phase_In_Marshal(ZGen_2Phase_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
 TSS_EncryptDecrypt_In_Marshal(EncryptDecrypt_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TPM_RC
+TSS_EncryptDecrypt2_In_Marshal(EncryptDecrypt2_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
 TSS_Hash_In_Marshal(Hash_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
@@ -277,6 +286,8 @@ TSS_PolicyLocality_In_Marshal(PolicyLocality_In *source, UINT16 *written, BYTE *
 TPM_RC
 TSS_PolicyNV_In_Marshal(PolicyNV_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
+TSS_PolicyAuthorizeNV_In_Marshal(PolicyAuthorizeNV_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TPM_RC
 TSS_PolicyCounterTimer_In_Marshal(PolicyCounterTimer_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
 TSS_PolicyCommandCode_In_Marshal(PolicyCommandCode_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
@@ -298,6 +309,8 @@ TPM_RC
 TSS_PolicyGetDigest_In_Marshal(PolicyGetDigest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
 TSS_PolicyNvWritten_In_Marshal(PolicyNvWritten_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TPM_RC
+TSS_PolicyTemplate_In_Marshal(PolicyTemplate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
 TSS_CreatePrimary_In_Marshal(CreatePrimary_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
@@ -390,6 +403,8 @@ TSS_Unseal_Out_Unmarshal(Unseal_Out *target, TPM_ST tag, BYTE **buffer, INT32 *s
 TPM_RC
 TSS_ObjectChangeAuth_Out_Unmarshal(ObjectChangeAuth_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
 TPM_RC
+TSS_CreateLoaded_Out_Unmarshal(CreateLoaded_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
+TPM_RC
 TSS_Duplicate_Out_Unmarshal(Duplicate_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
 TPM_RC
 TSS_Rewrap_Out_Unmarshal(Rewrap_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
@@ -409,6 +424,8 @@ TPM_RC
 TSS_ZGen_2Phase_Out_Unmarshal(ZGen_2Phase_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
 TPM_RC
 TSS_EncryptDecrypt_Out_Unmarshal(EncryptDecrypt_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
+TPM_RC
+TSS_EncryptDecrypt2_Out_Unmarshal(EncryptDecrypt2_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
 TPM_RC
 TSS_Hash_Out_Unmarshal(Hash_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
 TPM_RC
@@ -691,6 +708,8 @@ TSS_TPMT_SYM_DEF_OBJECT_Marshal(TPMT_SYM_DEF_OBJECT *source, UINT16 *written, BY
 LIB_EXPORT TPM_RC
 TSS_TPM2B_SYM_KEY_Marshal(TPM2B_SYM_KEY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
+TSS_TPM2B_LABEL_Marshal(TPM2B_LABEL *source, UINT16 *written, BYTE **buffer, INT32 *size);
+LIB_EXPORT TPM_RC
 TSS_TPMS_SYMCIPHER_PARMS_Marshal(TPMS_SYMCIPHER_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
 TSS_TPM2B_SENSITIVE_DATA_Marshal(TPM2B_SENSITIVE_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
@@ -817,7 +836,11 @@ TSS_TPMT_PUBLIC_PARMS_Marshal(TPMT_PUBLIC_PARMS *source, UINT16 *written, BYTE *
 LIB_EXPORT TPM_RC
 TSS_TPMT_PUBLIC_Marshal(TPMT_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
+TSS_TPMT_PUBLIC_D_Marshal(TPMT_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+LIB_EXPORT TPM_RC
 TSS_TPM2B_PUBLIC_Marshal(TPM2B_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+LIB_EXPORT TPM_RC
+TSS_TPM2B_TEMPLATE_Marshal(TPM2B_TEMPLATE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
 TSS_TPMU_SENSITIVE_COMPOSITE_Marshal(TPMU_SENSITIVE_COMPOSITE *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC

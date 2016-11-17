@@ -3,7 +3,7 @@
 /*			TSS and Application Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssutils.h 730 2016-08-23 21:09:53Z kgoldman $		*/
+/*	      $Id: tssutils.h 778 2016-10-19 15:21:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -51,6 +51,7 @@
 #ifndef TPM_TSS
 #define TPM_TSS
 #endif
+
 #include <tss2/TPM_Types.h>
 
 #ifdef __cplusplus
@@ -62,40 +63,15 @@ typedef TPM_RC (*MarshalFunction_t)(void *source, uint16_t *written, uint8_t **b
 
 LIB_EXPORT
 TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size);
+LIB_EXPORT
+TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size);
 
 LIB_EXPORT
 TPM_RC TSS_Structure_Marshal(uint8_t		**buffer,
 			     uint16_t		*written,
 			     void 		*structure,
 			     MarshalFunction_t 	marshalFunction);
-LIB_EXPORT
-int TSS_File_Open(FILE **file,
-		  const char *filename,
-		  const char* mode);
-LIB_EXPORT
-TPM_RC TSS_File_ReadBinaryFile(unsigned char **data,
-			       size_t *length,
-			       const char *filename); 
-LIB_EXPORT 
-TPM_RC TSS_File_WriteBinaryFile(const unsigned char *data,
-				size_t length,
-				const char *filename); 
-    
-LIB_EXPORT 
-TPM_RC TSS_File_ReadStructure(void 			*structure,
-			      UnmarshalFunction_t 	unmarshalFunction,
-			      const char 		*filename);
-LIB_EXPORT 
-TPM_RC TSS_File_WriteStructure(void 			*structure,
-			       MarshalFunction_t 	marshalFunction,
-			       const char 		*filename);
-LIB_EXPORT 
-TPM_RC TSS_File_Read2B(TPM2B 		*tpm2b,
-		       uint16_t 	targetSize,
-		       const char 	*filename);
-LIB_EXPORT 
-TPM_RC TSS_File_DeleteFile(const char *filename); 
-    
+
 LIB_EXPORT 
 TPM_RC TSS_TPM2B_Copy(TPM2B *target, TPM2B *source, uint16_t targetSize);
     
@@ -116,6 +92,10 @@ BOOL TSS_TPM2B_Compare(TPM2B *expect, TPM2B *actual);
     
 #ifdef __cplusplus
 }
+#endif
+
+#ifndef TPM_TSS_NOFILE
+#include <tss2/tssfile.h>
 #endif
 
 #endif

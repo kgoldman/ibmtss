@@ -3,7 +3,7 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 730 2016-08-23 21:09:53Z kgoldman $			*/
+/*	      $Id: sign.c 802 2016-11-15 20:06:21Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -388,8 +388,8 @@ int main(int argc, char *argv[])
 	if (rc == 0) {
 	    unsigned char earr[3] = {0x01, 0x00, 0x01};
 	    rc = RSAGeneratePublicToken(&rsa_pub_key,				/* freed @1 */
-					public.t.publicArea.unique.rsa.t.buffer, /* public modulus */
-					public.t.publicArea.unique.rsa.t.size,
+					public.publicArea.unique.rsa.t.buffer, /* public modulus */
+					public.publicArea.unique.rsa.t.size,
 					earr,      				/* public exponent */
 					sizeof(earr));
 	}

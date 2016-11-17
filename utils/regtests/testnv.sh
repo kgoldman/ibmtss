@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testnv.sh 730 2016-08-23 21:09:53Z kgoldman $		#
+#		$Id: testnv.sh 789 2016-10-25 20:18:50Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -62,17 +62,13 @@ do
     for SESS in "" "-se0 02000000 1"
     do
 
-	echo "NV Define Space ${NALG}"
-	${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 -nalg ${NALG[i]} > run.out
+	echo "NV Define Space ${NALG[$i]}"
+	${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 -nalg ${NALG[$i]} > run.out
 	checkSuccess $?
 
-	echo "NV Read Public, unwritten Name  bad Name algorithm ${BADNALG[i]} - should fail"
-	${PREFIX}nvreadpublic -ha 01000000 -nalg ${BADNALG[i]} > run.out
+	echo "NV Read Public, unwritten Name  bad Name algorithm ${BADNALG[$i]} - should fail"
+	${PREFIX}nvreadpublic -ha 01000000 -nalg ${BADNALG[$i]} > run.out
 	checkFailure $?
-
-	echo "NV Read Public, unwritten Name ${NALG}"
-	${PREFIX}nvreadpublic -ha 01000000 -nalg ${NALG[i]} > run.out
-	checkSuccess $?
 
 	echo "NV read - should fail before write ${SESS}"
 	${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 16 ${SESS} > run.out
@@ -130,10 +126,6 @@ do
 
     echo "NV Define Space"
     ${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -ty b > run.out
-    checkSuccess $?
-
-    echo "NV Read Public, unwritten Name"
-    ${PREFIX}nvreadpublic -ha 01000000 > run.out
     checkSuccess $?
 
     echo "NV read - should fail before write ${SESS}"
@@ -222,12 +214,12 @@ do
     for ((i = 0 ; i < 3; i++))
     do
 
-	echo "NV Define Space ${HALG[i]}"
-	${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -ty e -nalg ${HALG[i]} > run.out
+	echo "NV Define Space ${HALG[$i]}"
+	${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -ty e -nalg ${HALG[$i]} > run.out
 	checkSuccess $?
 
-	echo "NV Read Public ${HALG[i]}"
-	${PREFIX}nvreadpublic -ha 01000000 -nalg ${HALG[i]} > run.out
+	echo "NV Read Public ${HALG[$i]}"
+	${PREFIX}nvreadpublic -ha 01000000 -nalg ${HALG[$i]} > run.out
 	checkSuccess $?
 
 	echo "NV read, unwritten Name - should fail before write ${SESS}"
@@ -238,12 +230,12 @@ do
 	${PREFIX}nvextend -ha 01000000 -pwdn nnn -if policies/aaa ${SESS} > run.out
 	checkSuccess $?
 
-	echo "NV read size ${SZ[i]} ${SESS}"
-	${PREFIX}nvread -ha 01000000 -pwdn nnn -sz ${SZ[i]} -of tmp.bin ${SESS} > run.out
+	echo "NV read size ${SZ[$i]} ${SESS}"
+	${PREFIX}nvread -ha 01000000 -pwdn nnn -sz ${SZ[$i]} -of tmp.bin ${SESS} > run.out
 	checkSuccess $?
 
-	echo "Verify the read data ${HALG[i]}"
-	diff policies/${HALG[i]}extaaa.bin tmp.bin
+	echo "Verify the read data ${HALG[$i]}"
+	diff policies/${HALG[$i]}extaaa.bin tmp.bin
 	checkSuccess $?
 
 	echo "NV Undefine Space"
@@ -488,19 +480,11 @@ do
     ${PREFIX}nvdefinespace -hi o -ha 01000001 -pwdn nnn -sz 16 +at gl > run.out
     checkSuccess $?
 
-    echo "NV Read Public, unwritten Name"
-    ${PREFIX}nvreadpublic -ha 01000000 > run.out
-    checkSuccess $?
-
-    echo "NV Read Public, unwritten Name"
-    ${PREFIX}nvreadpublic -ha 01000001 > run.out
-    checkSuccess $?
-
-    echo "NV write ${SESS}"
+    echo "NV write 01000000 ${SESS}"
     ${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa ${SESS} > run.out
     checkSuccess $?
 
-    echo "NV write ${SESS}"
+    echo "NV write 01000001 ${SESS}"
     ${PREFIX}nvwrite -ha 01000001 -pwdn nnn -if policies/aaa ${SESS} > run.out
     checkSuccess $?
 
@@ -508,35 +492,35 @@ do
     ${PREFIX}nvglobalwritelock -hia p
     checkSuccess $?
 
-    echo "NV Read Public, locked"
+    echo "NV Read Public, 01000000, locked"
     ${PREFIX}nvreadpublic -ha 01000000 > run.out
     checkSuccess $?
 
-    echo "NV Read Public, locked"
+    echo "NV Read Public, 01000001, locked"
     ${PREFIX}nvreadpublic -ha 01000001 > run.out
     checkSuccess $?
 
-    echo "NV write ${SESS} - should fail"
+    echo "NV write 01000000 ${SESS} - should fail"
     ${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa ${SESS} > run.out
     checkFailure $?
 
-    echo "NV write ${SESS} - should fail"
+    echo "NV write 01000001 ${SESS} - should fail"
     ${PREFIX}nvwrite -ha 01000001 -pwdn nnn -if policies/aaa ${SESS} > run.out
     checkFailure $?
 
-    echo "NV read ${SESS}"
+    echo "NV read 01000000 ${SESS}"
     ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 16 ${SESS} > run.out
     checkSuccess $?
 
-    echo "NV read ${SESS}"
+    echo "NV read 01000001 ${SESS}"
     ${PREFIX}nvread -ha 01000001 -pwdn nnn -sz 16 ${SESS} > run.out
     checkSuccess $?
 
-    echo "NV Undefine Space"
+    echo "NV Undefine Space 01000000"
     ${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
     checkSuccess $?
 
-    echo "NV Undefine Space"
+    echo "NV Undefine Space 01000001"
     ${PREFIX}nvundefinespace -hi p -ha 01000001 > run.out
     checkSuccess $?
 
@@ -635,10 +619,6 @@ echo "NV Define Space 0100000"
 ${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 -pol policies/policyccnvchangeauth-auth.bin > run.out
 checkSuccess $?
 
-echo "NV Read Public, unwritten Name"
-${PREFIX}nvreadpublic -ha 01000000 > run.out
-checkSuccess $?
-
 echo "Start an HMAC session, bind to NV index"
 ${PREFIX}startauthsession -se h -bi 01000000 -pwdb nnn > run.out
 checkSuccess $?
@@ -686,10 +666,6 @@ do
 
     echo "NV Define Space 0100000"
     ${PREFIX}nvdefinespace -hi p -ha 01000000 -pwdn nnn -sz 16 +at pold -pol policies/policyccundefinespacespecial-auth.bin > run.out
-    checkSuccess $?
-
-    echo "NV Read Public, unwritten Name"
-    ${PREFIX}nvreadpublic -ha 01000000 > run.out
     checkSuccess $?
 
     echo "Undefine space special - should fail"

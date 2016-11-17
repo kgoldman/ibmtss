@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id$			*/
+/*	      $Id: objecttemplates.c 793 2016-11-10 21:27:40Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -367,6 +367,64 @@ TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
     return rc;
 }
 
+/* derivationParentPublicTemplate() is a template for a HMAC key
+
+   The key is not restricted
+*/
+
+TPM_RC derivationParentPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
+				      TPMA_OBJECT objectAttributes,	/* default, can be
+									   overridden here */
+				      TPMI_ALG_HASH nalg,		/* Name algorithm */
+				      TPMI_ALG_HASH halg,		/* hash algorithm */
+				      const char *policyFilename)	/* binary policy, NULL means
+									   empty */
+{
+    TPM_RC			rc = 0;
+
+    if (rc == 0) {
+	publicArea->objectAttributes = objectAttributes;
+
+	/* Table 185 - TPM2B_PUBLIC inPublic */
+	/* Table 184 - TPMT_PUBLIC publicArea->*/
+	/* Table 176 - Definition of (TPM_ALG_ID) TPMI_ALG_PUBLIC Type */
+	publicArea->type = TPM_ALG_KEYEDHASH;
+	/* Table 59 - Definition of (TPM_ALG_ID) TPMI_ALG_HASH Type  */
+	publicArea->nameAlg = nalg;
+	/* Table 32 - TPMA_OBJECT objectAttributes */
+	publicArea->objectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
+	publicArea->objectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+	publicArea->objectAttributes.val &= ~TPMA_OBJECT_SIGN;
+	publicArea->objectAttributes.val |= TPMA_OBJECT_DECRYPT;
+	publicArea->objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
+	publicArea->objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
+	publicArea->objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
+	publicArea->objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
+	publicArea->objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
+	/* Table 72 -  TPM2B_DIGEST authPolicy */
+	/* policy set separately */
+	{
+	    /* Table 182 - Definition of TPMU_PUBLIC_PARMS Union <IN/OUT, S> */
+	    /* Table 178 - Definition of TPMS_KEYEDHASH_PARMS Structure */
+	    /* Table 141 - Definition of TPMT_KEYEDHASH_SCHEME Structure */
+	    /* Table 137 - Definition of (TPM_ALG_ID) TPMI_ALG_KEYEDHASH_SCHEME Type */
+	    publicArea->parameters.keyedHashDetail.scheme.scheme = TPM_ALG_XOR;
+	    /* Table 140 - Definition of TPMU_SCHEME_KEYEDHASH Union <IN/OUT, S> */
+	    /* Table 138 - Definition of Types for HMAC_SIG_SCHEME */
+	    /* Table 135 - Definition of TPMS_SCHEME_HASH Structure */
+	    publicArea->parameters.keyedHashDetail.scheme.details.xorr.kdf = TPM_ALG_KDF1_SP800_108;
+	    publicArea->parameters.keyedHashDetail.scheme.details.xorr.hashAlg = halg;
+	}
+	/* Table 177 - TPMU_PUBLIC_ID unique */
+	/* Table 72 - Definition of TPM2B_DIGEST Structure */
+	publicArea->unique.sym.t.size = 0; 
+    }
+    if (rc == 0) {
+	rc = getPolicy(publicArea, policyFilename);
+    }
+    return rc;
+}
+
 /* blPublicTemplate() is a template for a sealed data blob.
 
 */
@@ -454,6 +512,7 @@ void printUsageTemplate(void)
     printf("\t\t-si signing\n");
     printf("\t\t-sir restricted signing\n");
     printf("\t\t-kh keyed hash (hmac)\n");
+    printf("\t\t-dp derivation parent\n");
     printf("\t\t-gp general purpose, not storage\n");
     printf("\n");
     printf("\t\t-kt (can be specified more than once)\n"

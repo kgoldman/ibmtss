@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 740 2016-08-29 18:26:38Z kgoldman $			#
+#	      $Id: makefile 813 2016-11-16 22:24:37Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -46,11 +46,12 @@ CC = /usr/bin/gcc
 
 CCFLAGS = 	-DTPM_POSIX
 
-#	-DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
 
 # compile - for TSS library
 
-CCLFLAGS = 	-I. -I../src -DTPM_TSS
+CCLFLAGS = 	-I. -DTPM_TSS
+
+#	-DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
 
 # compile - for applications
 
@@ -77,26 +78,25 @@ LIBTSS=libtss.so
 
 # executable extension
 
-EXE=
+EXE =
+
+# 
+
+ALL =
+TSS_HEADERS = tss2/tssfile.h
+
+
+# default TSS library
+
+TSS_OBJS = tssfile.o
+
+# common to all builds
 
 include makefile-common
 
 # default build target
 
 all:	$(ALL)
-
-# TSS library source shared with TPM (for TSS library)
-
-Unmarshal.c:			../src/Unmarshal.c
-				sed '/TPM_TSS/a #define TPM_TSS' ../src/Unmarshal.c > Unmarshal.c
-CpriSym.c:			../src/CpriSym.c
-				ln -s ../src/CpriSym.c .
-CpriHash.c:			../src/CpriHash.c
-				ln -s ../src/CpriHash.c .
-Commands.c:			../src/Commands.c
-				ln -s ../src/Commands.c .
-CommandAttributeData.c:		../src/CommandAttributeData.c
-				ln -s ../src/CommandAttributeData.c .
 
 # TSS shared library source
 
@@ -112,6 +112,8 @@ tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsscrypto.c
 tssutils.o: 	$(TSS_HEADERS) tssutils.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssutils.c
+tssfile.o: 	$(TSS_HEADERS) tssfile.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssfile.c
 tsssocket.o: 	$(TSS_HEADERS) tsssocket.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsssocket.c
 tssdev.o: 	$(TSS_HEADERS) tssdev.c
@@ -147,7 +149,6 @@ $(LIBTSS): 	$(TSS_OBJS)
 
 clean:		
 		rm -f *.o  *~ 	\
-		../src/*.o	\
 		h*.bin		\
 		$(ALL)
 
@@ -177,6 +178,8 @@ contextsave:		tss2/tss.h contextsave.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextsave.o $(LNALIBS) -o contextsave
 create:			tss2/tss.h create.o objecttemplates.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o objecttemplates.o $(LNALIBS) -o create
+createloaded:		tss2/tss.h createloaded.o objecttemplates.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createloaded.o objecttemplates.o $(LNALIBS) -o createloaded
 createprimary:		tss2/tss.h createprimary.o objecttemplates.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o objecttemplates.o $(LNALIBS) -o createprimary
 dictionaryattacklockreset:		tss2/tss.h dictionaryattacklockreset.o libtss.so
@@ -237,8 +240,8 @@ nvglobalwritelock:	tss2/tss.h nvglobalwritelock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvglobalwritelock.o $(LNALIBS) -o nvglobalwritelock
 nvincrement:		tss2/tss.h nvincrement.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvincrement.o $(LNALIBS) -o nvincrement
-nvread:			tss2/tss.h nvread.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) nvread.o $(LNALIBS) -o nvread
+nvread:			tss2/tss.h nvread.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvread.o ekutils.o $(LNALIBS) -o nvread
 nvreadlock:		tss2/tss.h nvreadlock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadlock.o $(LNALIBS) -o nvreadlock
 nvreadpublic:		tss2/tss.h nvreadpublic.o libtss.so
@@ -249,8 +252,8 @@ nvundefinespace:	tss2/tss.h nvundefinespace.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespace.o $(LNALIBS) -o nvundefinespace
 nvundefinespacespecial:	tss2/tss.h nvundefinespacespecial.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespacespecial.o $(LNALIBS) -o nvundefinespacespecial
-nvwrite:		tss2/tss.h nvwrite.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwrite.o $(LNALIBS) -o nvwrite
+nvwrite:		tss2/tss.h nvwrite.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwrite.o ekutils.o $(LNALIBS) -o nvwrite
 nvwritelock:		tss2/tss.h nvwritelock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwritelock.o $(LNALIBS) -o nvwritelock
 objectchangeauth:	tss2/tss.h objectchangeauth.o libtss.so
@@ -281,6 +284,8 @@ policymaker:		tss2/tss.h policymaker.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policymaker.o $(LNALIBS) -o policymaker
 policymakerpcr:		tss2/tss.h policymakerpcr.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policymakerpcr.o $(LNALIBS) -o policymakerpcr
+policyauthorizenv:	tss2/tss.h policyauthorizenv.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthorizenv.o $(LNALIBS) -o policyauthorizenv
 policynv:		tss2/tss.h policynv.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynv.o $(LNALIBS) -o policynv
 policynvwritten:	tss2/tss.h policynvwritten.o libtss.so
@@ -297,6 +302,8 @@ policysigned:		tss2/tss.h policysigned.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policysigned.o $(LNALIBS) -o policysigned
 policysecret:		tss2/tss.h policysecret.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policysecret.o $(LNALIBS) -o policysecret
+policytemplate:		tss2/tss.h policytemplate.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policytemplate.o $(LNALIBS) -o policytemplate
 policyticket:		tss2/tss.h policyticket.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyticket.o $(LNALIBS) -o policyticket
 quote:			tss2/tss.h quote.o libtss.so

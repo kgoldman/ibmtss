@@ -1,4 +1,4 @@
-<!-- $Id: keycreate.php 740 2016-08-29 18:26:38Z kgoldman $ -->
+<!-- $Id: keycreate.php 795 2016-11-10 22:32:20Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -70,6 +70,7 @@ if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
     $fixedtpm = $_POST['fixedtpm'];
     $fixedparent = $_POST['fixedparent'];
     $da = $_POST['da'];
+    $cl = $_POST['cl'];
     $keytype = $_POST['keytype'];
     $pwdpc = $_POST['pwdpc'];
     $pwdph = $_POST['pwdph'];
@@ -107,7 +108,12 @@ if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
 	    }
 	}
 	if ($retval == 0) {
-	    $commandStr = "/var/www/html/tpm2/create";
+	    if (isset($cl)) {
+	        $commandStr = "/var/www/html/tpm2/createloaded";
+	    }
+	    else {
+	        $commandStr = "/var/www/html/tpm2/create";
+	    }
 	    // parent handle
 	    $commandStr .= " -hp " . $hp;
 	    // key attributes
@@ -151,7 +157,7 @@ if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
 	    }
 	}
 	if ($retval == 0) {
-	    //echo "Command string: $commandStr. <br>"; $retval = 0;
+	    echo "Command string: $commandStr. <br>"; $retval = 0;
 	    unset($output);
 	    exec ($commandStr, $output, $retval);
 	    if ($retval == 0) {
@@ -241,6 +247,8 @@ Key Attributes
     <?php if ($fixedparent== "t") echo "checked"; ?>>Fixed Parent<br>
 <input type="checkbox" name="da" value="t"
     <?php if ($da == "t") echo "checked"; ?>>DA Protection<br>
+<input type="checkbox" name="cl" value="t"
+    <?php if ($cl == "t") echo "checked"; ?>>Create Loaded<br>
 Key Type
 <br>
 <input type="radio" name="keytype" value="st"

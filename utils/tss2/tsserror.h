@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsserror.h 683 2016-07-15 20:53:46Z kgoldman $		*/
+/*	      $Id: tsserror.h 767 2016-10-17 16:59:30Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -47,7 +47,7 @@
 
 /* the base for these errors is 11 << 16 = 000bxxxx */
 
-#define	TSS_RC_OUT_OF_MEMORY		0x000b0001	/* Out of memory (malloc failed) */
+#define	TSS_RC_OUT_OF_MEMORY		0x000b0001	/* Out of memory,(malloc failed) */
 #define	TSS_RC_ALLOC_INPUT		0x000b0002	/* The input to an allocation is not NULL */
 #define	TSS_RC_MALLOC_SIZE		0x000b0003	/* The malloc size is too large or zero */
 #define	TSS_RC_INSUFFICIENT_BUFFER	0x000b0004	/* A buffer was insufficient for a copy */
@@ -58,6 +58,7 @@
 #define TSS_RC_BAD_CONNECTION		0x000b0009	/* Failure communicating with lower layer */
 #define TSS_RC_MALFORMED_RESPONSE	0x000b000a	/* A response packet was fundamentally malformed */
 #define TSS_RC_NULL_PARAMETER		0x000b000b	/* A required parameter was NULL */
+#define TSS_RC_NOT_IMPLEMENTED		0x000b000c	/* TSS function is not implemented */
 #define	TSS_RC_FILE_OPEN		0x000b0010	/* The file could not be opened */
 #define	TSS_RC_FILE_SEEK		0x000b0011	/* A file seek failed */
 #define	TSS_RC_FILE_FTELL		0x000b0012	/* A file ftell failed */
@@ -72,6 +73,7 @@
 #define	TSS_RC_NAME_NOT_IMPLEMENTED	0x000b0040	/* Name calculation not implemented for handle type */
 #define	TSS_RC_MALFORMED_NV_PUBLIC	0x000b0041	/* The NV public structure does not match the name */
 #define TSS_RC_NAME_FILENAME		0x000b0042	/* The name filename function has inconsistent arguments */
+#define TSS_RC_MALFORMED_PUBLIC		0x000b0043	/* The public structure does not match the name */
 #define	TSS_RC_DECRYPT_SESSIONS		0x000b0050	/* More than one command decrypt session */
 #define	TSS_RC_ENCRYPT_SESSIONS		0x000b0051	/* More than one response encrypt session */
 #define	TSS_RC_NO_DECRYPT_PARAMETER	0x000b0052	/* Command has no decrypt parameter */
@@ -98,5 +100,6 @@
 #define TSS_RC_IN_PARAMETER		0x000b0081	/* Bad in parameter to TSS_Execute */
 #define TSS_RC_OUT_PARAMETER		0x000b0082	/* Bad out parameter to TSS_Execute */
 #define TSS_RC_BAD_HANDLE_NUMBER	0x000b0083	/* Bad handle number for this command */
+#define TSS_RC_NO_SESSION_SLOT		0x000b0090	/* TSS context has no session slot for handle */
 
 #endif

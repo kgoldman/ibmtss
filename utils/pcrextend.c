@@ -3,7 +3,7 @@
 /*			   PCR_Extend 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrextend.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: pcrextend.c 813 2016-11-16 22:24:37Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     TSS_CONTEXT			*tssContext = NULL;
     PCR_Extend_In 		in;
     TPMI_DH_PCR 		pcrHandle = IMPLEMENTATION_PCR;
-    const char 			*data = NULL;
+    const char 			*dataString = NULL;
     const char 			*datafilename = NULL;
    
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-ic") == 0) {
 	    i++;
 	    if (i < argc) {
-		data = argv[i];
+		dataString = argv[i];
 	    }
 	    else {
 		printf("-ic option needs a value\n");
@@ -154,16 +154,16 @@ int main(int argc, char *argv[])
 	printf("Missing or bad PCR handle parameter -ha\n");
 	printUsage();
     }
-    if ((data == NULL) && (datafilename == NULL)) {
+    if ((dataString == NULL) && (datafilename == NULL)) {
 	printf("Data string or data file must be specified\n");
 	printUsage();
     }
-    if ((data != NULL) && (datafilename != NULL)) {
+    if ((dataString != NULL) && (datafilename != NULL)) {
 	printf("Data string and data file cannot both be specified\n");
 	printUsage();
     }
-    if ((data != NULL) && (strlen(data) > sizeof(TPMU_HA))) {
-	printf("Data length greater than hash size %lu\n", sizeof(TPMU_HA));
+    if ((dataString != NULL) && (strlen(dataString) > sizeof(TPMU_HA))) {
+	printf("Data length greater than maximum hash size %lu bytes\n", sizeof(TPMU_HA));
 	printUsage();
     }
     /* handle default hash algorithm */
@@ -180,11 +180,12 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	if (data != NULL) {
+	if (dataString != NULL) {
 	    if (verbose) printf("Extending %u bytes from stream into %u banks\n",
-				(unsigned int)strlen(data), in.digests.count);
+				(unsigned int)strlen(dataString), in.digests.count);
 	    for (algs = 0 ; algs < in.digests.count ; algs++) {
-		memcpy((uint8_t *)&in.digests.digests[algs].digest, data, strlen(data));
+		memcpy((uint8_t *)&in.digests.digests[algs].digest,
+		       dataString, strlen(dataString));
 	    }
 	}
     }
@@ -196,7 +197,7 @@ int main(int argc, char *argv[])
 	}
 	if (rc == 0) {
 	    if (length > sizeof(TPMU_HA)) {
-		printf("Data length greater than hash size %lu\n", sizeof(TPMU_HA));
+		printf("Data length greater than maximum hash size %lu bytes\n", sizeof(TPMU_HA));
 		rc = EXIT_FAILURE;
 	    } 
 	}

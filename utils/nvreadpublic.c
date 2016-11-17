@@ -3,7 +3,7 @@
 /*			    NV ReadPublic					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadpublic.c 746 2016-09-07 17:57:15Z kgoldman $		*/
+/*	      $Id: nvreadpublic.c 802 2016-11-15 20:06:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 
     /* TPMS_NV_PUBLIC hash alg vs expected */
     if (rc == 0) {
-	if (out.nvPublic.t.nvPublic.nameAlg != nalg) {
+	if (out.nvPublic.nvPublic.nameAlg != nalg) {
 	    printf("nvreadpublic: TPM2B_NV_PUBLIC hash algorithm does not match expected\n");
 	    rc = TSS_RC_MALFORMED_NV_PUBLIC;
 	}
@@ -175,19 +175,19 @@ int main(int argc, char *argv[])
     }
     /* TPMS_NV_PUBLIC index vs expected */
     if (rc == 0) {
-	if (out.nvPublic.t.nvPublic.nvIndex != in.nvIndex) {
+	if (out.nvPublic.nvPublic.nvIndex != in.nvIndex) {
 	    printf("nvreadpublic: TPM2B_NV_PUBLIC index does not match expected\n");
 	    rc = TSS_RC_MALFORMED_NV_PUBLIC;
 	}
     }
     if (rc == 0) {
-	printf("nvreadpublic: name algorithm %04x\n", out.nvPublic.t.nvPublic.nameAlg);
-	printf("nvreadpublic: data size %u\n", out.nvPublic.t.nvPublic.dataSize);
-	printf("nvreadpublic: attributes %08x\n", out.nvPublic.t.nvPublic.attributes.val);
-	TSS_TPMA_NV_Print(out.nvPublic.t.nvPublic.attributes, 0);
+	printf("nvreadpublic: name algorithm %04x\n", out.nvPublic.nvPublic.nameAlg);
+	printf("nvreadpublic: data size %u\n", out.nvPublic.nvPublic.dataSize);
+	printf("nvreadpublic: attributes %08x\n", out.nvPublic.nvPublic.attributes.val);
+	TSS_TPMA_NV_Print(out.nvPublic.nvPublic.attributes, 0);
 	TSS_PrintAll("nvreadpublic: policy",
-		     out.nvPublic.t.nvPublic.authPolicy.t.buffer,
-		     out.nvPublic.t.nvPublic.authPolicy.t.size);
+		     out.nvPublic.nvPublic.authPolicy.t.buffer,
+		     out.nvPublic.nvPublic.authPolicy.t.size);
 	TSS_PrintAll("nvreadpublic: name",
 		     out.nvName.t.name, out.nvName.t.size);
 	if (verbose) printf("nvreadpublic: success\n");

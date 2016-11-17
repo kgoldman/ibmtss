@@ -3,7 +3,7 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 751 2016-09-22 20:00:12Z kgoldman $		*/
+/*	      $Id: loadexternal.c 802 2016-11-15 20:06:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -447,32 +447,32 @@ TPM_RC loadExternalDer(LoadExternal_In 	*in,
     }    
     if (rc == 0) {
 	/* Table 184 - Definition of TPMT_PUBLIC Structure */
-	in->inPublic.t.publicArea.type = TPM_ALG_RSA;
-	in->inPublic.t.publicArea.nameAlg = nalg;
-	in->inPublic.t.publicArea.objectAttributes.val = TPMA_OBJECT_NODA;
+	in->inPublic.publicArea.type = TPM_ALG_RSA;
+	in->inPublic.publicArea.nameAlg = nalg;
+	in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_NODA;
 	if (keyType == TYPE_SI) {
-	    in->inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_SIGN;
+	    in->inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_SIGN;
 	}
 	else {
-	    in->inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_DECRYPT;
+	    in->inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_DECRYPT;
 	}
-	in->inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
-	in->inPublic.t.publicArea.authPolicy.t.size = 0;
+	in->inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
+	in->inPublic.publicArea.authPolicy.t.size = 0;
 	/* Table 182 - Definition of TPMU_PUBLIC_PARMS Union <IN/OUT, S> */
 	/* Table 180 - Definition of {RSA} TPMS_RSA_PARMS Structure */
-	in->inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
+	in->inPublic.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
 	/* Table 155 - Definition of {RSA} TPMT_RSA_SCHEME Structure */
 	/* the scheme openssl uses on the command line? */
 	if (keyType == TYPE_SI) {
-	    in->inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
+	    in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
 	}
 	else {
-	    in->inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+	    in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
 	}
 	/* Table 152 - Definition of TPMU_ASYM_SCHEME Union */
-	in->inPublic.t.publicArea.parameters.rsaDetail.scheme.details.rsassa.hashAlg = halg;
-	in->inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;	
-	in->inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
+	in->inPublic.publicArea.parameters.rsaDetail.scheme.details.rsassa.hashAlg = halg;
+	in->inPublic.publicArea.parameters.rsaDetail.keyBits = 2048;	
+	in->inPublic.publicArea.parameters.rsaDetail.exponent = 0;
 	/* Table 177 - Definition of TPMU_PUBLIC_ID Union <IN/OUT, S> */
     }
     /* get the public modulus */
@@ -484,9 +484,9 @@ TPM_RC loadExternalDer(LoadExternal_In 	*in,
 	    rc = EXIT_FAILURE;
 	}
 	else {
-	    in->inPublic.t.publicArea.unique.rsa.t.size =
+	    in->inPublic.publicArea.unique.rsa.t.size =
 		BN_bn2bin(rsakey->n,
-			  (uint8_t *)&in->inPublic.t.publicArea.unique.rsa.t.buffer);
+			  (uint8_t *)&in->inPublic.publicArea.unique.rsa.t.buffer);
 	}
     }
     if (rc == 0) {
@@ -551,31 +551,31 @@ TPM_RC loadExternalPEMRSA(LoadExternal_In 	*in,
     }
     if (rc == 0) {
 	/* Table 184 - Definition of TPMT_PUBLIC Structure */
-	in->inPublic.t.publicArea.type = TPM_ALG_RSA;
-	in->inPublic.t.publicArea.nameAlg = nalg;
+	in->inPublic.publicArea.type = TPM_ALG_RSA;
+	in->inPublic.publicArea.nameAlg = nalg;
 	if (keyType == TYPE_SI) {
-	    in->inPublic.t.publicArea.objectAttributes.val = TPMA_OBJECT_SIGN;
+	    in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_SIGN;
 	}
 	else {
-	    in->inPublic.t.publicArea.objectAttributes.val = TPMA_OBJECT_DECRYPT;
+	    in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_DECRYPT;
 	}
-	in->inPublic.t.publicArea.authPolicy.t.size = 0;
+	in->inPublic.publicArea.authPolicy.t.size = 0;
 	/* Table 182 - Definition of TPMU_PUBLIC_PARMS Union <IN/OUT, S> */
 	/* Table 180 - Definition of {RSA} TPMS_RSA_PARMS Structure */
-	in->inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
+	in->inPublic.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
 	/* Table 155 - Definition of {RSA} TPMT_RSA_SCHEME Structure */
 	if (keyType == TYPE_SI) {
-	    in->inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
+	    in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
 	}
 	else {
-	    in->inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+	    in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
 	}
 	/* or always use RSASSA (sample code) */
-	in->inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
+	in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
 	/* Table 152 - Definition of TPMU_ASYM_SCHEME Union */
-	in->inPublic.t.publicArea.parameters.rsaDetail.scheme.details.rsassa.hashAlg = halg;
-	in->inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;	
-	in->inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
+	in->inPublic.publicArea.parameters.rsaDetail.scheme.details.rsassa.hashAlg = halg;
+	in->inPublic.publicArea.parameters.rsaDetail.keyBits = 2048;	
+	in->inPublic.publicArea.parameters.rsaDetail.exponent = 0;
 	/* Table 177 - Definition of TPMU_PUBLIC_ID Union <IN/OUT, S> */
     }
     /* get the public modulus */
@@ -588,9 +588,9 @@ TPM_RC loadExternalPEMRSA(LoadExternal_In 	*in,
 	    rc = EXIT_FAILURE;
 	}
 	else {
-	    in->inPublic.t.publicArea.unique.rsa.t.size =
+	    in->inPublic.publicArea.unique.rsa.t.size =
 		BN_bn2bin(rsaPubkey->n,
-			  (uint8_t *)&in->inPublic.t.publicArea.unique.rsa.t.buffer);
+			  (uint8_t *)&in->inPublic.publicArea.unique.rsa.t.buffer);
 	}
     }
     if (rc == 0) {
@@ -688,37 +688,37 @@ TPM_RC loadExternalPEMECC(LoadExternal_In 	*in,
     }
     if (rc == 0) {
 	/* Table 184 - Definition of TPMT_PUBLIC Structure */
-	in->inPublic.t.publicArea.type = TPM_ALG_ECC;
-	in->inPublic.t.publicArea.nameAlg = nalg;
+	in->inPublic.publicArea.type = TPM_ALG_ECC;
+	in->inPublic.publicArea.nameAlg = nalg;
 	if (keyType == TYPE_SI) {
-	    in->inPublic.t.publicArea.objectAttributes.val = TPMA_OBJECT_SIGN;
+	    in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_SIGN;
 	}
 	else {
-	    in->inPublic.t.publicArea.objectAttributes.val = TPMA_OBJECT_DECRYPT;
+	    in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_DECRYPT;
 	}
-	in->inPublic.t.publicArea.authPolicy.t.size = 0;
+	in->inPublic.publicArea.authPolicy.t.size = 0;
 	/* Table 182 - Definition of TPMU_PUBLIC_PARMS Union <IN/OUT, S> */
-	in->inPublic.t.publicArea.parameters.eccDetail.symmetric.algorithm = TPM_ALG_NULL;
+	in->inPublic.publicArea.parameters.eccDetail.symmetric.algorithm = TPM_ALG_NULL;
 	if (keyType == TYPE_SI) {
-	    in->inPublic.t.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_ECDSA;
+	    in->inPublic.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_ECDSA;
 	}
 	else {
-	    in->inPublic.t.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
+	    in->inPublic.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
 	}
 	/* or always use ECDS (sample code) */
-	in->inPublic.t.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_ECDSA;
+	in->inPublic.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_ECDSA;
 	/* Table 152 - Definition of TPMU_ASYM_SCHEME Union */
-	in->inPublic.t.publicArea.parameters.eccDetail.scheme.details.ecdsa.hashAlg = halg;
-	in->inPublic.t.publicArea.parameters.eccDetail.curveID = TPM_ECC_NIST_P256;	
-	in->inPublic.t.publicArea.parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
-	in->inPublic.t.publicArea.parameters.eccDetail.kdf.details.mgf1.hashAlg = halg;
+	in->inPublic.publicArea.parameters.eccDetail.scheme.details.ecdsa.hashAlg = halg;
+	in->inPublic.publicArea.parameters.eccDetail.curveID = TPM_ECC_NIST_P256;	
+	in->inPublic.publicArea.parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
+	in->inPublic.publicArea.parameters.eccDetail.kdf.details.mgf1.hashAlg = halg;
     }
     if (rc == 0) {
-	in->inPublic.t.publicArea.unique.ecc.x.t.size = 32;	
-	memcpy(in->inPublic.t.publicArea.unique.ecc.x.t.buffer, modulusBin +1, 32);	
+	in->inPublic.publicArea.unique.ecc.x.t.size = 32;	
+	memcpy(in->inPublic.publicArea.unique.ecc.x.t.buffer, modulusBin +1, 32);	
 
-	in->inPublic.t.publicArea.unique.ecc.y.t.size = 32;	
-	memcpy(in->inPublic.t.publicArea.unique.ecc.y.t.buffer, modulusBin +33, 32);	
+	in->inPublic.publicArea.unique.ecc.y.t.size = 32;	
+	memcpy(in->inPublic.publicArea.unique.ecc.y.t.buffer, modulusBin +33, 32);	
     }
     if (rc == 0) {
 	in->inPrivate.t.size = 0;

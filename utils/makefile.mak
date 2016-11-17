@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 730 2016-08-23 21:09:53Z kgoldman $		#
+#	      $Id: makefile.mak 820 2016-11-16 23:35:35Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015.						#
 # 										#
@@ -52,7 +52,7 @@ CCFLAGS = 					\
 
 # compile - for TSS library
 
-CCLFLAGS = 	-I../src -DTPM_TSS
+CCLFLAGS = 	 -DTPM_TSS
 
 # link - common flags flags TSS library and applications
 
@@ -75,13 +75,23 @@ LNLIBS = 	"c:/program files/openssl/lib/mingw/libeay32.a" \
 		"c:/program files/openssl/lib/mingw/ssleay32.a" \
 		"c:/program files/MinGW/lib/libws2_32.a"
 
+# shared library
+
+LIBTSS=libtss.dll
+
 # executable extension
 
 EXE=.exe
 
-# shared library
+# 
 
-LIBTSS=libtss.dll
+ALL =
+
+# default TSS library
+
+TSS_OBJS = tssfile.o
+
+# common to all builds
 
 include makefile-common
 
@@ -114,6 +124,8 @@ tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscrypto.c
 tssutils.o: 	$(TSS_HEADERS) tssutils.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssutils.c
+tssfile.o: 	$(TSS_HEADERS) tssfile.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssfile.c
 tsssocket.o: 	$(TSS_HEADERS) tsssocket.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tsssocket.c
 tssdev.o: 	$(TSS_HEADERS) tssdev.c
@@ -130,15 +142,14 @@ tssprint.o: 	$(TSS_HEADERS) tssprint.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssprint.c
 Unmarshal.o: 	$(TSS_HEADERS) Unmarshal.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) Unmarshal.c
-
-CommandAttributeData.o: 	$(TSS_HEADERS) ../src/CommandAttributeData.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) ../src/CommandAttributeData.c
-Commands.o: 	../src/Commands.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) ../src/Commands.c
-CpriHash.o: 	../src/CpriHash.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) ../src/CpriHash.c
-CpriSym.o: 	../src/CpriSym.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) ../src/CpriSym.c
+Commands.o: 	$(TSS_HEADERS) Commands.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) Commands.c
+CommandAttributeData.o: 	$(TSS_HEADERS) CommandAttributeData.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) CommandAttributeData.c
+CpriHash.o: 	$(TSS_HEADERS) CpriHash.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) CpriHash.c
+CpriSym.o: 	$(TSS_HEADERS) CpriSym.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) CpriSym.c
 
 # TSS shared library build
 
@@ -157,6 +168,9 @@ clean:
 create.exe:	create.o objecttemplates.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o $(LNLIBS) $(LIBTSS) 
 
+createloaded.exe:	createloaded.o objecttemplates.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o $(LNLIBS) $(LIBTSS) 
+
 createprimary.exe:	createprimary.o objecttemplates.o  $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o $(LNLIBS) $(LIBTSS) 
 
@@ -165,6 +179,12 @@ eventextend.exe:	eventextend.o eventlib.o $(LIBTSS)
 
 createek.exe:	createek.o ekutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o $(LNLIBS) $(LIBTSS)
+
+nvread.exe:	nvread.o ekutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o  $(LNLIBS) $(LIBTSS)
+
+nvwrite.exe:	nvwrite.o ekutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o  $(LNLIBS) $(LIBTSS)
 
 pprovision.exe:	pprovision.o ekutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o $(LNLIBS) $(LIBTSS)

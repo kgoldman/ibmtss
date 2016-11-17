@@ -3,7 +3,7 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.c 730 2016-08-23 21:09:53Z kgoldman $		*/
+/*            $Id: tssauth.c 791 2016-10-26 21:03:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -158,6 +158,11 @@ static const MARSHAL_TABLE marshalTable [] = {
      (UnmarshalFunction_t)TSS_ObjectChangeAuth_Out_Unmarshal,
      (UnmarshalInFunction_t)ObjectChangeAuth_In_Unmarshal},
 
+    {TPM_CC_CreateLoaded, "TPM2_CreateLoaded",
+     (MarshalFunction_t)TSS_CreateLoaded_In_Marshal,
+     (UnmarshalFunction_t)TSS_CreateLoaded_Out_Unmarshal,
+     (UnmarshalInFunction_t)CreateLoaded_In_Unmarshal},
+
     {TPM_CC_Duplicate, "TPM2_Duplicate",
      (MarshalFunction_t)TSS_Duplicate_In_Marshal,
      (UnmarshalFunction_t)TSS_Duplicate_Out_Unmarshal,
@@ -207,6 +212,11 @@ static const MARSHAL_TABLE marshalTable [] = {
      (MarshalFunction_t)TSS_EncryptDecrypt_In_Marshal,
      (UnmarshalFunction_t)TSS_EncryptDecrypt_Out_Unmarshal,
      (UnmarshalInFunction_t)EncryptDecrypt_In_Unmarshal},
+
+    {TPM_CC_EncryptDecrypt2, "TPM2_EncryptDecrypt2",
+     (MarshalFunction_t)TSS_EncryptDecrypt2_In_Marshal,
+     (UnmarshalFunction_t)TSS_EncryptDecrypt2_Out_Unmarshal,
+     (UnmarshalInFunction_t)EncryptDecrypt2_In_Unmarshal},
 
     {TPM_CC_Hash, "TPM2_Hash",
      (MarshalFunction_t)TSS_Hash_In_Marshal,
@@ -378,6 +388,11 @@ static const MARSHAL_TABLE marshalTable [] = {
      NULL,
      (UnmarshalInFunction_t)PolicyNV_In_Unmarshal},
 
+    {TPM_CC_PolicyAuthorizeNV, "TPM2_PolicyAuthorizeNV",
+     (MarshalFunction_t)TSS_PolicyAuthorizeNV_In_Marshal,
+     NULL,
+     (UnmarshalInFunction_t)PolicyAuthorizeNV_In_Unmarshal},
+
     {TPM_CC_PolicyCounterTimer, "TPM2_PolicyCounterTimer",
      (MarshalFunction_t)TSS_PolicyCounterTimer_In_Marshal,
      NULL,
@@ -432,6 +447,11 @@ static const MARSHAL_TABLE marshalTable [] = {
      (MarshalFunction_t)TSS_PolicyNvWritten_In_Marshal,
      NULL,
      (UnmarshalInFunction_t)PolicyNvWritten_In_Unmarshal},
+
+    {TPM_CC_PolicyTemplate, "TPM2_PolicyTemplate",
+     (MarshalFunction_t)TSS_PolicyTemplate_In_Marshal,
+     NULL,
+     (UnmarshalInFunction_t)PolicyTemplate_In_Unmarshal},
 
     {TPM_CC_CreatePrimary, "TPM2_CreatePrimary",
      (MarshalFunction_t)TSS_CreatePrimary_In_Marshal,

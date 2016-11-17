@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile - for Fedora source RPM ONLY!	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.fedora 753 2016-09-23 17:03:21Z kgoldman $		#
+#	      $Id: makefile.fedora 813 2016-11-16 22:24:37Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -78,7 +78,7 @@ CCFLAGS += 	-DTPM_POSIX
 # compile - for TSS library
 # which includes the hardening flag PIC needed for compiling for dynamic linking
 
-CCLFLAGS = 	-I. -I../src	\
+CCLFLAGS = 	-I. 	\
 		-fPIC
 
 # compile - for applications
@@ -220,6 +220,8 @@ contextsave:		tss2/tss.h contextsave.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextsave.o $(LNALIBS) -o contextsave
 create:			tss2/tss.h create.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o $(LNALIBS) -o create
+createloaded:		tss2/tss.h createloaded.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createloaded.o $(LNALIBS) -o createloaded
 createprimary:		tss2/tss.h createprimary.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o $(LNALIBS) -o createprimary
 dictionaryattacklockreset:		tss2/tss.h dictionaryattacklockreset.o libtss.so
@@ -280,8 +282,8 @@ nvglobalwritelock:	tss2/tss.h nvglobalwritelock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvglobalwritelock.o $(LNALIBS) -o nvglobalwritelock
 nvincrement:		tss2/tss.h nvincrement.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvincrement.o $(LNALIBS) -o nvincrement
-nvread:			tss2/tss.h nvread.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) nvread.o $(LNALIBS) -o nvread
+nvread:			tss2/tss.h nvread.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvread.o ekutils.o $(LNALIBS) -o nvread
 nvreadlock:		tss2/tss.h nvreadlock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadlock.o $(LNALIBS) -o nvreadlock
 nvreadpublic:		tss2/tss.h nvreadpublic.o libtss.so
@@ -292,8 +294,8 @@ nvundefinespace:	tss2/tss.h nvundefinespace.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespace.o $(LNALIBS) -o nvundefinespace
 nvundefinespacespecial:	tss2/tss.h nvundefinespacespecial.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespacespecial.o $(LNALIBS) -o nvundefinespacespecial
-nvwrite:		tss2/tss.h nvwrite.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwrite.o $(LNALIBS) -o nvwrite
+nvwrite:		tss2/tss.h nvwrite.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwrite.o ekutils.o $(LNALIBS) -o nvwrite
 nvwritelock:		tss2/tss.h nvwritelock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwritelock.o $(LNALIBS) -o nvwritelock
 objectchangeauth:	tss2/tss.h objectchangeauth.o libtss.so
@@ -326,6 +328,8 @@ policymakerpcr:		tss2/tss.h policymakerpcr.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policymakerpcr.o $(LNALIBS) -o policymakerpcr
 policynv:		tss2/tss.h policynv.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynv.o $(LNALIBS) -o policynv
+policyauthorizenv:	tss2/tss.h policyauthorizenv.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthorizenv.o $(LNALIBS) -o policyauthorizenv
 policynvwritten:	tss2/tss.h policynvwritten.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynvwritten.o $(LNALIBS) -o policynvwritten
 policyor:		tss2/tss.h policyor.o libtss.so
@@ -340,6 +344,8 @@ policysigned:		tss2/tss.h policysigned.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policysigned.o $(LNALIBS) -o policysigned
 policysecret:		tss2/tss.h policysecret.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policysecret.o $(LNALIBS) -o policysecret
+policytemplate:		tss2/tss.h policytemplate.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policytemplate.o $(LNALIBS) -o policytemplate
 policyticket:		tss2/tss.h policyticket.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyticket.o $(LNALIBS) -o policyticket
 quote:			tss2/tss.h quote.o libtss.so

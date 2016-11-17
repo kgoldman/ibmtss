@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile-win10 730 2016-08-23 21:09:53Z kgoldman $		#
+#	      $Id: makefile-win10 813 2016-11-16 22:24:37Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -69,19 +69,6 @@ include makefile-common
 
 all:	$(ALL)
 
-# TSS library source shared with TPM
-
-Marshal.c:			../src/Marshal.c
-				ln -s ../src/Marshal.c .
-Unmarshal.c:			../src/Unmarshal.c
-				ln -s ../src/Unmarshal.c .
-CpriSym.c:			../src/CpriSym.c
-				ln -s ../src/CpriSym.c .
-CpriHash.c:			../src/CpriHash.c
-				ln -s ../src/CpriHash.c .
-Commands.c:			../src/Commands.c
-				ln -s ../src/Commands.c .
-
 # TSS shared library source
 
 tss.o: 		$(TSS_HEADERS) tss.c
@@ -131,7 +118,6 @@ $(LIBTSS): 	$(TSS_OBJS)
 
 clean:		
 		rm -f *.o  *~ 	\
-		../src/*.o	\
 		h*.bin		\
 		$(ALL)
 
@@ -157,6 +143,8 @@ contextsave:		tss.h contextsave.o
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextsave.o $(LNALIBS) -o contextsave
 create:			tss.h create.o 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o $(LNALIBS) -o create
+createloaded:		tss.h createloaded.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createloaded.o $(LNALIBS) -o createloaded
 createprimary:		tss.h createprimary.o 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o $(LNALIBS) -o createprimary
 dictionaryattacklockreset:		tss.h dictionaryattacklockreset.o 
@@ -261,6 +249,8 @@ policymakerpcr:		tss.h policymakerpcr.o
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policymakerpcr.o $(LNALIBS) -o policymakerpcr
 policynv:		tss.h policynv.o 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynv.o $(LNALIBS) -o policynv
+policyauthorizenv:	tss.h policyauthorizenv.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthorizenv.o $(LNALIBS) -o policyauthorizenv
 policynvwritten:	tss.h policynvwritten.o 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynvwritten.o $(LNALIBS) -o policynvwritten
 policyor:		tss.h policyor.o 
@@ -275,6 +265,8 @@ policysigned:		tss.h policysigned.o
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policysigned.o $(LNALIBS) -o policysigned
 policysecret:		tss.h policysecret.o 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policysecret.o $(LNALIBS) -o policysecret
+policytemplate:		tss.h policytemplate.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policytemplate.o $(LNALIBS) -o policytemplate
 policyticket:		tss.h policyticket.o 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyticket.o $(LNALIBS) -o policyticket
 quote:			tss.h quote.o 

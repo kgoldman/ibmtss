@@ -84,15 +84,16 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\CommandAttributeData.c" />
-    <ClCompile Include="..\..\src\Commands.c" />
-    <ClCompile Include="..\..\src\CpriHash.c" />
-    <ClCompile Include="..\..\src\CpriSym.c" />
+    <ClCompile Include="..\..\utils\CommandAttributeData.c" />
+    <ClCompile Include="..\..\utils\Commands.c" />
+    <ClCompile Include="..\..\utils\CpriHash.c" />
+    <ClCompile Include="..\..\utils\CpriSym.c" />
     <ClCompile Include="..\..\utils\fail.c" />
     <ClCompile Include="..\..\utils\tss.c" />
     <ClCompile Include="..\..\utils\tssauth.c" />
     <ClCompile Include="..\..\utils\tssccattributes.c" />
     <ClCompile Include="..\..\utils\tsscrypto.c" />
+    <ClCompile Include="..\..\utils\tssfile.c" />
     <ClCompile Include="..\..\utils\tssmarshal.c" />
     <ClCompile Include="..\..\utils\tssprint.c" />
     <ClCompile Include="..\..\utils\tssproperties.c" />

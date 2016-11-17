@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: reg.sh 703 2016-07-28 17:21:46Z kgoldman $				#
+#	$Id: reg.sh 793 2016-11-10 21:27:40Z kgoldman $				#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -76,34 +76,37 @@ printUsage ()
     echo "-1 random number generator"
     echo "-2 PCR"
     echo "-3 primary keys"
-    echo "-4 HMAC session - no bind or salt"
-    echo "-5 HMAC session - bind"
-    echo "-6 HMAC session - salt"
-    echo "-7 Hierarchy"
-    echo "-8 Storage"
-    echo "-9 Object Change Auth"
-    echo "-10 Encrypt and decrypt sessions"
-    echo "-11 Sign"
-    echo "-12 NV"
-    echo "-13 Evict control"
-    echo "-14 RSA encrypt decrypt"
-    echo "-15 AES encrypt decrypt"
-    echo "-16 HMAC and Hash"
-    echo "-17 Attestation"
-    echo "-18 Policy"
-    echo "-19 Context"
-    echo "-20 Clocks and Timers"
-    echo "-21 DA logic"
-    echo "-22 Unseal"
-    echo "-23 Duplication"
-    echo "-24 ECC"
-    echo "-25 Credential"
-    echo "-26 Shutdown (only run for simulator)"
+    echo "-4 createloaded - rev 138"
+    echo "-5 HMAC session - no bind or salt"
+    echo "-6 HMAC session - bind"
+    echo "-7 HMAC session - salt"
+    echo "-8 Hierarchy"
+    echo "-9 Storage"
+    echo "-10 Object Change Auth"
+    echo "-11 Encrypt and decrypt sessions"
+    echo "-12 Sign"
+    echo "-13 NV"
+    echo "-14 NV PIN Index - rev 138"
+    echo "-15 Evict control"
+    echo "-16 RSA encrypt decrypt"
+    echo "-17 AES encrypt decrypt"
+    echo "-18 AES encrypt decrypt - rev 138"
+    echo "-19 HMAC and Hash"
+    echo "-20 Attestation"
+    echo "-21 Policy"
+    echo "-22 Policy - rev 138"
+    echo "-23 Context"
+    echo "-24 Clocks and Timers"
+    echo "-25 DA logic"
+    echo "-26 Unseal"
+    echo "-27 Duplication"
+    echo "-28 ECC"
+    echo "-29 Credential"
+    echo "-30 Shutdown (only run for simulator)"
     echo ""
+    echo "-40 Tests under development (not part of all)"
     echo ""
-    echo "-30 Tests under development (not part of all)"
-    echo ""
-    echo "-31 Change seed"
+    echo "-50 Change seed"
 }
 
 checkSuccess()
@@ -247,6 +250,14 @@ main ()
 	((I++))
     fi
     if [ "$1" == "-a" ] || [ "$1" == "-4" ]; then
+    	./regtests/testcreateloaded.sh
+    	RC=$?
+    	if [ $RC -eq 255 ]; then
+    	    exit 255
+    	fi
+    	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-5" ]; then
     	./regtests/testhmacsession.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -254,7 +265,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-5" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-6" ]; then
     	./regtests/testbind.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -262,7 +273,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-6" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-7" ]; then
     	./regtests/testsalt.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -270,7 +281,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-7" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-8" ]; then
     	./regtests/testhierarchy.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -278,7 +289,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-8" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-9" ]; then
     	./regtests/teststorage.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -286,7 +297,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-9" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-10" ]; then
     	./regtests/testchangeauth.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -294,7 +305,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-10" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-11" ]; then
     	./regtests/testencsession.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -302,7 +313,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-11" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-12" ]; then
     	./regtests/testsign.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -310,7 +321,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-12" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-13" ]; then
     	./regtests/testnv.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -318,7 +329,15 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-13" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-14" ]; then
+    	./regtests/testnvpin.sh
+    	RC=$?
+	if [ $RC -eq 255 ]; then
+	    exit 255
+	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-15" ]; then
     	./regtests/testevict.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -326,7 +345,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-14" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-16" ]; then
     	./regtests/testrsa.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -334,7 +353,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-15" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-17" ]; then
     	./regtests/testaes.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -342,7 +361,15 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-16" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-18" ]; then
+    	./regtests/testaes138.sh
+    	RC=$?
+    	if [ $RC -eq 255 ]; then
+    	    exit 255
+    	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-19" ]; then
     	./regtests/testhmac.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -350,7 +377,7 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-17" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-20" ]; then
     	./regtests/testattest.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -359,7 +386,7 @@ main ()
 	((I++))
 	((WARN=$RC))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-18" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-21" ]; then
     	./regtests/testpolicy.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
@@ -367,32 +394,8 @@ main ()
     	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-19" ]; then
-    	./regtests/testcontext.sh
-    	RC=$?
-    	if [ $RC -eq 255 ]; then
-    	    exit 255
-    	fi
-	((I++))
-    fi
-    if [ "$1" == "-a" ] || [ "$1" == "-20" ]; then
-    	./regtests/testclocks.sh
-    	RC=$?
-    	if [ $RC -eq 255 ]; then
-    	    exit 255
-    	fi
-	((I++))
-    fi
-    if [ "$1" == "-a" ] || [ "$1" == "-21" ]; then
-    	./regtests/testda.sh
-    	RC=$?
-    	if [ $RC -eq 255 ]; then
-    	    exit 255
-    	fi
-	((I++))
-    fi
     if [ "$1" == "-a" ] || [ "$1" == "-22" ]; then
-    	./regtests/testunseal.sh
+    	./regtests/testpolicy138.sh
     	RC=$?
     	if [ $RC -eq 255 ]; then
     	    exit 255
@@ -400,6 +403,38 @@ main ()
 	((I++))
     fi
     if [ "$1" == "-a" ] || [ "$1" == "-23" ]; then
+    	./regtests/testcontext.sh
+    	RC=$?
+    	if [ $RC -eq 255 ]; then
+    	    exit 255
+    	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-24" ]; then
+    	./regtests/testclocks.sh
+    	RC=$?
+    	if [ $RC -eq 255 ]; then
+    	    exit 255
+    	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-25" ]; then
+    	./regtests/testda.sh
+    	RC=$?
+    	if [ $RC -eq 255 ]; then
+    	    exit 255
+    	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-26" ]; then
+    	./regtests/testunseal.sh
+    	RC=$?
+    	if [ $RC -eq 255 ]; then
+    	    exit 255
+    	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-27" ]; then
     	./regtests/testdup.sh
     	RC=$?
 	if [ $RC -eq 255 ]; then
@@ -407,7 +442,7 @@ main ()
 	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-24" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-28" ]; then
     	./regtests/testecc.sh
     	RC=$?
 	if [ $RC -eq 255 ]; then
@@ -415,7 +450,7 @@ main ()
 	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-25" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-29" ]; then
     	./regtests/testcredential.sh
     	RC=$?
 	if [ $RC -eq 255 ]; then
@@ -423,7 +458,7 @@ main ()
 	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-26" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-30" ]; then
 	# the MS simulator supports power cycling
 	if [ -z ${TPM_INTERFACE_TYPE} ] || [ ${TPM_INTERFACE_TYPE} == "socsim" ];  then
 	    if [ -z ${TPM_SERVER_TYPE} ] || [ ${TPM_SERVER_TYPE} == "mssim" ]; then
@@ -436,7 +471,7 @@ main ()
 	fi
 	((I++))
     fi
-    if [ "$1" == "-30" ]; then
+    if [ "$1" == "-40" ]; then
      	./regtests/testdevel.sh
      	RC=$?
      	if [ $RC -eq 255 ]; then
@@ -446,7 +481,7 @@ main ()
      	((WARN=$RC))
     fi
 # this must be the last test
-    if [ "$1" == "-a" ] || [ "$1" == "-31" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-50" ]; then
     	./regtests/testchangeseed.sh
     	RC=$?
 	if [ $RC -eq 255 ]; then

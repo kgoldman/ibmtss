@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: tssproperties.c 781 2016-10-21 19:17:39Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -45,7 +45,9 @@
 
 #include <tss2/tss.h>
 #include <tss2/tsstransmit.h>
+#ifndef TPM_TSS_NOCRYPTO
 #include <tss2/tsscrypto.h>
+#endif
 
 #include <tss2/tssproperties.h>
 
@@ -148,7 +150,9 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 	tssContext->sock_fd = INVALID_SOCKET;
 #endif
 #ifdef TPM_POSIX
+#ifndef TPM_NOSOCKET
 	tssContext->sock_fd = -1;
+#endif 	/* TPM_NOSOCKET */
 #endif
 	tssContext->dev_fd = -1;
 #ifdef TPM_WINDOWS
@@ -157,6 +161,17 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 #endif
 #endif
     }
+    /* for a minimal TSS with no file support */
+#ifdef TPM_TSS_NOFILE
+    {
+	size_t i;
+	for (i = 0 ; i < (sizeof(tssContext->sessions) / sizeof(TSS_SESSIONS)) ; i++) {
+	    tssContext->sessions[i].sessionHandle = TPM_RH_NULL;
+	    tssContext->sessions[i].sessionData = NULL;
+	    tssContext->sessions[i].sessionDataLength = 0;
+	}
+    }
+#endif
     /* data directory */
     if (rc == 0) {
 	value = getenv("TPM_DATA_DIR");
@@ -215,10 +230,12 @@ TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,
 
     /* at the first call to the TSS, initialize global variables */
     if (tssFirstCall) {
+#ifndef TPM_TSS_NOCRYPTO
 	/* crypto module initializations */
 	if (rc == 0) {
 	    rc = TSS_Crypto_Init();
 	}
+#endif
 	if (rc == 0) {
 	    rc = TSS_GlobalProperties_Init();
 	}

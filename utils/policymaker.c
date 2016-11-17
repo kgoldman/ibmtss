@@ -3,9 +3,9 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymaker.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: policymaker.c 793 2016-11-10 21:27:40Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015,2016					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -56,6 +56,8 @@
    Example input: policy command code with a command code of NV write
 
    0000016c00000137
+
+   NOTE: 
    
 */
 
@@ -90,8 +92,10 @@ int main(int argc, char *argv[])
     const char 		*inFilename = NULL;
     const char 		*outFilename = NULL;
     int			pr = FALSE;
+    int			nz = FALSE;
     TPMT_HA 		digest;
-    uint32_t           	sizeInBytes;		/* hash algorithm mapped to size */           		
+    uint32_t           	sizeInBytes;		/* hash algorithm mapped to size */
+    uint32_t           	startSizeInBytes;	/* starting buffer for extend */
     FILE 		*inFile = NULL;
     FILE 		*outFile = NULL;
 
@@ -148,6 +152,9 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-pr") == 0) {
 	    pr = TRUE;
 	}
+	else if (strcmp(argv[i],"-nz") == 0) {
+	    nz = TRUE;
+	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
@@ -175,7 +182,13 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	sizeInBytes = TSS_GetDigestSize(digest.hashAlg);
 	/* startauthsession sets session digest to zero */
-	memset((uint8_t *)&digest.digest, 0, sizeInBytes);
+	if (!nz) {
+	    startSizeInBytes = sizeInBytes;
+	    memset((uint8_t *)&digest.digest, 0, sizeInBytes);
+	}
+	else {	/* nz TRUE, start with empty buffer */
+	    startSizeInBytes = 0;
+	}
     }
     /* iterate through each line */
     do {
@@ -192,16 +205,16 @@ int main(int argc, char *argv[])
 	    rc = Format_FromHexascii(lineBinary,
 				     lineString, lineLength/2);
 	}
-	    
 	/* hash extend */
 	if ((rc == 0) && (prc != NULL)) {
 	    TSS_Hash_Generate(&digest,
-			      sizeInBytes , (uint8_t *)&digest.digest,	/* extend */
+			      startSizeInBytes, (uint8_t *)&digest.digest,	/* extend */
 			      lineLength /2, lineBinary,
 			      0, NULL);
 	}
 	if ((rc == 0) && (prc != NULL)) {
-	    if (verbose) TSS_PrintAll("intermediate policy digest", (uint8_t *)&digest.digest, sizeInBytes);
+	    if (verbose) TSS_PrintAll("intermediate policy digest",
+				      (uint8_t *)&digest.digest, sizeInBytes);
 	}
     }
     while ((rc == 0) && (prc != NULL));
@@ -256,7 +269,7 @@ static int Format_FromHexascii(unsigned char *binary,
  */
 
 static int Format_ByteFromHexascii(unsigned char *byte,
-			    const char *string)
+				   const char *string)
 {
     int 	rc = 0;
     size_t	i;
@@ -291,6 +304,7 @@ static void printUsage(void)
     printf("policymaker\n");
     printf("\n");
     printf("[-halg hash algorithm (default sha256)\n");
+    printf("[-nz do not extend starting with zeros, just hash the last line]\n");
     printf("-if input policy statements in hex ascii\n");
     printf("[-of] output file - policy hash in binary\n");
     printf("[-pr] stdout - policy hash in hex ascii\n");

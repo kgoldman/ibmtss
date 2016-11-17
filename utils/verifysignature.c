@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 729 2016-08-23 20:42:13Z kgoldman $	*/
+/*	      $Id: verifysignature.c 780 2016-10-19 19:00:32Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -50,11 +50,11 @@
 
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssprint.h>
 #include <tss2/Unmarshal_fp.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/tssmarshal.h>
+#include <tss2/tssprint.h>
+#include <tss2/tssresponsecode.h>
 
 static void printUsage(void);
 TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,

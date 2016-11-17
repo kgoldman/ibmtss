@@ -3,7 +3,7 @@
 /*			    Transmit and Receive Utility			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstransmit.c 684 2016-07-18 21:22:01Z kgoldman $		*/
+/*	      $Id: tsstransmit.c 781 2016-10-21 19:17:39Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -44,7 +44,9 @@
 #include <stdio.h>
 
 #include <tss2/tssproperties.h>
+#ifndef TPM_NOSOCKET
 #include "tsssocket.h"
+#endif
 #include <tss2/tsserror.h>
 
 #ifdef TPM_POSIX
@@ -73,10 +75,16 @@ TPM_RC TSS_TransmitPlatform(TSS_CONTEXT *tssContext, uint32_t command, const cha
 {
     TPM_RC rc = 0;
 
+#ifndef TPM_NOSOCKET
     if ((strcmp(tssContext->tssInterfaceType, "socsim") == 0)) {
 	rc = TSS_Socket_TransmitPlatform(tssContext, command, message);
     }
-    else if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
+    else
+#else
+    command = command;
+    message = message;
+#endif
+    if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
 	if (tssVerbose) printf("TSS_TransmitPlatform: device %s unsupported\n",
 			       tssContext->tssInterfaceType);
 	rc = TSS_RC_INSUPPORTED_INTERFACE;	
@@ -100,13 +108,17 @@ TPM_RC TSS_Transmit(TSS_CONTEXT *tssContext,
 {
     TPM_RC rc = 0;
 
+#ifndef TPM_NOSOCKET
     if ((strcmp(tssContext->tssInterfaceType, "socsim") == 0)) {
 	rc = TSS_Socket_Transmit(tssContext,
 				 responseBuffer, read,
 				 commandBuffer, written,
 				 message);
     }
-    else if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
+    else
+#endif
+	
+    if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
 #ifdef TPM_POSIX	/* transmit through Linux device driver */
 	rc = TSS_Dev_Transmit(tssContext,
 			      responseBuffer, read,
@@ -143,10 +155,13 @@ TPM_RC TSS_Close(TSS_CONTEXT *tssContext)
 
     /* only close if there was an open */
     if (!tssContext->tssFirstTransmit) {
+#ifndef TPM_NOSOCKET
 	if ((strcmp(tssContext->tssInterfaceType, "socsim") == 0)) {
 	    rc = TSS_Socket_Close(tssContext);
 	}
-	else if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
+	else
+#endif
+        if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
 #ifdef TPM_POSIX	/* transmit through Linux device driver */
 	    rc = TSS_Dev_Close(tssContext);
 #endif

@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id$		*/
+/*	      $Id: objecttemplates.h 793 2016-11-10 21:27:40Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -51,6 +51,7 @@
 #define TYPE_GP		7
 #define TYPE_DES	8
 #define TYPE_KH		9
+#define TYPE_DP		10
 
 TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,
 			  TPMA_OBJECT objectAttributes,
@@ -70,6 +71,11 @@ TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,
 			       TPMI_ALG_HASH nalg,
 			       TPMI_ALG_HASH halg,
 			       const char *policyFilename);
+TPM_RC derivationParentPublicTemplate(TPMT_PUBLIC *publicArea,
+				      TPMA_OBJECT objectAttributes,
+				      TPMI_ALG_HASH nalg,
+				      TPMI_ALG_HASH halg,
+				      const char *policyFilename);
 TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,
 			TPMA_OBJECT objectAttributes,
 			TPMI_ALG_HASH nalg,

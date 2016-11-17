@@ -3,7 +3,7 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.h 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: ekutils.h 799 2016-11-14 18:53:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -57,6 +57,8 @@
 
 #define MAX_ROOTS		100	/* 100 should be more than enough */
 
+TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
+		       uint32_t *nvBufferMax);
 TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
 		    uint16_t *dataSize,
 		    TPMI_RH_NV_INDEX nvIndex);

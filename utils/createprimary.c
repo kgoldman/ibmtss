@@ -3,7 +3,7 @@
 /*			    Create Primary	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createprimary.c 714 2016-08-11 21:46:03Z kgoldman $		*/
+/*	      $Id: createprimary.c 802 2016-11-15 20:06:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -147,6 +147,10 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-kh") == 0) {
 	    keyType = TYPE_KH;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-dp") == 0) {
+	    keyType = TYPE_DP;
 	    keyTypeSpecified++;
 	}
 	else if (strcmp(argv[i], "-gp") == 0) {
@@ -420,6 +424,7 @@ int main(int argc, char *argv[])
 	}
       case TYPE_DES:
       case TYPE_KH:
+      case TYPE_DP:
 	/* inSensitive optional for symmetric keys */
 	break;
     }
@@ -482,10 +487,10 @@ int main(int argc, char *argv[])
 	/* Table 133 - TPMS_SENSITIVE_CREATE */
 	{
 	    if (keyPassword == NULL) {
-		in.inSensitive.t.sensitive.userAuth.t.size = 0;
+		in.inSensitive.sensitive.userAuth.t.size = 0;
 	    }
 	    else {
-		rc = TSS_TPM2B_StringCopy(&in.inSensitive.t.sensitive.userAuth.b,
+		rc = TSS_TPM2B_StringCopy(&in.inSensitive.sensitive.userAuth.b,
 					  keyPassword, sizeof(TPMU_HA));
 	    }
 	}
@@ -493,19 +498,19 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	/* Table 132 - Definition of TPM2B_SENSITIVE_DATA Structure data */
 	if (dataFilename != NULL) {
-	    rc = TSS_File_Read2B(&in.inSensitive.t.sensitive.data.b,
+	    rc = TSS_File_Read2B(&in.inSensitive.sensitive.data.b,
 				 MAX_SYM_DATA,
 				 dataFilename);
 	}
 	else {
-	    in.inSensitive.t.sensitive.data.t.size = 0;
+	    in.inSensitive.sensitive.data.t.size = 0;
 	}
     }
     /* Table 185 - TPM2B_PUBLIC	inPublic */
     if (rc == 0) {
 	switch (keyType) {
 	  case TYPE_BL:
-	    rc = blPublicTemplate(&in.inPublic.t.publicArea, objectAttributes,
+	    rc = blPublicTemplate(&in.inPublic.publicArea, objectAttributes,
 				  nalg,
 				  policyFilename);
 	    break;
@@ -515,31 +520,37 @@ int main(int argc, char *argv[])
 	  case TYPE_SI:
 	  case TYPE_SIR:
 	  case TYPE_GP:
-	    rc = asymPublicTemplate(&in.inPublic.t.publicArea, objectAttributes,
+	    rc = asymPublicTemplate(&in.inPublic.publicArea, objectAttributes,
 				    keyType, algPublic, curveID, nalg, halg,
 				    policyFilename);
 	    break;
 	  case TYPE_DES:
-	    rc = symmetricCipherTemplate(&in.inPublic.t.publicArea, objectAttributes,
+	    rc = symmetricCipherTemplate(&in.inPublic.publicArea, objectAttributes,
 					 nalg, rev116,
 					 policyFilename);
 	    break;
 	  case TYPE_KH:
-	    rc = keyedHashPublicTemplate(&in.inPublic.t.publicArea, objectAttributes,
+	    rc = keyedHashPublicTemplate(&in.inPublic.publicArea, objectAttributes,
 					 nalg, halg,
 					 policyFilename);
+	    break;
+	  case TYPE_DP:
+	    rc = derivationParentPublicTemplate(&in.inPublic.publicArea, objectAttributes,
+						nalg, halg,
+						policyFilename);
+	    break;
 	}
     }
     /* Table 177 - TPMU_PUBLIC_ID unique */
     /* Table 158 - TPM2B_PUBLIC_KEY_RSA rsa */
     if (rc == 0) {
 	if (uniqueFilename != NULL) {
-	    rc = TSS_File_Read2B(&in.inPublic.t.publicArea.unique.rsa.b,
+	    rc = TSS_File_Read2B(&in.inPublic.publicArea.unique.rsa.b,
 				 MAX_RSA_KEY_BYTES,
 				 uniqueFilename);
 	}
 	else {
-	    in.inPublic.t.publicArea.unique.rsa.t.size = 0;
+	    in.inPublic.publicArea.unique.rsa.t.size = 0;
 	}
     }
     /* TPM2B_DATA outsideInfo */
@@ -582,8 +593,8 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	printf("Handle %08x\n", out.objectHandle);
 	if (verbose) TSS_PrintAll("createprimary: public key",
-				  out.outPublic.t.publicArea.unique.rsa.t.buffer,
-				  out.outPublic.t.publicArea.unique.rsa.t.size);
+				  out.outPublic.publicArea.unique.rsa.t.buffer,
+				  out.outPublic.publicArea.unique.rsa.t.size);
 	if (verbose) printf("createprimary: success\n");
     }
     else {

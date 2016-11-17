@@ -2,7 +2,7 @@
 #			   TPM2 demo common makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile-common 737 2016-08-29 16:34:54Z kgoldman $		#
+#	      $Id: makefile-common 795 2016-11-10 22:32:20Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -76,6 +76,7 @@ all:					\
 					\
 	$(DEST)/clockset		\
 	$(DEST)/create			\
+	$(DEST)/createloaded		\
 	$(DEST)/createprimary		\
 	$(DEST)/evictcontrol		\
 	$(DEST)/flushcontext 		\
@@ -143,6 +144,10 @@ $(DEST)/nvreadpublic:			$(SRCUTILS)/nvreadpublic
 $(DEST)/create:				$(SRCUTILS)/create	
 	cp $(SRCUTILS)/create		$(DEST)/create
 	chmod 777 			$(DEST)/create
+
+$(DEST)/createloaded:			$(SRCUTILS)/createloaded	
+	cp $(SRCUTILS)/createloaded	$(DEST)/createloaded
+	chmod 777 			$(DEST)/createloaded
 
 $(DEST)/createprimary:			$(SRCUTILS)/createprimary	
 	cp $(SRCUTILS)/createprimary	$(DEST)/createprimary

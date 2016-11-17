@@ -52,7 +52,7 @@ CCFLAGS += 				\
 LNFLAGS += 	-ggdb
 
 
-ALL = 	$(LIBTSS)				\
+ALL += 	$(LIBTSS)				\
 	$(LIBTSSA)				\
 	activatecredential$(EXE)		\
 	eventextend$(EXE)			\
@@ -66,6 +66,7 @@ ALL = 	$(LIBTSS)				\
 	contextload$(EXE)			\
 	contextsave$(EXE)			\
 	create$(EXE)				\
+	createloaded$(EXE)			\
 	createprimary$(EXE)			\
 	dictionaryattacklockreset$(EXE) 	\
 	dictionaryattackparameters$(EXE) 	\
@@ -119,6 +120,7 @@ ALL = 	$(LIBTSS)				\
 	policymaker$(EXE)			\
 	policymakerpcr$(EXE)			\
 	policynv$(EXE)				\
+	policyauthorizenv$(EXE)			\
 	policynvwritten$(EXE)			\
 	policypassword$(EXE)			\
 	policypcr$(EXE)				\
@@ -126,6 +128,7 @@ ALL = 	$(LIBTSS)				\
 	policyrestart$(EXE)			\
 	policysigned$(EXE)			\
 	policysecret$(EXE)			\
+	policytemplate$(EXE)			\
 	policyticket$(EXE)			\
 	powerup$(EXE)				\
 	quote$(EXE)				\
@@ -154,23 +157,26 @@ ALL	+= 					\
 
 # TSS shared library headers 
 
-TSS_HEADERS = 	tssauth.h 			\
-		tss2/tssmarshal.h		\
+TSS_HEADERS += 					\
+		tssauth.h 			\
+		tssccattributes.h 		\
+		tssdev.h  			\
+		tsssocket.h  			\
+		fail.h				\
 		tss2/tss.h			\
-		tss2/tssproperties.h		\
-		tss2/tssutils.h			\
 		tss2/tsscrypto.h		\
 		tss2/tsserror.h			\
-		tss2/tssresponsecode.h		\
-		tsssocket.h  			\
-		tssdev.h  			\
+		tss2/tssfile.h			\
+		tss2/tssmarshal.h		\
+		tss2/tssprint.h			\
+		tss2/tssproperties.h		\
 		tss2/tsstransmit.h		\
-		fail.h				\
-		tss2/tssprint.h	
+		tss2/tssresponsecode.h		\
+		tss2/tssutils.h
 
 # TSS shared library object files
 
-TSS_OBJS = 	tss.o			\
+TSS_OBJS += 	tss.o			\
 		tssproperties.o		\
 		tssmarshal.o		\
 		tssauth.o 		\

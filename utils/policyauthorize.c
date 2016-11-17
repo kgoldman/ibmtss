@@ -3,7 +3,7 @@
 /*			    PolicyAuthorize	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyauthorize.c 682 2016-07-15 18:49:19Z kgoldman $	*/
+/*	      $Id: policyauthorize.c 778 2016-10-19 15:21:05Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -228,8 +228,8 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyAuthorize\n");
     printf("\n");
-    printf("\t-ha session handle\n");
-    printf("\t-appr digest of the policy being approved\n");
+    printf("\t-ha policy session handle\n");
+    printf("\t-appr file name of digest of the policy being approved\n");
     printf("\t[-pref policyRef file] (default none)\n");
     printf("\t-skn signing key Name file name\n");
     printf("\t-tk ticket file name\n");

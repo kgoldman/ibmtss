@@ -3,7 +3,7 @@
 /*			    Hash						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hash.c 682 2016-07-15 18:49:19Z kgoldman $			*/
+/*	      $Id: hash.c 813 2016-11-16 22:24:37Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
     TPMI_RH_HIERARCHY		hierarchy = TPM_RH_NULL;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     const char			*inFilename = NULL;
+    const char 			*inString = NULL;
     const char			*hashFilename = NULL;
     const char			*ticketFilename = NULL;
  
@@ -107,6 +108,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-halg option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-ic") == 0) {
+	    i++;
+	    if (i < argc) {
+		inString = argv[i];
+	    }
+	    else {
+		printf("-ic option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -152,6 +163,14 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
+    if ((inFilename == NULL) && (inString == NULL)) {
+	printf("Input file -if or input string -ic must be specified\n");
+	printUsage();
+    }
+    if ((inFilename != NULL) && (inString != NULL)) {
+	printf("Input file -if and input string -ic cannot both be specified\n");
+	printUsage();
+    }
     /* Table 50 - TPMI_RH_HIERARCHY primaryHandle */
     if (rc == 0) {
 	if (hierarchyChar == 'e') {
@@ -172,25 +191,39 @@ int main(int argc, char *argv[])
 	}
  	in.hierarchy = hierarchy;
     }
-    if (inFilename == NULL) {
-	printf("Missing input file -if\n");
-	printUsage();
+    if (inFilename != NULL) {
+	if (rc == 0) {
+	    rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+					 &length,
+					 inFilename);
+	}
+	if (rc == 0) {
+	    if (length > MAX_DIGEST_BUFFER) {
+		printf("Input data too long %lu\n", (unsigned long)length);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+	if (rc == 0) {
+	    /* data to be hashed */
+	    in.data.t.size = length;
+	    memcpy(in.data.t.buffer, buffer, length);
+	}
     }
-    if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
-				     &length,
-				     inFilename);
-    }
-    if (rc == 0) {
-	if (length > MAX_DIGEST_BUFFER) {
-	    printf("Input data too long %u\n", (unsigned int)length);
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+    if (inString != NULL) {
+	if (rc == 0) {
+	    length = strlen(inString);
+	    if (length > MAX_DIGEST_BUFFER) {
+		printf("Input data too long %lu\n", (unsigned long)length);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    } 
+	}
+	if (rc == 0) {
+	    /* data to be hashed */
+	    in.data.t.size = length;
+	    memcpy(in.data.t.buffer, inString, length);
 	}
     }
     if (rc == 0) {
-	/* data to be hashed */
-	in.data.t.size = length;
-	memcpy(in.data.t.buffer, buffer, length);
 	in.hashAlg = halg;
     }
     /* Start a TSS context */
@@ -254,6 +287,7 @@ static void printUsage(void)
     printf("\t-hi hierarchy (e, o, p, n) (default null)\n");
     printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
     printf("\t-if input file to be hashed\n");
+    printf("\t-ic data string to be hashed\n");
     printf("\t[-oh hash file name]\n");
     printf("\t[-tk ticket file name]\n");
     exit(1);	

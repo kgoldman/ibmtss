@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testhmac.sh 714 2016-08-11 21:46:03Z kgoldman $		#
+#		$Id: testhmac.sh 820 2016-11-16 23:35:35Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -64,7 +64,7 @@ do
 	${PREFIX}load -hp 80000000 -ipr khpriv${HALG}.bin -ipu khpub${HALG}.bin -pwdp pps > run.out
 	checkSuccess $?
 
-	echo "HMAC ${HALG} using the keyed hash key ${SESS}"
+	echo "HMAC ${HALG} using the keyed hash key, message from file ${SESS}"
 	${PREFIX}hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khk -halg ${HALG} ${SESS} > run.out
 	checkSuccess $?
 
@@ -78,6 +78,14 @@ do
 
 	echo "HMAC ${HALG} sequence complete ${SESS}"
 	${PREFIX}sequencecomplete -hs 80000002 -pwds aaa -of tmp.bin ${SESS} > run.out
+	checkSuccess $?
+
+	echo "Verify the HMAC ${HALG} using the two methods"
+	diff sig.bin tmp.bin
+	checkSuccess $?
+
+	echo "HMAC ${HALG} using the keyed hash key, message from command line ${SESS}"
+	${PREFIX}hmac -hk 80000001 -ic 1234567890123456 -os sig.bin -pwdk khk -halg ${HALG} ${SESS} > run.out
 	checkSuccess $?
 
 	echo "Verify the HMAC ${HALG} using the two methods"
@@ -129,8 +137,16 @@ do
     for SESS in "" "-se0 02000000 1"
     do
 
-	echo "Hash ${HALG} in one call"
+	echo "Hash ${HALG} in one call, data from file"
 	${PREFIX}hash -hi p -halg ${HALG} -if policies/aaa -oh tmp.bin > run.out
+	checkSuccess $?
+
+	echo "Verify the hash ${HALG}"
+	diff tmp.bin policies/${HALG}aaa.bin > run.out
+	checkSuccess $?
+
+	echo "Hash ${HALG} in one call, data on command line"
+	${PREFIX}hash -hi p -halg ${HALG} -ic aaa -oh tmp.bin > run.out
 	checkSuccess $?
 
 	echo "Verify the hash ${HALG}"
@@ -230,6 +246,9 @@ checkFailure $?
 echo "Flush the signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
+
+rm -f tmp.bin
+rm -f tmp1.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 02000000

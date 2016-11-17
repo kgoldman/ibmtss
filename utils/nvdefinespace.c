@@ -3,7 +3,7 @@
 /*			    NV Define Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 730 2016-08-23 21:09:53Z kgoldman $		*/
+/*	      $Id: nvdefinespace.c 802 2016-11-15 20:06:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -465,36 +465,36 @@ int main(int argc, char *argv[])
 	if (policyFilename != NULL) {
 	    if (rc == 0) {
 		nvAttributes.val |= TPMA_NVA_POLICYWRITE | TPMA_NVA_POLICYREAD;
-		rc = TSS_File_Read2B(&in.publicInfo.t.nvPublic.authPolicy.b,
+		rc = TSS_File_Read2B(&in.publicInfo.nvPublic.authPolicy.b,
 				     sizeof(TPMU_HA),
 				     policyFilename);
 	    }
 	    /* sanity check that the size of the policy hash matches the name algorithm */
 	    if (rc == 0) {
-		if (in.publicInfo.t.nvPublic.authPolicy.b.size != hashSize) {
+		if (in.publicInfo.nvPublic.authPolicy.b.size != hashSize) {
 		    printf("Policy size %u does not match name algorithm %u\n",
-			   in.publicInfo.t.nvPublic.authPolicy.b.size, hashSize);
+			   in.publicInfo.nvPublic.authPolicy.b.size, hashSize);
 		    rc = TPM_RC_POLICY;
 		}
 	    }
 	}
 	else {
-	    in.publicInfo.t.nvPublic.authPolicy.t.size = 0;	/* default empty policy */
+	    in.publicInfo.nvPublic.authPolicy.t.size = 0;	/* default empty policy */
 	}
     }
     /* Table 197 - Definition of TPM2B_NV_PUBLIC Structure publicInfo */
     /* Table 196 - Definition of TPMS_NV_PUBLIC Structure nvPublic */
     if (rc == 0) {
-	in.publicInfo.t.nvPublic.nvIndex = nvIndex;		/* the handle of the data area */
-	in.publicInfo.t.nvPublic.nameAlg = nalg;		/* hash algorithm used to compute
-								   the name of the Index and used
-								   for the authPolicy */
-	in.publicInfo.t.nvPublic.attributes = nvAttributes;	/* the default Index attributes */
+	in.publicInfo.nvPublic.nvIndex = nvIndex;	/* the handle of the data area */
+	in.publicInfo.nvPublic.nameAlg = nalg;		/* hash algorithm used to compute the name
+							   of the Index and used for the
+							   authPolicy */
+	in.publicInfo.nvPublic.attributes = nvAttributes;	/* the default Index attributes */
 	/* additional set attributes */
-	in.publicInfo.t.nvPublic.attributes.val |= setAttributes.val;
+	in.publicInfo.nvPublic.attributes.val |= setAttributes.val;
 	/* clear attributes */
-	in.publicInfo.t.nvPublic.attributes.val &= ~(clearAttributes.val);
-	in.publicInfo.t.nvPublic.dataSize = dataSize;	/* the size of the data area */
+	in.publicInfo.nvPublic.attributes.val &= ~(clearAttributes.val);
+	in.publicInfo.nvPublic.dataSize = dataSize;	/* the size of the data area */
     }
     /* Start a TSS context */
     if (rc == 0) {
@@ -557,7 +557,7 @@ static void printUsage(void)
     printf("\t[-ty index type (o, c, b, e, p, f) (default ordinary)]\n");
     printf("\t\tordinary, counter, bits, extend, pin pass, pin fail\n");
     printf("\t[-pol policy file (default empty)]\n");
-    printf("\t\tssts POLICYWRITE, POLICYREAD\n");
+    printf("\t\tsets POLICYWRITE, POLICYREAD\n");
     printf("\t[+at attributes to add (may be specified more than once)]\n");
     printf("\t\tppw  (PPWRITE)\t\tppr (PPREAD)\n");
     printf("\t\tow   (OWNERWRITE)\tor  (OWNERREAD)\n");

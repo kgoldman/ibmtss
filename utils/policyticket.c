@@ -3,7 +3,7 @@
 /*			    PolicyTicket	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyticket.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: policyticket.c 778 2016-10-19 15:21:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -338,7 +338,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyTicket\n");
     printf("\n");
-    printf("\t-ha session handle\n");
+    printf("\t-ha policy session handle\n");
     printf("\t-to timeout file name\n");
     printf("\t-cp cpHash file (default none)\n");
     printf("\t-pref policyRef file (default none)\n");

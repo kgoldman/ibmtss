@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testcontext.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testcontext.bat 797 2016-11-11 22:57:11Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -89,7 +89,7 @@ IF !ERRORLEVEL! NEQ 0 (
 echo "Sign with original key  - should fail"
 %TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if msg.bin -os sig.bin -pwdk sig -se0 02000000 1 > run.out
 IF !ERRORLEVEL! EQU 0 (
-exit /B 1
+    exit /B 1
 )
 
 echo "Load context"

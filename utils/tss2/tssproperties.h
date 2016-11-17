@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.h 730 2016-08-23 21:09:53Z kgoldman $		*/
+/*	      $Id: tssproperties.h 781 2016-10-21 19:17:39Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -67,7 +67,9 @@ typedef SOCKET TSS_SOCKET_FD;
 #endif /* TPM_WINDOWS */
 
 #ifdef TPM_POSIX
+#ifndef TPM_NOSOCKET
 typedef int TSS_SOCKET_FD;
+#endif 	/* TPM_NOSOCKET */
 #endif	/* TPM_POSIX */
 
 #ifdef __cplusplus
@@ -76,7 +78,15 @@ extern "C" {
 
 #include <tss2/tss.h>
 #include "tssauth.h"
- 
+
+/* Structure to hold sessions within the context */
+
+typedef struct TSS_SESSIONS {
+    TPMI_SH_AUTH_SESSION sessionHandle;
+    uint8_t *sessionData;
+    uint16_t sessionDataLength;
+} TSS_SESSIONS;
+    
 /* Context for TSS global parameters */
 
 struct TSS_CONTEXT {
@@ -89,6 +99,11 @@ struct TSS_CONTEXT {
     /* encrypt saved session state */
     int tssEncryptSessions;
 
+    /* a minimal TSS with no file support stores the sessions in a structure.  SCripting will not
+       work, but a single application will */
+#ifdef TPM_TSS_NOFILE
+    TSS_SESSIONS sessions[MAX_ACTIVE_SESSIONS];
+#endif
     /* ports, host name, server (packet) type for socket interface */
     short tssCommandPort;
     short tssPlatformPort;
@@ -105,7 +120,9 @@ struct TSS_CONTEXT {
     int tssFirstTransmit;
 
     /* socket file descriptor */
+#ifndef TPM_NOSOCKET
     TSS_SOCKET_FD sock_fd;
+#endif 	/* TPM_NOSOCKET */
 
     /* Linux device file descriptor */
     int dev_fd;

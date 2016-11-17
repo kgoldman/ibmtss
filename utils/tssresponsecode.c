@@ -3,7 +3,7 @@
 /*			     TPM2 Response Code Printer				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.c 753 2016-09-23 17:03:21Z kgoldman $	*/
+/*	      $Id: tssresponsecode.c 767 2016-10-17 16:59:30Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -210,6 +210,7 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_BAD_CONNECTION, "TSS_RC_BAD_CONNECTION - Failure communicating with lower layer"},
     {TSS_RC_MALFORMED_RESPONSE, "TSS_RC_MALFORMED_RESPONSE - A response packet was fundamentally malformed"},
     {TSS_RC_NULL_PARAMETER, "TSS_RC_NULL_PARAMETER - A required parameter was NULL"},
+    {TSS_RC_NOT_IMPLEMENTED, "TSS_RC_NOT_IMPLEMENTED - TSS function is not implemented"},
     {TSS_RC_FILE_OPEN, "TSS_RC_FILE_OPEN - The file could not be opened"},
     {TSS_RC_FILE_SEEK, "TSS_RC_FILE_SEEK - A file seek failed"},
     {TSS_RC_FILE_FTELL, "TSS_RC_FILE_FTELL - A file ftell failed"},
@@ -249,7 +250,8 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_COMMAND_UNIMPLEMENTED, "TSS_RC_COMMAND_UNIMPLEMENTED - Unimplemented command"},
     {TSS_RC_IN_PARAMETER, "TSS_RC_IN_PARAMETER - Bad in parameter to TSS_Execute"},
     {TSS_RC_OUT_PARAMETER, "TSS_RC_OUT_PARAMETER - Bad out parameter to TSS_Execute"},
-    {TSS_RC_BAD_HANDLE_NUMBER, "TSS_RC_BAD_HANDLE_NUMBER - Bad handle number for this command"}
+    {TSS_RC_BAD_HANDLE_NUMBER, "TSS_RC_BAD_HANDLE_NUMBER - Bad handle number for this command"},
+    {TSS_RC_NO_SESSION_SLOT, "TSS_RC_NO_SESSION_SLOT - TSS context has no session slot for handle"}
 };
 
 #define BITS1108	0xf00

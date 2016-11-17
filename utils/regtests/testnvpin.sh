@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testnvpin.sh 663 2016-06-30 18:58:18Z kgoldman $		#
+#		$Id: testnvpin.sh 789 2016-10-25 20:18:50Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -63,67 +63,29 @@
 # 9d 56 8f da 52 27 30 dc be a8 ad 59 bc a5 0c 1c 
 # 16 02 95 03 a0 0b d3 d8 20 a8 b2 d8 5b c5 12 df 
 
-
 # 01000000 is PIN pass or PIN fail index
 # 01000001 is ordinary index with PIN pass policy
 # 01000002 is ordinary index with PIN fail policy
 
 
-checkSuccess()
-{
-if [ $1 -ne 0 ]; then
-    echo " ERROR:"
-    cat run.out
-    exit 255
-else
-    echo " INFO:"
-fi
-}
-
-checkFailure()
-{
-if [ $1 -eq 0 ]; then
-    echo " ERROR:"
-    exit 255
-else
-    echo " INFO:"
-fi
-}
-
 echo ""
 echo "NV PIN Index"
 echo ""
 
-echo "NV Define Space, ordinary index, with policysecret for pin pass index"
+echo "NV Define Space, 01000001, ordinary index, with policysecret for pin pass index 01000000"
 ${PREFIX}nvdefinespace -ha 01000001 -hi o -pwdn ppi -ty o -hia p -sz 1 -pol policies/policysecretnvpp.bin > run.out
-checkSuccess $?
-
-echo "NV Read Public"
-${PREFIX}nvreadpublic -ha 01000001 > run.out
 checkSuccess $?
 
 echo "Platform write to set written bit"
 ${PREFIX}nvwrite -ha 01000001 -hia p -ic 0 > run.out
 checkSuccess $?
 
-echo "NV Read Public"
-${PREFIX}nvreadpublic -ha 01000001 > run.out
-checkSuccess $?
-
-echo "NV Define Space, ordinary index, with policysecret for pin pass fail"
+echo "NV Define Space, 01000002, ordinary index, with policysecret for pin pass fail 01000000"
 ${PREFIX}nvdefinespace -ha 01000002 -hi o -pwdn pfi -ty o -hia p -sz 1 -pol policies/policysecretnvpf.bin  > run.out
-checkSuccess $?
-
-echo "NV Read Public"
-${PREFIX}nvreadpublic -ha 01000002 > run.out
 checkSuccess $?
 
 echo "Platform write to set written bit"
 ${PREFIX}nvwrite -ha 01000002 -hia p -ic 0 > run.out
-checkSuccess $?
-
-echo "NV Read Public"
-${PREFIX}nvreadpublic -ha 01000002 > run.out
 checkSuccess $?
 
 echo "Start a policy session"
@@ -134,19 +96,19 @@ echo ""
 echo "NV PIN Pass Index"
 echo ""
 
-echo "phEnableNV enable"
-hierarchycontrol -hi p -he n > run.out
+echo "Set phEnableNV"
+${PREFIX}hierarchycontrol -hi p -he n > run.out
 checkSuccess $?
 
-echo "NV Define Space"
+echo "NV Define Space, 01000000, pin pass, read/write stclear, policy secret using platform auth"
 ${PREFIX}nvdefinespace -ha 01000000 -hi p -pwdn nnn -ty p +at wst +at rst -hia p -pol policies/policysecretp.bin > run.out
 checkSuccess $?
 
-echo "NV Read Public"
-${PREFIX}nvreadpublic -ha 01000000 > run.out
-checkSuccess $?
+echo "Policy Secret with PWAP session, not written - should fail"
+${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde nnn > run.out
+checkFailure $?
 
-echo "Platform write, 1 use"
+echo "Platform write, 1 use, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
@@ -154,19 +116,19 @@ echo "Platform read does not affect count"
 ${PREFIX}nvread -ha 01000000 -hia p -sz 8 > run.out
 checkSuccess $?
 
-echo "Platform read"
+echo "Platform read does not affect count, should succeed"
 ${PREFIX}nvread -ha 01000000 -hia p -sz 8 > run.out
 checkSuccess $?
 
-echo "Policy Secret platform with PWAP session"
+echo "Policy Secret with PWAP session, platform auth"
 ${PREFIX}policysecret -ha 4000000c -hs 03000000 > run.out
 checkSuccess $?
 
-echo "Policy write, 1 use"
+echo "Policy write, 1 use, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -id 0 1 -se0 03000000 1 > run.out
 checkSuccess $?
 
-echo "Policy Secret platform with PWAP session"
+echo "Policy Secret with PWAP session, platform auth"
 ${PREFIX}policysecret -ha 4000000c -hs 03000000 > run.out
 checkSuccess $?
 
@@ -174,7 +136,7 @@ echo "Policy read"
 ${PREFIX}nvread -ha 01000000 -se0 03000000 1 > run.out
 checkSuccess $?
 
-echo "Platform write, 1 use"
+echo "Platform write, 1 use, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
@@ -198,7 +160,7 @@ echo "Policy Secret with PWAP session, bad password - should fail"
 ${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde nnnx > run.out
 checkFailure $?
 
-echo "Platform write, 1 use, 0 / 1"
+echo "Platform write, 01000000, 1 use, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
@@ -222,7 +184,7 @@ echo "Read ordinary index using PIN pass policy secret"
 ${PREFIX}nvread -ha 01000001 -sz 1 -se0 03000000 1 > run.out
 checkSuccess $?
 
-echo "Platform write, 1 use, 1 / 2"
+echo "Platform write, 01000000, 1 use, 1 / 2"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 1 2 > run.out
 checkSuccess $?
 
@@ -258,11 +220,11 @@ echo ""
 echo "NV PIN Pass Index with Write Lock"
 echo ""
 
-echo "Platform write, 1 use, 0 / 1"
+echo "Platform write, 01000000, 1 use, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
-echo "Write lock"
+echo "Write lock, 01000000"
 ${PREFIX}nvwritelock -ha 01000000 -hia p > run.out 
 checkSuccess $?
 
@@ -274,7 +236,7 @@ echo "Policy Secret with PWAP session, pinCount used - should fail"
 ${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde nnn > run.out
 checkFailure $?
 
-echo "Platform write, locked - should fail"
+echo "Platform write, 01000000, locked - should fail"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkFailure $?
 
@@ -290,7 +252,7 @@ echo "Start a policy session"
 ${PREFIX}startauthsession -se p > run.out
 checkSuccess $?
 
-echo "Platform write, 1 use, 0 / 1"
+echo "Platform write, 01000000, 1 use, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
@@ -302,11 +264,11 @@ echo ""
 echo "NV PIN Pass Index with Read Lock"
 echo ""
 
-echo "Platform write, 1 use, 0 / 1"
+echo "Platform write, 01000000, 1 use, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
-echo "Read lock"
+echo "Read lock, 01000000"
 ${PREFIX}nvreadlock -ha 01000000 -hia p  > run.out
 checkSuccess $?
 
@@ -322,7 +284,7 @@ echo ""
 echo "NV PIN Pass Index with phEnableNV clear"
 echo ""
 
-echo "Platform write, 1 use, 0 / 1"
+echo "Platform write, 01000000, 1 use, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
@@ -339,14 +301,14 @@ ${PREFIX}hierarchycontrol -hi p -he n -state 1 > run.out
 checkSuccess $?
 
 echo ""
-echo "Cleanup"
+echo "Cleanup NV PIN Pass"
 echo ""
 
-echo "NV Undefine Space"
+echo "NV Undefine Space, 01000000 "
 ${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
 checkSuccess $?
 
-echo "Flush the session"
+echo "Flush the policy session, 03000000 "
 ${PREFIX}flushcontext -ha 03000000 > run.out
 checkSuccess $?
 
@@ -354,15 +316,15 @@ echo ""
 echo "NV PIN Fail Index"
 echo ""
 
-echo "NV Define Space"
+echo "NV Define Space, 01000000, pin fail, read/write stclear, policy secret using platform auth"
 ${PREFIX}nvdefinespace -ha 01000000 -hi p -pwdn nnn -ty f +at wst +at rst -hia p -pol policies/policysecretp.bin > run.out
 checkSuccess $?
 
-echo "NV Read Public"
-${PREFIX}nvreadpublic -ha 01000000 > run.out
-checkSuccess $?
+echo "Policy Secret with PWAP session, not written - should fail"
+${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde nnn > run.out
+checkFailure $?
 
-echo "Platform write, 1 failure"
+echo "Platform write, 1 failure, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
@@ -378,43 +340,43 @@ echo "Start a policy session"
 ${PREFIX}startauthsession -se p > run.out
 checkSuccess $?
 
-echo "Policy Secret platform with PWAP session"
+echo "Policy Secret with PWAP session, platform auth"
 ${PREFIX}policysecret -ha 4000000c -hs 03000000 > run.out
 checkSuccess $?
 
-echo "Policy write, 1 failure"
+echo "Policy write, 01000000, 1 failure"
 ${PREFIX}nvwrite -ha 01000000 -id 0 1 -se0 03000000 1 > run.out
 checkSuccess $?
 
-echo "Policy Secret platform with PWAP session"
+echo "Policy Secret with PWAP session, platform auth"
 ${PREFIX}policysecret -ha 4000000c -hs 03000000 > run.out
 checkSuccess $?
 
-echo "Policy read"
+echo "Policy read, 01000000"
 ${PREFIX}nvread -ha 01000000 -sz 8 -se0 03000000 1 > run.out
 checkSuccess $?
 
-echo "Platform write, 1 failure"
+echo "Platform write, 01000000, 1 failure"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
-echo "Index read, correct password"
+echo "Index read, 01000000, correct password"
 ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
 checkSuccess $?
 
-echo "Index read, bad password - should fail"
+echo "Index read, 01000000, bad password - should fail"
 ${PREFIX}nvread -ha 01000000 -pwdn nn -sz 8  > run.out
 checkFailure $?
 
-echo "Index read, correct password - should fail"
+echo "Index read, 01000000, correct password - should fail"
 ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
 checkFailure $?
 
-echo "Platform write, 1 failure"
+echo "Platform write, 01000000, 1 failure"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
-echo "Index read"
+echo "Index read, 01000000"
 ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
 checkSuccess $?
 
@@ -458,7 +420,7 @@ echo "Policy Secret with PWAP session, good password, resets pinCount"
 ${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde nnn > run.out
 checkSuccess $?
 
-echo "Platform write, 0 failures , 1 / 1"
+echo "Platform write, 0 failures, 1 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 1 1 > run.out
 checkSuccess $?
 
@@ -470,11 +432,11 @@ echo ""
 echo "NV PIN Fail Index with Write Lock"
 echo ""
 
-echo "Platform write, 1 fail , 0 / 1"
+echo "Platform write, 01000000, 1 fail, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
-echo "Write lock"
+echo "Write lock, 01000000"
 ${PREFIX}nvwritelock -ha 01000000 -hia p > run.out 
 checkSuccess $?
 
@@ -482,7 +444,7 @@ echo "Policy Secret with PWAP session"
 ${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde nnn > run.out
 checkSuccess $?
 
-echo "Platform write, locked - should fail"
+echo "Platform write, 01000000, locked - should fail"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkFailure $?
 
@@ -498,7 +460,7 @@ echo "Start a policy session"
 ${PREFIX}startauthsession -se p > run.out
 checkSuccess $?
 
-echo "Platform write, 1 failure, 0 / 1"
+echo "Platform write, 01000000, unlocked, 1 failure, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
@@ -506,11 +468,11 @@ echo ""
 echo "NV PIN Fail Index with Read Lock"
 echo ""
 
-echo "Platform write, 1 failure, 0 / 1"
+echo "Platform write, 01000000, 1 failure, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
-echo "Read lock"
+echo "Read lock 01000000"
 ${PREFIX}nvreadlock -ha 01000000 -hia p > run.out 
 checkSuccess $?
 
@@ -526,7 +488,7 @@ echo ""
 echo "NV PIN Fail Index with phEnableNV clear"
 echo ""
 
-echo "Platform write, 1 failure, 0 / 1"
+echo "Platform write, 01000000, 1 failure, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
@@ -546,70 +508,49 @@ echo ""
 echo "Cleanup"
 echo ""
 
-echo "NV Undefine Space"
+echo "NV Undefine Space 01000000"
 ${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out 
 checkSuccess $?
 
-echo "NV Undefine Space"
+echo "NV Undefine Space 01000001"
 ${PREFIX}nvundefinespace -hi o -ha 01000001 > run.out
 checkSuccess $?
 
-echo "NV Undefine Space"
-${PREFIX}nvundefinespace -hi o -ha 01000002  > run.out
+echo "NV Undefine Space 01000002"
+${PREFIX}nvundefinespace -hi o -ha 01000002 > run.out
 checkSuccess $?
 
 echo "Flush the session"
 ${PREFIX}flushcontext -ha 03000000 > run.out > run.out
 checkSuccess $?
 
-exit 0
+echo "Recreate the primary key"
+${PREFIX}createprimary -hi p -pwdk pps > run.out
+checkSuccess $?
 
+echo ""
+echo "NV PIN define space"
+echo ""
 
+echo "NV Define Space, 01000000, no write auth - should fail"
+${PREFIX}nvdefinespace -ha 01000000 -hi p -pwdn nnn -ty p -hia p -at ppw > run.out
+checkFailure $?
 
+echo "NV Define Space, 01000000, no read auth - should fail"
+${PREFIX}nvdefinespace -ha 01000000 -hi p -pwdn nnn -ty p -hia p -at ppr -at ar> run.out
+checkFailure $?
 
+echo "NV Define Space, 01000000, PIN Pass, auth write - should fail"
+${PREFIX}nvdefinespace -ha 01000000 -hi p -pwdn nnn -ty p -hia p +at aw > run.out
+checkFailure $?
 
+echo "NV Define Space, 01000000, PIN Fail, auth write - should fail"
+${PREFIX}nvdefinespace -ha 01000000 -hi p -pwdn nnn -ty f -hia p +at aw > run.out
+checkFailure $?
 
-
-
-
-
-pinfail
-
-create 
-least one of TPMA_NV_PPWRITE, TPMA_NV_OWNERWRITE, or TPMA_NV_POLICYWRITE
-TPMA_NV_AUTHWRITE shall be clear
-must have noda
-test plat write, owner write, policy write, auth write
-write 
-pin count pinlimit 4 bytes each,big endian
-
-try reset to zero
-try reset to nonzero
-try reset to limit
-reset to > limit
-
-auth fail , policysecret
-pincount incremented
-fail if written clear
-
-auth success, policysecret
-pincount set to zero
-fail if pincount not < pinlimit
-
-write lock blocks write
-write locked, can still use in policy
-phenablenv causes fail
-read lock causes fail, no increment
-
-policy platform policy ownner read does not affect count
-authread affects count
-
-
-function lock
-
-function unlock
-shutdown clear startup clear
-
+echo "NV Define Space, 01000000, PIN Fail, noDA clear - should fail"
+${PREFIX}nvdefinespace -ha 01000000 -hi p -pwdn nnn -ty f -hia p -at da > run.out
+checkFailure $?
 
 # ${PREFIX}getcapability  -cap 1 -pr 80000000
 # ${PREFIX}getcapability  -cap 1 -pr 02000000

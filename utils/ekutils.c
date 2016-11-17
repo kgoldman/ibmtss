@@ -3,7 +3,7 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 686 2016-07-20 16:30:54Z kgoldman $		*/
+/*	      $Id: ekutils.c 802 2016-11-15 20:06:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -67,8 +67,13 @@
 
 extern int verbose;
 
-static TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
-			      uint32_t *nvBufferMax)
+/* readNvBufferMax() determines the maximum NV read/write block size.  The limit is typically set by
+   the TPM property TPM_PT_NV_BUFFER_MAX.  However, it's possible that a value could be larger that
+   the TSS side structure MAX_NV_BUFFER_SIZE.
+*/
+
+TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
+		       uint32_t *nvBufferMax)
 {
     TPM_RC			rc = 0;
     GetCapability_In 		in;
@@ -91,11 +96,17 @@ static TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
 	    *nvBufferMax = out.capabilityData.data.tpmProperties.tpmProperty[0].value;
 	}
 	else {
-	    printf("readNvBufferMax: wrong property returned: %08x\n",
+	    if (verbose) printf("readNvBufferMax: wrong property returned: %08x\n",
 		   out.capabilityData.data.tpmProperties.tpmProperty[0].property);
-	    /* hard code a value for a TPM that does not implement TPM_PT_NV_BUFFER_MAX */
+	    /* hard code a value for a TPM that does not implement TPM_PT_NV_BUFFER_MAX yet */
 	    *nvBufferMax = 512;
 	}
+	if (verbose) printf("readNvBufferMax: TPM max read/write: %u\n", *nvBufferMax);
+	/* in addition, the maximum TSS side structure MAX_NV_BUFFER_SIZE is accounted for */
+	if (*nvBufferMax > MAX_NV_BUFFER_SIZE) {
+	    *nvBufferMax = MAX_NV_BUFFER_SIZE;
+	}
+	if (verbose) printf("readNvBufferMax: combined max read/write: %u\n", *nvBufferMax);
     }
     else {
 	const char *msg;
@@ -143,7 +154,7 @@ TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
     }
     if (rc == 0) {
 	/* if (verbose) printf("getIndexSize: size %u\n", out.nvPublic.t.nvPublic.dataSize); */
-	*dataSize = out.nvPublic.t.nvPublic.dataSize;
+	*dataSize = out.nvPublic.nvPublic.dataSize;
     }
     return rc;
 }
@@ -184,7 +195,7 @@ TPM_RC getIndexData(TSS_CONTEXT *tssContext,
     while ((rc == 0) && !done) {
 	if (rc == 0) {
 	    /* read a chunk */
-	    in.offset += bytesRead;
+	    in.offset = bytesRead;
 	    if ((uint32_t)(readDataSize - bytesRead) < nvBufferMax) {
 		in.size = readDataSize - bytesRead;	/* last chunk */
 	    }
@@ -757,43 +768,43 @@ TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
     /* set up the createprimary in parameters */
     if (rc == 0) {
 	inCreatePrimary.primaryHandle = TPM_RH_ENDORSEMENT;
-	inCreatePrimary.inSensitive.t.sensitive.userAuth.t.size = 0;
-	inCreatePrimary.inSensitive.t.sensitive.data.t.size = 0;
+	inCreatePrimary.inSensitive.sensitive.userAuth.t.size = 0;
+	inCreatePrimary.inSensitive.sensitive.data.t.size = 0;
 	/* creation data */
 	inCreatePrimary.outsideInfo.t.size = 0;
 	inCreatePrimary.creationPCR.count = 0;
     }
     /* construct the template from the NV template and nonce */
     if ((rc == 0) && (nonce != NULL)) {
-	inCreatePrimary.inPublic.t.publicArea = *tpmtPublicIn;
+	inCreatePrimary.inPublic.publicArea = *tpmtPublicIn;
 	if (ekCertIndex == EK_CERT_RSA_INDEX) {			/* RSA primary key */
 	    /* unique field is 256 bytes */
-	    inCreatePrimary.inPublic.t.publicArea.unique.rsa.t.size = 256;
+	    inCreatePrimary.inPublic.publicArea.unique.rsa.t.size = 256;
 	    /* first part is nonce */
-	    memcpy(inCreatePrimary.inPublic.t.publicArea.unique.rsa.t.buffer, nonce, nonceSize);
+	    memcpy(inCreatePrimary.inPublic.publicArea.unique.rsa.t.buffer, nonce, nonceSize);
 	    /* padded with zeros */
-	    memset(inCreatePrimary.inPublic.t.publicArea.unique.rsa.t.buffer + nonceSize, 0,
+	    memset(inCreatePrimary.inPublic.publicArea.unique.rsa.t.buffer + nonceSize, 0,
 		   256 - nonceSize);
 	}
 	else {							/* EC primary key */
 	    /* unique field is X and Y points */
 	    /* X gets nonce and pad */
-	    inCreatePrimary.inPublic.t.publicArea.unique.ecc.x.t.size = 32;
-	    memcpy(inCreatePrimary.inPublic.t.publicArea.unique.ecc.x.t.buffer, nonce, nonceSize);
-	    memset(inCreatePrimary.inPublic.t.publicArea.unique.ecc.x.t.buffer + nonceSize, 0,
+	    inCreatePrimary.inPublic.publicArea.unique.ecc.x.t.size = 32;
+	    memcpy(inCreatePrimary.inPublic.publicArea.unique.ecc.x.t.buffer, nonce, nonceSize);
+	    memset(inCreatePrimary.inPublic.publicArea.unique.ecc.x.t.buffer + nonceSize, 0,
 		   32 - nonceSize);
 	    /* Y gets zeros */
-	    inCreatePrimary.inPublic.t.publicArea.unique.ecc.y.t.size = 32;
-	    memset(inCreatePrimary.inPublic.t.publicArea.unique.ecc.y.t.buffer, 0, 32);
+	    inCreatePrimary.inPublic.publicArea.unique.ecc.y.t.size = 32;
+	    memset(inCreatePrimary.inPublic.publicArea.unique.ecc.y.t.buffer, 0, 32);
 	}
     }
     /* construct the template from the default IWG template */
     if ((rc == 0) && (nonce == NULL)) {
 	if (ekCertIndex == EK_CERT_RSA_INDEX) {			/* RSA primary key */
-	    getRsaTemplate(&inCreatePrimary.inPublic.t.publicArea);
+	    getRsaTemplate(&inCreatePrimary.inPublic.publicArea);
 	}
 	else {							/* EC primary key */
-	    getEccTemplate(&inCreatePrimary.inPublic.t.publicArea);
+	    getEccTemplate(&inCreatePrimary.inPublic.publicArea);
 	}
     }
     /* call TSS to execute the command */
@@ -816,7 +827,7 @@ TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
     }
     /* return the primary key */
     if (rc == 0) {
-	*tpmtPublicOut = outCreatePrimary.outPublic.t.publicArea;
+	*tpmtPublicOut = outCreatePrimary.outPublic.publicArea;
     }
     /* flush the primary key */
     if (rc == 0) {
@@ -848,16 +859,16 @@ TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	if (ekCertIndex == EK_CERT_RSA_INDEX) {
 	    if (print) TSS_PrintAll("createprimary: RSA public key",
-				    outCreatePrimary.outPublic.t.publicArea.unique.rsa.t.buffer,
-				    outCreatePrimary.outPublic.t.publicArea.unique.rsa.t.size);
+				    outCreatePrimary.outPublic.publicArea.unique.rsa.t.buffer,
+				    outCreatePrimary.outPublic.publicArea.unique.rsa.t.size);
 	}
 	else {
 	    if (print) TSS_PrintAll("createprimary: ECC public key x",
-				    outCreatePrimary.outPublic.t.publicArea.unique.ecc.x.t.buffer,
-				    outCreatePrimary.outPublic.t.publicArea.unique.ecc.x.t.size);
+				    outCreatePrimary.outPublic.publicArea.unique.ecc.x.t.buffer,
+				    outCreatePrimary.outPublic.publicArea.unique.ecc.x.t.size);
 	    if (print) TSS_PrintAll("createprimary: ECC public key y",
-				    outCreatePrimary.outPublic.t.publicArea.unique.ecc.y.t.buffer,
-				    outCreatePrimary.outPublic.t.publicArea.unique.ecc.y.t.size);
+				    outCreatePrimary.outPublic.publicArea.unique.ecc.y.t.buffer,
+				    outCreatePrimary.outPublic.publicArea.unique.ecc.y.t.size);
 	}
     }
     return rc;

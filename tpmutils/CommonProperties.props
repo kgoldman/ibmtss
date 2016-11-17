@@ -5,7 +5,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>../../utils;c:/program files/openssl/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:/program files/openssl/include;../../utils</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>TPM_WINDOWS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;TPM_ENCRYPT_SESSIONS_DEFAULT="0";TPM_WINDOWS_TBSI;TPM_WINDOWS_TBSI_WIN8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

@@ -3,7 +3,7 @@
 /*			    Hmac						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hmac.c 682 2016-07-15 18:49:19Z kgoldman $			*/
+/*	      $Id: hmac.c 813 2016-11-16 22:24:37Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
     TPMI_DH_OBJECT		keyHandle = 0;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     const char			*inFilename = NULL;
+    const char 			*inString = NULL;
     const char			*hmacFilename = NULL;
     const char			*keyPassword = NULL; 
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
@@ -120,6 +121,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-halg option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-ic") == 0) {
+	    i++;
+	    if (i < argc) {
+		inString = argv[i];
+	    }
+	    else {
+		printf("-ic option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -225,28 +236,49 @@ int main(int argc, char *argv[])
 	printf("Missing handle parameter -hk\n");
 	printUsage();
     }
-    if (inFilename == NULL) {
-	printf("Missing input file -if\n");
+    if ((inFilename == NULL) && (inString == NULL)) {
+	printf("Input file -if or input string -ic must be specified\n");
 	printUsage();
     }
-    if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
-				     &length,
-				     inFilename);
+    if ((inFilename != NULL) && (inString != NULL)) {
+	printf("Input file -if and input string -ic cannot both be specified\n");
+	printUsage();
     }
-    if (rc == 0) {
-	if (length > MAX_DIGEST_BUFFER) {
-	    printf("Input data too long %u\n", (unsigned int)length);
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+    if (inFilename != NULL) {
+	if (rc == 0) {
+	    rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+					 &length,
+					 inFilename);
+	}
+	if (rc == 0) {
+	    if (length > MAX_DIGEST_BUFFER) {
+		printf("Input data too long %lu\n", (unsigned long)length);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+	if (rc == 0) {
+	    /* data to be hmaced */
+	    in.buffer.t.size = length;
+	    memcpy(in.buffer.t.buffer, buffer, length);
+	}
+    }
+    if (inString != NULL) {
+	if (rc == 0) {
+	    length = strlen(inString);
+	    if (length > MAX_DIGEST_BUFFER) {
+		printf("Input data too long %lu\n", (unsigned long)length);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    } 
+	}
+	if (rc == 0) {
+	    /* data to be hashed */
+	    in.buffer.t.size = length;
+	    memcpy(in.buffer.t.buffer, inString, length);
 	}
     }
     if (rc == 0) {
 	/* Handle of key that will perform hmac */
 	in.handle = keyHandle;
-
-	/* data to be hmaced */
-	in.buffer.t.size = length;
-	memcpy(in.buffer.t.buffer, buffer, length);
 	/* use key's hash algorithm */
 	in.hashAlg = halg;
     }
@@ -310,6 +342,7 @@ static void printUsage(void)
     printf("\t-pwdk password for key (default empty)\n");
     printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
     printf("\t-if input file to be HMACed\n");
+    printf("\t-ic data string to be HMACed\n");
     printf("\t-os hmac file name\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

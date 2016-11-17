@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testprimary.sh 663 2016-06-30 18:58:18Z kgoldman $			#
+#	$Id: testprimary.sh 759 2016-10-05 18:42:42Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -101,7 +101,7 @@ checkSuccess $?
 
 # empty unique
 
-echo "Create a primary storage key with no unique field"
+echo "Create a primary storage key with empty unique field"
 touch empty.bin
 ${PREFIX}createprimary -hi p -pwdk pps -iu empty.bin > run.out
 checkSuccess $?

@@ -3,7 +3,7 @@
 /*			   EncryptDecrypt					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: encryptdecrypt.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: encryptdecrypt.c 790 2016-10-26 19:21:33Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -65,10 +65,12 @@ int main(int argc, char *argv[])
     TSS_CONTEXT			*tssContext = NULL;
     EncryptDecrypt_In 		in;
     EncryptDecrypt_Out 		out;
+    EncryptDecrypt2_In 		in2;
     TPMI_DH_OBJECT		keyHandle = 0;
     const char			*inFilename = NULL;
     const char			*outFilename = NULL;
     TPMI_YES_NO			decrypt = NO;
+    int				two = FALSE;
     const char			*keyPassword = NULL; 
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
@@ -129,6 +131,9 @@ int main(int argc, char *argv[])
 	}
  	else if (strcmp(argv[i],"-d") == 0) {
 	    decrypt = YES;
+	}
+ 	else if (strcmp(argv[i],"-2") == 0) {
+	    two = TRUE;
 	}
  	else if (strcmp(argv[i],"-se0") == 0) {
 	    i++;
@@ -228,18 +233,34 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	/* the symmetric key used for the operation */
-	in.keyHandle = keyHandle;
-	/* if YES, then the operation is decryption; if NO, the operation is encryption */
-	in.decrypt = decrypt;
-	/* symmetric mode */
-	in.mode = TPM_ALG_NULL;
-	/* an initial value as required by the algorithm */
-	in.ivIn.t.size = MAX_SYM_BLOCK_SIZE;
-	memset(in.ivIn.t.buffer, 0, MAX_SYM_BLOCK_SIZE);
-	/* the data to be encrypted/decrypted */
-	in.inData.t.size = length;
-	memcpy(in.inData.t.buffer, buffer, length);
+	if (!two) {	/* use TPM_CC_EncryptDecrypt */
+	    /* the symmetric key used for the operation */
+	    in.keyHandle = keyHandle;
+	    /* if YES, then the operation is decryption; if NO, the operation is encryption */
+	    in.decrypt = decrypt;
+	    /* symmetric mode */
+	    in.mode = TPM_ALG_NULL;
+	    /* an initial value as required by the algorithm */
+	    in.ivIn.t.size = MAX_SYM_BLOCK_SIZE;
+	    memset(in.ivIn.t.buffer, 0, MAX_SYM_BLOCK_SIZE);
+	    /* the data to be encrypted/decrypted */
+	    in.inData.t.size = length;
+	    memcpy(in.inData.t.buffer, buffer, length);
+	}
+	else {
+	    /* the symmetric key used for the operation */
+	    in2.keyHandle = keyHandle;
+	    /* if YES, then the operation is decryption; if NO, the operation is encryption */
+	    in2.decrypt = decrypt;
+	    /* symmetric mode */
+	    in2.mode = TPM_ALG_NULL;
+	    /* an initial value as required by the algorithm */
+	    in2.ivIn.t.size = MAX_SYM_BLOCK_SIZE;
+	    memset(in2.ivIn.t.buffer, 0, MAX_SYM_BLOCK_SIZE);
+	    /* the data to be encrypted/decrypted */
+	    in2.inData.t.size = length;
+	    memcpy(in2.inData.t.buffer, buffer, length);
+	}
     }
     free (buffer);
     buffer = NULL;
@@ -250,15 +271,28 @@ int main(int argc, char *argv[])
     }
     /* call TSS to execute the command */
     if (rc == 0) {
-	rc = TSS_Execute(tssContext,
-			 (RESPONSE_PARAMETERS *)&out,
-			 (COMMAND_PARAMETERS *)&in,
-			 NULL,
-			 TPM_CC_EncryptDecrypt,
-			 sessionHandle0, keyPassword, sessionAttributes0,
-			 sessionHandle1, NULL, sessionAttributes1,
-			 sessionHandle2, NULL, sessionAttributes2,
-			 TPM_RH_NULL, NULL, 0);
+	if (!two) {	/* use TPM_CC_EncryptDecrypt */
+	    rc = TSS_Execute(tssContext,
+			     (RESPONSE_PARAMETERS *)&out,
+			     (COMMAND_PARAMETERS *)&in,
+			     NULL,
+			     TPM_CC_EncryptDecrypt,
+			     sessionHandle0, keyPassword, sessionAttributes0,
+			     sessionHandle1, NULL, sessionAttributes1,
+			     sessionHandle2, NULL, sessionAttributes2,
+			     TPM_RH_NULL, NULL, 0);
+	}
+	else {	/* use TPM_CC_EncryptDecrypt2 */
+	    rc = TSS_Execute(tssContext,
+			     (RESPONSE_PARAMETERS *)&out,
+			     (COMMAND_PARAMETERS *)&in2,
+			     NULL,
+			     TPM_CC_EncryptDecrypt2,
+			     sessionHandle0, keyPassword, sessionAttributes0,
+			     sessionHandle1, NULL, sessionAttributes1,
+			     sessionHandle2, NULL, sessionAttributes2,
+			     TPM_RH_NULL, NULL, 0);
+	}
     }
     {
 	TPM_RC rc1 = TSS_Delete(tssContext);
@@ -315,6 +349,7 @@ static void printUsage(void)
     printf("\t-d decrypt (default encrypt)\n");
     printf("\t-if input file name\n");
     printf("\t-of output file name\n");
+    printf("\t[-2 use TPM2_EncryptDecrypt2]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

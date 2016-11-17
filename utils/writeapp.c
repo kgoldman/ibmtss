@@ -3,7 +3,7 @@
 /*			    NV Write Application				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: writeapp.c 753 2016-09-23 17:03:21Z kgoldman $		*/
+/*	      $Id: writeapp.c 771 2016-10-17 20:09:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -40,7 +40,6 @@
 /* Preprovisioning:
    
    nvdefinespace -hi o -ha 01000000 -pwdn pwd -sz 1
-   nvreadpublic -ha 01000000
    createprimary -hi o
    create -den -hp 80000000 -opu tmppub.bin -opr tmppriv.bin
    load -hp 80000000 -ipu tmppub.bin -ipr tmppriv.bin 
@@ -172,7 +171,6 @@ static void printUsage(void)
     printf("key loaded at 80000001.  Provisioning can be as follows:\n");
     printf("\n");
     printf("> nvdefinespace -hi o -ha 01000000 -pwdn pwd -sz 1\n");
-    printf("> nvreadpublic -ha 01000000\n");
     printf("> createprimary -hi o\n");
     printf("> create -den -hp 80000000 -opu tmppub.bin -opr tmppriv.bin\n");
     printf("> load -hp 80000000 -ipu tmppub.bin -ipr tmppriv.bin\n");

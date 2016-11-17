@@ -3,9 +3,9 @@
 /*			    TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss.c 749 2016-09-20 17:10:53Z kgoldman $			*/
+/*	      $Id: tss.c 802 2016-11-15 20:06:21Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2016.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -59,7 +59,9 @@
 #include <tss2/Unmarshal_fp.h>
 #include <tss2/CpriHash_fp.h>
 #include <tssccattributes.h>
+#ifndef TPM_TSS_NOCRYPTO
 #include <tss2/tsscrypto.h>
+#endif
 #include <tss2/tssprint.h>
 
 /* Files:
@@ -82,7 +84,9 @@
 struct TSS_HMAC_CONTEXT {
     TPMI_SH_AUTH_SESSION	sessionHandle;		/* the session handle */
     TPMI_ALG_HASH		authHashAlg;		/* hash algorithm to use for the session */
+#ifndef TPM_TSS_NOCRYPTO
     uint32_t           		sizeInBytes;		/* hash algorithm mapped to size */
+#endif	/* TPM_TSS_NOCRYPTO */
     TPMT_SYM_DEF 		symmetric;		/* the algorithm and key size for parameter
 							   encryption */
     TPMI_DH_ENTITY 		bind;			/* bind handle */
@@ -90,15 +94,19 @@ struct TSS_HMAC_CONTEXT {
 							   handle */
     TPM2B_AUTH			bindAuthValue;		/* password corresponding to the bind
 							   handle */
+#ifndef TPM_TSS_NOCRYPTO
     TPM2B_NONCE 		nonceTPM;		/* from TPM in response */
     TPM2B_NONCE			nonceCaller;		/* from caller in command */
     TPM2B_DIGEST		sessionKey;		/* from KDFa at session creation */
+#endif	/* TPM_TSS_NOCRYPTO */
     TPM_SE			sessionType;		/* HMAC, policy, or trial policy */
     uint8_t			isPasswordNeeded;	/* flag set by policy password */
     uint8_t			isAuthValueNeeded;	/* flag set by policy password */
+#ifndef TPM_TSS_NOCRYPTO
     /* Items below this line are for the lifetime of one command.  they are not saved and loaded. */
     TPM2B_KEY			hmacKey;		/* HMAC key calculated for each command */
     TPM2B_KEY			sessionValue;		/* KDFa secret for parameter encryption */
+#endif	/* TPM_TSS_NOCRYPTO */
 } TSS_HMAC_CONTEXT;
 
 /* functions for command pre- and post- processing */
@@ -118,9 +126,6 @@ typedef TPM_RC (*TSS_PostProcessFunction_t)(TSS_CONTEXT *tssContext,
 static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
 				      StartAuthSession_In *in,
 				      StartAuthSession_Extra *extra);
-static TPM_RC TSS_PR_PolicySigned(TSS_CONTEXT *tssContext,
-				  PolicySigned_In *in,
-				  PolicySigned_Extra *extra);
 static TPM_RC TSS_PR_NV_DefineSpace(TSS_CONTEXT *tssContext,
 				    NV_DefineSpace_In *in,
 				    void *extra);
@@ -167,6 +172,14 @@ static TPM_RC TSS_PO_LoadExternal(TSS_CONTEXT *tssContext,
 				  LoadExternal_In *in,
 				  LoadExternal_Out *out,
 				  void *extra);
+static TPM_RC TSS_PO_ReadPublic(TSS_CONTEXT *tssContext,
+				ReadPublic_In *in,
+				ReadPublic_Out *out,
+				void *extra);
+static TPM_RC TSS_PO_CreateLoaded(TSS_CONTEXT *tssContext,
+				  CreateLoaded_In *in,
+				  CreateLoaded_Out *out,
+				  void *extra);
 static TPM_RC TSS_PO_HMAC_Start(TSS_CONTEXT *tssContext,
 				HMAC_Start_In *in,
 				HMAC_Start_Out *out,
@@ -195,6 +208,10 @@ static TPM_RC TSS_PO_CreatePrimary(TSS_CONTEXT *tssContext,
 				   CreatePrimary_In *in,
 				   CreatePrimary_Out *out,
 				   void *extra);
+static TPM_RC TSS_PO_NV_DefineSpace(TSS_CONTEXT *tssContext,
+				    NV_DefineSpace_In *in,
+				    void *out,
+				    void *extra);
 static TPM_RC TSS_PO_NV_ReadPublic(TSS_CONTEXT *tssContext,
 				   NV_ReadPublic_In *in,
 				   NV_ReadPublic_Out *out,
@@ -239,11 +256,12 @@ static const TSS_TABLE tssTable [] = {
     {TPM_CC_Create, NULL, NULL, NULL},
     {TPM_CC_Load, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_Load},
     {TPM_CC_LoadExternal, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_LoadExternal},
-    {TPM_CC_ReadPublic, NULL, NULL, NULL},
+    {TPM_CC_ReadPublic, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_ReadPublic},
     {TPM_CC_ActivateCredential, NULL, NULL, NULL},
     {TPM_CC_MakeCredential, NULL, NULL, NULL},
     {TPM_CC_Unseal, NULL, NULL, NULL},
     {TPM_CC_ObjectChangeAuth, NULL, NULL, NULL},
+    {TPM_CC_CreateLoaded, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_CreateLoaded},
     {TPM_CC_Duplicate, NULL, NULL, NULL},
     {TPM_CC_Rewrap, NULL, NULL, NULL},
     {TPM_CC_Import, NULL, NULL, NULL},
@@ -254,6 +272,7 @@ static const TSS_TABLE tssTable [] = {
     {TPM_CC_ECC_Parameters, NULL, NULL, NULL},
     {TPM_CC_ZGen_2Phase, NULL, NULL, NULL},
     {TPM_CC_EncryptDecrypt, NULL, NULL, NULL},
+    {TPM_CC_EncryptDecrypt2, NULL, NULL, NULL},
     {TPM_CC_Hash, NULL, NULL, NULL},
     {TPM_CC_HMAC, NULL, NULL, NULL},
     {TPM_CC_GetRandom, NULL, NULL, NULL},
@@ -281,13 +300,14 @@ static const TSS_TABLE tssTable [] = {
     {TPM_CC_PCR_SetAuthPolicy, NULL, NULL, NULL},
     {TPM_CC_PCR_SetAuthValue, NULL, NULL, NULL},
     {TPM_CC_PCR_Reset, NULL, NULL, NULL},
-    {TPM_CC_PolicySigned, (TSS_PreProcessFunction_t)TSS_PR_PolicySigned, NULL, NULL},
+    {TPM_CC_PolicySigned, NULL, NULL, NULL},
     {TPM_CC_PolicySecret, NULL, NULL, NULL},
     {TPM_CC_PolicyTicket, NULL, NULL, NULL},
     {TPM_CC_PolicyOR, NULL, NULL, NULL},
     {TPM_CC_PolicyPCR, NULL, NULL, NULL},
     {TPM_CC_PolicyLocality, NULL, NULL, NULL},
     {TPM_CC_PolicyNV, NULL, NULL, NULL},
+    {TPM_CC_PolicyAuthorizeNV, NULL, NULL, NULL},
     {TPM_CC_PolicyCounterTimer, NULL, NULL, NULL},
     {TPM_CC_PolicyCommandCode, NULL, NULL, NULL},
     {TPM_CC_PolicyPhysicalPresence, NULL, NULL, NULL},
@@ -299,6 +319,7 @@ static const TSS_TABLE tssTable [] = {
     {TPM_CC_PolicyPassword, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_PolicyPassword},
     {TPM_CC_PolicyGetDigest, NULL, NULL, NULL},
     {TPM_CC_PolicyNvWritten, NULL, NULL, NULL},
+    {TPM_CC_PolicyTemplate, NULL, NULL, NULL},
     {TPM_CC_CreatePrimary, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_CreatePrimary},
     {TPM_CC_HierarchyControl, NULL, NULL, NULL},
     {TPM_CC_SetPrimaryPolicy, NULL, NULL, NULL},
@@ -320,7 +341,7 @@ static const TSS_TABLE tssTable [] = {
     {TPM_CC_ClockRateAdjust, NULL, NULL, NULL},
     {TPM_CC_GetCapability, NULL, NULL, NULL},
     {TPM_CC_TestParms, NULL, NULL, NULL},
-    {TPM_CC_NV_DefineSpace, (TSS_PreProcessFunction_t)TSS_PR_NV_DefineSpace, NULL, NULL},
+    {TPM_CC_NV_DefineSpace, (TSS_PreProcessFunction_t)TSS_PR_NV_DefineSpace, NULL,  (TSS_PostProcessFunction_t)TSS_PO_NV_DefineSpace},
     {TPM_CC_NV_UndefineSpace, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_UndefineSpace},
     {TPM_CC_NV_UndefineSpaceSpecial, NULL, (TSS_ChangeAuthFunction_t)TSS_CA_NV_UndefineSpaceSpecial, (TSS_PostProcessFunction_t)TSS_PO_NV_UndefineSpaceSpecial},
     {TPM_CC_NV_ReadPublic, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_ReadPublic},
@@ -352,6 +373,7 @@ static TPM_RC TSS_HmacSession_GetContext(struct TSS_HMAC_CONTEXT **session);
 static void   TSS_HmacSession_InitContext(struct TSS_HMAC_CONTEXT *session);
 static void   TSS_HmacSession_FreeContext(struct TSS_HMAC_CONTEXT *session);
 
+#ifndef TPM_TSS_NOCRYPTO
 static TPM_RC TSS_HmacSession_SetSessionKey(TSS_CONTEXT *tssContext,
 					    struct TSS_HMAC_CONTEXT *session,
 					    TPM2B_DIGEST *salt,
@@ -363,6 +385,7 @@ static TPM_RC TSS_HmacSession_SetHmacKey(TSS_CONTEXT *tssContext,
 					 struct TSS_HMAC_CONTEXT *session,
 					 size_t handleNumber,
 					 const char *password);
+#endif	/* TPM_TSS_NOCRYPTO */
 static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,
 				      struct TSS_HMAC_CONTEXT *session[],
 				      TPMS_AUTH_COMMAND *authCommand[],
@@ -372,9 +395,11 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,
 				      TPM2B_NAME *name0,		  
 				      TPM2B_NAME *name1,		  
 				      TPM2B_NAME *name2);
+#ifndef TPM_TSS_NOCRYPTO
 static TPM_RC TSS_HmacSession_Verify(TSS_AUTH_CONTEXT *tssAuthContext,
 				     struct TSS_HMAC_CONTEXT *session,
 				     TPMS_AUTH_RESPONSE *authResponse);
+#endif	/* TPM_TSS_NOCRYPTO */
 static TPM_RC TSS_HmacSession_Continue(TSS_CONTEXT *tssContext,
 				       struct TSS_HMAC_CONTEXT *session,
 				       TPMS_AUTH_RESPONSE *authR);
@@ -385,6 +410,20 @@ static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
 static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
 					  struct TSS_HMAC_CONTEXT *session,
 					  TPMI_SH_AUTH_SESSION	sessionHandle);
+#ifdef TPM_TSS_NOFILE
+static TPM_RC TSS_HmacSession_SaveData(TSS_CONTEXT *tssContext,
+				       TPMI_SH_AUTH_SESSION sessionHandle,
+				       uint32_t outLength,
+				       uint8_t *outBuffer);
+static TPM_RC TSS_HmacSession_LoadData(TSS_CONTEXT *tssContext,
+				       uint32_t *inLength, uint8_t **inData,
+				       TPMI_SH_AUTH_SESSION sessionHandle);
+static TPM_RC TSS_HmacSession_DeleteData(TSS_CONTEXT *tssContext,
+					 TPMI_SH_AUTH_SESSION sessionHandle);
+static TPM_RC TSS_HmacSession_GetSlotForHandle(TSS_CONTEXT *tssContext,
+					       size_t *slotIndex,
+					       TPMI_SH_AUTH_SESSION sessionHandle);
+#endif
 static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
 					uint16_t *written, uint8_t **buffer, int32_t *size);
 static TPM_RC TSS_HmacSession_Unmarshal(struct TSS_HMAC_CONTEXT *target,
@@ -395,6 +434,7 @@ static TPM_RC TSS_Name_GetAllNames(TSS_CONTEXT *tssContext,
 static TPM_RC TSS_Name_GetName(TSS_CONTEXT *tssContext,
 			       TPM2B_NAME *name,
 			       TPM_HANDLE  handle);
+#ifndef TPM_TSS_NOFILE
 static TPM_RC TSS_Name_Store(TSS_CONTEXT *tssContext,
 			     TPM2B_NAME *name,
 			     TPM_HANDLE handle,
@@ -412,18 +452,19 @@ static TPM_RC TSS_Public_Store(TSS_CONTEXT *tssContext,
 			       TPM2B_PUBLIC *public,
 			       TPM_HANDLE handle,
 			       const char *string);
-static TPM_RC TSS_Public_Load(TSS_CONTEXT *tssContext,
-			      TPM2B_PUBLIC *public,
-			      TPM_HANDLE handle,
-			      const char *string);
 static TPM_RC TSS_Public_Copy(TSS_CONTEXT *tssContext,
 			      TPM_HANDLE outHandle,
 			      const char *outString,
 			      TPM_HANDLE inHandle,
 			      const char *inString);
+static TPM_RC TSS_Public_Load(TSS_CONTEXT *tssContext,
+			      TPM2B_PUBLIC *public,
+			      TPM_HANDLE handle,
+			      const char *string);
+#endif
 static TPM_RC TSS_DeleteHandle(TSS_CONTEXT *tssContext,
 			       TPM_HANDLE handle);
-
+#ifndef TPM_TSS_NOFILE
 static TPM_RC TSS_NVPublic_Store(TSS_CONTEXT *tssContext,
 				 TPMS_NV_PUBLIC *nvPublic,
 				 TPMI_RH_NV_INDEX handle);
@@ -432,7 +473,9 @@ static TPM_RC TSS_NVPublic_Load(TSS_CONTEXT *tssContext,
 				TPMI_RH_NV_INDEX handle);
 static TPM_RC TSS_NVPublic_Delete(TSS_CONTEXT *tssContext,
 				  TPMI_RH_NV_INDEX nvIndex);
+#endif 	/* TPM_TSS_NOFILE */
 
+#ifndef TPM_TSS_NOCRYPTO
 
 static TPM_RC TSS_Command_Decrypt(TSS_AUTH_CONTEXT *tssAuthContext,
 				  struct TSS_HMAC_CONTEXT *session[],
@@ -456,6 +499,8 @@ static TPM_RC TSS_Command_ChangeAuthProcessor(TSS_CONTEXT *tssContext,
 					      struct TSS_HMAC_CONTEXT *session,
 					      size_t handleNumber,
 					      COMMAND_PARAMETERS *in);
+#endif	/* TPM_TSS_NOCRYPTO */
+
 static TPM_RC TSS_Command_PreProcessor(TSS_CONTEXT *tssContext,
 				       TPM_CC commandCode,
 				       COMMAND_PARAMETERS *in,
@@ -465,6 +510,7 @@ static TPM_RC TSS_Response_PostProcessor(TSS_CONTEXT *tssContext,
 					 RESPONSE_PARAMETERS *out,
 					 EXTRA_PARAMETERS *extra);
 
+#ifndef TPM_TSS_NOCRYPTO
 static TPM_RC TSS_Sessions_GetDecryptSession(unsigned int *isDecrypt,
 					     unsigned int *decryptSession,
 					     TPMI_SH_AUTH_SESSION sessionHandle[],
@@ -473,12 +519,18 @@ static TPM_RC TSS_Sessions_GetEncryptSession(unsigned int *isEncrypt,
 					     unsigned int *encryptSession,
 					     TPMI_SH_AUTH_SESSION sessionHandle[],
 					     unsigned int sessionAttributes[]);
+#endif	/* TPM_TSS_NOCRYPTO */
 
+#ifndef TPM_TSS_NOFILE
 static TPM_RC TSS_HashToString(char *str, uint8_t *digest);
+#endif
 
 extern int tssVerbose;
 extern int tssVverbose;
 extern int tssFirstCall;
+
+/* TSS_Create() creates and initializes the TSS Context.  It does NOT open a connection to the
+   TPM.*/
 
 TPM_RC TSS_Create(TSS_CONTEXT **tssContext)
 {
@@ -510,28 +562,38 @@ TPM_RC TSS_Create(TSS_CONTEXT **tssContext)
     return rc;
 }
 
-/* TRUE if the TSS has never been called.  Used for any global library initialization.  */
+/* TSS_Context_Init() on first call is used for any global library initialization.
+
+   On every call, it initializes the TSS context.
+*/
 
 static TPM_RC TSS_Context_Init(TSS_CONTEXT *tssContext)
 {
     TPM_RC		rc = 0;
 
     /* at the first call to the TSS, initialize global variables */
-    if (tssFirstCall) {
+    if (tssFirstCall) {		/* tssFirstCall is a library global */
+#ifndef TPM_TSS_NOCRYPTO
 	/* crypto module initializations */
 	if (rc == 0) {
 	    rc = TSS_Crypto_Init();
 	}
+#endif
+	/* TSS properties that are global, not per TSS context */
 	if (rc == 0) {
 	    rc = TSS_GlobalProperties_Init();
 	}
 	tssFirstCall = FALSE;
     }
+    /* TSS properties that are per context */
     if (rc == 0) {
 	rc = TSS_Properties_Init(tssContext);
     }
     return rc;
 }
+
+/* TSS_Delete() closes an open TPM connection, then free the TSS context memory.
+ */
 
 TPM_RC TSS_Delete(TSS_CONTEXT *tssContext)
 {
@@ -539,6 +601,17 @@ TPM_RC TSS_Delete(TSS_CONTEXT *tssContext)
 
     if (tssContext != NULL) {
 	TSS_AuthDelete(tssContext->tssAuthContext);
+#ifdef TPM_TSS_NOFILE
+	{
+	    size_t i;
+	    for (i = 0 ; i < (sizeof(tssContext->sessions) / sizeof(TSS_SESSIONS)) ; i++) {
+		tssContext->sessions[i].sessionHandle = TPM_RH_NULL;
+		free(tssContext->sessions[i].sessionData);
+		tssContext->sessions[i].sessionData = NULL;
+		tssContext->sessions[i].sessionDataLength = 0;
+	    }
+	}
+#endif
 	rc = TSS_Close(tssContext);
 	free(tssContext);
     }
@@ -575,6 +648,7 @@ TPM_RC TSS_Execute(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	TSS_InitAuthContext(tssContext->tssAuthContext);
     }
+    /* handle any command specific command pre-processing */
     if (rc == 0) {
 	rc = TSS_Command_PreProcessor(tssContext,
 				      commandCode,
@@ -718,9 +792,16 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 	if (sessionHandle[i] != TPM_RS_PW) {		/* no nonce for password sessions */
 	    if (tssVverbose)
 		printf("TSS_Execute_valist: Step 3: nonceCaller %08x\n", sessionHandle[i]);
+#ifndef TPM_TSS_NOCRYPTO
 	    rc = TSS_HmacSession_SetNonceCaller(session[i], authC[i]);
+#else
+	    authC[i]->nonce.b.size = 16;
+	    memset(&authC[i]->nonce.b.buffer, 0, 16);
+#endif	/* TPM_TSS_NOCRYPTO */
 	}
     }
+    
+#ifndef TPM_TSS_NOCRYPTO
     /* Step 4: Calculate the HMAC key */
     for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) && (sessionHandle[i] != TPM_RH_NULL) ; i++) {
 	if (sessionHandle[i] != TPM_RS_PW) {		/* no HMAC key for password sessions */
@@ -736,6 +817,7 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 				 sessionHandle,
 				 sessionAttributes);
     }
+#endif	/* TPM_TSS_NOCRYPTO */
     /* Step 6: for each HMAC session, calculate cpHash, calculate the HMAC, and set it in
        TPMS_AUTH_COMMAND */
     if (rc == 0) {
@@ -783,23 +865,30 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 	}
 	/* HMAC session */
 	else {
+#ifndef TPM_TSS_NOCRYPTO
 	    /* save nonceTPM in the session context */
 	    if (rc == 0) {
 		rc = TSS_TPM2B_Copy(&session[i]->nonceTPM.b, &authR[i]->nonce.b, sizeof(TPMU_HA));
 	    }
+#endif	/* TPM_TSS_NOCRYPTO */
 	    /* the HMAC key is already part of the TSS session context.  For policy sessions with
 	       policy password, the response hmac is empty. */
 	    if ((session[i]->sessionType == TPM_SE_HMAC) ||
 		((session[i]->sessionType == TPM_SE_POLICY) && (session[i]->isAuthValueNeeded))) {
-	    
+#ifndef TPM_TSS_NOCRYPTO
 		if (rc == 0) {
 		    rc = TSS_Command_ChangeAuthProcessor(tssContext, session[i], i, in);
 		}
 		if (rc == 0) {
-		    rc = TSS_HmacSession_Verify(tssContext->tssAuthContext,	/* authorization context */
+		    rc = TSS_HmacSession_Verify(tssContext->tssAuthContext, /* authorization
+									       context */
 						session[i],	/* TSS session context */
 						authR[i]);	/* input: response authorization */
 		}
+#else
+		in = in;
+		rc = TSS_RC_NOT_IMPLEMENTED;
+#endif	/* TPM_TSS_NOCRYPTO */
 	    }
 	}
     }
@@ -823,6 +912,7 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 	}
     }
     /* Step 13: response parameter decryption */
+#ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_Execute_valist: Step 13: response decryption\n");
 	rc = TSS_Response_Encrypt(tssContext->tssAuthContext,
@@ -830,6 +920,7 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 				  sessionHandle,
 				  sessionAttributes);
     }
+#endif	/* TPM_TSS_NOCRYPTO */
     /* cleanup */
     for (i = 0 ; i < MAX_SESSION_NUM ; i++) {
 	TSS_HmacSession_FreeContext(session[i]);
@@ -838,7 +929,7 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 }
 
 /*
-  PWAP
+  PWAP - Password Session
 */
 
 /* TSS_PwapSession_Set() sets all members of the TPMS_AUTH_COMMAND structure for a PWAP session.
@@ -862,6 +953,8 @@ static TPM_RC TSS_PwapSession_Set(TPMS_AUTH_COMMAND *authCommand,
     }
     return rc;
 }
+
+/* TSS_PwapSession_Verify() verifies the PWAP session response. */
 
 static TPM_RC TSS_PwapSession_Verify(TPMS_AUTH_RESPONSE *authResponse)
 {
@@ -917,24 +1010,30 @@ static void TSS_HmacSession_InitContext(struct TSS_HMAC_CONTEXT *session)
 {
     session->sessionHandle = TPM_RH_NULL;
     session->authHashAlg = TPM_ALG_NULL;
+#ifndef TPM_TSS_NOCRYPTO
     session->sizeInBytes = 0;
+#endif
     session->symmetric.algorithm = TPM_ALG_NULL;
     session->bind = TPM_RH_NULL;
     session->bindName.b.size = 0;
     session->bindAuthValue.t.size = 0;
+#ifndef TPM_TSS_NOCRYPTO
     memset(session->nonceTPM.t.buffer, 0, sizeof(TPMU_HA));
     session->nonceTPM.b.size = 0;
     memset(session->nonceCaller.t.buffer, 0, sizeof(TPMU_HA));
     session->nonceCaller.b.size = 0;
     memset(session->sessionKey.t.buffer, 0, sizeof(TPMU_HA));
     session->sessionKey.b.size = 0;
+#endif
     session->sessionType = 0;
     session->isPasswordNeeded = FALSE;
     session->isAuthValueNeeded = FALSE;
+#ifndef TPM_TSS_NOCRYPTO
     memset(session->hmacKey.t.buffer, 0, sizeof(TPMU_HA) + sizeof(TPMU_HA));
     session->hmacKey.b.size = 0;
     memset(session->sessionValue.t.buffer, 0, sizeof(TPMU_HA) + sizeof(TPMU_HA));
     session->sessionValue.b.size = 0;
+#endif
 }
 
 void TSS_HmacSession_FreeContext(struct TSS_HMAC_CONTEXT *session)
@@ -951,6 +1050,8 @@ void TSS_HmacSession_FreeContext(struct TSS_HMAC_CONTEXT *session)
 
    19.6.8	sessionKey Creation
 */
+
+#ifndef TPM_TSS_NOCRYPTO
 
 static TPM_RC TSS_HmacSession_SetSessionKey(TSS_CONTEXT *tssContext,
 					    struct TSS_HMAC_CONTEXT *session,
@@ -1020,62 +1121,73 @@ static TPM_RC TSS_HmacSession_SetSessionKey(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif	/* TPM_TSS_NOCRYPTO */
+
 /* TSS_HmacSession_SaveSession() saves a session in two cases:
 
    The initial session from startauthsession
    The updated session a TPM response
 */
 
+
 static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
 					  struct TSS_HMAC_CONTEXT *session)
 {
     TPM_RC	rc = 0;
     uint8_t 	*buffer = NULL;
-    uint8_t	*buffer1 = NULL;	/* for marshaling */
     uint16_t	written = 0;
+#ifndef TPM_TSS_NOFILE
     char	sessionFilename[128];
-
-    unsigned char *outBuffer = NULL; /* output, caller frees */
+#endif
+    uint8_t *outBuffer = NULL; /* output, caller frees */
     uint32_t outLength;
-
+    
+    if (tssVverbose) printf("TSS_HmacSession_SaveSession: handle %08x\n", session->sessionHandle);
     if (rc == 0) {
-	/* save the session in a hard coded file name hxxxxxxxx.bin where xxxxxxxx is the session
-	   handle */
-	sprintf(sessionFilename, "%s/h%08x.bin",
-		tssContext->tssDataDirectory, session->sessionHandle);
-	/* calculate the marshaled size */
-	written = 0;
-	rc = TSS_HmacSession_Marshal(session, &written, NULL, NULL);
+	rc = TSS_Structure_Marshal(&buffer,	/* freed @1 */
+				   &written,
+				   session,
+				   (MarshalFunction_t)TSS_HmacSession_Marshal);
+	outBuffer = buffer;
+	outLength = written;
     }
+#ifndef TPM_TSS_NOFILE
     if (rc == 0) {
-	buffer = realloc(buffer, written);
-	buffer1 = buffer;
-	written = 0;
-	rc = TSS_HmacSession_Marshal(session, &written, &buffer1, NULL);
-    }
-    if (rc == 0) {
-	/* encrypt session state before store */
+	/* if the flag is set, encrypt the session state before store */
 	if (tssContext->tssEncryptSessions) {
 	    rc = TSS_AES_Encrypt(&outBuffer,   	/* output, caller frees */
 				 &outLength,	/* output */
 				 buffer,	/* input */
 				 written);	/* input */
 	}
-	/* store session state in plaintext */
+	/* else store the session state in plaintext */
 	else {
 	    outBuffer = buffer;
 	    outLength = written;
 	}
+    }
+    /* save the session in a hard coded file name hxxxxxxxx.bin where xxxxxxxx is the session
+       handle */
+    if (rc == 0) {
+	sprintf(sessionFilename, "%s/h%08x.bin",
+		tssContext->tssDataDirectory, session->sessionHandle);
     }
     if (rc == 0) {
 	rc = TSS_File_WriteBinaryFile(outBuffer,
 				      outLength,
 				      sessionFilename);
     }
-    free(buffer);
     if (tssContext->tssEncryptSessions) {
 	free(outBuffer);
     }
+#else		/* no file support, save ton context */
+    if (rc == 0) {
+	rc = TSS_HmacSession_SaveData(tssContext,
+				      session->sessionHandle,
+				      outLength, outBuffer);
+    }
+#endif
+    free(buffer);	/* @1 */
     return rc;
 }
 
@@ -1092,46 +1204,162 @@ static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
     TPM_RC		rc = 0;
     uint8_t 		*buffer = NULL;
     uint8_t 		*buffer1 = NULL;
+#ifndef TPM_TSS_NOFILE
     size_t 		length = 0;
-    char		sessionFilename[128];
-    
-    unsigned char *inData = NULL;		/* output, caller frees */
+   char		sessionFilename[128];
+#endif    
+    unsigned char *inData = NULL;		/* output */
     uint32_t inLength;				/* output */
 
     if (tssVverbose) printf("TSS_HmacSession_LoadSession: handle %08x\n", sessionHandle);
+#ifndef TPM_TSS_NOFILE
     /* load the session from a hard coded file name hxxxxxxxx.bin where xxxxxxxx is the session
        handle */
     if (rc == 0) {
 	sprintf(sessionFilename, "%s/h%08x.bin", tssContext->tssDataDirectory, sessionHandle);
-	rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 				     &length,
 				     sessionFilename);
     }
     if (rc == 0) {
-	/* decrypt session state before unmarshal */
+	/* if the flag is set, decrypt the session state before unmarshal */
 	if (tssContext->tssEncryptSessions) {
-	    rc = TSS_AES_Decrypt(&inData,   	/* output, caller frees */
+	    rc = TSS_AES_Decrypt(&inData,   	/* output, freed @2 */
 				 &inLength,	/* output */
 				 buffer,	/* input */
 				 length);	/* input */
 	}
-	/* session loaded in plaintext */
+	/* else the session was loaded in plaintext */
 	else {
 	    inData = buffer;
 	    inLength = length;
 	}
     }
+#else		/* no file support, load from context */
+    if (rc == 0) {
+	rc = TSS_HmacSession_LoadData(tssContext,
+				      &inLength, &inData,
+				      sessionHandle);
+    }
+#endif
     if (rc == 0) {
 	int32_t ilength = inLength;
 	buffer1 = inData;
 	rc = TSS_HmacSession_Unmarshal(session, &buffer1, &ilength);
     }
-    free(buffer);
+#ifndef TPM_TSS_NOFILE
     if (tssContext->tssEncryptSessions) {
-	free(inData);
+	free(inData);	/* @2 */
+    }
+#endif
+    free(buffer);	/* @1 */
+    return rc;
+}
+
+#ifdef TPM_TSS_NOFILE
+
+static TPM_RC TSS_HmacSession_SaveData(TSS_CONTEXT *tssContext,
+				       TPMI_SH_AUTH_SESSION sessionHandle,
+				       uint32_t outLength,
+				       uint8_t *outBuffer)
+{
+    TPM_RC	rc = 0;
+    size_t	slotIndex;
+
+    /* if this handle is already used, overwrite the slot */
+    if (rc == 0) {
+	rc = TSS_HmacSession_GetSlotForHandle(tssContext, &slotIndex, sessionHandle);
+	if (rc != 0) {
+	    rc = TSS_HmacSession_GetSlotForHandle(tssContext, &slotIndex, TPM_RH_NULL);
+	    if (rc == 0) {
+		tssContext->sessions[slotIndex].sessionHandle = sessionHandle;
+	    }
+	    else {
+		if (tssVerbose)
+		    printf("TSS_HmacSession_SaveData: Error, no slot available for handle %08x\n",
+			   sessionHandle);
+	    }
+	}
+    }
+    /* reallocate memory and adjust the size */
+    if (rc == 0) {
+	rc = TSS_Realloc(&tssContext->sessions[slotIndex].sessionData, outLength);
+    }
+    if (rc == 0) {
+	tssContext->sessions[slotIndex].sessionDataLength = outLength;
+	memcpy(tssContext->sessions[slotIndex].sessionData, outBuffer, outLength);
     }
     return rc;
 }
+
+static TPM_RC TSS_HmacSession_LoadData(TSS_CONTEXT *tssContext,
+				       uint32_t *inLength, uint8_t **inData,
+				       TPMI_SH_AUTH_SESSION sessionHandle)
+{
+    TPM_RC	rc = 0;
+    size_t	slotIndex;
+
+    /* if this handle is already used, overwrite the slot */
+    if (rc == 0) {
+	rc = TSS_HmacSession_GetSlotForHandle(tssContext, &slotIndex, sessionHandle);
+	if (rc != 0) {
+	    if (tssVerbose)
+		printf("TSS_HmacSession_LoadData: Error, no slot found for handle %08x\n",
+		       sessionHandle);
+	}
+    }
+    if (rc == 0) {
+	*inLength = tssContext->sessions[slotIndex].sessionDataLength;
+	*inData = tssContext->sessions[slotIndex].sessionData;
+    }
+    return rc;
+}
+
+static TPM_RC TSS_HmacSession_DeleteData(TSS_CONTEXT *tssContext,
+					 TPMI_SH_AUTH_SESSION sessionHandle)
+{
+    TPM_RC	rc = 0;
+    size_t	slotIndex;
+
+    if (rc == 0) {
+	rc = TSS_HmacSession_GetSlotForHandle(tssContext, &slotIndex, sessionHandle);
+	if (rc != 0) {
+	    if (tssVerbose)
+		printf("TSS_HmacSession_DeleteData: Error, no slot found for handle %08x\n",
+		       sessionHandle);
+	}
+    }    
+    if (rc == 0) {
+	tssContext->sessions[slotIndex].sessionHandle = TPM_RH_NULL;
+	free(tssContext->sessions[slotIndex].sessionData);
+	tssContext->sessions[slotIndex].sessionData = NULL;
+	tssContext->sessions[slotIndex].sessionDataLength = 0;
+    }
+    return rc;
+}
+
+/* TSS_HmacSession_GetSlotForHandle() finds the session slot corresponding to the session handle.
+
+   Returns non-zero if no slot is found.
+*/
+
+static TPM_RC TSS_HmacSession_GetSlotForHandle(TSS_CONTEXT *tssContext,
+					       size_t *slotIndex,
+					       TPMI_SH_AUTH_SESSION sessionHandle)
+{
+    size_t 	i;
+
+    /* search all slots for handle */
+    for (i = 0 ; i < (sizeof(tssContext->sessions) / sizeof(TSS_SESSIONS)) ; i++) {
+	if (tssContext->sessions[i].sessionHandle == sessionHandle) {
+	    *slotIndex = i;
+	    return 0;
+	}
+    }
+    return TSS_RC_NO_SESSION_SLOT;
+}
+
+#endif
 
 static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
 					uint16_t *written,
@@ -1145,9 +1373,11 @@ static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
     if (rc == 0) {
 	rc = TSS_TPMI_ALG_HASH_Marshal(&source->authHashAlg, written, buffer, size);
     }
+#ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
 	rc = TSS_UINT32_Marshal(&source->sizeInBytes, written, buffer, size);
     }
+#endif
     if (rc == 0) {
 	rc = TSS_TPMT_SYM_DEF_Marshal(&source->symmetric, written, buffer, size);
     }
@@ -1160,6 +1390,7 @@ static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
     if (rc == 0) {
 	rc = TSS_TPM2B_AUTH_Marshal(&source->bindAuthValue, written, buffer, size);
     }
+#ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
 	rc = TSS_TPM2B_NONCE_Marshal(&source->nonceTPM, written, buffer, size);
     }
@@ -1169,6 +1400,7 @@ static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
     if (rc == 0) {
 	rc = TSS_TPM2B_DIGEST_Marshal(&source->sessionKey, written, buffer, size);
     }
+#endif
     if (rc == 0) {
 	rc = TSS_TPM_SE_Marshal(&source->sessionType, written, buffer, size);
     }
@@ -1192,9 +1424,11 @@ static TPM_RC TSS_HmacSession_Unmarshal(struct TSS_HMAC_CONTEXT *target,
     if (rc == 0) {
 	rc = TPMI_ALG_HASH_Unmarshal(&target->authHashAlg, buffer, size, NO);
     }
+#ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
 	rc = UINT32_Unmarshal(&target->sizeInBytes, buffer, size);
     }
+#endif
     if (rc == 0) {
 	rc = TPMT_SYM_DEF_Unmarshal(&target->symmetric, buffer, size, YES);
     }
@@ -1207,6 +1441,7 @@ static TPM_RC TSS_HmacSession_Unmarshal(struct TSS_HMAC_CONTEXT *target,
     if (rc == 0) {
 	rc = TPM2B_AUTH_Unmarshal(&target->bindAuthValue, buffer, size);
     }
+#ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
 	rc = TPM2B_NONCE_Unmarshal(&target->nonceTPM, buffer, size);
     }
@@ -1216,6 +1451,7 @@ static TPM_RC TSS_HmacSession_Unmarshal(struct TSS_HMAC_CONTEXT *target,
     if (rc == 0) {
 	rc = TPM2B_DIGEST_Unmarshal(&target->sessionKey, buffer, size);
     }
+#endif
     if (rc == 0) {
 	rc = TPM_SE_Unmarshal(&target->sessionType, buffer, size);
     }
@@ -1245,7 +1481,7 @@ static TPM_RC TSS_Name_GetAllNames(TSS_CONTEXT *tssContext,
 
     /* get the number of handles in the command stream */
     if (rc == 0) {
-	rc = TSS_GetCommandHandleCount(tssContext->tssAuthContext, &commandHandleCount);	      
+	rc = TSS_GetCommandHandleCount(tssContext->tssAuthContext, &commandHandleCount);
 	if (tssVverbose) printf("TSS_Name_GetAllNames: commandHandleCount %u\n", commandHandleCount);
     }
     for (i = 0 ; i < commandHandleCount ; i++) {
@@ -1287,12 +1523,16 @@ static TPM_RC TSS_Name_GetName(TSS_CONTEXT *tssContext,
 	rc = TSS_TPM2B_CreateUint32(&name->b, handle, sizeof(TPMU_NAME));
 	break;
 	/* for NV, the Names was calculated at NV read public */
+#ifndef TPM_TSS_NOFILE
       case TPM_HT_NV_INDEX:
 	/* for objects, the Name was returned at creation or load */
       case TPM_HT_TRANSIENT:
       case TPM_HT_PERSISTENT:
 	rc = TSS_Name_Load(tssContext, name, handle, NULL);
 	break;
+#else
+	tssContext = tssContext;
+#endif
       default:
 	break;
 	if (tssVerbose) printf("TSS_Name_GetName: not implemented for handle %08x\n", handle);
@@ -1301,12 +1541,15 @@ static TPM_RC TSS_Name_GetName(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+
 /* TSS_Name_Store() stores the 'name' parameter in a file.
 
    If handle is not 0, the handle is used as the file name.
 
    If 'string' is not NULL, the string is used as the file name.
 */
+
+#ifndef TPM_TSS_NOFILE
 
 static TPM_RC TSS_Name_Store(TSS_CONTEXT *tssContext,
 			     TPM2B_NAME *name,
@@ -1343,6 +1586,8 @@ static TPM_RC TSS_Name_Store(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif
+
 /* TSS_Name_Load() loads the 'name' from a file.
 
    If handle is not 0, the handle is used as the file name.
@@ -1350,6 +1595,8 @@ static TPM_RC TSS_Name_Store(TSS_CONTEXT *tssContext,
    If 'string' is not NULL, the string is used as the file name.
 */
    
+#ifndef TPM_TSS_NOFILE
+
 static TPM_RC TSS_Name_Load(TSS_CONTEXT *tssContext,
 			    TPM2B_NAME *name,
 			    TPM_HANDLE handle,
@@ -1387,8 +1634,12 @@ static TPM_RC TSS_Name_Load(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif
+
 /* TSS_Name_Copy() copies the name from either inHandle or inString to either outHandle or
    outString */
+
+#ifndef TPM_TSS_NOFILE
 
 static TPM_RC TSS_Name_Copy(TSS_CONTEXT *tssContext,
 			    TPM_HANDLE outHandle,
@@ -1408,12 +1659,16 @@ static TPM_RC TSS_Name_Copy(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif
+
 /* TSS_Public_Store() stores the 'public' parameter in a file.
 
    If handle is not 0, the handle is used as the file name.
 
    If 'string' is not NULL, the string is used as the file name.
 */
+
+#ifndef TPM_TSS_NOFILE
 
 static TPM_RC TSS_Public_Store(TSS_CONTEXT *tssContext,
 			       TPM2B_PUBLIC *public,
@@ -1452,6 +1707,8 @@ static TPM_RC TSS_Public_Store(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif
+
 /* TSS_Public_Load() loads the 'public' parameter from a file.
 
    If handle is not 0, the handle is used as the file name.
@@ -1459,6 +1716,8 @@ static TPM_RC TSS_Public_Store(TSS_CONTEXT *tssContext,
    If 'string' is not NULL, the string is used as the file name.
 */
    
+#ifndef TPM_TSS_NOFILE
+
 static TPM_RC TSS_Public_Load(TSS_CONTEXT *tssContext,
 			      TPM2B_PUBLIC *public,
 			      TPM_HANDLE handle,
@@ -1496,8 +1755,12 @@ static TPM_RC TSS_Public_Load(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif 	/* TPM_TSS_NOFILE */
+
 /* TSS_Public_Copy() copies the TPM2B_PUBLIC from either inHandle or inString to either outHandle or
    outString */
+
+#ifndef TPM_TSS_NOFILE
 
 static TPM_RC TSS_Public_Copy(TSS_CONTEXT *tssContext,
 			      TPM_HANDLE outHandle,
@@ -1517,6 +1780,8 @@ static TPM_RC TSS_Public_Copy(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif
+
 /* TSS_DeleteHandle() removes persistent state for a handle stored by the TSS
  */
 
@@ -1524,12 +1789,13 @@ TPM_RC TSS_DeleteHandle(TSS_CONTEXT *tssContext,
 			TPM_HANDLE handle)
 {
     TPM_RC		rc = 0;
+#ifndef TPM_TSS_NOFILE
     char		filename[128];
 
-    /* delete the name */
+    /* delete the Name */
     if (rc == 0) {
 	sprintf(filename, "%s/h%08x.bin", tssContext->tssDataDirectory, handle);
-	if (tssVverbose) printf("TSS_DeleteHandle: delete handle file %s\n", filename);
+	if (tssVverbose) printf("TSS_DeleteHandle: delete Name file %s\n", filename);
 	rc = TSS_File_DeleteFile(filename);
     }
     /* delete the public if it exists */
@@ -1538,8 +1804,69 @@ TPM_RC TSS_DeleteHandle(TSS_CONTEXT *tssContext,
 	if (tssVverbose) printf("TSS_DeleteHandle: delete public file %s\n", filename);
 	TSS_File_DeleteFile(filename);
     }
+#else
+    /* sessions persist in the context and can be deleted */
+    if (rc == 0) {
+	TPM_HT 	handleType;
+	handleType = (TPM_HT) ((handle & HR_RANGE_MASK) >> HR_SHIFT);
+	if ((handleType == TPM_HT_HMAC_SESSION) || (handleType == TPM_HT_POLICY_SESSION)) {
+	    if (tssVverbose) printf("TSS_DeleteHandle: delete session state %08x\n", handle);
+	    rc = TSS_HmacSession_DeleteData(tssContext, handle);
+	}
+    }    
+#endif
     return rc;
 }
+
+/* TSS_ObjectPublic_GetName() calculates the Name from the TPMT_PUBLIC.  The Name provides security,
+   because the Name returned from the TPM2_ReadPublic cannot be trusted.
+*/
+
+#ifndef TPM_TSS_NOFILE
+
+static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
+				       TPMT_PUBLIC *tpmtPublic)
+{
+    TPM_RC 	rc = 0;
+    uint16_t 	written = 0;
+    uint8_t 	buffer[MAX_RESPONSE_SIZE];
+    uint32_t 	sizeInBytes;
+    TPMT_HA	digest;
+    
+    /* marshal the TPMT_PUBLIC */
+    if (rc == 0) {
+	INT32 size = MAX_RESPONSE_SIZE;
+	uint8_t *buffer1 = buffer;
+	rc = TSS_TPMT_PUBLIC_Marshal(tpmtPublic, &written, &buffer1, &size);
+    }
+    /* hash the public area */
+    if (rc == 0) {
+	sizeInBytes = TSS_GetDigestSize(tpmtPublic->nameAlg);
+	digest.hashAlg = tpmtPublic->nameAlg;	/* Name digest algorithm */
+	/* generate the TPMT_HA */
+	rc = TSS_Hash_Generate(&digest,	
+			       written, buffer,
+			       0, NULL);
+    }
+    if (rc == 0) {
+	/* copy the digest */
+	memcpy(name->t.name + sizeof(TPMI_ALG_HASH), (uint8_t *)&digest.digest, sizeInBytes);
+	/* copy the hash algorithm */
+	TPMI_ALG_HASH nameAlgNbo = htons(tpmtPublic->nameAlg);
+	memcpy(name->t.name, (uint8_t *)&nameAlgNbo, sizeof(TPMI_ALG_HASH));
+	/* set the size */
+	name->t.size = sizeInBytes + sizeof(TPMI_ALG_HASH);
+    }
+    return rc;
+}
+
+#endif
+
+/* TSS_NVPublic_Store() stores the NV public data in  in a file.
+
+ */
+
+#ifndef TPM_TSS_NOFILE
 
 static TPM_RC TSS_NVPublic_Store(TSS_CONTEXT *tssContext,
 				 TPMS_NV_PUBLIC *nvPublic,
@@ -1557,6 +1884,14 @@ static TPM_RC TSS_NVPublic_Store(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif
+
+/* TSS_NVPublic_Load() loads the NV public from a file.
+
+ */
+
+#ifndef TPM_TSS_NOFILE
+
 static TPM_RC TSS_NVPublic_Load(TSS_CONTEXT *tssContext,
 				TPMS_NV_PUBLIC *nvPublic,
 				TPMI_RH_NV_INDEX nvIndex)
@@ -1573,6 +1908,10 @@ static TPM_RC TSS_NVPublic_Load(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif
+
+#ifndef TPM_TSS_NOFILE
+
 static TPM_RC TSS_NVPublic_Delete(TSS_CONTEXT *tssContext,
 				  TPMI_RH_NV_INDEX nvIndex)
 {
@@ -1587,8 +1926,12 @@ static TPM_RC TSS_NVPublic_Delete(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif
+
+#ifndef TPM_TSS_NOFILE
+
 /* TSS_NVPublic_GetName() calculates the Name from the TPMS_NV_PUBLIC.  The Name provides security,
-   because the Name returned from the TPM cannot be trusted.
+   because the Name returned from the TPM2_NV_ReadPublic cannot be trusted.
 */
 
 static TPM_RC TSS_NVPublic_GetName(TPM2B_NAME *name,
@@ -1627,6 +1970,10 @@ static TPM_RC TSS_NVPublic_GetName(TPM2B_NAME *name,
     return rc;
 }
 
+#endif
+
+#ifndef TPM_TSS_NOCRYPTO
+
 static TPM_RC TSS_HmacSession_SetNonceCaller(struct TSS_HMAC_CONTEXT *session,
 					     TPMS_AUTH_COMMAND 	*authC)
 {
@@ -1643,6 +1990,10 @@ static TPM_RC TSS_HmacSession_SetNonceCaller(struct TSS_HMAC_CONTEXT *session,
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCRYPTO */
+
+#ifndef TPM_TSS_NOCRYPTO
 
 /* TSS_HmacSession_SetHmacKey() calculates the session HMAC key.
 
@@ -1795,6 +2146,8 @@ static TPM_RC TSS_HmacSession_SetHmacKey(TSS_CONTEXT *tssContext,
     return rc;
 }
     
+#endif	/* TPM_TSS_NOCRYPTO */
+
 /* TSS_HmacSession_SetHMAC() is used for a command.  It sets all the values in one
    TPMS_AUTH_COMMAND, ready for marshaling into the command packet.
 
@@ -1818,16 +2171,17 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
 									   command */
 				      const char *password[],
 				      TPM2B_NAME *name0,		/* up to 3 names */
-				      TPM2B_NAME *name1,		/* unused names have length
-									   0 */
+				      TPM2B_NAME *name1,	/* unused names have length 0 */
 				      TPM2B_NAME *name2)
 {
     TPM_RC		rc = 0;
     unsigned int	i = 0;
     TPMT_HA 		cpHash;
+#ifndef TPM_TSS_NOCRYPTO
     TPMT_HA 		hmac;
     TPM2B_NONCE	nonceTPMDecrypt;
     TPM2B_NONCE	nonceTPMEncrypt;
+#endif	/* TPM_TSS_NOCRYPTO */
 
     cpHash.hashAlg = TPM_ALG_NULL;	/* for cpHash calculation optimzation */
 
@@ -1857,6 +2211,7 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
 	    if ((session[i]->sessionType == TPM_SE_HMAC) ||
 		((session[i]->sessionType == TPM_SE_POLICY) && (session[i]->isAuthValueNeeded))) {
 		    
+#ifndef TPM_TSS_NOCRYPTO
 		if (tssVverbose) printf("TSS_HmacSession_SetHMAC: calculate HMAC\n");
 		/* calculate cpHash.  Performance optimization: If there is more than one session,
 		   and the hash algorithm is the same, use the previously calculated version. */
@@ -1925,7 +2280,8 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
 		    if ((rc == 0) && isEncrypt && (encryptSession != 0)) {
 			if (!isDecrypt || (encryptSession != decryptSession)) {
 			    rc = TSS_TPM2B_Copy(&nonceTPMEncrypt.b, 
-						&session[encryptSession]->nonceTPM.b, sizeof(TPMU_HA));
+						&session[encryptSession]->nonceTPM.b,
+						sizeof(TPMU_HA));
 			}
 		    }
 		}
@@ -1979,6 +2335,13 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
 					  (uint8_t *)&hmac.digest,
 					  session[i]->sizeInBytes, sizeof(TPMU_HA));
 		}
+#else
+		tssAuthContext = tssAuthContext;
+		name0 = name0;
+		name1 = name1;
+		name2 = name2;
+		rc = TSS_RC_NOT_IMPLEMENTED;
+#endif	/* TPM_TSS_NOCRYPTO */
 	    }
 	    /* not HMAC, not policy requiring password or hmac */
 	    else {
@@ -1995,6 +2358,9 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
     }
     return rc;
 }
+
+
+#ifndef TPM_TSS_NOCRYPTO
 
 /* TSS_HmacSession_Verify() is used for a response.  It uses the values in TPMS_AUTH_RESPONSE to
    validate the response HMAC
@@ -2079,6 +2445,8 @@ TPM_RC TSS_HmacSession_Verify(TSS_AUTH_CONTEXT *tssAuthContext,	/* authorization
     return rc;
 }
 
+#endif 	/* TPM_TSS_NOCRYPTO */
+
 /* TSS_HmacSession_Continue() handles the response continueSession flag.  It either saves the
    updated session or deletes the session state. */
 
@@ -2104,6 +2472,8 @@ static TPM_RC TSS_HmacSession_Continue(TSS_CONTEXT *tssContext,
     }
     return rc;
 }
+
+#ifndef TPM_TSS_NOCRYPTO
 
 static TPM_RC TSS_Sessions_GetDecryptSession(unsigned int *isDecrypt,
 					     unsigned int *decryptSession,
@@ -2135,6 +2505,10 @@ static TPM_RC TSS_Sessions_GetDecryptSession(unsigned int *isDecrypt,
     return rc;
 }
 
+#endif	/* TPM_TSS_NOCRYPTO */
+
+#ifndef TPM_TSS_NOCRYPTO
+
 static TPM_RC TSS_Sessions_GetEncryptSession(unsigned int *isEncrypt,
 					     unsigned int *encryptSession,
 					     TPMI_SH_AUTH_SESSION sessionHandle[],
@@ -2165,12 +2539,15 @@ static TPM_RC TSS_Sessions_GetEncryptSession(unsigned int *isEncrypt,
     return rc;
 }
 
+#endif	/* TPM_TSS_NOCRYPTO */
 
 /* TSS_Command_Decrypt() determines whether any sessions are command decrypt sessions.  If so,
    it encrypts the first command parameter.
 
    It does common error chacking, then calls algorithm specific functions.
 */
+
+#ifndef TPM_TSS_NOCRYPTO
 
 static TPM_RC TSS_Command_Decrypt(TSS_AUTH_CONTEXT *tssAuthContext,
 				  struct TSS_HMAC_CONTEXT *session[],
@@ -2234,6 +2611,10 @@ static TPM_RC TSS_Command_Decrypt(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCRYPTO */
+
+#ifndef TPM_TSS_NOCRYPTO
 
 /* NOTE: if AES also works, do in place encryption */
 
@@ -2333,6 +2714,10 @@ static TPM_RC TSS_Command_DecryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
     free(encryptParamBuffer);
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCRYPTO */
+
+#ifndef TPM_TSS_NOCRYPTO
 
 /* NOTE: if AES also works, do in place encryption */
 
@@ -2440,6 +2825,10 @@ static TPM_RC TSS_Command_DecryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
     return rc;
 }    
 
+#endif	/* TPM_TSS_NOCRYPTO */
+
+#ifndef TPM_TSS_NOCRYPTO
+
 static TPM_RC TSS_Response_Encrypt(TSS_AUTH_CONTEXT *tssAuthContext,
 				   struct TSS_HMAC_CONTEXT *session[],
 				   TPMI_SH_AUTH_SESSION sessionHandle[],
@@ -2502,6 +2891,11 @@ static TPM_RC TSS_Response_Encrypt(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCRYPTO */
+
+#ifndef TPM_TSS_NOCRYPTO
+
 /* NOTE: if CFB also works, do in place decryption */
 
 static TPM_RC TSS_Response_EncryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
@@ -2600,8 +2994,11 @@ static TPM_RC TSS_Response_EncryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
     return rc;
 }
 
-/* NOTE: if CFB also works, do in place decryption */
+#endif	/* TPM_TSS_NOCRYPTO */
 
+#ifndef TPM_TSS_NOCRYPTO
+
+/* NOTE: if CFB also works, do in place decryption */
 
 static TPM_RC TSS_Response_EncryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
 				      struct TSS_HMAC_CONTEXT *session)
@@ -2702,9 +3099,13 @@ static TPM_RC TSS_Response_EncryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
     return rc;
 }
 
+#endif	/* TPM_TSS_NOCRYPTO */
+
 /*
   Command Change Authorization Processor
 */
+
+#ifndef TPM_TSS_NOCRYPTO
 
 static TPM_RC TSS_Command_ChangeAuthProcessor(TSS_CONTEXT *tssContext,
 					      struct TSS_HMAC_CONTEXT *session,
@@ -2744,6 +3145,8 @@ static TPM_RC TSS_Command_ChangeAuthProcessor(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#endif	/* TPM_TSS_NOCRYPTO */
+
 static TPM_RC TSS_CA_HierarchyChangeAuth(TSS_CONTEXT *tssContext,
 					 struct TSS_HMAC_CONTEXT *session,
 					 size_t handleNumber,
@@ -2771,12 +3174,18 @@ static TPM_RC TSS_CA_HierarchyChangeAuth(TSS_CONTEXT *tssContext,
 	    password[in->newAuth.t.size] = '\0';	/* nul terminate string */
 	}
     }
+#ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
 	rc = TSS_HmacSession_SetHmacKey(tssContext,
 					session,
 					handleNumber,
 					password);
     }
+#else
+    tssContext = tssContext;
+    session = session;
+    handleNumber = handleNumber;
+#endif	/* TPM_TSS_NOCRYPTO */
     free(password);
     return rc;
 }
@@ -2808,12 +3217,18 @@ static TPM_RC TSS_CA_NV_ChangeAuth(TSS_CONTEXT *tssContext,
 	    password[in->newAuth.t.size] = '\0';	/* nul terminate string */
 	}
     }
+#ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
 	rc = TSS_HmacSession_SetHmacKey(tssContext,
 					session,
 					handleNumber,
 					password);
     }
+#else
+    tssContext = tssContext;
+    session = session;
+    handleNumber = handleNumber;
+#endif	/* TPM_TSS_NOCRYPTO */
     free(password);
     return rc;
 }
@@ -2827,6 +3242,7 @@ static TPM_RC TSS_CA_NV_UndefineSpaceSpecial(TSS_CONTEXT *tssContext,
     
     in = in;
     if (tssVverbose) printf("TSS_CA_NV_UndefineSpaceSpecial\n");
+#ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
 	/* the nvIndex authorization, the zeroth authorization, has special handling */
 	if (handleNumber == 0) {
@@ -2837,6 +3253,11 @@ static TPM_RC TSS_CA_NV_UndefineSpaceSpecial(TSS_CONTEXT *tssContext,
 					    NULL);		/* password */
 	}
     }
+#else
+    tssContext = tssContext;
+    session = session;
+    handleNumber = handleNumber;
+#endif	/* TPM_TSS_NOCRYPTO */
     return rc;
 }
 
@@ -2899,10 +3320,9 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
 				      StartAuthSession_Extra *extra)
 {
     TPM_RC 			rc = 0;
-    TPM2B_PUBLIC		bPublic;
-    TPMT_PUBLIC			*publicArea;	/* the public area  */
     
     if (tssVverbose) printf("TSS_PR_StartAuthSession\n");
+#ifndef TPM_TSS_NOCRYPTO
     /* generate nonceCaller */
     if (rc == 0) {
 	/* the size is determined by the session hash algorithm */
@@ -2916,6 +3336,10 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	rc = TSS_RandBytes((unsigned char *)&in->nonceCaller.t.buffer, in->nonceCaller.t.size);
     }
+#else
+    in->nonceCaller.t.size = 16;
+    memset(&in->nonceCaller.t.buffer, 0, 16);
+#endif	/* TPM_TSS_NOCRYPTO */
     /* initialize to handle unsalted session */
     in->encryptedSalt.t.size = 0;
     if (extra != NULL) {		/* extra NULL is handled at the port processor */
@@ -2923,6 +3347,9 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
     }
     /* if the caller requests a salted session */
     if (in->tpmKey != TPM_RH_NULL) {
+#ifndef TPM_TSS_NOCRYPTO
+	TPMT_PUBLIC		*publicArea;	/* the public area  */
+	TPM2B_PUBLIC		bPublic;
 	if (rc == 0) {
 	    if (extra == NULL) {
 		if (tssVerbose)
@@ -2937,7 +3364,7 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
 	/* check the public key parameters for suitability */
 	if (rc == 0) {
 	    /* bPublic = &rpOut.outPublic; */
-	    publicArea = &bPublic.t.publicArea;
+	    publicArea = &bPublic.publicArea;
 	    {
 		/* error conditions when true */
 		int b1 = publicArea->type != TPM_ALG_RSA;
@@ -3000,39 +3427,11 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
 	    if (tssVverbose) TSS_PrintAll("TSS_PR_StartAuthSession: encrypted salt",
 					  in->encryptedSalt.t.secret,
 					  in->encryptedSalt.t.size);
-	}    
-    }
-    return rc;
-}
-
-static TPM_RC TSS_PR_PolicySigned(TSS_CONTEXT *tssContext,
-				  PolicySigned_In *in,
-				  PolicySigned_Extra *extra)
-{
-    TPM_RC 	rc = 0;
-    TPMT_HA 	digest;
-    tssContext = tssContext;
-
-    if (tssVverbose) printf("TSS_PR_PolicySigned\n");
-    /* marshal the parameters to be signed */
-    /* NOTE 2	The arg2.size and arg3.size fields are not included in the hashes. */
-    if (rc == 0) {
-	INT32 expirationNbo = htonl(in->expiration);
-	digest.hashAlg = in->auth.signature.rsassa.hash;
-	/* aHash = HauthAlg(nonceTPM || expiration || cpHashA || policyRef)	(13) */
-	rc = TSS_Hash_Generate(&digest,		/* largest size of a digest */
-			       in->nonceTPM.t.size, in->nonceTPM.t.buffer,
-			       sizeof(INT32), &expirationNbo,
-			       in->cpHashA.t.size, in->cpHashA.t.buffer,
-			       in->policyRef.t.size, in->policyRef.t.buffer,
-			       0, NULL);
-    }
-    /* call back to the application to sign */
-    /* add the result to the parameters */
-    if (rc == 0) {
-	rc = extra->signatureCallback(&digest,
-				      (uint8_t *)in->auth.signature.rsassa.sig.t.buffer,
-				      &in->auth.signature.rsassa.sig.t.size); 
+	}
+#else
+	tssContext = tssContext;
+	rc = TSS_RC_NOT_IMPLEMENTED;
+#endif	/* TPM_TSS_NOCRYPTO */
     }
     return rc;
 }
@@ -3050,8 +3449,8 @@ static TPM_RC TSS_PR_NV_DefineSpace(TSS_CONTEXT *tssContext,
        cannot ever be deleted, even with Platform Authorization. If the application really wants to
        do this, set the policy to one that cannot be satisfied, e.g., all 0xff's. */
     if (rc == 0) {
-	if (in->publicInfo.t.nvPublic.attributes.val & TPMA_NVA_POLICY_DELETE) {
-	    if (in->publicInfo.t.nvPublic.authPolicy.b.size == 0) {
+	if (in->publicInfo.nvPublic.attributes.val & TPMA_NVA_POLICY_DELETE) {
+	    if (in->publicInfo.nvPublic.authPolicy.b.size == 0) {
 		if (tssVverbose) printf("TSS_PR_NV_DefineSpace POLICY_DELETE requires a policy\n");
 		rc = TSS_RC_IN_PARAMETER;
 	    }
@@ -3136,7 +3535,9 @@ static TPM_RC TSS_PO_StartAuthSession(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	session->sessionHandle = out->sessionHandle;
 	session->authHashAlg = in->authHash;
+#ifndef TPM_TSS_NOCRYPTO
 	session->sizeInBytes = TSS_GetDigestSize(session->authHashAlg);
+#endif
 	session->symmetric = in->symmetric;
 	session->sessionType = in->sessionType;
     }
@@ -3161,6 +3562,7 @@ static TPM_RC TSS_PO_StartAuthSession(TSS_CONTEXT *tssContext,
 	    rc = TSS_TPM2B_Copy(&salt.b, &extra->salt.b, sizeof(TPMT_HA));
 	}
     }
+#ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
 	rc = TSS_TPM2B_Copy(&session->nonceTPM.b, &out->nonceTPM.b, sizeof(TPMT_HA));
     }
@@ -3172,6 +3574,7 @@ static TPM_RC TSS_PO_StartAuthSession(TSS_CONTEXT *tssContext,
 					   &salt,
 					   in->bind, &session->bindAuthValue);
     }
+#endif	/* TPM_TSS_NOCRYPTO */
     if (rc == 0) {
 	rc = TSS_HmacSession_SaveSession(tssContext, session);
     }
@@ -3190,14 +3593,18 @@ static TPM_RC TSS_PO_ContextSave(TSS_CONTEXT *tssContext,
 				 void *extra)
 {
     TPM_RC 		rc = 0;
+#ifndef TPM_TSS_NOFILE
     TPMT_HA 		cpHash;		/* largest size of a digest */
     char		string[65];	/*  sha256 hash * 2 + 1 */
     TPM_HT 		handleType;
     int			done = FALSE;
+#endif
 
     in = in;
     extra = extra;
 
+#ifndef TPM_TSS_NOFILE
+   if (tssVverbose) printf("TSS_PO_ContextSave: handle %08x\n", in->saveHandle);
     /* only for objects and sequence objects, not sessions */
     if (rc == 0) {
 	handleType = (TPM_HT) ((in->saveHandle & HR_RANGE_MASK) >> HR_SHIFT);
@@ -3229,6 +3636,10 @@ static TPM_RC TSS_PO_ContextSave(TSS_CONTEXT *tssContext,
 			     in->saveHandle,
 			     NULL);
     }
+#else
+    tssContext = tssContext;
+    out = out;
+#endif
     return rc;
 }
 
@@ -3238,14 +3649,18 @@ static TPM_RC TSS_PO_ContextLoad(TSS_CONTEXT *tssContext,
 				 void *extra)
 {
     TPM_RC 		rc = 0;
+#ifndef TPM_TSS_NOFILE
     TPMT_HA 		cpHash;		/* largest size of a digest */
     char		string[65];	/*  sha256 hash * 2 + 1 */
     TPM_HT 		handleType;
     int			done = FALSE;
+#endif
 
     out = out;
     extra = extra;
 
+#ifndef TPM_TSS_NOFILE
+    if (tssVverbose) printf("TSS_PO_ContextLoad: handle %08x\n", out->loadedHandle);
     /* only for objects and sequence objects, not sessions */
     if (rc == 0) {
 	handleType = (TPM_HT) ((out->loadedHandle & HR_RANGE_MASK) >> HR_SHIFT);
@@ -3279,6 +3694,10 @@ static TPM_RC TSS_PO_ContextLoad(TSS_CONTEXT *tssContext,
 			     0,
 			     string);
     }
+#else
+    tssContext = tssContext;
+    in = in; 
+#endif
     return rc;
 }
 
@@ -3288,6 +3707,8 @@ static TPM_RC TSS_PO_ContextLoad(TSS_CONTEXT *tssContext,
 
    NOTE: Hard coded to SHA256
 */
+
+#ifndef TPM_TSS_NOFILE
 
 static TPM_RC TSS_HashToString(char *str, uint8_t *digest)
 {
@@ -3299,6 +3720,8 @@ static TPM_RC TSS_HashToString(char *str, uint8_t *digest)
     if (tssVverbose) printf("TSS_HashToString: %s\n", str);
     return 0;
 }
+
+#endif
 
 /* TSS_PO_FlushContext() removes persistent state associated with the handle */
 
@@ -3330,6 +3753,7 @@ static TPM_RC TSS_PO_EvictControl(TSS_CONTEXT *tssContext,
     out = out;
     extra = extra;
     
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_EvictControl: object %08x persistent %08x\n",
 			    in->objectHandle, in->persistentHandle);
     /* if it successfully made a persistent copy */
@@ -3356,10 +3780,14 @@ static TPM_RC TSS_PO_EvictControl(TSS_CONTEXT *tssContext,
 	    rc = TSS_DeleteHandle(tssContext, in->persistentHandle);
 	}
     }
+#else
+    tssContext = tssContext;
+    in = in;
+#endif
     return rc;
 }
 
-/* TSS_PO_Load() saves the Name returned for the loaded object.  It saves the TPM2B+PUBLIC */
+/* TSS_PO_Load() saves the Name returned for the loaded object.  It saves the TPM2B_PUBLIC */
 
 static TPM_RC TSS_PO_Load(TSS_CONTEXT *tssContext,
 			  Load_In *in,
@@ -3370,6 +3798,7 @@ static TPM_RC TSS_PO_Load(TSS_CONTEXT *tssContext,
 
     in = in;
     extra = extra;
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_Load: handle %08x\n", out->objectHandle);
     /* use handle as file name */
     if (rc == 0) {
@@ -3378,6 +3807,10 @@ static TPM_RC TSS_PO_Load(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	rc = TSS_Public_Store(tssContext, &in->inPublic, out->objectHandle, NULL);
     }
+#else
+    tssContext = tssContext;
+    out = out;
+#endif
     return rc;
 }
 
@@ -3392,6 +3825,7 @@ static TPM_RC TSS_PO_LoadExternal(TSS_CONTEXT *tssContext,
 
     in = in;
     extra = extra;
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_LoadExternal: handle %08x\n", out->objectHandle);
     /* use handle as file name */
     if (rc == 0) {
@@ -3400,6 +3834,93 @@ static TPM_RC TSS_PO_LoadExternal(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	rc = TSS_Public_Store(tssContext, &in->inPublic, out->objectHandle, NULL);
     }
+#else
+    tssContext = tssContext;
+    out = out;
+#endif
+    return rc;
+}
+
+/* TSS_PO_ReadPublic() saves the Name returned for the loaded object */
+
+static TPM_RC TSS_PO_ReadPublic(TSS_CONTEXT *tssContext,
+				ReadPublic_In *in,
+				ReadPublic_Out *out,
+				void *extra)
+{
+    TPM_RC 	rc = 0;
+
+    in = in;
+    extra = extra;
+#ifndef TPM_TSS_NOFILE
+    if (tssVverbose) printf("TSS_PO_ReadPublic: handle %08x\n", in->objectHandle);
+    /* validate the Name against the public area */
+    /* Name = nameAlg || HnameAlg (handle->publicArea)
+       where
+       nameAlg	algorithm used to compute Name
+       HnameAlg	hash using the nameAlg parameter in the object associated with handle
+       publicArea 	contents of the TPMT_PUBLIC associated with handle
+    */
+    {
+	TPM2B_NAME name;
+	if (rc == 0) {
+	    rc = TSS_ObjectPublic_GetName(&name, &out->outPublic.publicArea);
+	}
+	if (rc == 0) {
+	    if (name.t.size != out->name.t.size) {
+		if (tssVerbose)
+		    printf("TSS_PO_ReadPublic: TPMT_PUBLIC does not match TPM2B_NAME\n");
+		rc = TSS_RC_MALFORMED_PUBLIC;
+	    }
+	    else {
+		int irc;
+		irc = memcmp(name.t.name, out->name.t.name, out->name.t.size);
+		if (irc != 0) {
+		    if (tssVerbose)
+			printf("TSS_PO_ReadPublic: TPMT_PUBLIC does not match TPM2B_NAME\n");
+		    rc = TSS_RC_MALFORMED_PUBLIC;
+		}
+	    }
+	}
+    }
+    /* use handle as file name */
+    if (rc == 0) {
+	rc = TSS_Name_Store(tssContext, &out->name, in->objectHandle, NULL);
+    }
+    if (rc == 0) {
+	rc = TSS_Public_Store(tssContext, &out->outPublic, in->objectHandle, NULL);
+    }
+#else
+    tssContext = tssContext;
+    out = out;
+#endif
+    return rc;
+}
+
+/* TSS_PO_Load() saves the Name returned for the loaded object.  It saves the TPM2B_PUBLIC */
+
+static TPM_RC TSS_PO_CreateLoaded(TSS_CONTEXT *tssContext,
+				  CreateLoaded_In *in,
+				  CreateLoaded_Out *out,
+				  void *extra)
+{
+    TPM_RC 	rc = 0;
+
+    in = in;
+    extra = extra;
+#ifndef TPM_TSS_NOFILE
+    if (tssVverbose) printf("TSS_PO_CreateLoaded: handle %08x\n", out->objectHandle);
+    /* use handle as file name */
+    if (rc == 0) {
+	rc = TSS_Name_Store(tssContext, &out->name, out->objectHandle, NULL);
+    }
+    if (rc == 0) {
+	rc = TSS_Public_Store(tssContext, &out->outPublic, out->objectHandle, NULL);
+    }
+#else
+    tssContext = tssContext;
+    out = out;
+#endif
     return rc;
 }
 
@@ -3416,6 +3937,7 @@ static TPM_RC TSS_PO_HashSequenceStart(TSS_CONTEXT *tssContext,
     in = in;
     extra = extra;
 
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_HashSequenceStart\n");
     /* Part 1 Table 3 The Name of a sequence object is an Empty Buffer */
     if (rc == 0) {
@@ -3423,6 +3945,11 @@ static TPM_RC TSS_PO_HashSequenceStart(TSS_CONTEXT *tssContext,
 	/* use handle as file name */
 	rc = TSS_Name_Store(tssContext, &name, out->sequenceHandle, NULL);
     }
+#else
+    tssContext = tssContext;
+    out = out;
+    name = name;
+#endif
     return rc;
 }
 
@@ -3440,6 +3967,7 @@ static TPM_RC TSS_PO_HMAC_Start(TSS_CONTEXT *tssContext,
     in = in;
     extra = extra;
 
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_HMAC_Start\n");
     /* Part 1 Table 3 The Name of a sequence object is an Empty Buffer */
     if (rc == 0) {
@@ -3447,6 +3975,11 @@ static TPM_RC TSS_PO_HMAC_Start(TSS_CONTEXT *tssContext,
 	/* use handle as file name */
 	rc = TSS_Name_Store(tssContext, &name, out->sequenceHandle, NULL);
     }
+#else
+    tssContext = tssContext;
+    out = out;
+    name = name;
+#endif
     return rc;
 }
 
@@ -3460,10 +3993,15 @@ static TPM_RC TSS_PO_SequenceComplete(TSS_CONTEXT *tssContext,
     out = out;
     extra = extra;
 
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_SequenceComplete: sequenceHandle %08x\n", in->sequenceHandle);
     if (rc == 0) {
 	rc = TSS_DeleteHandle(tssContext, in->sequenceHandle);
     }
+#else
+    tssContext = tssContext;
+    in = in;
+#endif
     return rc;
 }
 static TPM_RC TSS_PO_EventSequenceComplete(TSS_CONTEXT *tssContext,
@@ -3474,11 +4012,16 @@ static TPM_RC TSS_PO_EventSequenceComplete(TSS_CONTEXT *tssContext,
     TPM_RC 	rc = 0;
     out = out;
     extra = extra;
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose)
 	printf("TSS_PO_EventSequenceComplete: sequenceHandle %08x\n", in->sequenceHandle);
     if (rc == 0) {
 	rc = TSS_DeleteHandle(tssContext, in->sequenceHandle);
     }
+#else
+    tssContext = tssContext;
+    in = in;
+#endif
     return rc;
 }
 
@@ -3535,6 +4078,7 @@ static TPM_RC TSS_PO_CreatePrimary(TSS_CONTEXT *tssContext,
 
     in = in;
     extra = extra;
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_CreatePrimary: handle %08x\n", out->objectHandle);
     /* use handle as file name */
     if (rc == 0) {
@@ -3543,8 +4087,53 @@ static TPM_RC TSS_PO_CreatePrimary(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	rc = TSS_Public_Store(tssContext, &out->outPublic, out->objectHandle, NULL);
     }
+#else
+    tssContext = tssContext;
+    out = out;
+#endif
     return rc;
 }
+
+static TPM_RC TSS_PO_NV_DefineSpace(TSS_CONTEXT *tssContext,
+				    NV_DefineSpace_In *in,
+				    void *out,
+				    void *extra)
+{
+    TPM_RC 	rc = 0;
+#ifndef TPM_TSS_NOFILE
+    TPM2B_NAME name;
+#endif
+
+    out = out;
+    extra = extra;
+    if (tssVverbose) printf("TSS_PO_NV_DefineSpace\n");
+#ifndef TPM_TSS_NOFILE
+    /* calculate the Name from the input public area */
+    /* Name = nameAlg || HnameAlg (handle->nvPublicArea)
+       where
+       nameAlg	algorithm used to compute Name
+       HnameAlg hash using the nameAlg parameter in the NV Index location associated with handle
+       nvPublicArea	contents of the TPMS_NV_PUBLIC associated with handle
+    */
+    /* calculate the Name from the input TPMS_NV_PUBLIC */
+    if (rc == 0) {
+	rc = TSS_NVPublic_GetName(&name, &in->publicInfo.nvPublic);
+    }
+    /* use handle as file name */
+    if (rc == 0) {
+	rc = TSS_Name_Store(tssContext, &name, in->publicInfo.nvPublic.nvIndex, NULL);
+    }
+    if (rc == 0) {
+	rc = TSS_NVPublic_Store(tssContext, &in->publicInfo.nvPublic, in->publicInfo.nvPublic.nvIndex); 
+    }
+#else
+    tssContext = tssContext;
+    in = in;
+    out = out;
+#endif
+    return rc;
+}
+
 
 static TPM_RC TSS_PO_NV_ReadPublic(TSS_CONTEXT *tssContext,
 				   NV_ReadPublic_In *in,
@@ -3556,6 +4145,7 @@ static TPM_RC TSS_PO_NV_ReadPublic(TSS_CONTEXT *tssContext,
     extra = extra;
     if (tssVverbose) printf("TSS_PO_NV_ReadPublic\n");
     
+#ifndef TPM_TSS_NOFILE
     /* validate the Name against the public area */
     /* Name = nameAlg || HnameAlg (handle->nvPublicArea)
        where
@@ -3565,8 +4155,9 @@ static TPM_RC TSS_PO_NV_ReadPublic(TSS_CONTEXT *tssContext,
     */
     {
 	TPM2B_NAME name;
+	/* calculate the Name from the TPMS_NV_PUBLIC */
 	if (rc == 0) {
-	    rc = TSS_NVPublic_GetName(&name, &out->nvPublic.t.nvPublic);
+	    rc = TSS_NVPublic_GetName(&name, &out->nvPublic.nvPublic);
 	}
 	if (rc == 0) {
 	    if (name.t.size != out->nvName.t.size) {
@@ -3585,13 +4176,18 @@ static TPM_RC TSS_PO_NV_ReadPublic(TSS_CONTEXT *tssContext,
 	    }
 	}
     }
+    /* use handle as file name */
     if (rc == 0) {
-	/* use handle as file name */
 	rc = TSS_Name_Store(tssContext, &out->nvName, in->nvIndex, NULL);
     }
     if (rc == 0) {
-	rc = TSS_NVPublic_Store(tssContext, &out->nvPublic.t.nvPublic, in->nvIndex); 
+	rc = TSS_NVPublic_Store(tssContext, &out->nvPublic.nvPublic, in->nvIndex); 
     }
+#else
+    tssContext = tssContext;
+    in = in;
+    out = out;
+#endif
     return rc;
 }
 
@@ -3604,10 +4200,15 @@ static TPM_RC TSS_PO_NV_UndefineSpace(TSS_CONTEXT *tssContext,
 
     out = out;
     extra = extra;
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_NV_UndefineSpace\n");
     /* Don't check return code.  The name will only exist if NV_ReadPublic has been issued */
     TSS_DeleteHandle(tssContext, in->nvIndex);
     TSS_NVPublic_Delete(tssContext, in->nvIndex);
+#else
+    tssContext = tssContext;
+    in = in;
+#endif
     return rc;
 }
 
@@ -3620,10 +4221,15 @@ static TPM_RC TSS_PO_NV_UndefineSpaceSpecial(TSS_CONTEXT *tssContext,
 
     out = out;
     extra = extra;
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_NV_UndefineSpaceSpecial\n");
     /* Don't check return code.  The name will only exist if NV_ReadPublic has been issued */
     TSS_DeleteHandle(tssContext, in->nvIndex);
     TSS_NVPublic_Delete(tssContext, in->nvIndex);
+#else
+    tssContext = tssContext;
+    in = in;
+#endif
     return rc;
 }
 
@@ -3641,6 +4247,8 @@ static TPM_RC TSS_PO_NV_Write(TSS_CONTEXT *tssContext,
     
     out = out;
     extra = extra;
+
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_NV_Write, Increment, Extend, SetBits:\n");
 
     if (rc == 0) {
@@ -3669,6 +4277,12 @@ static TPM_RC TSS_PO_NV_Write(TSS_CONTEXT *tssContext,
 	    TSS_NVPublic_Delete(tssContext, in->nvIndex);
 	}
     }
+#else
+    tssContext = tssContext; 
+    in = in; 
+    name = name;
+    nvPublic = nvPublic;
+#endif
     return rc;
 }
 
@@ -3685,6 +4299,8 @@ static TPM_RC TSS_PO_NV_WriteLock(TSS_CONTEXT *tssContext,
     
     out = out;
     extra = extra;
+
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_NV_WriteLock:\n");
 
     if (rc == 0) {
@@ -3713,6 +4329,12 @@ static TPM_RC TSS_PO_NV_WriteLock(TSS_CONTEXT *tssContext,
 	    TSS_NVPublic_Delete(tssContext, in->nvIndex);
 	}
     }
+#else
+    tssContext = tssContext; 
+    in = in; 
+    name = name;
+    nvPublic = nvPublic;
+#endif
     return rc;
 }
 
@@ -3729,6 +4351,7 @@ static TPM_RC TSS_PO_NV_ReadLock(TSS_CONTEXT *tssContext,
     
     out = out;
     extra = extra;
+#ifndef TPM_TSS_NOFILE
     if (tssVverbose) printf("TSS_PO_NV_ReadLock:");
 
     if (rc == 0) {
@@ -3757,5 +4380,11 @@ static TPM_RC TSS_PO_NV_ReadLock(TSS_CONTEXT *tssContext,
 	    TSS_NVPublic_Delete(tssContext, in->nvIndex);
 	}
     }
+#else
+    tssContext = tssContext; 
+    in = in; 
+    name = name;
+    nvPublic = nvPublic;
+#endif
     return rc;
 }

@@ -3,7 +3,7 @@
 /*			     Structure Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 746 2016-09-07 17:57:15Z kgoldman $		*/
+/*	      $Id: tssprint.c 796 2016-11-11 19:26:16Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -747,7 +747,7 @@ void TSS_TPMU_PUBLIC_PARMS_Print(TPMU_PUBLIC_PARMS *source, uint32_t selector, u
 	break;
 #endif
       default:
-	printf("%*s" "TPMU_PUBLIC_PARMS : selector %08hx not implemented\n", indent, "", selector);
+	printf("%*s" "TPMU_PUBLIC_PARMS : selector %08x not implemented\n", indent, "", selector);
     }
     return;
 }

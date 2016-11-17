@@ -5,7 +5,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: reg.bat 593 2016-05-18 15:04:15Z kgoldman $		#
+REM #		$Id: reg.bat 797 2016-11-11 22:57:11Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -96,6 +96,13 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+call regtests\testcreateloaded.bat
+IF !ERRORLEVEL! NEQ 0 (
+   echo ""
+   echo "Failedtestcreateloaded .bat"
+   exit /B 1
+)
+
 call regtests\testhmacsession.bat
 IF !ERRORLEVEL! NEQ 0 (
    echo ""
@@ -159,6 +166,13 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
  )
 
+call regtests\testnvpin.bat
+ IF !ERRORLEVEL! NEQ 0 (
+   echo ""
+   echo "Failed testnvpin.bat"
+   exit /B 1
+ )
+
 call regtests\testevict.bat
 IF !ERRORLEVEL! NEQ 0 (
   echo ""
@@ -180,6 +194,13 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+call regtests\testaes138.bat
+IF !ERRORLEVEL! NEQ 0 (
+   echo ""
+   echo "Failed testaes138.bat"
+   exit /B 1
+)
+
 call regtests\testhmac.bat
 IF !ERRORLEVEL! NEQ 0 (
   echo ""
@@ -198,6 +219,13 @@ call regtests\testpolicy.bat
 IF !ERRORLEVEL! NEQ 0 (
    echo ""
    echo "Failed testpolicy.bat"
+   exit /B 1
+)
+
+call regtests\testpolicy138.bat
+IF !ERRORLEVEL! NEQ 0 (
+   echo ""
+   echo "Failed testpolicy138.bat"
    exit /B 1
 )
 

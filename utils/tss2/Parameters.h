@@ -3,7 +3,7 @@
 /*			  Command and Response Parameter Structures		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Parameters.h 683 2016-07-15 20:53:46Z kgoldman $		*/
+/*            $Id: Parameters.h 790 2016-10-26 19:21:33Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -82,6 +82,7 @@
 #include "ContextSave_fp.h"
 #include "CreatePrimary_fp.h"
 #include "Create_fp.h"
+#include "CreateLoaded_fp.h"
 #include "DictionaryAttackLockReset_fp.h"
 #include "DictionaryAttackParameters_fp.h"
 #include "Duplicate_fp.h"
@@ -90,6 +91,7 @@
 #include "ECDH_ZGen_fp.h"
 #include "EC_Ephemeral_fp.h"
 #include "EncryptDecrypt_fp.h"
+#include "EncryptDecrypt2_fp.h"
 #include "EventSequenceComplete_fp.h"
 #include "EvictControl_fp.h"
 #include "FlushContext_fp.h"
@@ -142,6 +144,7 @@
 #include "PolicyGetDigest_fp.h"
 #include "PolicyLocality_fp.h"
 #include "PolicyNV_fp.h"
+#include "PolicyAuthorizeNV_fp.h"
 #include "PolicyNvWritten_fp.h"
 #include "PolicyNameHash_fp.h"
 #include "PolicyOR_fp.h"
@@ -151,6 +154,7 @@
 #include "PolicyRestart_fp.h"
 #include "PolicySecret_fp.h"
 #include "PolicySigned_fp.h"
+#include "PolicyTemplate_fp.h"
 #include "PolicyTicket_fp.h"
 #include "Quote_fp.h"
 #include "RSA_Decrypt_fp.h"
@@ -248,6 +252,7 @@ typedef union {
     PolicyGetDigest_In            PolicyGetDigest;
     PolicyLocality_In             PolicyLocality;
     PolicyNV_In                   PolicyNV;
+    PolicyAuthorizeNV_In          PolicyAuthorizeNV;
     PolicyNameHash_In             PolicyNameHash;
     PolicyOR_In                   PolicyOR;
     PolicyPCR_In                  PolicyPCR;

@@ -3,7 +3,7 @@
 /*			     Parameter Unmarshaling				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Unmarshal.c 683 2016-07-15 20:53:46Z kgoldman $		*/
+/*            $Id: Unmarshal.c 790 2016-10-26 19:21:33Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -40,9 +40,6 @@
 #include <string.h>
 
 /* TSS needs TPM_TSS for TSS side structures */
-#ifndef TPM_TSS
-#define TPM_TSS
-#endif
 #include <tss2/Unmarshal_fp.h>
 
 TPM_RC
@@ -752,7 +749,7 @@ TPMI_DH_CONTEXT_Unmarshal(TPMI_DH_CONTEXT *target, BYTE **buffer, INT32 *size, B
 	rc = TPM_HANDLE_Unmarshal(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
-	BOOL isNotHmacSession = (*target < HMAC_SESSION_FIRST ) || (*target > HMAC_SESSION_LAST);
+	BOOL isNotHmacSession = (*target < HMAC_SESSION_FIRST) || (*target > HMAC_SESSION_LAST);
 	BOOL isNotPolicySession = (*target < POLICY_SESSION_FIRST) || (*target > POLICY_SESSION_LAST);
 	BOOL isNotTransient = (*target < TRANSIENT_FIRST) || (*target > TRANSIENT_LAST);
 	if (isNotHmacSession &&
@@ -2505,10 +2502,10 @@ TPM2B_SENSITIVE_CREATE_Unmarshal(TPM2B_SENSITIVE_CREATE *target, BYTE **buffer, 
     
     INT32 startSize;
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->t.size, buffer, size);
+	rc = UINT16_Unmarshal(&target->size, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size == 0) {
+	if (target->size == 0) {
 	    rc = TPM_RC_SIZE;
 	}
     }
@@ -2516,10 +2513,10 @@ TPM2B_SENSITIVE_CREATE_Unmarshal(TPM2B_SENSITIVE_CREATE *target, BYTE **buffer, 
 	startSize = *size;
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMS_SENSITIVE_CREATE_Unmarshal(&target->t.sensitive, buffer, size);
+	rc = TPMS_SENSITIVE_CREATE_Unmarshal(&target->sensitive, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size != startSize - *size) {
+	if (target->size != startSize - *size) {
 	    rc = TPM_RC_SIZE;
 	}
     }
@@ -3281,10 +3278,10 @@ TPM2B_ECC_POINT_Unmarshal(TPM2B_ECC_POINT *target, BYTE **buffer, INT32 *size)
 
     INT32 startSize;
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->t.size, buffer, size);
+	rc = UINT16_Unmarshal(&target->size, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size == 0) {
+	if (target->size == 0) {
 	    rc = TPM_RC_SIZE;
 	}
     }
@@ -3292,10 +3289,10 @@ TPM2B_ECC_POINT_Unmarshal(TPM2B_ECC_POINT *target, BYTE **buffer, INT32 *size)
 	startSize = *size;
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMS_ECC_POINT_Unmarshal(&target->t.point, buffer, size);
+	rc = TPMS_ECC_POINT_Unmarshal(&target->point, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size != startSize - *size) {
+	if (target->size != startSize - *size) {
 	    rc = TPM_RC_SIZE;
 	}
     }
@@ -3848,10 +3845,10 @@ TPM2B_PUBLIC_Unmarshal(TPM2B_PUBLIC *target, BYTE **buffer, INT32 *size, BOOL al
     
     INT32 startSize;
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->t.size, buffer, size);
+	rc = UINT16_Unmarshal(&target->size, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size == 0) {
+	if (target->size == 0) {
 	    rc = TPM_RC_SIZE;
 	}
     }
@@ -3859,12 +3856,25 @@ TPM2B_PUBLIC_Unmarshal(TPM2B_PUBLIC *target, BYTE **buffer, INT32 *size, BOOL al
 	startSize = *size;
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_PUBLIC_Unmarshal(&target->t.publicArea, buffer, size, allowNull);
+	rc = TPMT_PUBLIC_Unmarshal(&target->publicArea, buffer, size, allowNull);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size != startSize - *size) {
+	if (target->size != startSize - *size) {
 	    rc = TPM_RC_SIZE;
 	}
+    }
+    return rc;
+}
+
+/* Table 192 - Definition of TPM2B_TEMPLATE Structure */
+
+TPM_RC
+TPM2B_TEMPLATE_Unmarshal(TPM2B_TEMPLATE *target, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TPM2B_Unmarshal(&target->b, sizeof(TPMT_PUBLIC), buffer, size);
     }
     return rc;
 }
@@ -4050,10 +4060,10 @@ TPM2B_NV_PUBLIC_Unmarshal(TPM2B_NV_PUBLIC *target, BYTE **buffer, INT32 *size)
     
     INT32 startSize;
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->t.size, buffer, size);
+	rc = UINT16_Unmarshal(&target->size, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size == 0) {
+	if (target->size == 0) {
 	    rc = TPM_RC_SIZE;
 	}
     }
@@ -4061,10 +4071,10 @@ TPM2B_NV_PUBLIC_Unmarshal(TPM2B_NV_PUBLIC *target, BYTE **buffer, INT32 *size)
 	startSize = *size;
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMS_NV_PUBLIC_Unmarshal(&target->t.nvPublic, buffer, size);
+	rc = TPMS_NV_PUBLIC_Unmarshal(&target->nvPublic, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size != startSize - *size) {
+	if (target->size != startSize - *size) {
 	    rc = TPM_RC_SIZE;
 	}
     }
@@ -4175,10 +4185,10 @@ TPM2B_CREATION_DATA_Unmarshal(TPM2B_CREATION_DATA *target, BYTE **buffer, INT32 
     
     INT32 startSize;
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->t.size, buffer, size);
+	rc = UINT16_Unmarshal(&target->size, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size == 0) {
+	if (target->size == 0) {
 	    rc = TPM_RC_SIZE;
 	}
     }
@@ -4186,10 +4196,10 @@ TPM2B_CREATION_DATA_Unmarshal(TPM2B_CREATION_DATA *target, BYTE **buffer, INT32 
 	startSize = *size;
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMS_CREATION_DATA_Unmarshal(&target->t.creationData, buffer, size);
+	rc = TPMS_CREATION_DATA_Unmarshal(&target->creationData, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if (target->t.size != startSize - *size) {
+	if (target->size != startSize - *size) {
 	    rc = TPM_RC_SIZE;
 	}
     }

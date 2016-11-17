@@ -3,7 +3,7 @@
 /*			    Get Capability	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 703 2016-07-28 17:21:46Z kgoldman $		*/
+/*	      $Id: getcapability.c 778 2016-10-19 15:21:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/

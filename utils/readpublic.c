@@ -3,7 +3,7 @@
 /*			   ReadPublic 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: readpublic.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: readpublic.c 802 2016-11-15 20:06:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -154,8 +154,8 @@ int main(int argc, char *argv[])
 static void printReadPublic(ReadPublic_Out *out)
 {
     TSS_PrintAll("authPolicy",
-		out->outPublic.t.publicArea.authPolicy.t.buffer,
-		 out->outPublic.t.publicArea.authPolicy.t.size);
+		out->outPublic.publicArea.authPolicy.t.buffer,
+		 out->outPublic.publicArea.authPolicy.t.size);
     TSS_PrintAll("name",
 		 out->name.t.name,
 		 out->name.t.size);

@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testnv.bat 742 2016-08-30 15:54:30Z kgoldman $		#
+REM #		$Id: testnv.bat 783 2016-10-24 14:30:29Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -78,12 +78,6 @@ for /L %%i in (1,1,!L!) do (
     	IF !ERRORLEVEL! EQU 0 (
        	  exit /B 1
     	)
-
-	echo "NV Read Public, unwritten Name !{NALG[%%i]!"
-	%TPM_EXE_PATH%nvreadpublic -ha 01000000 -nalg !NALG[%%i]! > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	   exit /B 1
-	)
 
 	echo "NV read - should fail before write %%~S"
 	%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 16 %%~S > run.out
@@ -162,12 +156,6 @@ for %%S in ("" "-se0 02000000 1") do (
 
     echo "NV Define Space"
     %TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -ty b > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
-
-    echo "NV Read Public, unwritten Name"
-    %TPM_EXE_PATH%nvreadpublic -ha 01000000 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -658,25 +646,13 @@ for %%S in ("" "-se0 02000000 1") do (
        exit /B 1
     )
 
-    echo "NV Read Public, unwritten Name"
-    %TPM_EXE_PATH%nvreadpublic -ha 01000000 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
-
-    echo "NV Read Public, unwritten Name"
-    %TPM_EXE_PATH%nvreadpublic -ha 01000001 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
-
-    echo "NV write %%~S"
+    echo "NV write 01000000 %%~S"
     %TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa %%~S > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "NV write %%~S"
+    echo "NV write 01000001 %%~S"
     %TPM_EXE_PATH%nvwrite -ha 01000001 -pwdn nnn -if policies/aaa %%~S > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
@@ -688,49 +664,49 @@ for %%S in ("" "-se0 02000000 1") do (
        exit /B 1
     )
 
-    echo "NV Read Public, locked"
+    echo "NV Read Public, 01000000, locked"
     %TPM_EXE_PATH%nvreadpublic -ha 01000000 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "NV Read Public, locked"
+    echo "NV Read Public, 01000001, locked"
     %TPM_EXE_PATH%nvreadpublic -ha 01000001 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "NV write %%~S - should fail"
+    echo "NV write 01000000 %%~S - should fail"
     %TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa %%~S > run.out
     IF !ERRORLEVEL! EQU 0 (
        exit /B 1
     )
 
-    echo "NV write %%~S - should fail"
+    echo "NV write 01000001 %%~S - should fail"
     %TPM_EXE_PATH%nvwrite -ha 01000001 -pwdn nnn -if policies/aaa %%~S > run.out
     IF !ERRORLEVEL! EQU 0 (
        exit /B 1
     )
 
-    echo "NV read %%~S"
+    echo "NV read 01000000 %%~S"
     %TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 16 %%~S > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "NV read %%~S"
+    echo "NV read 01000001 %%~S"
     %TPM_EXE_PATH%nvread -ha 01000001 -pwdn nnn -sz 16 %%~S > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "NV Undefine Space"
+    echo "NV Undefine Space 01000000"
     %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "NV Undefine Space"
+    echo "NV Undefine Space 01000001"
     %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000001 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
@@ -868,12 +844,6 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "NV Read Public, unwritten Name"
-%TPM_EXE_PATH%nvreadpublic -ha 01000000 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
 echo "Start an HMAC session, bind to NV index"
 %TPM_EXE_PATH%startauthsession -se h -bi 01000000 -pwdb nnn > run.out
 IF !ERRORLEVEL! NEQ 0 (
@@ -938,12 +908,6 @@ for %%P in (policyauthvalue policypassword) do (
 
     echo "NV Define Space 0100000"
     %TPM_EXE_PATH%nvdefinespace -hi p -ha 01000000 -pwdn nnn -sz 16 +at pold -pol policies/policyccundefinespacespecial-auth.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
-
-    echo "NV Read Public, unwritten Name"
-    %TPM_EXE_PATH%nvreadpublic -ha 01000000 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

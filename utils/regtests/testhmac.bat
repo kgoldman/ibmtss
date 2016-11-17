@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testhmac.bat 717 2016-08-12 18:34:15Z kgoldman $		#
+REM #		$Id: testhmac.bat 820 2016-11-16 23:35:35Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -65,7 +65,7 @@ for %%H in (sha1 sha256 sha384) do (
            exit /B 1
     	)
 
-	echo "HMAC %%H using the keyed hash key %%~S"
+	echo "HMAC %%H using the keyed hash key, message from file %%~S"
 	%TPM_EXE_PATH%hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khk -halg %%H %%~S > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
@@ -85,6 +85,18 @@ for %%H in (sha1 sha256 sha384) do (
 
 	echo "HMAC %%H sequence complete %%~S"
 	%TPM_EXE_PATH%sequencecomplete -hs 80000002 -pwds aaa -of tmp.bin %%~S > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "Verify the HMAC %%H using the two methods"
+	diff sig.bin tmp.bin
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "HMAC %%H using the keyed hash key, message from command line %%~S"
+	%TPM_EXE_PATH%hmac -hk 80000001 -ic 1234567890123456 -os sig.bin -pwdk khk -halg %%H %%~S > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
@@ -153,8 +165,20 @@ for %%H in (sha1 sha256 sha384) do (
 
     for %%S in ("" "-se0 02000000 1") do (
 
-	echo "Hash %%H in one call"
+	echo "Hash %%H in one call, data from file"
 	%TPM_EXE_PATH%hash -hi p -halg %%H -if policies/aaa -oh tmp.bin > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "Verify the hash %%H"
+	diff tmp.bin policies/%%Haaa.bin > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "Hash %%H in one cal, data on command linel"
+	%TPM_EXE_PATH%hash -hi p -halg %%H -ic aaa -oh tmp.bin > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)

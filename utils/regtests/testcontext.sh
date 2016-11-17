@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testcontext.sh 663 2016-06-30 18:58:18Z kgoldman $		#
+#		$Id: testcontext.sh 756 2016-09-26 13:57:59Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -43,6 +43,10 @@
 
 echo ""
 echo "Context"
+echo ""
+
+echo ""
+echo "Basic Context"
 echo ""
 
 echo "Start an HMAC auth session"
@@ -107,6 +111,46 @@ checkSuccess $?
 
 echo "Flush the session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
+checkSuccess $?
+
+echo ""
+echo "Context Public Key for Salt"
+echo ""
+
+echo "Load the storage key at 80000001"
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Save context for the key at context 80000000"
+${PREFIX}contextsave -ha 80000001 -of tmp.bin > run.out
+checkSuccess $?
+
+echo "Load context at 80000002"
+${PREFIX}contextload -if tmp.bin > run.out
+checkSuccess $?
+
+echo "Flush the original key at 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Start an HMAC auth session at 02000000 using the storage key salt"
+${PREFIX}startauthsession -se h -hs 80000002 > run.out
+checkSuccess $?
+
+echo "Load the signing key under the primary key at 80000001"
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Sign a digest"
+${PREFIX}sign -hk 80000001 -halg sha256 -if msg.bin -os sig.bin -pwdk sig -se0 02000000 0 > run.out
+checkSuccess $?
+
+echo "Flush the signing key at 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Flush the salt key at 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
 checkSuccess $?
 
 # ${PREFIX}getcapability  -cap 1 -pr 80000000

@@ -3,7 +3,7 @@
 #			   	TPM 2.0 makefile - Linux, to run beam		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile-beam 656 2016-06-28 16:49:29Z kgoldman $		#
+#	      $Id: makefile-beam 813 2016-11-16 22:24:37Z kgoldman $		#
 #										#
 #			       IBM Confidential					#
 #			     OCO Source Materials				#
@@ -24,22 +24,23 @@ CCFLAGS = 	\
 	-ggdb -O0 -c 			\
 	-DTPM_BITFIELD_LE		\
 	-I.				\
-	-I../src			\
 	-DTPM_ENCRYPT_SESSIONS_DEFAULT="\"0\""
 
 beam_targets = 				\
 		tss.berr		\
+		tssauth.berr		\
+		tssccattributes.berr	\
 		tsscrypto.berr		\
+		tssdev.berr		\
+		tssfile.berr		\
+		tssmarshal.berr		\
 		tssprint.berr		\
 		tssproperties.berr	\
 		tssresponsecode.berr	\
-		tssutils.berr		\
-		tssauth.berr		\
-		tssmarshal.berr		\
-		tssdev.berr		\
 		tsssocket.berr		\
 		tsstbsi.berr		\
-		tsstransmit.berr
+		tsstransmit.berr	\
+		tssutils.berr
 
 all:	$(beam_targets)
 

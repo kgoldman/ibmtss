@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 730 2016-08-23 21:09:53Z kgoldman $		*/
+/*            $Id: TPM_Types.h 802 2016-11-15 20:06:21Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -1198,6 +1198,10 @@ typedef BYTE TPMI_YES_NO;
 
 typedef TPM_HANDLE TPMI_DH_OBJECT;
 
+/* Table 41 - Definition of (TPM_HANDLE) TPMI_DH_PARENT Type */
+
+typedef TPM_HANDLE TPMI_DH_PARENT;
+    
 /* Table 40 - Definition of (TPM_HANDLE) TPMI_DH_PERSISTENT Type */
 
 typedef TPM_HANDLE TPMI_DH_PERSISTENT;
@@ -1861,6 +1865,23 @@ typedef struct {
     TPMT_SYM_DEF_OBJECT	sym;	/* a symmetric block cipher */
 } TPMS_SYMCIPHER_PARMS;
 
+/* Table 135 - Definition of TPM2B_LABEL Structure */
+
+typedef union {
+    struct {
+	UINT16                  size;
+	BYTE                    buffer[LABEL_MAX_BUFFER];
+    }            t;
+    TPM2B        b;
+} TPM2B_LABEL;
+
+/* Table 135 - Definition of TPMS_DERIVE Structure */
+
+typedef struct {
+    TPM2B_LABEL	label;
+    TPM2B_LABEL	context;
+} TPMS_DERIVE; 
+
 /* Table 131 - Definition of TPM2B_SENSITIVE_DATA Structure */
 
 typedef struct {
@@ -1885,11 +1906,6 @@ typedef struct {
 typedef struct {
     UINT16			size;		/* size of sensitive in octets (may not be zero) */
     TPMS_SENSITIVE_CREATE	sensitive;	/* data to be sealed or a symmetric key value. */
-} SENSITIVE_CREATE_2B;
-
-typedef union {
-    SENSITIVE_CREATE_2B t;
-    TPM2B               b;
 } TPM2B_SENSITIVE_CREATE;
 
 /* Table 134 - Definition of TPMS_SCHEME_HASH Structure */
@@ -2148,11 +2164,6 @@ typedef struct {
 typedef struct {
     UINT16		size;	/* size of the remainder of this structure */
     TPMS_ECC_POINT	point;	/* coordinates */
-} ECC_POINT_2B;
-
-typedef union {
-    ECC_POINT_2B t;
-    TPM2B        b;
 } TPM2B_ECC_POINT;
 
 /* Table 163 - Definition of (TPM_ALG_ID) {ECC} TPMI_ALG_ECC_SCHEME Type */
@@ -2297,6 +2308,8 @@ typedef union {
 #ifdef TPM_ALG_ECC
     TPMS_ECC_POINT		ecc;		/* TPM_ALG_ECC */
 #endif
+    TPMS_DERIVE			derive;		/* only allowed for TPM2_CreateLoaded when
+						   parentHandle is a Derivation Parent */
 } TPMU_PUBLIC_ID;
 
 /* Table 177 - Definition of TPMS_KEYEDHASH_PARMS Structure */
@@ -2371,12 +2384,17 @@ typedef struct {
 typedef struct {
     UINT16	size;		/* size of publicArea */
     TPMT_PUBLIC	publicArea;	/* the public area  */
-} PUBLIC_2B;
+} TPM2B_PUBLIC;
+
+/* Table 192 - Definition of TPM2B_TEMPLATE Structure */
 
 typedef union {
-    PUBLIC_2B t;
-    TPM2B     b;
-} TPM2B_PUBLIC;
+    struct {
+	UINT16	size;				/* size of publicArea */
+	BYTE	buffer[sizeof(TPMT_PUBLIC)];	/* the public area  */
+    } t;
+    TPM2B       b;
+} TPM2B_TEMPLATE;
 
 /* Table 185 - Definition of TPM2B_PRIVATE_VENDOR_SPECIFIC Structure<> */
 
@@ -2647,11 +2665,6 @@ typedef struct {
 typedef struct {
     UINT16		size;		/* size of nvPublic */
     TPMS_NV_PUBLIC	nvPublic;	/* the public area */
-} NV_PUBLIC_2B;
-
-typedef union {
-    NV_PUBLIC_2B t;
-    TPM2B        b;
 } TPM2B_NV_PUBLIC;
 
 /* Table 199 - Definition of TPM2B_CONTEXT_SENSITIVE Structure <IN/OUT> */
@@ -2719,11 +2732,6 @@ typedef struct {
 typedef struct {
     UINT16		size;	/* size of the creation data */
     TPMS_CREATION_DATA	creationData;
-} CREATION_DATA_2B;
-
-typedef union {
-    CREATION_DATA_2B t;
-    TPM2B            b;
 } TPM2B_CREATION_DATA;
 
 #ifdef __cplusplus

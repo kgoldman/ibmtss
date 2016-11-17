@@ -3,7 +3,7 @@
 /*		Linux Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.c 684 2016-07-18 21:22:01Z kgoldman $ 		*/
+/*	      $Id: tssdev.c 779 2016-10-19 18:25:09Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -146,7 +146,7 @@ static uint32_t TSS_Dev_SendCommand(int dev_fd,
 	if (irc < 0) {
 	    if (tssVerbose) printf("TSS_Dev_SendCommand: write error %d %s\n",
 				   errno, strerror(errno));
-	    return TSS_RC_BAD_CONNECTION;
+	    rc = TSS_RC_BAD_CONNECTION;
 	}
     }
     return rc;
@@ -173,7 +173,7 @@ static uint32_t TSS_Dev_ReceiveCommand(int dev_fd, uint8_t *buffer, uint32_t *le
 	if (irc <= 0) {
 	    if (tssVerbose) printf("TSS_Dev_ReceiveCommand: read error %d %s\n",
 				   errno, strerror(errno));
-	    return TSS_RC_BAD_CONNECTION;
+	    rc = TSS_RC_BAD_CONNECTION;
 	}
     }
     if ((rc == 0) && tssVverbose) {
@@ -194,7 +194,7 @@ static uint32_t TSS_Dev_ReceiveCommand(int dev_fd, uint8_t *buffer, uint32_t *le
 	if ((uint32_t)irc != responseSize) {
 	    if (tssVerbose) printf("TSS_Dev_ReceiveCommand: read bytes %u != responseSize %u\n",
 				   (uint32_t)irc, responseSize);
-	    return TSS_RC_BAD_CONNECTION;
+	    rc = TSS_RC_BAD_CONNECTION;
 	}
     }
     /* read the TPM return code from the packet */

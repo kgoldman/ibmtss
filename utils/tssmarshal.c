@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: tssmarshal.c 802 2016-11-15 20:06:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -54,7 +54,7 @@
    small.  The TPM functions assert.
 
    'source' is the structure to be marshaled, the same as the TPM functions.
-   'written' is the number of bytes written, the value that the TPM returns.
+   'written' is the __additional__ number of bytes written, the value that the TPM returns.
    'buffer' is the buffer written, the same as the TPM functions.
    ' size' is the remaining size of the buffer, the same as the TPM functions.
 
@@ -265,6 +265,21 @@ TSS_ObjectChangeAuth_In_Marshal(ObjectChangeAuth_In *source, UINT16 *written, BY
     return rc;
 }
 TPM_RC
+TSS_CreateLoaded_In_Marshal(CreateLoaded_In *source, UINT16 *written, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMI_DH_OBJECT_Marshal(&source->parentHandle, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_SENSITIVE_CREATE_Marshal(&source->inSensitive, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_TEMPLATE_Marshal(&source->inPublic, written, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
 TSS_Duplicate_In_Marshal(Duplicate_In *source, UINT16 *written, BYTE **buffer, INT32 *size)
 {
     TPM_RC rc = 0;
@@ -432,6 +447,27 @@ TSS_EncryptDecrypt_In_Marshal(EncryptDecrypt_In *source, UINT16 *written, BYTE *
     }
     if (rc == 0) {
 	rc = TSS_TPM2B_MAX_BUFFER_Marshal(&source->inData, written, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
+TSS_EncryptDecrypt2_In_Marshal(EncryptDecrypt2_In *source, UINT16 *written, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMI_DH_OBJECT_Marshal(&source->keyHandle, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_MAX_BUFFER_Marshal(&source->inData, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMI_YES_NO_Marshal(&source->decrypt, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMI_ALG_SYM_MODE_Marshal(&source->mode, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_IV_Marshal(&source->ivIn, written, buffer, size);
     }
     return rc;
 }
@@ -1111,6 +1147,33 @@ TSS_PolicyNvWritten_In_Marshal(PolicyNvWritten_In *source, UINT16 *written, BYTE
     return rc;
 }
 TPM_RC
+TSS_PolicyTemplate_In_Marshal(PolicyTemplate_In *source, UINT16 *written, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMI_SH_POLICY_Marshal(&source->policySession, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_DIGEST_Marshal(&source->templateHash, written, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
+TSS_PolicyAuthorizeNV_In_Marshal(PolicyAuthorizeNV_In *source, UINT16 *written, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMI_RH_NV_AUTH_Marshal(&source->authHandle, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMI_RH_NV_INDEX_Marshal(&source->nvIndex, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMI_SH_POLICY_Marshal(&source->policySession, written, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
 TSS_CreatePrimary_In_Marshal(CreatePrimary_In *source, UINT16 *written, BYTE **buffer, INT32 *size)
 {
     TPM_RC rc = 0;
@@ -1766,6 +1829,31 @@ TSS_ObjectChangeAuth_Out_Unmarshal(ObjectChangeAuth_Out *target, TPM_ST tag, BYT
     return rc;
 }
 TPM_RC
+TSS_CreateLoaded_Out_Unmarshal(CreateLoaded_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    UINT32 parameterSize = 0;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TPM_HANDLE_Unmarshal(&target->objectHandle, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	if (tag == TPM_ST_SESSIONS) {
+	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TPM2B_PRIVATE_Unmarshal(&target->outPrivate, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TPM2B_PUBLIC_Unmarshal(&target->outPublic, buffer, size, NO);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TPM2B_NAME_Unmarshal(&target->name, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
 TSS_Duplicate_Out_Unmarshal(Duplicate_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
@@ -1932,6 +2020,11 @@ TSS_EncryptDecrypt_Out_Unmarshal(EncryptDecrypt_Out *target, TPM_ST tag, BYTE **
 	rc = TPM2B_IV_Unmarshal(&target->ivOut, buffer, size);
     }
     return rc;
+}
+TPM_RC
+TSS_EncryptDecrypt2_Out_Unmarshal(EncryptDecrypt2_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size)
+{
+    return TSS_EncryptDecrypt_Out_Unmarshal((EncryptDecrypt_Out *)target, tag, buffer, size);
 }
 TPM_RC
 TSS_Hash_Out_Unmarshal(Hash_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size)
@@ -4238,6 +4331,18 @@ TSS_TPM2B_SYM_KEY_Marshal(TPM2B_SYM_KEY *source, UINT16 *written, BYTE **buffer,
     return rc;
 }
 
+/* Table 134 - Definition of TPM2B_LABEL Structure */
+
+TPM_RC
+TSS_TPM2B_LABEL_Marshal(TPM2B_LABEL *source, UINT16 *written, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPM2B_Marshal(&source->b, written, buffer, size);
+    }
+    return rc;
+}
+
 /* Table 131 - Definition of TPMS_SYMCIPHER_PARMS Structure */
 
 TPM_RC
@@ -4291,7 +4396,7 @@ TSS_TPM2B_SENSITIVE_CREATE_Marshal(TPM2B_SENSITIVE_CREATE  *source, UINT16 *writ
 	*buffer += sizeof(UINT16);
     }
     if (rc == 0) {
-	rc = TSS_TPMS_SENSITIVE_CREATE_Marshal(&source->t.sensitive, &sizeWritten, buffer, size);
+	rc = TSS_TPMS_SENSITIVE_CREATE_Marshal(&source->sensitive, &sizeWritten, buffer, size);
     }
     if (rc == 0) {
 	*written += sizeWritten;
@@ -4915,7 +5020,7 @@ TSS_TPM2B_ECC_POINT_Marshal(TPM2B_ECC_POINT *source, UINT16 *written, BYTE **buf
 	*buffer += sizeof(UINT16);
     }
     if (rc == 0) {
-	rc = TSS_TPMS_ECC_POINT_Marshal(&source->t.point, &sizeWritten, buffer, size);
+	rc = TSS_TPMS_ECC_POINT_Marshal(&source->point, &sizeWritten, buffer, size);
     }
     if (rc == 0) {
 	*written += sizeWritten;
@@ -5386,6 +5491,22 @@ TSS_TPMT_PUBLIC_Marshal(TPMT_PUBLIC *source, UINT16 *written, BYTE **buffer, INT
     return rc;
 }
 
+/* Table 184 - Definition of TPMT_PUBLIC Structure - special marshaling for derived object template */
+
+TPM_RC
+TSS_TPMT_PUBLIC_D_Marshal(TPMT_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMT_PUBLIC_Marshal(source, written, buffer, size);
+    }
+    /* if derived from a derivation parent, marshal an additional TPMS_DERIVE TPM2B_LABEL context */             
+    if (rc == 0) {
+	rc = TSS_TPM2B_LABEL_Marshal(&source->unique.derive.context, written, buffer, size);
+    }    
+    return rc;
+}
+
 /* Table 185 - Definition of TPM2B_PUBLIC Structure */
 
 TPM_RC
@@ -5400,7 +5521,7 @@ TSS_TPM2B_PUBLIC_Marshal(TPM2B_PUBLIC *source, UINT16 *written, BYTE **buffer, I
 	*buffer += sizeof(UINT16);
     }
     if (rc == 0) {
-	rc = TSS_TPMT_PUBLIC_Marshal(&source->t.publicArea, &sizeWritten, buffer, size);
+	rc = TSS_TPMT_PUBLIC_Marshal(&source->publicArea, &sizeWritten, buffer, size);
     }
     if (rc == 0) {
 	*written += sizeWritten;
@@ -5410,6 +5531,16 @@ TSS_TPM2B_PUBLIC_Marshal(TPM2B_PUBLIC *source, UINT16 *written, BYTE **buffer, I
 	else {
 	    *written += sizeof(UINT16);
 	}
+    }
+    return rc;
+}
+
+TPM_RC
+TSS_TPM2B_TEMPLATE_Marshal(TPM2B_TEMPLATE *source, UINT16 *written, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPM2B_Marshal(&source->b, written, buffer, size);
     }
     return rc;
 }
@@ -5578,7 +5709,7 @@ TSS_TPM2B_NV_PUBLIC_Marshal(TPM2B_NV_PUBLIC *source, UINT16 *written, BYTE **buf
 	*buffer += sizeof(UINT16);
     }
     if (rc == 0) {
-	rc = TSS_TPMS_NV_PUBLIC_Marshal(&source->t.nvPublic, &sizeWritten, buffer, size);
+	rc = TSS_TPMS_NV_PUBLIC_Marshal(&source->nvPublic, &sizeWritten, buffer, size);
     }
     if (rc == 0) {
 	*written += sizeWritten;
@@ -5681,7 +5812,7 @@ TSS_TPM2B_CREATION_DATA_Marshal(TPM2B_CREATION_DATA *source, UINT16 *written, BY
 	*buffer += sizeof(UINT16);
     }
     if (rc == 0) {
-	rc = TSS_TPMS_CREATION_DATA_Marshal(&source->t.creationData, &sizeWritten, buffer, size);
+	rc = TSS_TPMS_CREATION_DATA_Marshal(&source->creationData, &sizeWritten, buffer, size);
     }
     if (rc == 0) {
 	*written += sizeWritten;

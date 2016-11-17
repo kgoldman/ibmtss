@@ -63,15 +63,8 @@ typedef struct {
     TPM2B_DIGEST 	salt;
 } StartAuthSession_Extra;
 	
-typedef struct {
-    TPM_RC		(*signatureCallback)(TPMT_HA 	*digest,
-					     uint8_t 	*signature,
-					     uint16_t 	*signatureLength);
-} PolicySigned_Extra;		
-
 typedef union {
     StartAuthSession_Extra 	StartAuthSession;
-    PolicySigned_Extra		PolicyPolicySigned;
 } EXTRA_PARAMETERS;
 
 LIB_EXPORT

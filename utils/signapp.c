@@ -3,7 +3,7 @@
 /*			    Sign Application					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: signapp.c 753 2016-09-23 17:03:21Z kgoldman $		*/
+/*	      $Id: signapp.c 802 2016-11-15 20:06:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     VerifySignature_Out 	verifySignatureOut;
     FlushContext_In 		flushContextIn;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
-    uint32_t           		sizeInBytes;	/* hash algorithm mapped to size */           		
+    uint32_t           		sizeInBytes;	/* hash algorithm mapped to size */
     const char			*messageFilename = NULL;
     unsigned char 		*message = NULL;	/* message */
     size_t 			messageLength;
@@ -235,39 +235,39 @@ int main(int argc, char *argv[])
     */
     if (rc == 0) {
 	createPrimaryIn.primaryHandle = primaryHandle;
-	createPrimaryIn.inSensitive.t.sensitive.data.t.size = 0;
+	createPrimaryIn.inSensitive.sensitive.data.t.size = 0;
     }
     /* primary key password */
     if (rc == 0) {
 	if (primaryPassword == NULL) {
-	    createPrimaryIn.inSensitive.t.sensitive.userAuth.t.size = 0;
+	    createPrimaryIn.inSensitive.sensitive.userAuth.t.size = 0;
 	}
 	else {
-	    rc = TSS_TPM2B_StringCopy(&createPrimaryIn.inSensitive.t.sensitive.userAuth.b,
+	    rc = TSS_TPM2B_StringCopy(&createPrimaryIn.inSensitive.sensitive.userAuth.b,
 				      primaryPassword, sizeof(TPMU_HA));
 	}
     }
     if (rc == 0) {
-	createPrimaryIn.inPublic.t.publicArea.type = TPM_ALG_RSA;
-	createPrimaryIn.inPublic.t.publicArea.nameAlg = halg;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val = 0;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_NODA;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_DECRYPT;
-	createPrimaryIn.inPublic.t.publicArea.objectAttributes.val &= ~TPMA_OBJECT_SIGN;
-	createPrimaryIn.inPublic.t.publicArea.authPolicy.t.size = 0;	/* empty policy */
-	createPrimaryIn.inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
-	createPrimaryIn.inPublic.t.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
-	createPrimaryIn.inPublic.t.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
-	createPrimaryIn.inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-	createPrimaryIn.inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
-	createPrimaryIn.inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
-	createPrimaryIn.inPublic.t.publicArea.unique.rsa.t.size = 0;
+	createPrimaryIn.inPublic.publicArea.type = TPM_ALG_RSA;
+	createPrimaryIn.inPublic.publicArea.nameAlg = halg;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val = 0;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_NODA;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_DECRYPT;
+	createPrimaryIn.inPublic.publicArea.objectAttributes.val &= ~TPMA_OBJECT_SIGN;
+	createPrimaryIn.inPublic.publicArea.authPolicy.t.size = 0;	/* empty policy */
+	createPrimaryIn.inPublic.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
+	createPrimaryIn.inPublic.publicArea.parameters.rsaDetail.symmetric.keyBits.aes = 128;
+	createPrimaryIn.inPublic.publicArea.parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
+	createPrimaryIn.inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+	createPrimaryIn.inPublic.publicArea.parameters.rsaDetail.keyBits = 2048;
+	createPrimaryIn.inPublic.publicArea.parameters.rsaDetail.exponent = 0;
+	createPrimaryIn.inPublic.publicArea.unique.rsa.t.size = 0;
 	createPrimaryIn.outsideInfo.t.size = 0;
 	createPrimaryIn.creationPCR.count = 0;
     }
@@ -289,32 +289,32 @@ int main(int argc, char *argv[])
     /* signing key password */
     if (rc == 0) {
 	if (keyPassword == NULL) {
-	    createIn.inSensitive.t.sensitive.userAuth.t.size = 0;
+	    createIn.inSensitive.sensitive.userAuth.t.size = 0;
 	}
 	else {
-	    rc = TSS_TPM2B_StringCopy(&createIn.inSensitive.t.sensitive.userAuth.b,
+	    rc = TSS_TPM2B_StringCopy(&createIn.inSensitive.sensitive.userAuth.b,
 				      keyPassword, sizeof(TPMU_HA));
 	}
     }
     if (rc == 0) {
-	createIn.inSensitive.t.sensitive.data.t.size = 0;
-	createIn.inPublic.t.publicArea.authPolicy.t.size = 0;	/* default empty policy */
-	createIn.inPublic.t.publicArea.nameAlg = halg;
-	createIn.inPublic.t.publicArea.objectAttributes.val = 0;
-	createIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_NODA;
-	createIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
-	createIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
-	createIn.inPublic.t.publicArea.objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
-	createIn.inPublic.t.publicArea.objectAttributes.val |= TPMA_OBJECT_SIGN;
-	createIn.inPublic.t.publicArea.objectAttributes.val &= ~TPMA_OBJECT_DECRYPT;
-	createIn.inPublic.t.publicArea.objectAttributes.val &= ~TPMA_OBJECT_RESTRICTED;
-	createIn.inPublic.t.publicArea.type = TPM_ALG_RSA;		/* for the RSA template */
-	createIn.inPublic.t.publicArea.nameAlg = halg;
-	createIn.inPublic.t.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
-	createIn.inPublic.t.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-	createIn.inPublic.t.publicArea.parameters.rsaDetail.keyBits = 2048;
-	createIn.inPublic.t.publicArea.parameters.rsaDetail.exponent = 0;
-	createIn.inPublic.t.publicArea.unique.rsa.t.size = 0;
+	createIn.inSensitive.sensitive.data.t.size = 0;
+	createIn.inPublic.publicArea.authPolicy.t.size = 0;	/* default empty policy */
+	createIn.inPublic.publicArea.nameAlg = halg;
+	createIn.inPublic.publicArea.objectAttributes.val = 0;
+	createIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_NODA;
+	createIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
+	createIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
+	createIn.inPublic.publicArea.objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
+	createIn.inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_SIGN;
+	createIn.inPublic.publicArea.objectAttributes.val &= ~TPMA_OBJECT_DECRYPT;
+	createIn.inPublic.publicArea.objectAttributes.val &= ~TPMA_OBJECT_RESTRICTED;
+	createIn.inPublic.publicArea.type = TPM_ALG_RSA;		/* for the RSA template */
+	createIn.inPublic.publicArea.nameAlg = halg;
+	createIn.inPublic.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
+	createIn.inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+	createIn.inPublic.publicArea.parameters.rsaDetail.keyBits = 2048;
+	createIn.inPublic.publicArea.parameters.rsaDetail.exponent = 0;
+	createIn.inPublic.publicArea.unique.rsa.t.size = 0;
 	createIn.outsideInfo.t.size = 0;
 	createIn.creationPCR.count = 0;
     }
@@ -452,8 +452,8 @@ static void printUsage(void)
     printf("\n");
     printf("signapp\n");
     printf("\n");
-    printf("Runs TPM2_Sign application, including creating and loading a primary storage key\n");
-    printf("and primary key\n");
+    printf("Runs a TPM2_Sign application, including creating a primary storage key\n");
+    printf("and creating and loading a signing key\n");
     printf("\n");
     printf("\t[-hi hierarchy e, o, p, n (default null)]\n");
     printf("\t[-pwdp password for primary key (default empty)]\n");

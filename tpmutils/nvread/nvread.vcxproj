@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\utils\applink.c" />
+    <ClCompile Include="..\..\utils\ekutils.c" />
     <ClCompile Include="..\..\utils\nvread.c" />
   </ItemGroup>
   <ItemGroup>

@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testsign.sh 717 2016-08-12 18:34:15Z kgoldman $		#
+#		$Id: testsign.sh 787 2016-10-25 12:55:28Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -153,7 +153,7 @@ ${PREFIX}sign -hk 80000001 -halg sha1 -ecc -if policies/aaa -os sig.bin -pwdk si
 checkSuccess $?
 
 echo "Flush the signing key"
-flushcontext -ha 80000001 > run.out
+${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo "Create primary signing key - restricted"
@@ -165,7 +165,7 @@ ${PREFIX}sign -hk 80000001 -halg sha256  -if policies/aaa -os sig.bin  -pwdk sig
 checkFailure $?
 
 echo "Flush the signing key"
-flushcontext -ha 80000001 > run.out
+${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo ""

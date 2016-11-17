@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2013 for Windows Desktop
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "startup", "startup\startup.vcxproj", "{8849C601-3B21-431D-AF37-07E534709F22}"
 EndProject
@@ -188,6 +188,12 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "activatecredential", "activatecredential\activatecredential.vcxproj", "{A2B17262-A3C2-4048-A82B-4C89875AD9D0}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makecredential", "makecredential\makecredential.vcxproj", "{E3BB242A-89DE-4EDF-B121-3557FB35A230}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "createloaded", "createloaded\createloaded.vcxproj", "{0050296D-12F4-410B-A1FE-FA3A53F81B6A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "policytemplate", "policytemplate\policytemplate.vcxproj", "{567E0B94-FF18-430A-9202-CFFEE1C94BDD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "policyauthorizenv", "policyauthorizenv\policyauthorizenv.vcxproj", "{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1129,6 +1135,36 @@ Global
 		{E3BB242A-89DE-4EDF-B121-3557FB35A230}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{E3BB242A-89DE-4EDF-B121-3557FB35A230}.Release|Win32.ActiveCfg = Release|Win32
 		{E3BB242A-89DE-4EDF-B121-3557FB35A230}.Release|Win32.Build.0 = Release|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Debug|Win32.Build.0 = Debug|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Release|Any CPU.ActiveCfg = Release|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Release|Win32.ActiveCfg = Release|Win32
+		{0050296D-12F4-410B-A1FE-FA3A53F81B6A}.Release|Win32.Build.0 = Release|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Debug|Win32.ActiveCfg = Debug|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Debug|Win32.Build.0 = Debug|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Release|Any CPU.ActiveCfg = Release|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Release|Win32.ActiveCfg = Release|Win32
+		{567E0B94-FF18-430A-9202-CFFEE1C94BDD}.Release|Win32.Build.0 = Release|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Debug|Win32.Build.0 = Debug|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Release|Any CPU.ActiveCfg = Release|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Release|Win32.ActiveCfg = Release|Win32
+		{2A5D8BC1-4A6E-416C-BAA3-B8AB3F272EF4}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

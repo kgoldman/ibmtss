@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: policysigned.c 800 2016-11-15 15:05:25Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -46,6 +46,13 @@
 #include <string.h>
 #include <stdint.h>
 
+#ifdef TPM_POSIX
+#include <netinet/in.h>
+#endif
+#ifdef TPM_WINDOWS
+#include <winsock2.h>
+#endif
+
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/rsa.h>
@@ -59,12 +66,10 @@
 #include <tss2/tssmarshal.h>
 
 static void   printUsage(void);
-static TPM_RC signatureCallback(TPMT_HA *digest,
-				uint8_t *buffer,
-				uint16_t *length);
-
-const char			*signingKeyFilename = NULL;
-const char			*signingKeyPassword = NULL;
+static TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
+			TPMT_HA *aHash,
+			const char *signingKeyFilename,
+			const char *signingKeyPassword);
 
 int verbose = FALSE;
 
@@ -75,7 +80,6 @@ int main(int argc, char *argv[])
     TSS_CONTEXT			*tssContext = NULL;
     PolicySigned_In 		in;
     PolicySigned_Out 		out;
-    PolicySigned_Extra		extra;
     TPMI_DH_OBJECT		authObject = 0;
     TPMI_SH_POLICY		policySession = 0;
     const char 			*nonceTPMFilename = NULL;
@@ -84,7 +88,10 @@ int main(int argc, char *argv[])
     const char			*ticketFilename = NULL;
     const char			*timeoutFilename = NULL;
     INT32			expiration = 0;
+    const char			*signingKeyFilename = NULL;
+    const char			*signingKeyPassword = NULL;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
+    TPMT_HA 			aHash;
     
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     OpenSSL_add_all_algorithms();
@@ -92,7 +99,7 @@ int main(int argc, char *argv[])
 
     /* command line argument defaults */
 
-    in.nonceTPM.b.size = 0;
+    in.nonceTPM.b.size = 0;	/* three of the components to aHash are optional */
     in.cpHashA.b.size = 0;
     in.policyRef.b.size = 0;
 
@@ -244,6 +251,7 @@ int main(int argc, char *argv[])
 	in.authObject = authObject;
 	in.policySession = policySession;
     }
+    /* read the optional components - nonceTPM, cpHashA, policyref */ 
     if ((rc == 0) && (nonceTPMFilename != NULL)) {
 	rc = TSS_File_Read2B(&in.nonceTPM.b,
 			     sizeof(TPMU_HA),
@@ -261,12 +269,29 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	in.expiration = expiration;
-	in.auth.sigAlg = TPM_ALG_RSASSA;
+	in.auth.sigAlg = TPM_ALG_RSASSA;	/* sample uses RSASSA */
 	in.auth.signature.rsassa.hash = halg;
     }
-    /* register call back for the signature program */
+    /* calculate the digest from the 4 components according to the TPM spec Part 3. */
+    /* aHash = HauthAlg(nonceTPM || expiration || cpHashA || policyRef)	(13) */
     if (rc == 0) {
-	extra.signatureCallback = signatureCallback;
+	INT32 expirationNbo = htonl(in.expiration);
+	aHash.hashAlg = halg;
+	/* This varargs function takes length / array pairs.  It skips pairs with a length of zero.
+	   This handles the three optional components (default length zero) with no special
+	   handling. */
+	rc = TSS_Hash_Generate(&aHash,		/* largest size of a digest */
+			       in.nonceTPM.t.size, in.nonceTPM.t.buffer,
+			       sizeof(INT32), &expirationNbo,
+			       in.cpHashA.t.size, in.cpHashA.t.buffer,
+			       in.policyRef.t.size, in.policyRef.t.buffer,
+			       0, NULL);
+    }
+    /* sign aHash */
+    if (rc == 0) {
+	rc = signAHash(&in.auth.signature.rsassa.sig,	/* sample uses RSASSA */
+		       &aHash,
+		       signingKeyFilename, signingKeyPassword);
     }
     /* Start a TSS context */
     if (rc == 0) {
@@ -277,7 +302,7 @@ int main(int argc, char *argv[])
 	rc = TSS_Execute(tssContext,
 			 (RESPONSE_PARAMETERS *)&out, 
 			 (COMMAND_PARAMETERS *)&in,
-			 (EXTRA_PARAMETERS *)&extra,
+			 NULL,
 			 TPM_CC_PolicySigned,
 			 TPM_RH_NULL, NULL, 0);
     }
@@ -312,35 +337,37 @@ int main(int argc, char *argv[])
     return rc;
 }
 
-/* signatureCallback() signs digest, returns signature
+/* signAHash() signs digest, returns signature
 
-   This sample uses a pem file signingKeyFilename with signingKeyPassword
+   This sample signer uses a pem file signingKeyFilename with signingKeyPassword.
+
 */
 
-static TPM_RC signatureCallback(TPMT_HA *digest,
-				uint8_t *signature,
-				uint16_t *signatureLength)
+TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
+		 TPMT_HA *aHash,
+		 const char *signingKeyFilename,
+		 const char *signingKeyPassword)
 {
     TPM_RC		rc = 0;
     int			irc;
     RSA			*rsaKey = NULL;
     FILE		*keyFile = NULL;
     int			nid;			/* openssl hash algorithm */
-    unsigned int 	length;			/* openssl signature length */
     uint32_t  		sizeInBytes;		/* hash algorithm mapped to size */
-    
+    unsigned int 	length;			/* RSA_Sign() output */
+
     if (rc == 0) {
-	sizeInBytes = TSS_GetDigestSize(digest->hashAlg);
+	sizeInBytes = TSS_GetDigestSize(aHash->hashAlg);
 #if 0
 	if (verbose) {
-	    TSS_PrintAll("signatureCallback: digest",
-			 (uint8_t *)(&digest->digest), sizeInBytes);
+	    TSS_PrintAll("signAHash: aHash",
+			 (uint8_t *)(&aHash->digest), sizeInBytes);
 	}
 #endif
     }
-    /* map the  hash algorithm to the openssl NID */
+    /* map the hash algorithm to the openssl NID */
     if (rc == 0) {
-	switch (digest->hashAlg) {
+	switch (aHash->hashAlg) {
 	  case TPM_ALG_SHA256:
 	    nid = NID_sha256;
 	    break;
@@ -348,11 +375,14 @@ static TPM_RC signatureCallback(TPMT_HA *digest,
 	    nid = NID_sha1;
 	    break;
 	  default:
+	    printf("signAHash: Error, hash algorithm %04hx unsupported\n", aHash->hashAlg);
 	    rc = -1;
 	}
     }
+    /* read the PEM format private key into the OpenSSL structure */
     if (rc == 0) {
 	keyFile = fopen(signingKeyFilename, "r");
+	printf("signAHash: Error opening %s\n", signingKeyFilename);
 	if (keyFile == NULL) {
 	    rc = -1;
 	}
@@ -360,27 +390,38 @@ static TPM_RC signatureCallback(TPMT_HA *digest,
     if (rc == 0) {
 	rsaKey = PEM_read_RSAPrivateKey(keyFile, NULL, NULL, (void *)signingKeyPassword);
 	if (rsaKey == NULL) {
+	    printf("signAHash: Error in OpenSSL PEM_read_RSAPrivateKey()\n");
 	    ERR_print_errors_fp(stdout);
+	    rc = -1;
+	}
+    }
+    /* validate that the length of the resulting signature will fit in the
+       TPMT_SIGNATURE->TPMU_SIGNATURE->TPMS_SIGNATURE_RSASSA->
+       TPMS_SIGNATURE_RSA->TPM2B_PUBLIC_KEY_RSA structure */
+    if (rc == 0) {
+	unsigned int keySize = RSA_size(rsaKey);
+	if (keySize > sizeof(signature->t.buffer)) {
+	    printf("signAHash: Error, private key length %u > signature buffer %u\n",
+		   keySize, (unsigned int) sizeof(signature->t.buffer));
 	    rc = -1;
 	}
     }
     if (rc == 0) {
 	irc = RSA_sign(nid,
-		       (uint8_t *)(&digest->digest), sizeInBytes,
-		       signature, &length,
+		       (uint8_t *)(&aHash->digest), sizeInBytes,
+		       signature->t.buffer, &length,
 		       rsaKey);
 	if (irc != 1) {
+	    printf("signAHash: Error in OpenSSL RSA_sign()\n");
+	    ERR_print_errors_fp(stdout);
 	    rc = -1;
-	}
-	/* FIXME range check */
-	else {
-	    *signatureLength = length;
 	}
     }
     if (rc == 0) {
+	signature->t.size = length;	/* length of RSA key checked above */
 #if 0
-	if (verbose) TSS_PrintAll("signatureCallback: signature",
-				  signature, *signatureLength);
+	if (verbose) TSS_PrintAll("signAHash: signature",
+				  signature->t.buffer, signature->t.size);
 #endif
     }
     if (keyFile != NULL) {
@@ -401,13 +442,15 @@ static void printUsage(void)
     printf("Runs TPM2_PolicySigned\n");
     printf("\n");
     printf("\t-hk authorizing key handle\n");
-    printf("\t-ha session handle\n");
+    printf("\t-ha policy session handle\n");
     printf("\t-in nonceTPM file (default none)\n");
     printf("\t-cp cpHash file (default none)\n");
     printf("\t-pref policyRef file (default none)\n");
     printf("\t-exp expiration (default none)\n");
     printf("\t-halg [sha1, sha256] (default sha256)\n");
     printf("\t-sk signing key file name (PEM format)\n");
+    printf("\t\tThis utility uses this signing key.\n");
+    printf("\t\tA real application might use a smart card or other HSM.\n");
     printf("\t-pwdk signing key password (default null)\n");
     printf("\t[-tk ticket file name]\n");
     printf("\t[-to timeout file name]\n");

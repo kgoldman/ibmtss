@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Implementation.h 684 2016-07-18 21:22:01Z kgoldman $		*/
+/*            $Id: Implementation.h 793 2016-11-10 21:27:40Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -88,6 +88,14 @@
 #define  NO       0
 #define  SET      1
 #define  CLEAR    0
+
+#ifndef MAX
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
+#ifndef MIN
+#  define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
 
 // From Vendor-Specific: Table 1 - Defines for Processor Values
 
@@ -241,6 +249,7 @@
 #define  CC_PCR_SetAuthPolicy             CC_YES
 #define  CC_PCR_SetAuthValue              CC_YES
 #define  CC_PolicyAuthorize               CC_YES
+#define  CC_PolicyAuthorizeNV             CC_YES
 #define  CC_PolicyAuthValue               CC_YES
 #define  CC_PolicyCommandCode             CC_YES
 #define  CC_PolicyCounterTimer            CC_YES
@@ -282,6 +291,10 @@
 #define  CC_ZGen_2Phase                   (CC_YES*ALG_ECC)
 #define  CC_EC_Ephemeral                  (CC_YES*ALG_ECC)
 #define  CC_PolicyNvWritten               CC_YES
+#define  CC_PolicyTemplate                CC_YES
+#define  CC_CreateLoaded                  CC_YES
+#define  CC_PolicyAuthorizeNV             CC_YES
+#define  CC_EncryptDecrypt2               CC_YES
 #define  CC_Vendor_TCG_Test               CC_YES
 
 
@@ -1260,6 +1273,30 @@ typedef  UINT32             TPM_CC;
 #if CC_PolicyNvWritten == YES
 #define  TPM_CC_PolicyNvWritten               (TPM_CC)(0x0000018f)
 #endif
+#ifndef CC_PolicyTemplate
+#   define CC_PolicyTemplate NO
+#endif
+#if CC_PolicyTemplate == YES
+#define  TPM_CC_PolicyTemplate                (TPM_CC)(0x00000190)
+#endif
+#ifndef CC_CreateLoaded
+#   define CC_CreateLoaded NO
+#endif
+#if CC_CreateLoaded == YES
+#define  TPM_CC_CreateLoaded                  (TPM_CC)(0x00000191)
+#endif
+#ifndef CC_PolicyAuthorizeNV
+#   define CC_PolicyAuthorizeNV NO
+#endif
+#if CC_PolicyAuthorizeNV == YES
+#define  TPM_CC_PolicyAuthorizeNV             (TPM_CC)(0x00000192)
+#endif
+#ifndef CC_EncryptDecrypt2
+#   define CC_EncryptDecrypt2 NO
+#endif
+#if CC_EncryptDecrypt2 == YES
+#define  TPM_CC_EncryptDecrypt2               (TPM_CC)(0x00000193)
+#endif
 #ifndef CC_Vendor_TCG_Test
 #   define CC_Vendor_TCG_Test NO
 #endif
@@ -1390,6 +1427,10 @@ typedef  UINT32             TPM_CC;
 					  + (ADD_FILL || CC_PolicyPassword)             /* 0x0000018c */ \
 					  + (ADD_FILL || CC_ZGen_2Phase)                /* 0x0000018d */ \
 					  + (ADD_FILL || CC_EC_Ephemeral)               /* 0x0000018e */ \
+					  + (ADD_FILL || CC_PolicyTemplate)             /* 0x00000190 */ \
+					  + (ADD_FILL || CC_CreateLoaded)               /* 0x00000191 */ \
+					  + (ADD_FILL || CC_PolicyAuthorizeNV)          /* 0x00000192 */ \
+					  + (ADD_FILL || CC_EncryptDecrypt2)            /* 0x00000193 */ \
 					  + (ADD_FILL || CC_PolicyNvWritten)            /* 0x0000018f */ \
 					  )
 
@@ -1402,10 +1443,6 @@ typedef  UINT32             TPM_CC;
     (LIBRARY_COMMAND_ARRAY_SIZE + VENDOR_COMMAND_ARRAY_SIZE)
 
     
-#ifndef MAX
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
-
 #define MAX_HASH_BLOCK_SIZE  (						\
 			      MAX(ALG_SHA1 * SHA1_BLOCK_SIZE,		\
 				  MAX(ALG_SHA256 * SHA256_BLOCK_SIZE,	\
@@ -1430,13 +1467,14 @@ typedef  UINT32             TPM_CC;
 
 TPM2B_TYPE(MAX_HASH_BLOCK, MAX_HASH_BLOCK_SIZE);
 
+#define LABEL_MAX_BUFFER   MIN(MAX_ECC_KEY_BYTES, MAX_DIGEST_SIZE)
+#if LABEL_MAX_BUFFER < 32
+#error "The size allowed for the label is not large enough for interoperability."
+#endif
+
 // Following typedef is for some old code
 
 typedef TPM2B_MAX_HASH_BLOCK    TPM2B_HASH_BLOCK;
-
-#ifndef MAX
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
 
 #ifndef ALG_CAMELLIA
 #   define ALG_CAMELLIA         NO

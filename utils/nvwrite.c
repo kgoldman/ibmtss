@@ -3,7 +3,7 @@
 /*			    NV Write		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvwrite.c 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: nvwrite.c 799 2016-11-14 18:53:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -56,9 +56,8 @@
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
+#include "ekutils.h"
 
-static TPM_RC readNvBufferMax(uint32_t *nvBufferMax,
-			      TSS_CONTEXT *tssContext);
 static void printUsage(void);
 
 int verbose = FALSE;
@@ -74,7 +73,7 @@ int main(int argc, char *argv[])
     uint32_t 			pinLimit;
     int				inData = FALSE;
     unsigned int		dataSource = 0;
-    const char 			*data = NULL;
+    const char 			*commandData = NULL;
     const char 			*datafilename = NULL;
     char 			hierarchyAuthChar = 0;
     TPMI_RH_NV_INDEX		nvIndex = 0;
@@ -86,8 +85,9 @@ int main(int argc, char *argv[])
     TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
     unsigned int		sessionAttributes2 = 0;
     uint32_t 			nvBufferMax;
-    unsigned char 		*writeBuffer = NULL; 
-    uint16_t 			written;			/* bytes written so far */
+    size_t 			writeLength;		/* file bytes to write */
+    unsigned char 		*writeBuffer = NULL; 	/* file buffer to write */
+    uint16_t 			bytesWritten;		/* bytes written so far */
     int				done = FALSE;
  
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-ic") == 0) {
 	    i++;
 	    if (i < argc) {
-		data = argv[i];
+		commandData = argv[i];
 		dataSource++;
 	    }
 	    else {
@@ -274,56 +274,54 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
+    /* Start a TSS context */
+    if (rc == 0) {
+	rc = TSS_Create(&tssContext);
+    }
+    /* data may have to be written in chunks.  Read the chunk size */
+    if (rc == 0) {
+	rc = readNvBufferMax(tssContext,
+			     &nvBufferMax);
+    }    
     /* if there is no input data source, default to 0 byte write */
     if (dataSource == 0) {
 	in.data.b.size = 0;
     }
-    /* command line data must fit in one write */
-    if (data != NULL) {
-	rc = TSS_TPM2B_StringCopy(&in.data.b,
-				  data, MAX_NV_BUFFER_SIZE);
-	
-    }
-    /* file data can be written in chunks */
-    size_t writeLength;		/* total bytes to write */
+    /* -if, file data can be written in chunks */
     if (datafilename != NULL) {
-	written = 0;
 	rc = TSS_File_ReadBinaryFile(&writeBuffer,     /* freed @1 */
 				     &writeLength,
 				     datafilename);
     }
+    /* -id, for pin pass or pin fail */
     if (inData) {
 	in.data.b.size = sizeof(uint32_t) + sizeof(uint32_t);
 	*(uint32_t *)(in.data.b.buffer) = htonl(pinPass);
 	*((uint32_t *)(in.data.b.buffer) + 1) = htonl(pinLimit);
     }
-    /* Start a TSS context */
-    if (rc == 0) {
-	rc = TSS_Create(&tssContext);
+    /* -ic, command line data must fit in one write */
+    if (commandData != NULL) {
+	rc = TSS_TPM2B_StringCopy(&in.data.b, commandData, nvBufferMax);
     }
-    /* If data comes from a file, it may have to be written in chunks.  Read the
-       TPM_PT_NV_BUFFER_MAX, the chunk size */
-    if ((rc == 0) && (datafilename != NULL)) {
-	rc = readNvBufferMax(&nvBufferMax,
-			     tssContext);
-    }    
     if (rc == 0) {
 	in.nvIndex = nvIndex;
-	in.offset = offset;
+	in.offset = offset;		/* beginning offset */
+	bytesWritten = 0;
     }
     while ((rc == 0) && !done) {
 	uint16_t writeBytes;		/* bytes to write in this pass */
 	if (rc == 0) {
-	    /* write a chunk */
+	    /* for data from file, write a chunk */
 	    if (datafilename != NULL) {
-		in.offset += written;
-		if ((writeLength - written) < nvBufferMax) {
-		    writeBytes = writeLength - written;	/* last chunk */
+		in.offset = offset + bytesWritten;
+		if ((uint32_t)(writeLength - bytesWritten) < nvBufferMax) {
+		    writeBytes = writeLength - bytesWritten;	/* last chunk */
 		}
 		else {
 		    writeBytes = nvBufferMax;	/* next chunk */
 		}
-		rc = TSS_TPM2B_Create(&in.data.b, writeBuffer + written, writeBytes, MAX_NV_BUFFER_SIZE);
+		rc = TSS_TPM2B_Create(&in.data.b, writeBuffer + bytesWritten, writeBytes,
+				      MAX_NV_BUFFER_SIZE);
 	    }
 	}
 	/* call TSS to execute the command */
@@ -345,8 +343,8 @@ int main(int argc, char *argv[])
 		done = TRUE;
 	    }
 	    else {
-		written += writeBytes;
-		if (written == writeLength) {
+		bytesWritten += writeBytes;
+		if (bytesWritten == writeLength) {
 		    done = TRUE;
 		}
 	    }
@@ -377,48 +375,6 @@ int main(int argc, char *argv[])
     return rc;
 }
 
-TPM_RC readNvBufferMax(uint32_t *nvBufferMax,
-		       TSS_CONTEXT *tssContext)
-{
-    TPM_RC			rc = 0;
-    GetCapability_In 		in;
-    GetCapability_Out		out;
-
-    in.capability = TPM_CAP_TPM_PROPERTIES;
-    in.property = TPM_PT_NV_BUFFER_MAX;
-    in.propertyCount = 1;	/* ask for one property */
-    if (rc == 0) {
-	rc = TSS_Execute(tssContext,
-			 (RESPONSE_PARAMETERS *)&out, 
-			 (COMMAND_PARAMETERS *)&in,
-			 NULL,
-			 TPM_CC_GetCapability,
-			 TPM_RH_NULL, NULL, 0);
-    }
-    /* sanity check that the property name is correct, demo of how to parse the structure */
-    if (rc == 0) {
-	if (out.capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_NV_BUFFER_MAX) {
-	    *nvBufferMax = out.capabilityData.data.tpmProperties.tpmProperty[0].value;
-	    if (verbose) printf("readNvBufferMax: %u\n", *nvBufferMax);
-	}
-	else {
-	    printf("readNvBufferMax: wrong property returned: %08x\n",
-		   out.capabilityData.data.tpmProperties.tpmProperty[0].property);
-	    *nvBufferMax = 512;
-	}
-    }
-    else {
-	const char *msg;
-	const char *submsg;
-	const char *num;
-	printf("getcapability: failed, rc %08x\n", rc);
-	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
-	printf("%s%s%s\n", msg, submsg, num);
-	rc = EXIT_FAILURE;
-    }
-    return rc;
-}
-
 static void printUsage(void)
 {
     printf("\n");
@@ -431,7 +387,7 @@ static void printUsage(void)
     printf("\t-pwdn password for NV index (default empty)\n");
     printf("\t-ic data string\n");
     printf("\t-if data file\n");
-    printf("\t-id data values, pinPass and pinLimit\n");
+    printf("\t-id data values, pinPass and pinLimit (4 bytes each)\n");
     printf("\t\tif none is specified, a 0 byte write occurs\n");
     printf("\t\t-id is normally used for pin pass or pin fail indexes\n");
     printf("\t-off offset (default 0)\n");

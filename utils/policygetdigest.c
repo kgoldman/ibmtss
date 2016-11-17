@@ -3,7 +3,7 @@
 /*			    PolicyGetDigest	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policygetdigest.c 682 2016-07-15 18:49:19Z kgoldman $	*/
+/*	      $Id: policygetdigest.c 778 2016-10-19 15:21:05Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -156,7 +156,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyGetDigest\n");
     printf("\n");
-    printf("\t-ha handle\n");
+    printf("\t-ha policy session handle\n");
     printf("\t[-of binary digest file name]\n");
     exit(1);	
 }

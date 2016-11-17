@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testaes.bat 717 2016-08-12 18:34:15Z kgoldman $		#
+REM #		$Id: testaes.bat 797 2016-11-11 22:57:11Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -46,6 +46,9 @@ echo ""
 
 echo "Start an HMAC auth session"
 %TPM_EXE_PATH%startauthsession -se h > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 
 for %%S in ("" "-se0 02000000 1") do (
 
