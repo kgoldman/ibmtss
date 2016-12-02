@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: GetTestResult_fp.h 683 2016-07-15 20:53:46Z kgoldman $	*/
+/*            $Id: GetTestResult_fp.h 827 2016-11-18 20:45:01Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,7 +55,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2015				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2016				*/
 /*										*/
 /********************************************************************************/
 
@@ -63,8 +63,6 @@
 
 #ifndef GETTESTRESULT_FP_H
 #define GETTESTRESULT_FP_H
-
-#include "TPM_Types.h"
 
 typedef struct{
     TPM2B_MAX_BUFFER	outData;

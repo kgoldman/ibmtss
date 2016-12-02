@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Platform.h 819 2016-11-16 23:25:56Z kgoldman $		*/
+/*            $Id: Platform.h 827 2016-11-18 20:45:01Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -68,8 +68,6 @@
 
 // C.8.1.	Includes and Defines
 
-#include "bool.h"
-/* kgold for BOOL */
 #include <tss2/BaseTypes.h>
 #include "stdint.h"
 #include "TpmError.h"

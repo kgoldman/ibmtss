@@ -3,7 +3,7 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymaker.c 793 2016-11-10 21:27:40Z kgoldman $		*/
+/*	      $Id: policymaker.c 843 2016-11-29 19:58:14Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015,2016					*/
 /*										*/
@@ -72,6 +72,7 @@
 
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
+#include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/tssprint.h>
 

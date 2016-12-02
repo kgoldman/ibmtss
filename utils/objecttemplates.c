@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 793 2016-11-10 21:27:40Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 838 2016-11-22 22:44:57Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -492,7 +492,7 @@ static TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
 
 void printUsageTemplate(void)
 {
-    printf("\tAsymmetric Key Algorithm\n");
+    printf("\t[Asymmetric Key Algorithm]\n");
     printf("\t\t-rsa (default)\n");
     printf("\t\t-ecc curve\n");
     printf("\t\t\tbnp256\n");
@@ -515,9 +515,9 @@ void printUsageTemplate(void)
     printf("\t\t-dp derivation parent\n");
     printf("\t\t-gp general purpose, not storage\n");
     printf("\n");
-    printf("\t\t-kt (can be specified more than once)\n"
-	   "\t\t\tf fixedTPM \n"
-	   "\t\t\tp fixedParent \n");
+    printf("\t\t[-kt (can be specified more than once)]\n"
+	   "\t\t\tf fixedTPM\n"
+	   "\t\t\tp fixedParent\n");
     printf("\t\t[-da object subject to DA protection) (default no)]\n");
     printf("\t[-pol policy file (default empty)]\n");
     printf("\n");

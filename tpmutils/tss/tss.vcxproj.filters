@@ -66,16 +66,13 @@
     <ClCompile Include="..\..\utils\Commands.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\utils\CpriHash.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\utils\CpriSym.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\utils\fail.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\utils\Unmarshal.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\utils\tsscryptoh.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

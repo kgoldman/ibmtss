@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			IWG EK Index Parsing Utilities				*/
+/*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 802 2016-11-15 20:06:21Z kgoldman $		*/
+/*	      $Id: ekutils.c 849 2016-12-01 20:17:03Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -37,6 +37,16 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
+/* These functions are worthwhile sample code that probably (judgment call) do not belong in the
+   TSS library.
+
+   They started as code to manipulate EKs, EK templates, and EK certificates.
+
+   Other useful crypto functions are migrating here.  Much of it is OpenSSL specific, but it also
+   provides examples of how to port from OpenSSL 1.0 to 1.1.
+
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +58,7 @@
 
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssutils.h>
+#include <tss2/tsscrypto.h>
 #include <tss2/tssprint.h>
 #include <tss2/Unmarshal_fp.h>
 
@@ -68,7 +79,7 @@
 extern int verbose;
 
 /* readNvBufferMax() determines the maximum NV read/write block size.  The limit is typically set by
-   the TPM property TPM_PT_NV_BUFFER_MAX.  However, it's possible that a value could be larger that
+   the TPM property TPM_PT_NV_BUFFER_MAX.  However, it's possible that a value could be larger than
    the TSS side structure MAX_NV_BUFFER_SIZE.
 */
 
@@ -90,7 +101,7 @@ TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
 			 TPM_CC_GetCapability,
 			 TPM_RH_NULL, NULL, 0);
     }
-    /* sanity check that the property name is correct, demo of how to parse the structure */
+    /* sanity check that the property name is correct (demo of how to parse the structure) */
     if (rc == 0) {
 	if (out.capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_NV_BUFFER_MAX) {
 	    *nvBufferMax = out.capabilityData.data.tpmProperties.tpmProperty[0].value;
@@ -98,11 +109,13 @@ TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
 	else {
 	    if (verbose) printf("readNvBufferMax: wrong property returned: %08x\n",
 		   out.capabilityData.data.tpmProperties.tpmProperty[0].property);
-	    /* hard code a value for a TPM that does not implement TPM_PT_NV_BUFFER_MAX yet */
+	    /* hard code a value for a back level HW TPM that does not implement
+	       TPM_PT_NV_BUFFER_MAX yet */
 	    *nvBufferMax = 512;
 	}
 	if (verbose) printf("readNvBufferMax: TPM max read/write: %u\n", *nvBufferMax);
-	/* in addition, the maximum TSS side structure MAX_NV_BUFFER_SIZE is accounted for */
+	/* in addition, the maximum TSS side structure MAX_NV_BUFFER_SIZE is accounted for.  The TSS
+	   value is typically larger than the TPM value. */
 	if (*nvBufferMax > MAX_NV_BUFFER_SIZE) {
 	    *nvBufferMax = MAX_NV_BUFFER_SIZE;
 	}
@@ -120,7 +133,7 @@ TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-/* getIndexSize() uses nvreadpublic to return the NV index size */
+/* getIndexSize() uses TPM2_NV_ReadPublic() to return the NV index size */
 
 TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
 		    uint16_t *dataSize,
@@ -142,7 +155,7 @@ TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
 			 NULL,
 			 TPM_CC_NV_ReadPublic,
 			 TPM_RH_NULL, NULL, 0);
-	/* only print if verbose, since nonce and template index may not exist */
+	/* only print if verbose, since EK nonce and template index may not exist */
 	if ((rc != 0) && verbose) {
 	    const char *msg;
 	    const char *submsg;
@@ -159,7 +172,7 @@ TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-/* getIndexData() uses nvread to return the NV index contents.
+/* getIndexData() uses TPM2_NV_Read() to return the NV index contents.
 
    It assumes index authorization with an empty password
 */
@@ -232,10 +245,10 @@ TPM_RC getIndexData(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-/* getIndexContents() uses nvreadpublic to get the NV index size, then uses nvread to read the
-   entire contents
+/* getIndexContents() uses TPM2_NV_ReadPublic() to get the NV index size, then uses TPM2_NV_Read()
+   to read the entire contents.
 
- */
+*/
 
 TPM_RC getIndexContents(TSS_CONTEXT *tssContext,
 			unsigned char **readBuffer,		/* freed by caller */
@@ -258,7 +271,7 @@ TPM_RC getIndexContents(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-/* IWG default policy */
+/* IWG (TCG Infrastructure Work Group) default EK primary key policy */
 
 static const unsigned char iwgPolicy[] = {
     0x83, 0x71, 0x97, 0x67, 0x44, 0x84, 0xB3, 0xF8, 0x1A, 0x90, 0xCC, 0x8D, 0x46, 0xA5, 0xD7, 0x24,
@@ -320,8 +333,8 @@ void getEccTemplate(TPMT_PUBLIC *tpmtPublic)
     return;
 }
 
-/* getIndexX509Certificate() reads the certificate from nvIndex and converts to openssl X509
-   format
+/* getIndexX509Certificate() reads the X509 certificate from the nvIndex and converts the DER
+   (binary) to OpenSSL X509 format
 
 */
 
@@ -332,7 +345,6 @@ TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
     TPM_RC			rc = 0;
     unsigned char 		*certData = NULL; 		/* freed @1 */
     uint16_t 			certSize;
-    unsigned char 		*tmpData = NULL; 
 
     /* read the certificate from NV to a DER stream */
     if (rc == 0) {
@@ -341,9 +353,10 @@ TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
 			      &certSize,
 			      nvIndex);
     }
-    /* unmarshal the DER stream to X509 structure */
+    /* unmarshal the DER stream to an OpenSSL X509 structure */
     if (rc == 0) {
-	tmpData = certData;		/* temp because d2i moves the pointer */
+	unsigned char 		*tmpData = NULL; 
+	tmpData = certData;			/* tmp pointer because d2i moves the pointer */
 	*certificate = d2i_X509(NULL,			/* freed by caller */
 				 (const unsigned char **)&tmpData, certSize);
 	if (*certificate == NULL) {
@@ -355,11 +368,82 @@ TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+/* getPubkeyFromDerCertFile() gets an OpenSSL RSA public key token from a DER format X509
+   certificate stored in a file.
 
-/* getRootCertificateFilenames() reads filename, which is a list of filenames.  The intent is that
-   the filenames are a list of EK TPM vendor root certificates. in PEM format.
+   Returns both the OpenSSL X509 certificate token and RSA public key token.
+*/
 
-   It accepts up to rootFilesMax filenames, which s
+uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
+				  X509 **x509,
+				  const char *derCertificateFileName)
+{
+    uint32_t rc = 0;
+    FILE *fp = NULL;
+
+    /* open the file */
+    if (rc == 0) {
+	fp = fopen(derCertificateFileName, "rb");
+	if (fp == NULL) {
+	    printf("getPubkeyFromDerCertFile: opening %s\n", derCertificateFileName);
+	    rc = 1;
+	}
+    }
+    /* read the file and convert the X509 DER to OpenSSL format */
+    if (rc == 0) {
+	*x509 = d2i_X509_fp(fp, NULL);
+	if (*x509 == NULL) {
+	    printf("getPubkeyFromDerCertFile: converting %s\n", derCertificateFileName);
+	    rc = 1;
+	}
+    }
+    /* extract the OpenSSL format public key from the X509 token */
+    if (rc == 0) {
+	rc = getPubKeyFromX509Cert(rsaPkey, *x509);
+    }
+    /* for debug, print the X509 certificate */
+    if (rc == 0) {
+	if (verbose) X509_print_fp(stdout, *x509);
+    }
+    if (fp != NULL) {
+	fclose(fp);
+    }
+    return rc;
+}
+
+/* getPubKeyFromX509Cert() gets an OpenSSL RSA public key token from an OpenSSL X509 certificate
+   token. */
+
+uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
+			       X509 *x509)
+{
+    uint32_t rc = 0;
+    EVP_PKEY *evpPkey = NULL;
+
+    if (rc == 0) {
+	evpPkey = X509_get_pubkey(x509);	/* freed @1 */
+	if (evpPkey == NULL) {
+	    printf("getPubKeyFromX509Cert: X509_get_pubkey failed\n");  
+	    rc = 1;
+	}
+    }
+    if (rc == 0) {
+	*rsaPkey = EVP_PKEY_get1_RSA(evpPkey);
+	if (*rsaPkey == NULL) {
+	    printf("getPubKeyFromX509Cert: EVP_PKEY_get1_RSA failed\n");  
+	    rc = 1;
+	}
+    }
+    if (evpPkey != NULL) {
+	EVP_PKEY_free(evpPkey);		/* @1 */
+    }
+    return rc;
+}
+
+/* getRootCertificateFilenames() reads listFilename, which is a list of filenames.  The intent is
+   that the filenames are a list of EK TPM vendor root certificates in PEM format.
+
+   It accepts up to MAX_ROOTS filenames, which is a #define.
 
 */
 
@@ -370,6 +454,8 @@ TPM_RC getRootCertificateFilenames(char *rootFilename[],
     TPM_RC		rc = 0;
     int			done = 0;
     FILE		*listFile = NULL;		/* closed @1 */
+
+    *rootFileCount = 0;
 
     if (rc == 0) {
 	listFile = fopen(listFilename, "rb");		/* closed @1 */
@@ -416,9 +502,9 @@ TPM_RC getRootCertificateFilenames(char *rootFilename[],
     return rc;
 }
 
-
-/* getCaStore() creates an openssl X509_STORE, populated by the root certificates in the
-   rootFilename array.
+/* getCaStore() creates an OpenSSL X509_STORE, populated by the root certificates in the
+   rootFilename array.  Depending on the vendor, some certificates may be intermediate certificates.
+   OpenSSL handles this internally by walking the chain back to the root.
 
    The caCert array is returned because it must be freed after the caStore is freed
 
@@ -527,7 +613,7 @@ TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
 }
 
 /* processEKCertificate() reads the EK certificate from NV and returns an openssl X509 certificate
-   structure.  It alse extracts and returns the public modulus.
+   structure.  It also extracts and returns the public modulus.
 
 */
     
@@ -557,7 +643,9 @@ TPM_RC processEKCertificate(TSS_CONTEXT *tssContext,
 }
 
 /* convertCertificatePubKey() returns the public modulus from an openssl X509 certificate
-   structure.  ekCertIndex determines whether the algorithm is RSA or ECC.  */
+   structure.  ekCertIndex determines whether the algorithm is RSA or ECC.
+
+*/
 
 TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 				int *modulusBytes,
@@ -567,7 +655,8 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 {
     TPM_RC			rc = 0;
     EVP_PKEY 			*pkey = NULL;
-    BIGNUM			*modulusBn;
+    int 			pkeyType;	/* RSA or EC */
+    const BIGNUM		*modulusBn;
     
     /* extract the public key */
     if (rc == 0) {
@@ -577,15 +666,19 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	    rc = TPM_RC_INTEGRITY;
 	}
     }
+    if (rc == 0) {
+	pkeyType = TSS_Pubkey_GetAlgorithm(pkey);
+    }
     if (ekCertIndex == EK_CERT_RSA_INDEX) {
 	RSA *rsaKey = NULL;
+	/* check that the public key algorithm matches the ekCertIndex algorithm */
 	if (rc == 0) {
-	    if (pkey->type != EVP_PKEY_RSA) {
+	    if (pkeyType != EVP_PKEY_RSA) {
 		printf("ERROR: Public key from X509 certificate is not RSA\n");
 		rc = TPM_RC_INTEGRITY;
 	    }
 	}
-	/* convert the public key to openssl structure */
+	/* convert the public key to OpenSSL structure */
 	if (rc == 0) {
 	    rsaKey = EVP_PKEY_get1_RSA(pkey);		/* freed @3 */
 	    if (rsaKey == NULL) {
@@ -593,14 +686,19 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 		rc = TPM_RC_INTEGRITY;
 	    }
 	}
-	/* convert the bignum to binary */
+	/* get the OpenSSL RSA key token public modulus as a bignum */
 	if (rc == 0) {
-	    modulusBn = rsaKey->n;
+	    const BIGNUM *e;
+	    const BIGNUM *d;
+	    rc = TSS_RSAGetKey(&modulusBn, &e, &d, NULL, NULL, rsaKey);
+	}
+	if (rc == 0) {
 	    *modulusBytes = BN_num_bytes(modulusBn);
 	    rc = TSS_Malloc(modulusBin, *modulusBytes);	/* freed by caller */
 	}
+	/* convert the public modulus bignum to binary */
 	if (rc == 0) {
-	    BN_bn2bin(rsaKey->n, *modulusBin);
+	    BN_bn2bin(modulusBn, *modulusBin);
 	    if (print) TSS_PrintAll("Certificate public key:", *modulusBin, *modulusBytes);
 	}    
 	/* use openssl to print the X509 certificate */
@@ -609,17 +707,18 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	}
 	RSA_free(rsaKey);   		/* @3 */
     }
-    else {
+    else {	/* EC index */
 	EC_KEY *ecKey = NULL;
 	const EC_POINT *ecPoint;
 	const EC_GROUP *ecGroup;
+	/* check that the public key algorithm matches the ekCertIndex algorithm */
 	if (rc == 0) {
-	    if (pkey->type != EVP_PKEY_EC) {
+	    if (pkeyType != EVP_PKEY_EC) {
 		printf("Public key from X509 certificate is not EC\n");
 		rc = TPM_RC_INTEGRITY;
 	    }
 	}
-	/* convert the public key to openssl structure */
+	/* convert the public key to OpenSSL structure */
 	if (rc == 0) {
 	    ecKey = EVP_PKEY_get1_EC_KEY(pkey);		/* freed @3 */
 	    if (ecKey == NULL) {
@@ -687,7 +786,7 @@ TPM_RC processRoot(TSS_CONTEXT *tssContext,
     /* read the EK X509 certificate from NV */
     if (rc == 0) {
 	rc = getIndexX509Certificate(tssContext,
-				     &ekCertificate,		/* freed @1 */
+				     &ekCertificate,	/* freed @1 */
 				     ekCertIndex);
     }
     /* get the root CA certificate chain */
@@ -709,7 +808,7 @@ TPM_RC processRoot(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	int irc = X509_STORE_CTX_init(verifyCtx, caStore, ekCertificate, NULL);
 	if (irc != 1) {
-	    printf("processRoot: Error in X509_STORE_CTX_init initialzing verify context\n");  
+	    printf("processRoot: Error in X509_STORE_CTX_init initializing verify context\n");  
 	    rc = TSS_RC_RSA_SIGNATURE;
 	}	    
     }
@@ -717,7 +816,7 @@ TPM_RC processRoot(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	int irc = X509_verify_cert(verifyCtx);
 	if (irc != 1) {
-	    printf("processRoot: Error in X590_verify_cert verifying certificate\n");  
+	    printf("processRoot: Error in X509_verify_cert verifying certificate\n");  
 	    rc = TSS_RC_RSA_SIGNATURE;
 	}
 	else {
@@ -1030,3 +1129,56 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
     free(publicKeyBin);			/* @3 */
     return rc;
 }
+
+/*
+  RSA Key Functions
+*/
+
+/* TSS_RSAGetKey() gets the RSA key parts from an OpenSSL RSA key token.
+
+   If n is not NULL, returns n, e, and d.  If p is not NULL, returns p and q.
+*/
+
+TPM_RC TSS_RSAGetKey(const BIGNUM **n,
+		     const BIGNUM **e,
+		     const BIGNUM **d,
+		     const BIGNUM **p,
+		     const BIGNUM **q,
+		     const RSA *rsaKey)
+{
+    TPM_RC  	rc = 0;
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    if (n != NULL) {
+	*n = rsaKey->n;
+	*e = rsaKey->e;
+	*d = rsaKey->d;
+    }
+    if (p != NULL) {
+	*p = rsaKey->p;
+	*q = rsaKey->q;
+    }
+#else
+    if (n != NULL) {
+	RSA_get0_key(rsaKey, n, e, d);
+    }
+    if (p != NULL) {
+	RSA_get0_factors(rsaKey, p, q);
+    }
+#endif
+    return rc;
+}
+
+/* TSS_Pubkey_GetAlgorithm() returns the openssl algorithn type for the EVP_PKEY public key. */
+
+int TSS_Pubkey_GetAlgorithm(EVP_PKEY *pkey)
+{
+    int 			pkeyType;	/* RSA or EC */
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    pkeyType = pkey->type;
+#else
+    pkeyType = EVP_PKEY_base_id(pkey);
+#endif
+    return pkeyType;
+}
+
+

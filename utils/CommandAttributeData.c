@@ -449,6 +449,33 @@ const TPMA_CC_TSS    s_ccAttr [] = {
     {{0x0000, 0, 0, 0, 0, 0, 0, 1, 0}},     // TPM_CC_Vendor_TCG_Test
 #endif
 
+#ifdef TPM_NUVOTON
+    
+#if (PAD_LIST || CC_NTC2_PreConfig)
+#ifndef TPM_TSS
+    {{0x0211, 0, 1, 0, 0, 0, 0, 1, 0}},     // TPM_CC_NTC2_PreConfig
+#else
+    {{0x20000211, 0, 1, 0, 0, 0, 0, 1, 0}}, // TPM_CC_NTC2_PreConfig
+#endif
+#endif
+
+#if (PAD_LIST || CC_NTC2_LockPreConfig)
+#ifndef TPM_TSS
+    {{0x0212, 0, 1, 0, 0, 0, 0, 1, 0}},     // TPM_CC_NTC2_LockPreConfig
+#else
+    {{0x20000212, 0, 1, 0, 0, 0, 0, 1, 0}}, // TPM_CC_NTC2_LockPreConfig
+#endif
+#endif
+
+#if (PAD_LIST || CC_NTC2_GetConfig)
+#ifndef TPM_TSS
+    {{0x0213, 0, 1, 0, 0, 0, 0, 1, 0}},     // TPM_CC_NTC2_GetConfig
+#else
+    {{0x20000213, 0, 1, 0, 0, 0, 0, 1, 0}}, // TPM_CC_NTC2_GetConfig
+#endif
+#endif
+
+#endif
 
     {{0x0000, 0, 0, 0, 0, 0, 0, 0, 0}},     // kg - terminator?
 };
@@ -925,6 +952,20 @@ const COMMAND_ATTRIBUTES    s_commandAttributes [] = {
 			 (IS_IMPLEMENTED+DECRYPT_2+ENCRYPT_2)),
 #endif
 
+#ifdef TPM_NUVOTON
+#if (PAD_LIST || CC_NTC2_PreConfig)
+    (COMMAND_ATTRIBUTES)(CC_NTC2_PreConfig             *  // 0x20000211
+			 (IS_IMPLEMENTED+NO_SESSIONS)),
+#endif
+#if (PAD_LIST || CC_NTC2_LockPreConfig)
+    (COMMAND_ATTRIBUTES)(CC_NTC2_LockPreConfig         *  // 0x20000212
+			 (IS_IMPLEMENTED+NO_SESSIONS)),
+#endif
+#if (PAD_LIST || CC_NTC2_GetConfig)
+    (COMMAND_ATTRIBUTES)(CC_NTC2_GetConfig             *  // 0x20000213
+			 (IS_IMPLEMENTED+NO_SESSIONS)),
+#endif
+#endif
     
     0
 };

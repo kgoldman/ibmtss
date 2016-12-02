@@ -3,7 +3,7 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.h 799 2016-11-14 18:53:34Z kgoldman $		*/
+/*	      $Id: ekutils.h 849 2016-12-01 20:17:03Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -75,6 +75,11 @@ void getEccTemplate(TPMT_PUBLIC *tpmtPublic);
 TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
 			       X509 **certificate,
 			       TPMI_RH_NV_INDEX nvIndex);
+uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
+				  X509 **x509,
+				  const char *derCertificateFileName);
+uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
+			       X509 *x509);
 TPM_RC getRootCertificateFilenames(char *rootFilename[],
 				   unsigned int *rootFileCount,
 				   const char *listFilename);
@@ -127,4 +132,14 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
 		      TPMI_RH_NV_INDEX ekTemplateIndex,
 		      unsigned int noFlush,
 		      int print);
+
+TPM_RC TSS_RSAGetKey(const BIGNUM **n,
+		     const BIGNUM **e,
+		     const BIGNUM **d,
+		     const BIGNUM **p,
+		     const BIGNUM **q,
+		     const RSA *rsaKey);
+
+int TSS_Pubkey_GetAlgorithm(EVP_PKEY *pkey);
+
 #endif

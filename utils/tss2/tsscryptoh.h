@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			     TSS Library Dependent Crypto Support		*/
+/*			     TSS Library Independent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.h 841 2016-11-28 17:33:08Z kgoldman $		*/
+/*	      $Id: tsscrypto.h 838 2016-11-22 22:44:57Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -42,88 +42,40 @@
    It is useful for applications that need some basic crypto functions.
 */
 
-#ifndef TSSCRYPTO_H
-#define TSSCRYPTO_H
-
-#include <stdint.h>
-#include <stdio.h>
-
-#include <openssl/rsa.h>
-
-#ifndef TPM_TSS
-#define TPM_TSS
-#endif
-#include <tss2/TPM_Types.h>
+#ifndef TSSCRYPTOH_H
+#define TSSCRYPTOH_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
     LIB_EXPORT
-    TPM_RC TSS_Crypto_Init(void);
+    uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg);
 
     LIB_EXPORT
-    TPM_RC TSS_Hash_Generate_valist(TPMT_HA *digest,
-				    va_list ap);
-    LIB_EXPORT
-    TPM_RC TSS_HMAC_Generate_valist(TPMT_HA *digest,
-				    const TPM2B_KEY *hmacKey,
-				    va_list ap);
-    LIB_EXPORT void TSS_XOR(unsigned char *out,
-			    const unsigned char *in1,
-			    const unsigned char *in2,
-			    size_t length);
-    LIB_EXPORT
-    TPM_RC TSS_RandBytes(unsigned char *buffer, uint32_t size);
+    uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg);
 
     LIB_EXPORT
-    TPM_RC TSS_RSA_padding_add_PKCS1_OAEP(unsigned char *em, uint32_t emLen,
-					  const unsigned char *from, uint32_t fLen,
-					  const unsigned char *p,
-					  int plen,
-					  TPMI_ALG_HASH halg);	
-    LIB_EXPORT
-    TPM_RC TSS_RSAPublicEncrypt(unsigned char* encrypt_data,
-				size_t encrypt_data_size,
-				const unsigned char *decrypt_data,
-				size_t decrypt_data_size,
-				unsigned char *narr,
-				uint32_t nbytes,
-				unsigned char *earr,
-				uint32_t ebytes,
-				unsigned char *p,
-				int pl,
-				TPMI_ALG_HASH halg);
-    LIB_EXPORT
-    TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
-				      const unsigned char *narr,   	/* public modulus */
-				      uint32_t nbytes,
-				      const unsigned char *earr,   	/* public exponent */
-				      uint32_t ebytes);
+    TPM_RC TSS_Hash_Generate(TPMT_HA *digest,
+			     ...);
 
-    uint16_t TSS_Sym_GetBlockSize(TPM_ALG_ID	symmetricAlg, 
-				  uint16_t	keySizeInBits);
-    TPM_RC TSS_AES_KeyGenerate(void);
-    TPM_RC TSS_AES_Encrypt(unsigned char **encrypt_data,
-			   uint32_t *encrypt_length,
-			   const unsigned char *decrypt_data,
-			   uint32_t decrypt_length);
-    TPM_RC TSS_AES_Decrypt(unsigned char **decrypt_data,
-			   uint32_t *decrypt_length,
-			   const unsigned char *encrypt_data,
-			   uint32_t encrypt_length);
-    TPM_RC TSS_AES_EncryptCFB(uint8_t	*dOut,
-			      uint32_t	keySizeInBits,
-			      uint8_t 	*key,
-			      uint8_t 	*iv,
-			      uint32_t	dInSize,
-			      uint8_t 	*dIn);
-    TPM_RC TSS_AES_DecryptCFB(uint8_t *dOut,
-			      uint32_t keySizeInBits,
-			      uint8_t *key,
-			      uint8_t *iv,
-			      uint32_t dInSize,
-			      uint8_t *dIn);
+    LIB_EXPORT
+    TPM_RC TSS_HMAC_Generate(TPMT_HA *digest,
+			     const TPM2B_KEY *hmacKey,
+			     ...);
+    LIB_EXPORT
+    TPM_RC TSS_HMAC_Verify(TPMT_HA *expect,
+			   const TPM2B_KEY *hmacKey,
+			   UINT32 sizeInBytes,
+			   ...);
+    LIB_EXPORT
+    TPM_RC TSS_KDFA(uint8_t          *keyStream,
+		    TPM_ALG_ID       hashAlg,
+		    const TPM2B     *key,
+		    const char      *label,
+		    const TPM2B     *contextU,
+		    const TPM2B     *contextV,
+		    uint32_t         sizeInBits);
 
 #ifdef __cplusplus
 }

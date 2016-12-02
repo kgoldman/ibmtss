@@ -3,7 +3,7 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 802 2016-11-15 20:06:21Z kgoldman $		*/
+/*	      $Id: loadexternal.c 843 2016-11-29 19:58:14Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -66,6 +66,7 @@
 #include <tss2/tssprint.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/Unmarshal_fp.h>
+#include "ekutils.h"
 
 static void printUsage(void);
 TPM_RC loadExternalTPM(LoadExternal_In 	*in,
@@ -429,11 +430,16 @@ TPM_RC loadExternalDer(LoadExternal_In 	*in,
 		       TPMI_ALG_HASH	halg,
 		       const char	*derKeyFilename)
 {
-    TPM_RC			rc = 0;
-    RSA 			*rsakey = NULL;
-    unsigned char		*derBuffer = NULL;
-    size_t			derSize;
-    int         bytes;
+    TPM_RC		rc = 0;
+    RSA 		*rsaKey = NULL;
+    unsigned char	*derBuffer = NULL;
+    size_t		derSize;
+    int         	bytes;
+    const BIGNUM 	*n;
+    const BIGNUM 	*e;
+    const BIGNUM 	*d;
+    const BIGNUM 	*p;
+    const BIGNUM 	*q;
 
     /* read the DER file */
     if (rc == 0) {
@@ -443,7 +449,7 @@ TPM_RC loadExternalDer(LoadExternal_In 	*in,
     }    
     if (rc == 0) {
 	const unsigned char *tmpPtr = derBuffer;
-	d2i_RSAPrivateKey(&rsakey, &tmpPtr, derSize);		/* freed @2 */
+	d2i_RSAPrivateKey(&rsaKey, &tmpPtr, derSize);		/* freed @2 */
     }    
     if (rc == 0) {
 	/* Table 184 - Definition of TPMT_PUBLIC Structure */
@@ -478,14 +484,17 @@ TPM_RC loadExternalDer(LoadExternal_In 	*in,
     /* get the public modulus */
     /* Table 158 - Definition of {RSA} TPM2B_PUBLIC_KEY_RSA Structure */
     if (rc == 0) {
-	bytes = BN_num_bytes(rsakey->n);
+	rc = TSS_RSAGetKey(&n, &e, &d, &p, &q, rsaKey);
+    }
+    if (rc == 0) {
+	bytes = BN_num_bytes(n);
 	if (bytes > MAX_RSA_KEY_BYTES) {
 	    printf("Error, public key modulus %d greater than %u\n", bytes, MAX_RSA_KEY_BYTES);
 	    rc = EXIT_FAILURE;
 	}
 	else {
 	    in->inPublic.publicArea.unique.rsa.t.size =
-		BN_bn2bin(rsakey->n,
+		BN_bn2bin(n,
 			  (uint8_t *)&in->inPublic.publicArea.unique.rsa.t.buffer);
 	}
     }
@@ -498,20 +507,20 @@ TPM_RC loadExternalDer(LoadExternal_In 	*in,
     }
     /* get a prime factor */
     if (rc == 0) {
-	bytes = BN_num_bytes(rsakey->p);
+	bytes = BN_num_bytes(p);
 	if (bytes > MAX_RSA_KEY_BYTES/2) {
 	    printf("Error, private prime p %d greater than %u\n", bytes, MAX_RSA_KEY_BYTES/2);
 	    rc = EXIT_FAILURE;
 	}
 	else {
 	    in->inPrivate.t.sensitiveArea.sensitive.rsa.t.size =
-		BN_bn2bin(rsakey->p,
+		BN_bn2bin(p,
 			  (uint8_t *)&in->inPrivate.t.sensitiveArea.sensitive.rsa.t.buffer);
 	}
     }
     free(derBuffer);			/* @1 */
-    if (rsakey != NULL) {
-	RSA_free(rsakey);		/* @2 */
+    if (rsaKey != NULL) {
+	RSA_free(rsaKey);		/* @2 */
     }
     return rc;
 }
@@ -581,16 +590,23 @@ TPM_RC loadExternalPEMRSA(LoadExternal_In 	*in,
     /* get the public modulus */
     /* Table 158 - Definition of {RSA} TPM2B_PUBLIC_KEY_RSA Structure */
     if (rc == 0) {
-	int         bytes;
-	bytes = BN_num_bytes(rsaPubkey->n);
+	int     bytes;
+	const BIGNUM	*n;
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+	n = rsaPubkey->n;
+#else
+	const BIGNUM *e;
+	const BIGNUM *d;
+	RSA_get0_key(rsaPubkey, &n, &e, &d);
+#endif
+	bytes = BN_num_bytes(n);
 	if (bytes > MAX_RSA_KEY_BYTES) {
 	    printf("Error, public key modulus %d greater than %u\n", bytes, MAX_RSA_KEY_BYTES);
 	    rc = EXIT_FAILURE;
 	}
 	else {
 	    in->inPublic.publicArea.unique.rsa.t.size =
-		BN_bn2bin(rsaPubkey->n,
-			  (uint8_t *)&in->inPublic.publicArea.unique.rsa.t.buffer);
+		BN_bn2bin(n, (uint8_t *)&in->inPublic.publicArea.unique.rsa.t.buffer);
 	}
     }
     if (rc == 0) {
@@ -616,6 +632,7 @@ TPM_RC loadExternalPEMECC(LoadExternal_In 	*in,
     TPM_RC			rc = 0;
     FILE 			*pemKeyFile = NULL;
     EVP_PKEY 			*pemKeyEvp = NULL;
+    int 			pkeyType;	/* RSA or EC */
     EC_KEY 			*ecKey = NULL;
     const EC_POINT 		*ecPoint;
     const EC_GROUP 		*ecGroup;
@@ -635,7 +652,8 @@ TPM_RC loadExternalPEMECC(LoadExternal_In 	*in,
 	}
     }
     if (rc == 0) {
-	if (pemKeyEvp->type != EVP_PKEY_EC) {
+	pkeyType = TSS_Pubkey_GetAlgorithm(pemKeyEvp);
+	if (pkeyType != EVP_PKEY_EC) {
 	    printf("PEM Public key is not EC\n");
 	    rc = TPM_RC_INTEGRITY;
 	}

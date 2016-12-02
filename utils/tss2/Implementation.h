@@ -297,6 +297,11 @@
 #define  CC_EncryptDecrypt2               CC_YES
 #define  CC_Vendor_TCG_Test               CC_YES
 
+#ifdef TPM_NUVOTON
+#define  CC_NTC2_PreConfig                CC_YES
+#define  CC_NTC2_LockPreConfig            CC_YES
+#define  CC_NTC2_GetConfig                CC_YES
+#endif
 
 // From Vendor-Specific: Table 7 - Defines for Implementation Values
 
@@ -399,7 +404,11 @@
 							   group is implemented */
 #define CRT_FORMAT_RSA			YES
 
+#ifdef TPM_NUVOTON
+#define  VENDOR_COMMAND_COUNT             3
+#else 
 #define  VENDOR_COMMAND_COUNT             0
+#endif
 
 #define  PRIVATE_VENDOR_SPECIFIC_BYTES			\
     ((MAX_RSA_KEY_BYTES/2)*(3+CRT_FORMAT_RSA*2))
@@ -1304,6 +1313,26 @@ typedef  UINT32             TPM_CC;
 #define  TPM_CC_Vendor_TCG_Test               (TPM_CC)(0x20000000)
 #endif
 
+#ifdef TPM_NUVOTON
+#ifndef CC_NTC2_PreConfig                
+#   define CC_NTC2_PreConfig NO
+#endif
+#if CC_NTC2_PreConfig == YES
+#define NTC2_CC_PreConfig		      (TPM_CC)(0x20000211)
+#endif
+#ifndef CC_NTC2_LockPreConfig
+#   define CC_NTC2_LockPreConfig NO
+#endif
+#if CC_NTC2_LockPreConfig == YES
+#define  NTC2_CC_LockPreConfig                (TPM_CC)(0x20000212)
+#endif
+#ifndef CC_NTC2_GetConfig
+#   define CC_NTC2_GetConfig NO
+#endif
+#if CC_NTC2_GetConfig == YES
+#define  NTC2_CC_GetConfig                    (TPM_CC)(0x20000213)
+#endif
+#endif
 
 #ifndef  COMPRESSED_LISTS
 #define ADD_FILL    1
@@ -1434,10 +1463,20 @@ typedef  UINT32             TPM_CC;
 					  + (ADD_FILL || CC_PolicyNvWritten)            /* 0x0000018f */ \
 					  )
 
+#ifndef TPM_NUVOTON
 #define VENDOR_COMMAND_ARRAY_SIZE   ( 0					\
 				      + CC_Vendor_TCG_Test		\
 				      )
+#endif
 
+#ifdef TPM_NUVOTON
+#define VENDOR_COMMAND_ARRAY_SIZE   ( 0				\
+				      + CC_Vendor_TCG_Test	\
+				      + CC_NTC2_PreConfig	\
+				      + CC_NTC2_LockPreConfig	\
+				      + CC_NTC2_GetConfig	\
+				      )
+#endif
 
 #define COMMAND_COUNT							\
     (LIBRARY_COMMAND_ARRAY_SIZE + VENDOR_COMMAND_ARRAY_SIZE)

@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			     TSS Crypto Support					*/
+/*			     TSS Library Dependent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.c 683 2016-07-15 20:53:46Z kgoldman $		*/
+/*	      $Id: tsscrypto.c 850 2016-12-02 19:35:55Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -37,6 +37,8 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
+/* Interface to OpenSSL version 1.0 crypto library */
+
 #include <string.h>
 #include <stdio.h>
 
@@ -59,7 +61,6 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssprint.h>
 #include <tss2/tsserror.h>
-#include <tss2/CpriHash_fp.h>
 
 #include <tss2/tsscrypto.h>
 
@@ -70,26 +71,6 @@ extern int tssVerbose;
 
 static TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
 			     TPMI_ALG_HASH hashAlg);
-static TPM_RC TSS_HMAC_Generate_valist(TPMT_HA *digest,
-				       const TPM2B_KEY *hmacKey,
-				       va_list ap);
-static TPM_RC TSS_Hash_Generate_valist(TPMT_HA *digest,
-				       va_list ap);
-
-static TPM_RC TSS_MGF1(unsigned char       	*mask,
-		       uint32_t            	maskLen,
-		       const unsigned char 	*mgfSeed,
-		       uint16_t			mgfSeedlen,
-		       TPMI_ALG_HASH 		halg);
-static TPM_RC TSS_RSA_padding_add_PKCS1_OAEP(unsigned char *em, uint32_t emLen,
-					     const unsigned char *from, uint32_t fLen,
-					     const unsigned char *p,
-					     int plen,
-					     TPMI_ALG_HASH halg);	
-static void TSS_XOR(unsigned char *out,
-		    const unsigned char *in1,
-		    const unsigned char *in2,
-		    size_t length);
 
 static TPM_RC TSS_bin2bn(BIGNUM **bn, const unsigned char *bin, unsigned int bytes);
 
@@ -145,55 +126,48 @@ static TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
     return rc;
 }
 
-
-/* TSS_HMAC_Generate() can be called directly to HMAC a list of streams.
-   
-   The ... arguments are a message list of the form
-   int length, unsigned char *buffer
-   terminated by a 0 length
-*/
-
-/* On call, digest->hashAlg is the desired hash algorithm */
-
-TPM_RC TSS_HMAC_Generate(TPMT_HA *digest,		/* largest size of a digest */
-			 const TPM2B_KEY *hmacKey,
-			 ...)
-{
-    TPM_RC		rc = 0;
-    va_list		ap;
-    
-    va_start(ap, hmacKey);
-    rc = TSS_HMAC_Generate_valist(digest, hmacKey, ap);
-    va_end(ap);
-    return rc;
-}
-
 /* On call, digest->hashAlg is the desired hash algorithm
 
    length 0 is ignored, buffer NULL terminates list.
 */
 
-static TPM_RC TSS_HMAC_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
-				       const TPM2B_KEY *hmacKey,
-				       va_list ap)
+TPM_RC TSS_HMAC_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
+				const TPM2B_KEY *hmacKey,
+				va_list ap)
 {
     TPM_RC		rc = 0;
     int 		irc = 0;
     int			done = FALSE;
     const EVP_MD 	*md;	/* message digest method */
+#if OPENSSL_VERSION_NUMBER < 0x10100000
     HMAC_CTX 		ctx;
+#else
+    HMAC_CTX 		*ctx;
+#endif
     int			length;
     uint8_t 		*buffer;
     
+#if OPENSSL_VERSION_NUMBER < 0x10100000
     HMAC_CTX_init(&ctx);
+#else
+    ctx = HMAC_CTX_new();
+#endif
     if (rc == 0) {
 	rc = TSS_Hash_GetMd(&md, digest->hashAlg);
     }
     if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
 	irc = HMAC_Init_ex(&ctx,
-			   hmacKey->b.buffer, hmacKey->b.size,	/* HMAC key FIXME cast */
+			   hmacKey->b.buffer, hmacKey->b.size,	/* HMAC key */
 			   md,					/* message digest method */
 			   NULL);
+#else
+	irc = HMAC_Init_ex(ctx,
+			   hmacKey->b.buffer, hmacKey->b.size,	/* HMAC key */
+			   md,					/* message digest method */
+			   NULL);
+#endif
+	
 	if (irc == 0) {
 	    rc = TSS_RC_HMAC;
 	}
@@ -207,7 +181,11 @@ static TPM_RC TSS_HMAC_Generate_valist(TPMT_HA *digest,		/* largest size of a di
 		rc = TSS_RC_HMAC;
 	    }
 	    else {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
 		irc = HMAC_Update(&ctx, buffer, length);
+#else
+		irc = HMAC_Update(ctx, buffer, length);
+#endif
 		if (irc == 0) {
 		    if (tssVerbose) printf("TSS_HMAC_Generate: HMAC_Update failed\n");
 		    rc = TSS_RC_HMAC;
@@ -220,65 +198,20 @@ static TPM_RC TSS_HMAC_Generate_valist(TPMT_HA *digest,		/* largest size of a di
     }
 
     if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
 	irc = HMAC_Final(&ctx, (uint8_t *)&digest->digest, NULL);
+#else
+	irc = HMAC_Final(ctx, (uint8_t *)&digest->digest, NULL);
+#endif
 	if (irc == 0) {
 	    rc = TSS_RC_HMAC;
 	}
     }
+#if OPENSSL_VERSION_NUMBER < 0x10100000
     HMAC_CTX_cleanup(&ctx);
-    return rc;
-}
-
-/* TSS_HMAC_Verify() can be called directly to check the HMAC of a list of streams.
-   
-   The ... arguments are a list of the form
-   int length, unsigned char *buffer
-   terminated by a 0 length
-
-*/
-
-TPM_RC TSS_HMAC_Verify(TPMT_HA *expect,
-		       const TPM2B_KEY *hmacKey,
-		       uint32_t sizeInBytes,
-		       ...)
-{
-    TPM_RC		rc = 0;
-    int			irc;
-    va_list		ap;
-    TPMT_HA 		actual;
-
-    actual.hashAlg = expect->hashAlg;	/* algorithm for the HMAC calculation */
-    va_start(ap, sizeInBytes);
-    if (rc == 0) {
-	rc = TSS_HMAC_Generate_valist(&actual, hmacKey, ap);
-    }
-    if (rc == 0) {
-	irc = memcmp((uint8_t *)&expect->digest, &actual.digest, sizeInBytes);
-	if (irc != 0) {
-	    TSS_PrintAll("TSS_HMAC_Verify: calculated HMAC",
-			 (uint8_t *)&actual.digest, sizeInBytes);
-	    rc = TSS_RC_HMAC_VERIFY;
-	}
-    }
-    va_end(ap);
-    return rc;
-}
-
-/* On call, digest->hashAlg is the desired hash algorithm
-
-   ... is a list of int length, unsigned char *buffer pairs.
-
-   length 0 is ignored, buffer NULL terminates list.
-*/
-
-TPM_RC TSS_Hash_Generate(TPMT_HA *digest,		/* largest size of a digest */
-			 ...)
-{
-    TPM_RC	rc = 0;
-    va_list	ap;
-    va_start(ap, digest);
-    rc = TSS_Hash_Generate_valist(digest, ap);
-    va_end(ap);
+#else
+    HMAC_CTX_free(ctx);
+#endif
     return rc;
 }
 
@@ -288,8 +221,8 @@ TPM_RC TSS_Hash_Generate(TPMT_HA *digest,		/* largest size of a digest */
   length 0 is ignored, buffer NULL terminates list.
 */
 
-static TPM_RC TSS_Hash_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
-				       va_list ap)
+TPM_RC TSS_Hash_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
+				va_list ap)
 {
     TPM_RC		rc = 0;
     int			irc = 0;
@@ -335,264 +268,6 @@ static TPM_RC TSS_Hash_Generate_valist(TPMT_HA *digest,		/* largest size of a di
     return rc;
 }
 
-/* TSS_GetDigestSize() returns the digest size in bytes based on the hash algorithm.
-
-   Returns 0 for an unknown algorithm.
-*/
-
-uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
-{
-    uint16_t size;
-    
-    switch (hashAlg) {
-      case TPM_ALG_SHA1:
-	size = SHA1_DIGEST_SIZE;
-	break;
-      case TPM_ALG_SHA256:
-	size = SHA256_DIGEST_SIZE;
-	break;
-      case TPM_ALG_SHA384:
-	size = SHA384_DIGEST_SIZE;
-	break;
-#if 0
-      case TPM_ALG_SHA512:
-	size = SHA512_DIGEST_SIZE;
-	break;
-      case TPM_ALG_SM3_256:
-	size = SM3_256_DIGEST_SIZE;
-	break;
-#endif
-      default:
-	size = 0;
-    }
-    return size;
-}
-
-/* TPM_MGF1() generates an MGF1 'array' of length 'arrayLen' from 'seed' of length 'seedlen'
-
-   The openSSL DLL doesn't export MGF1 in Windows or Linux 1.0.0, so this version is created from
-   scratch.
-   
-   Algorithm and comments (not the code) from:
-
-   PKCS #1: RSA Cryptography Specifications Version 2.1 B.2.1 MGF1
-
-   Prototype designed to be compatible with openSSL
-
-   MGF1 is a Mask Generation Function based on a hash function.
-   
-   MGF1 (mgfSeed, maskLen)
-
-   Options:     
-
-   Hash hash function (hLen denotes the length in octets of the hash 
-   function output)
-
-   Input:
-   
-   mgfSeed         seed from which mask is generated, an octet string
-   maskLen         intended length in octets of the mask, at most 2^32(hLen)
-
-   Output:      
-   mask            mask, an octet string of length l; or "mask too long"
-
-   Error:          "mask too long'
-*/
-
-static TPM_RC TSS_MGF1(unsigned char       	*mask,
-		       uint32_t            	maskLen,
-		       const unsigned char 	*mgfSeed,
-		       uint16_t			mgfSeedlen,
-		       TPMI_ALG_HASH 		halg)
-{
-    TPM_RC 		rc = 0;
-    unsigned char       counter[4];     /* 4 octets */
-    uint32_t	        count;          /* counter as an integral type */
-    uint32_t		outLen;
-    TPMT_HA 		digest;
-    uint16_t 		digestSize = TSS_GetDigestSize(halg);
-    
-    digest.hashAlg = halg;
-    
-#if 0
-    if (rc == 0) {
-        /* this is possible with arrayLen on a 64 bit architecture, comment to quiet beam */
-        if ((maskLen / TPM_DIGEST_SIZE) > 0xffffffff) {        /* constant condition */
-            if (tssVerbose) printf("TSS_MGF1: Error (fatal), Output length too large for 32 bit counter\n");
-            rc = TPM_FAIL;              /* should never occur */
-        }
-    }
-#endif
-    /* 1.If l > 2^32(hLen), output "mask too long" and stop. */
-    /* NOTE Checked by caller */
-    /* 2. Let T be the empty octet string. */
-    /* 3. For counter from 0 to [masklen/hLen] - 1, do the following: */
-    for (count = 0, outLen = 0 ; (rc == 0) && (outLen < maskLen) ; count++) {
-	/* a. Convert counter to an octet string C of length 4 octets - see Section 4.1 */
-	/* C = I2OSP(counter, 4) NOTE Basically big endian */
-        uint32_t count_n = htonl(count);
-	memcpy(counter, &count_n, 4);
-	/* b.Concatenate the hash of the seed mgfSeed and C to the octet string T: */
-	/* T = T || Hash (mgfSeed || C) */
-	/* If the entire digest is needed for the mask */
-	if ((outLen + digestSize) < maskLen) {
-	    rc = TSS_Hash_Generate(&digest,
-				   mgfSeedlen, mgfSeed,
-				   4, counter,
-				   0, NULL);
-	    memcpy(mask + outLen, &digest.digest, digestSize);
-	    outLen += digestSize;
-	}
-	/* if the mask is not modulo TPM_DIGEST_SIZE, only part of the final digest is needed */
-	else {
-	    /* hash to a temporary digest variable */
-	    rc = TSS_Hash_Generate(&digest,
-				   mgfSeedlen, mgfSeed,
-				   4, counter,
-				   0, NULL);
-	    /* copy what's needed */
-	    memcpy(mask + outLen, &digest.digest, maskLen - outLen);
-	    outLen = maskLen;           /* outLen = outLen + maskLen - outLen */
-	}
-    }
-    /* 4.Output the leading l octets of T as the octet string mask. */
-    return rc;
-}
-
-/*
-  OAEP Padding 
-*/
-
-/* TSS_RSA_padding_add_PKCS1_OAEP() is a variation of the the openSSL function
-
-   int RSA_padding_add_PKCS1_OAEP(unsigned char *to, int tlen,
-   unsigned char *f, int fl, unsigned char *p, int pl);
-
-   It is used because the openssl function is hard coded to SHA1.
-
-   This function was independently written from the PKCS1 specification "9.1.1.1 Encoding
-   Operation" and PKCS#1 v2.2, intended to be unencumbered by any license.
-
-
-   | <-			  emLen					   -> |
-   
-                         |  lHash |    PS     | 01 |  Message	      |
-
-                            SHA                       flen
-
-                         |  db                                        |
-			 |  dbMask                                    |
-        |  seed          |
-
-	   SHA
-	   
-        |  seedMask      | 
-   | 00 |  maskSeed      |   maskedDB                                 |
-*/
-
-TPM_RC TSS_RSA_padding_add_PKCS1_OAEP(unsigned char *em, uint32_t emLen,
-				      const unsigned char *from, uint32_t fLen,
-				      const unsigned char *p,
-				      int plen,
-				      TPMI_ALG_HASH halg)	
-{	
-    TPM_RC		rc = 0;
-    TPMT_HA 		lHash;
-    unsigned char 	*db;
-    
-    unsigned char *dbMask = NULL;			/* freed @1 */
-    unsigned char *seed = NULL;				/* freed @2 */
-    unsigned char *maskedDb;
-    unsigned char *seedMask;
-    unsigned char *maskedSeed;
-
-    uint16_t hlen = TSS_GetDigestSize(halg);
-    
-    /* 1.a. If the length of L is greater than the input limitation for */
-    /* the hash function (2^61-1 octets for SHA-1) then output "parameter */
-    /* string too long" and stop. */
-    if (rc == 0) {
-	if (plen > 0xffff) {
-	    if (tssVerbose) printf("TSS_RSA_padding_add_PKCS1_OAEP: Error, "
-				   "label %u too long\n", plen);
-	    rc = TSS_RC_RSA_PADDING;
-	}	    
-    }
-    /* 1.b. If ||M|| > emLen-2hLen-1 then output "message too long" and stop. */
-    if (rc == 0) {
-	if (emLen < ((2 * hlen) + 2 + fLen)) {
-	    if (tssVerbose) printf("TSS_RSA_padding_add_PKCS1_OAEP: Error, "
-				   "message length %u too large for encoded length %u\n",
-				   fLen, emLen);
-	    rc = TSS_RC_RSA_PADDING;
-	}
-    }
-    /* 2.a. Let lHash = Hash(L), an octet string of length hLen. */
-    if (rc == 0) {
-	lHash.hashAlg = halg;
-	rc = TSS_Hash_Generate(&lHash,
-			       plen, p,
-			       0, NULL);
-    }
-    if (rc == 0) {
-	/* 2.b. Generate an octet string PS consisting of emLen-||M||-2hLen-2 zero octets. The
-	   length of PS may be 0. */
-	/* 2.c. Concatenate lHash, PS, a single octet of 0x01 the message M, to form a data block DB
-	   as: DB = lHash || PS || 01 || M */
-	/* NOTE Since db is eventually maskedDb, part of em, create directly in em */
-	db = em + hlen + 1;
-	memcpy(db, &lHash.digest, hlen);			/* lHash */
-	/* PSlen = emlen - flen - (2 * hlen) - 2 */
-	memset(db + hlen, 0,					/* PS */
-	       emLen - fLen - (2 * hlen) - 2);
-	/* position of 0x01 in db is
-	   hlen + PSlen =
-	   hlen + emlen - flen - (2 * hlen) - 2 = 
-	   emlen - hlen - flen - 2 */
-	db[emLen - fLen - hlen - 2] = 0x01;
-	memcpy(db + emLen - fLen - hlen - 1, from, fLen);	/* M */
-    }
-    /* 2.d. Generate a random octet string seed of length hLen. */
-    if (rc == 0) {
-	rc = TSS_Malloc(&seed, hlen);
-    }
-    if (rc == 0) {
-	rc = TSS_RandBytes(seed, hlen);
-    }
-    if (rc == 0) {
-	rc = TSS_Malloc(&dbMask, emLen - hlen - 1);
-    }
-    if (rc == 0) {
-	/* 2.e. Let dbMask = MGF(seed, emLen-hLen-1). */
-	rc = TSS_MGF1(dbMask, emLen - hlen -1,	/* dbLen */
-		      seed, hlen,
-		      halg);
-    }
-    if (rc == 0) {
-	/* 2.f. Let maskedDB = DB xor dbMask. */
-	/* NOTE Since maskedDB is eventually em, XOR directly to em */
-	maskedDb = em + hlen + 1;
-	TSS_XOR(maskedDb, db, dbMask, emLen - hlen -1);
-	/* 2.g. Let seedMask = MGF(maskedDB, hLen). */
-	/* NOTE Since seedMask is eventually em, create directly to em */
-	seedMask = em + 1;
-	rc = TSS_MGF1(seedMask, hlen,
-		      maskedDb, emLen - hlen - 1,
-		      halg);
-    }
-    if (rc == 0) {
-	/* 2.h. Let maskedSeed = seed xor seedMask. */
-	/* NOTE Since maskedSeed is eventually em, create directly to em */
-	maskedSeed = em + 1;
-	TSS_XOR(maskedSeed, seed, seedMask, hlen);
-	/* 2.i. 0x00, maskedSeed, and maskedDb to form EM */
-	/* NOTE Created directly in em */
-    }
-    free(dbMask);		/* @1 */
-    free(seed);			/* @2 */
-    return rc;
-}
-
 /* Random Numbers */
 
 TPM_RC TSS_RandBytes(unsigned char *buffer, uint32_t size)
@@ -608,23 +283,6 @@ TPM_RC TSS_RandBytes(unsigned char *buffer, uint32_t size)
     return rc;
 }
 
-/* TPM_XOR XOR's 'in1' and 'in2' of 'length', putting the result in 'out'
-
- */
-
-static void TSS_XOR(unsigned char *out,
-		    const unsigned char *in1,
-		    const unsigned char *in2,
-		    size_t length)
-{
-    size_t i;
-    
-    for (i = 0 ; i < length ; i++) {
-	out[i] = in1[i] ^ in2[i];
-    }
-    return;
-}
-
 /*
   RSA functions
 */
@@ -633,9 +291,9 @@ static void TSS_XOR(unsigned char *out,
  */
 
 TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
-				  const unsigned char *narr,      	/* public modulus */
+				  const unsigned char *narr,    /* public modulus */
 				  uint32_t nbytes,
-				  const unsigned char *earr,      	/* public exponent */
+				  const unsigned char *earr,    /* public exponent */
 				  uint32_t ebytes)
 {
     TPM_RC  	rc = 0;
@@ -663,12 +321,20 @@ TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
         rc = TSS_bin2bn(&n, narr, nbytes);	/* freed by caller */
     }
     if (rc == 0) {
-        (*rsa_pub_key)->n = n;
         rc = TSS_bin2bn(&e, earr, ebytes);	/* freed by caller */
     }
     if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+        (*rsa_pub_key)->n = n;
         (*rsa_pub_key)->e = e;
         (*rsa_pub_key)->d = NULL;
+#else
+	int irc = RSA_set0_key(*rsa_pub_key, n, e, NULL);
+	if (irc != 1) {
+            if (tssVerbose) printf("TSS_RSAGeneratePublicToken: Error in RSA_set0_key()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+#endif
     }
     return rc;
 }
@@ -799,31 +465,34 @@ TPM_RC TSS_AES_KeyGenerate()
         irc = AES_set_encrypt_key(userKey,
                                   TSS_AES_KEY_BITS,
                                   &aes_enc_key);
+	/* should never occur, null pointers or bad bit size */
 	if (irc != 0) {
-            if (tssVerbose) printf("TSS_AES_KeyGenerate: Error setting openssl AES encryption key\n");
-	    rc = TSS_RC_AES_KEYGEN_FAILURE;      /* should never occur, null pointers or bad bit size */
+            if (tssVerbose)
+		printf("TSS_AES_KeyGenerate: Error setting openssl AES encryption key\n");
+	    rc = TSS_RC_AES_KEYGEN_FAILURE; 
 	}
     }
     if (rc == 0) {
 	irc = AES_set_decrypt_key(userKey,
 				  TSS_AES_KEY_BITS,
 				  &aes_dec_key);
+	/* should never occur, null pointers or bad bit size */
 	if (irc != 0) {
-            if (tssVerbose) printf("TSS_AES_KeyGenerate: Error setting openssl AES decryption key\n");
-	    rc = TSS_RC_AES_KEYGEN_FAILURE;      /* should never occur, null pointers or bad bit size */
+            if (tssVerbose)
+		printf("TSS_AES_KeyGenerate: Error setting openssl AES decryption key\n");
+	    rc = TSS_RC_AES_KEYGEN_FAILURE; 
 	}
     }
     return rc;
 }
 
-/* TSS_AES_Encrypt() is AES non-portable code to encrypt 'decrypt_data' to
-   'encrypt_data'
+/* TSS_AES_Encrypt() is AES non-portable code to encrypt 'decrypt_data' to 'encrypt_data' using CBC.
+   This function uses the global key, and it really intended just for encrypting session state.
 
    The stream is padded as per PKCS#7 / RFC2630
 
    'encrypt_data' must be free by the caller
 */
-
    
 TPM_RC TSS_AES_Encrypt(unsigned char **encrypt_data,   		/* output, caller frees */
 		       uint32_t *encrypt_length,		/* output */
@@ -867,8 +536,8 @@ TPM_RC TSS_AES_Encrypt(unsigned char **encrypt_data,   		/* output, caller frees
     return rc;
 }
 
-/* TSS_AES_Decrypt() is AES non-portable code to decrypt 'encrypt_data' to
-   'decrypt_data'
+/* TSS_AES_Decrypt() is AES non-portable code to decrypt 'encrypt_data' to 'decrypt_data' using CBC.
+   This function uses the global key, and it really intended just for decrypting session state.
 
    The stream must be padded as per PKCS#7 / RFC2630
 
@@ -937,3 +606,75 @@ TPM_RC TSS_AES_Decrypt(unsigned char **decrypt_data,   		/* output, caller frees
     }
     return rc;
 }
+
+TPM_RC TSS_AES_EncryptCFB(uint8_t	*dOut,		/* OUT: the encrypted */
+			  uint32_t	keySizeInBits,	/* IN: key size in bit */
+			  uint8_t 	*key,           /* IN: key buffer. The size of this buffer
+							   in */
+			  uint8_t 	*iv,		/* IN/OUT: IV for decryption */
+			  uint32_t	dInSize,       	/* IN: data size */
+			  uint8_t 	*dIn)		/* IN: data buffer */
+{
+    TPM_RC	rc = 0;
+    int 	irc;
+    int		blockSize;
+    AES_KEY	aeskey;
+    int32_t	dSize;         /* signed version of dInSize */
+    
+    /* Create AES encryption key token */
+    if (rc == 0) {
+	irc = AES_set_encrypt_key(key, keySizeInBits, &aeskey);
+	if (irc != 0) {
+            if (tssVerbose) printf("TSS_AES_EncryptCFB: Error setting openssl AES encryption key\n");
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;  /* should never occur, null pointers or bad bit size */
+	}
+    }
+    if (rc == 0) {
+	/* Encrypt the current IV into the new IV, XOR in the data, and copy to output */
+	for(dSize = (INT32)dInSize ; dSize > 0 ; dSize -= 16, dOut += 16, dIn += 16) {
+	    /* Encrypt the current value of the IV to the intermediate value.  Store in old iv,
+	       since it's not needed anymore. */
+	    AES_encrypt(iv, iv, &aeskey);
+	    blockSize = (dSize < 16) ? dSize : 16;	/* last block can be < 16 */	
+	    TSS_XOR(dOut, dIn, iv, blockSize);
+	    memcpy(iv, dOut, blockSize);
+	}
+    }
+    return rc;
+}
+
+TPM_RC TSS_AES_DecryptCFB(uint8_t *dOut,          	/* OUT: the decrypted data */
+			  uint32_t keySizeInBits, 	/* IN: key size in bit */
+			  uint8_t *key,           	/* IN: key buffer. The size of this buffer
+							   in */
+			  uint8_t *iv,            	/* IN/OUT: IV for decryption. */
+			  uint32_t dInSize,       	/* IN: data size */
+			  uint8_t *dIn)			/* IN: data buffer */
+{
+    TPM_RC	rc = 0;
+    int 	irc;
+    uint8_t	tmp[16];
+    int		blockSize;
+    AES_KEY	aesKey;
+    int32_t	dSize;
+    
+    /* Create AES encryption key token */
+    if (rc == 0) {
+	irc = AES_set_encrypt_key(key, keySizeInBits, &aesKey);
+	if (irc != 0) {
+            if (tssVerbose) printf("TSS_AES_DecryptCFB: Error setting openssl AES encryption key\n");
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;  /* should never occur, null pointers or bad bit size */
+	}
+    }
+    if (rc == 0) {
+	for (dSize = (INT32)dInSize ; dSize > 0; dSize -= 16, dOut += 16, dIn += 16) {
+	    /* Encrypt the IV into the temp buffer */
+	    AES_encrypt(iv, tmp, &aesKey);
+	    blockSize = (dSize < 16) ? dSize : 16;	/* last block can be < 16 */	
+	    TSS_XOR(dOut, dIn, tmp, blockSize);
+	    memcpy(iv, dIn, blockSize);
+	}
+    }
+    return rc;
+}
+

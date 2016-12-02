@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile - for Fedora source RPM ONLY!	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.fedora 813 2016-11-16 22:24:37Z kgoldman $		#
+#	      $Id: makefile.fedora 841 2016-11-28 17:33:08Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -147,6 +147,8 @@ tssauth.o: 	$(TSS_HEADERS) tssauth.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth.c
 tssmarshal.o: 	$(TSS_HEADERS) tssmarshal.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssmarshal.c
+tsscryptoh.o: 	$(TSS_HEADERS) tsscryptoh.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscryptoh.c
 tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscrypto.c
 tssutils.o: 	$(TSS_HEADERS) tssutils.c

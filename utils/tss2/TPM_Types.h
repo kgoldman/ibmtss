@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 802 2016-11-15 20:06:21Z kgoldman $		*/
+/*            $Id: TPM_Types.h 827 2016-11-18 20:45:01Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -112,7 +112,7 @@ extern "C" {
 #define SET	1
 #define CLEAR	0
 
-/* Part 4 5.3	Capabilities.h */
+/* Part 4 5.5	Capabilities.h */
 
 #define    MAX_CAP_DATA         (MAX_CAP_BUFFER-sizeof(TPM_CAP)-sizeof(UINT32))
 #define    MAX_CAP_ALGS         (MAX_CAP_DATA/sizeof(TPMS_ALG_PROPERTY))
@@ -121,7 +121,8 @@ extern "C" {
 #define    MAX_TPM_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PROPERTY))
 #define    MAX_PCR_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PCR_SELECT))
 #define    MAX_ECC_CURVES       (MAX_CAP_DATA/sizeof(TPM_ECC_CURVE))
-
+#define    MAX_TAGGED_POLICIES  (MAX_CAP_DATA/sizeof(TPMS_TAGGED_POLICY))
+    
 /* Table 5 - Definition of Types for Documentation Clarity */
 
 typedef UINT32	TPM_ALGORITHM_ID; 	/* this is the 1.2 compatible form of the TPM_ALG_ID */
@@ -1554,6 +1555,13 @@ typedef struct {
     BYTE 	pcrSelect [PCR_SELECT_MAX];	/* the bit map of PCR with the identified property */
 } TPMS_TAGGED_PCR_SELECT;
 
+/* Table 96 - Definition of TPMS_TAGGED_POLICY Structure  */
+
+typedef struct {
+    TPM_HANDLE              handle;
+    TPMT_HA                 policyHash;
+} TPMS_TAGGED_POLICY;
+
 /* Table 94 - Definition of TPML_CC Structure */
 
 typedef struct {
@@ -1637,6 +1645,13 @@ typedef struct {
     UINT32		count;				/* number of curves A value of zero is allowed. */
     TPM_ECC_CURVE	eccCurves[MAX_ECC_CURVES];	/* array of ECC curve identifiers */
 } TPML_ECC_CURVE ;
+
+/* Table 109 - Definition of TPML_TAGGED_POLICY Structure */
+
+typedef struct {
+    UINT32                  count;
+    TPMS_TAGGED_POLICY      policies[MAX_TAGGED_POLICIES];
+} TPML_TAGGED_POLICY;
 
 /* Table 106 - Definition of TPMU_CAPABILITIES Union <OUT> */
 

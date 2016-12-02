@@ -3,7 +3,7 @@
 /*			    Sign Application					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: signapp.c 802 2016-11-15 20:06:21Z kgoldman $		*/
+/*	      $Id: signapp.c 843 2016-11-29 19:58:14Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -51,6 +51,7 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
+#include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/Unmarshal_fp.h>
 

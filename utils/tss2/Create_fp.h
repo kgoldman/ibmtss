@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Create_fp.h 683 2016-07-15 20:53:46Z kgoldman $		*/
+/*            $Id: Create_fp.h 827 2016-11-18 20:45:01Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -59,7 +59,7 @@
 /*										*/
 /********************************************************************************/
 
-/* rev 119 */
+/* rev 137 */
 
 #ifndef CREATE_FP_H
 #define CREATE_FP_H

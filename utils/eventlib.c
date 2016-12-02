@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 729 2016-08-23 20:42:13Z kgoldman $		*/
+/*	      $Id: eventlib.c 843 2016-11-29 19:58:14Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -44,6 +44,7 @@
 #include <tss2/tssprint.h>
 #include <tss2/Unmarshal_fp.h>
 #include <tss2/tssmarshal.h>
+#include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 
 #include "eventlib.h"
@@ -244,8 +245,15 @@ void TSS_SpecIdEvent_Trace(TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t 	i;
 
-    TSS_PrintAll("TSS_SpecIdEvent_Trace: signature",
-		 specIdEvent->signature, sizeof(specIdEvent->signature));
+    /* normal case */
+    if (specIdEvent->signature[15] == '\0')  {
+	printf("TSS_SpecIdEvent_Trace: signature: %s\n", specIdEvent->signature);
+    }
+    /* error case */
+    else {
+	TSS_PrintAll("TSS_SpecIdEvent_Trace: signature",
+		     specIdEvent->signature, sizeof(specIdEvent->signature));
+    }
     printf("TSS_SpecIdEvent_Trace: platformClass %08x\n", specIdEvent->platformClass);
     printf("TSS_SpecIdEvent_Trace: specVersionMinor %02x\n", specIdEvent->specVersionMinor);
     printf("TSS_SpecIdEvent_Trace: specVersionMajor %02x\n", specIdEvent->specVersionMajor);
@@ -255,8 +263,15 @@ void TSS_SpecIdEvent_Trace(TCG_EfiSpecIDEvent *specIdEvent)
     for (i = 0 ; (i < specIdEvent->numberOfAlgorithms) ; i++) {
 	TSS_SpecIdEventAlgorithmSize_Trace(&(specIdEvent->digestSizes[i]));
     }
-    TSS_PrintAll("TSS_SpecIdEvent_Trace: signature",
-		 specIdEvent->vendorInfo, specIdEvent->vendorInfoSize);
+    /* try for a printable string */
+    if (specIdEvent->vendorInfo[specIdEvent->vendorInfoSize-1] == '\0')  {
+	printf("TSS_SpecIdEvent_Trace: vendorInfo: %s\n", specIdEvent->vendorInfo);
+    }
+    /* if not, trace the bytes */
+    else {
+	TSS_PrintAll("TSS_SpecIdEvent_Trace: vendorInfo",
+		     specIdEvent->vendorInfo, specIdEvent->vendorInfoSize);
+    }
     return;
 }
 
@@ -476,7 +491,9 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[8],
 			     TCG_PCR_EVENT2 *event2)
 {
     TPM_RC rc = 0;
-
+    uint32_t i;				/* iterator though hash algorithms */
+    int foundSha256 = FALSE;
+    
     /* validate PCR number */
     if (rc == 0) {
 	if (event2->pcrIndex > 8) {
@@ -486,27 +503,29 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[8],
     }
     /* validate event count */
     if (rc == 0) {
-	if (event2->digests.count != 1) {
-	    printf("ERROR: TSS_EVENT2_PCR_Extend: PCR count %u out of range\n",
-		   event2->digests.count);
+	uint32_t maxCount = sizeof(((TPML_DIGEST_VALUES *)NULL)->digests) / sizeof(TPMT_HA);
+	if (event2->digests.count > maxCount) {
+	    printf("ERROR: TSS_EVENT2_PCR_Extend: PCR count %u out of range, max %u\n",
+		   event2->digests.count, maxCount);
 	    rc = 1;
 	}	    
     }
-    /* validate hash algorithm */
-    if (rc == 0) {
-	if (event2->digests.digests[0].hashAlg != TPM_ALG_SHA256) {
-	    printf("ERROR: TSS_EVENT2_PCR_Extend: hash algoritnm %04x unsupported \n",
-		   event2->digests.digests[0].hashAlg);
-	    rc = 1;
-	}	    
+    /* search for the SHA-256 digest entry */
+    for (i = 0; (rc == 0) && (i < event2->digests.count) && !foundSha256 ; i++) {
+	if (event2->digests.digests[i].hashAlg == TPM_ALG_SHA256) {
+	    rc = TSS_Hash_Generate(&pcrs[event2->pcrIndex],
+				   SHA256_DIGEST_SIZE,
+				   (uint8_t *)&pcrs[event2->pcrIndex].digest,
+				   SHA256_DIGEST_SIZE,
+				   &event2->digests.digests[i].digest,
+				   0, NULL);
+	    foundSha256 = TRUE;
+	}
     }
-    if (rc == 0) {
-	rc = TSS_Hash_Generate(&pcrs[event2->pcrIndex],
-			       SHA256_DIGEST_SIZE,
-			       (uint8_t *)&pcrs[event2->pcrIndex].digest,
-			       SHA256_DIGEST_SIZE,
-			       &event2->digests.digests[0].digest,
-			       0, NULL);
+    if ((rc == 0) && !foundSha256) {
+	printf("ERROR: TSS_EVENT2_PCR_Extend: no SHA-256 entry in event record, PCR %u\n",
+	       event2->pcrIndex);
+	rc = 1;
     }
     return rc;
 }

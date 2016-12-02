@@ -3,7 +3,7 @@
 /*			   PCR_Extend 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrextend.c 813 2016-11-16 22:24:37Z kgoldman $		*/
+/*	      $Id: pcrextend.c 851 2016-12-02 19:46:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -163,7 +163,8 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if ((dataString != NULL) && (strlen(dataString) > sizeof(TPMU_HA))) {
-	printf("Data length greater than maximum hash size %lu bytes\n", sizeof(TPMU_HA));
+	printf("Data length greater than maximum hash size %lu bytes\n",
+	       (unsigned long)sizeof(TPMU_HA));
 	printUsage();
     }
     /* handle default hash algorithm */
@@ -197,7 +198,8 @@ int main(int argc, char *argv[])
 	}
 	if (rc == 0) {
 	    if (length > sizeof(TPMU_HA)) {
-		printf("Data length greater than maximum hash size %lu bytes\n", sizeof(TPMU_HA));
+		printf("Data length greater than maximum hash size %lu bytes\n",
+		       (unsigned long)sizeof(TPMU_HA));
 		rc = EXIT_FAILURE;
 	    } 
 	}

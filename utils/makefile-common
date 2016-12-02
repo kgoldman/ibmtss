@@ -46,6 +46,7 @@ CCFLAGS += 				\
 	-ggdb -O0 -c 			\
 	-DTPM_ENCRYPT_SESSIONS_DEFAULT="\"0\""
 
+CCFLAGS += -DTPM_NUVOTON
 
 # link - common flags for Posix and Windows, for TSS library and applications
 
@@ -154,6 +155,10 @@ ALL += 	$(LIBTSS)				\
 	createek$(EXE)
 
 ALL	+= 					\
+	ntc2getconfig$(EXE)			\
+	ntc2preconfig$(EXE)			\
+	ntc2lockconfig$(EXE)			\
+	pprovision$(EXE)
 
 # TSS shared library headers 
 
@@ -164,6 +169,7 @@ TSS_HEADERS += 					\
 		tsssocket.h  			\
 		fail.h				\
 		tss2/tss.h			\
+		tss2/tsscryptoh.h		\
 		tss2/tsscrypto.h		\
 		tss2/tsserror.h			\
 		tss2/tssfile.h			\
@@ -180,6 +186,7 @@ TSS_OBJS += 	tss.o			\
 		tssproperties.o		\
 		tssmarshal.o		\
 		tssauth.o 		\
+		tsscryptoh.o 		\
 		tsscrypto.o 		\
 		tssutils.o 		\
 		tsssocket.o 		\
@@ -191,7 +198,7 @@ TSS_OBJS += 	tss.o			\
 		tssprint.o		\
 		Unmarshal.o 		\
 		Commands.o 		\
-		CommandAttributeData.o 	\
-		CpriHash.o		\
-		CpriSym.o
+		CommandAttributeData.o
 
+TSS_OBJS +=	ntc2lib.o		\
+		tssntc.o

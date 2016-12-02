@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: EC_Ephemeral_fp.h 683 2016-07-15 20:53:46Z kgoldman $		*/
+/*            $Id: EC_Ephemeral_fp.h 827 2016-11-18 20:45:01Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/

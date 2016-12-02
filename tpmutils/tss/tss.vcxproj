@@ -86,13 +86,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\utils\CommandAttributeData.c" />
     <ClCompile Include="..\..\utils\Commands.c" />
-    <ClCompile Include="..\..\utils\CpriHash.c" />
-    <ClCompile Include="..\..\utils\CpriSym.c" />
     <ClCompile Include="..\..\utils\fail.c" />
     <ClCompile Include="..\..\utils\tss.c" />
     <ClCompile Include="..\..\utils\tssauth.c" />
     <ClCompile Include="..\..\utils\tssccattributes.c" />
     <ClCompile Include="..\..\utils\tsscrypto.c" />
+    <ClCompile Include="..\..\utils\tsscryptoh.c" />
     <ClCompile Include="..\..\utils\tssfile.c" />
     <ClCompile Include="..\..\utils\tssmarshal.c" />
     <ClCompile Include="..\..\utils\tssprint.c" />

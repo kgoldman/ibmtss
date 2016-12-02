@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: BaseTypes.h 684 2016-07-18 21:22:01Z kgoldman $               */
+/*            $Id: BaseTypes.h 827 2016-11-18 20:45:01Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,40 +55,31 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2015				*/
+/*  (c) Copyright IBM Corp. and others, 2016					*/
 /*										*/
 /********************************************************************************/
 
-/* rev 119 */
+/* 5.2	BaseTypes.h */
 
-// 5.2	BaseTypes.h
+#ifndef BASETYPES_H
+#define BASETYPES_H
 
-/* rev 119 */
+#include <stdint.h>
 
-#ifndef _BASETYPES_H
-#define _BASETYPES_H
+/* NULL definition */
 
-#include "stdint.h"
-
-// NULL definition
 #ifndef         NULL
 #define         NULL        (0)
 #endif
-
-typedef uint8_t		UINT8;		/* unsigned, 8-bit integer */
-typedef uint8_t		BYTE;		/* unsigned 8-bit integer */
-typedef int8_t		INT8;		/* signed, 8-bit integer */
-typedef int		BOOL;		/* a bit in an int  */
-typedef uint16_t	UINT16;		/* unsigned, 16-bit integer */
-typedef int16_t		INT16;		/* signed, 16-bit integer */
-typedef uint32_t	UINT32;		/* unsigned, 32-bit integer */
-typedef int32_t		INT32;		/* signed, 32-bit integer */
-typedef uint64_t	UINT64;		/* unsigned, 64-bit integer */
-typedef int64_t		INT64;		/* signed, 64-bit integer */
-
-typedef struct {
-    UINT16        size;
-    BYTE          buffer[1];
-} TPM2B;
+typedef  uint8_t            UINT8;
+typedef  uint8_t            BYTE;
+typedef  int8_t             INT8;
+typedef  int                BOOL;
+typedef  uint16_t           UINT16;
+typedef  int16_t            INT16;
+typedef  uint32_t           UINT32;
+typedef  int32_t            INT32;
+typedef  uint64_t           UINT64;
+typedef  int64_t            INT64;
 
 #endif

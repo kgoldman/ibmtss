@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 800 2016-11-15 15:05:25Z kgoldman $		*/
+/*	      $Id: policysigned.c 849 2016-12-01 20:17:03Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -60,6 +60,7 @@
 
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
+#include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssprint.h>
@@ -243,7 +244,7 @@ int main(int argc, char *argv[])
 	printf("Missing handle parameter -ha\n");
 	printUsage();
     }
-    if (signingKeyFilename == 0) {
+    if (signingKeyFilename == NULL) {
 	printf("Missing handle parameter -sk\n");
 	printUsage();
     }
@@ -337,7 +338,8 @@ int main(int argc, char *argv[])
     return rc;
 }
 
-/* signAHash() signs digest, returns signature
+/* signAHash() signs digest, returns signature.  The signature TPM2B_PUBLIC_KEY_RSA is a member of
+   the TPMT_SIGNATURE command parameter.
 
    This sample signer uses a pem file signingKeyFilename with signingKeyPassword.
 
@@ -446,9 +448,9 @@ static void printUsage(void)
     printf("\t-in nonceTPM file (default none)\n");
     printf("\t-cp cpHash file (default none)\n");
     printf("\t-pref policyRef file (default none)\n");
-    printf("\t-exp expiration (default none)\n");
+    printf("\t-exp expiration in decimal (default none)\n");
     printf("\t-halg [sha1, sha256] (default sha256)\n");
-    printf("\t-sk signing key file name (PEM format)\n");
+    printf("\t-sk RSA signing key file name (PEM format)\n");
     printf("\t\tThis utility uses this signing key.\n");
     printf("\t\tA real application might use a smart card or other HSM.\n");
     printf("\t-pwdk signing key password (default null)\n");

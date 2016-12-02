@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 780 2016-10-19 19:00:32Z kgoldman $	*/
+/*	      $Id: verifysignature.c 843 2016-11-29 19:58:14Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -51,6 +51,7 @@
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
 #include <tss2/Unmarshal_fp.h>
+#include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/tssmarshal.h>
 #include <tss2/tssprint.h>
@@ -302,14 +303,16 @@ TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,
 		    uint8_t *buffer, size_t length)
 {
     TPM_RC			rc = 0;
-
+    const BIGNUM *pr;
+    const BIGNUM *ps;
+    
     if (algPublic == TPM_ALG_RSA) {
 	target->sigAlg = TPM_ALG_RSASSA;
 	target->signature.rsassa.hash = halg;
 	target->signature.rsassa.sig.t.size = length;
 	memcpy(&target->signature.rsassa.sig.t.buffer, buffer, length);
     }
-    /* TPM_ALG_ECC, the raw signature are DER encoded R and S elements */
+    /* TPM_ALG_ECC, the raw signature is DER encoded R and S elements */
     else {
 	ECDSA_SIG* ecSig = NULL;
 	int rBytes;
@@ -325,8 +328,14 @@ TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,
 	}
 	/* check that the signature size agrees with the currently hard coded P256 curve */
 	if (rc == 0) {
-	    rBytes = BN_num_bytes(ecSig->r);
-	    sBytes = BN_num_bytes(ecSig->s);
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+	    pr = ecSig->r;
+	    ps = ecSig->s;
+#else
+	    ECDSA_SIG_get0(ecSig, &pr, &ps);
+#endif
+	    rBytes = BN_num_bytes(pr);
+	    sBytes = BN_num_bytes(ps);
 	    if ((rBytes != 32) ||
 		(sBytes != 32)) {
 		printf("rawUnmarshal: signature rBytes %u sBytes %u not both 32\n",
@@ -339,8 +348,8 @@ TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,
 	    target->signature.ecdsa.signatureR.t.size = rBytes;
 	    target->signature.ecdsa.signatureS.t.size = sBytes;
 
-	    BN_bn2bin(ecSig->r, (unsigned char *)&target->signature.ecdsa.signatureR.t.buffer);
-	    BN_bn2bin(ecSig->s, (unsigned char *)&target->signature.ecdsa.signatureS.t.buffer);
+	    BN_bn2bin(pr, (unsigned char *)&target->signature.ecdsa.signatureR.t.buffer);
+	    BN_bn2bin(ps, (unsigned char *)&target->signature.ecdsa.signatureS.t.buffer);
 	    if (verbose) {
 		TSS_PrintAll("rawUnmarshal: signature R",
 			     target->signature.ecdsa.signatureR.t.buffer,

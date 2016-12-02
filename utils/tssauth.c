@@ -60,6 +60,10 @@
 #include <tss2/tssproperties.h>
 #include <tss2/tssresponsecode.h>
 
+#ifdef TPM_NUVOTON
+#include "ntc2lib.h"
+#include "tssntc.h"
+#endif
 #include "tssauth.h"
 
 extern int tssVerbose;
@@ -628,6 +632,25 @@ static const MARSHAL_TABLE marshalTable [] = {
      (UnmarshalFunction_t)TSS_NV_Certify_Out_Unmarshal,
      (UnmarshalInFunction_t)NV_Certify_In_Unmarshal}
 
+#ifdef TPM_NUVOTON
+    ,
+
+    {NTC2_CC_PreConfig,"NTC2_CC_PreConfig",
+     (MarshalFunction_t)TSS_NTC2_PreConfig_In_Marshal,
+     NULL,
+     (UnmarshalInFunction_t)NTC2_PreConfig_In_Unmarshal},
+     
+    {NTC2_CC_LockPreConfig,"NTC2_CC_LockPreConfig",
+     NULL,
+     NULL,
+     NULL},
+
+    {NTC2_CC_GetConfig,"NTC2_CC_GetConfig",
+     NULL,
+     (UnmarshalFunction_t)TSS_NTC2_GetConfig_Out_Unmarshal,
+     NULL}
+
+#endif
 };
 
 /* The context for the entire command processor.  Update TSS_InitAuthContext() when changing

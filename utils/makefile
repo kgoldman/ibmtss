@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 813 2016-11-16 22:24:37Z kgoldman $			#
+#	      $Id: makefile 843 2016-11-29 19:58:14Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -46,11 +46,14 @@ CC = /usr/bin/gcc
 
 CCFLAGS = 	-DTPM_POSIX
 
+# example of pointing to a locally built openssl 1.1
+# CCFLAGS += 	-I/home/kgold/openssl-1.1.0c/include
 
 # compile - for TSS library
 
 CCLFLAGS = 	-I. -DTPM_TSS
 
+# example of changing the default interface type
 #	-DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
 
 # compile - for applications
@@ -61,6 +64,11 @@ CCAFLAGS = 	-I.
 
 LNFLAGS = 	-DTPM_POSIX		\
 		-L.
+
+# example of pointing to a locally built openssl 1.1
+# LNFLAGS +=	 -L/home/kgold/openssl-1.1.0c
+# This also requires setting the environment variable LD_LIBRARY_PATH.  E.g.,
+# setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/home/kgold/openssl-1.1.0c
 
 # link - for TSS library
 
@@ -108,6 +116,8 @@ tssauth.o: 	$(TSS_HEADERS) tssauth.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssauth.c
 tssmarshal.o: 	$(TSS_HEADERS) tssmarshal.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssmarshal.c
+tsscryptoh.o: 	$(TSS_HEADERS) tsscryptoh.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsscryptoh.c
 tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsscrypto.c
 tssutils.o: 	$(TSS_HEADERS) tssutils.c
@@ -134,10 +144,10 @@ Commands.o: 	$(TSS_HEADERS) Commands.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC Commands.c
 CommandAttributeData.o: 	$(TSS_HEADERS) CommandAttributeData.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CommandAttributeData.c
-CpriHash.o: 	$(TSS_HEADERS) CpriHash.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CpriHash.c
-CpriSym.o: 	$(TSS_HEADERS) CpriSym.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CpriSym.c
+ntc2lib.o:	$(TSS_HEADERS) ntc2lib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC ntc2lib.c
+tssntc.o:	$(TSS_HEADERS) tssntc.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssntc.c
 
 # TSS shared library build
 
@@ -224,8 +234,8 @@ import:			tss2/tss.h import.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) import.o $(LNALIBS) -o import
 load:			tss2/tss.h load.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) load.o $(LNALIBS) -o load
-loadexternal:		tss2/tss.h loadexternal.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) loadexternal.o $(LNALIBS) -o loadexternal
+loadexternal:		tss2/tss.h loadexternal.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) loadexternal.o ekutils.o $(LNALIBS) -o loadexternal
 makecredential:		tss2/tss.h makecredential.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) makecredential.o $(LNALIBS) -o makecredential
 nvcertify:		tss2/tss.h nvcertify.o libtss.so
@@ -348,7 +358,15 @@ writeapp:		tss2/tss.h writeapp.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o $(LNALIBS) -o writeapp
 createek:		createek.o ekutils.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createek.o ekutils.o $(LNALIBS) -o createek
+pprovision:		pprovision.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) pprovision.o ekutils.o $(LNALIBS) -o pprovision
 
+ntc2getconfig:		ntc2getconfig.o ntc2lib.o
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2getconfig.o ntc2lib.o $(LNALIBS) -o ntc2getconfig
+ntc2preconfig:		ntc2preconfig.o ntc2lib.o
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2preconfig.o ntc2lib.o $(LNALIBS) -o ntc2preconfig
+ntc2lockconfig:		ntc2lockconfig.o ntc2lib.o
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2lockconfig.o ntc2lib.o $(LNALIBS) -o ntc2lockconfig
 
 t:		t.o
 		$(CC) $(LNFLAGS) $(LNAFLAGS) t.o $(LNALIBS) -o t

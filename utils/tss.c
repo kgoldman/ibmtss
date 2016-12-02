@@ -3,7 +3,7 @@
 /*			    TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss.c 802 2016-11-15 20:06:21Z kgoldman $			*/
+/*	      $Id: tss.c 850 2016-12-02 19:35:55Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2016.					*/
 /*										*/
@@ -57,10 +57,10 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
 #include <tss2/Unmarshal_fp.h>
-#include <tss2/CpriHash_fp.h>
 #include <tssccattributes.h>
 #ifndef TPM_TSS_NOCRYPTO
 #include <tss2/tsscrypto.h>
+#include <tss2/tsscryptoh.h>
 #endif
 #include <tss2/tssprint.h>
 
@@ -1092,23 +1092,16 @@ static TPM_RC TSS_HmacSession_SetSessionKey(TSS_CONTEXT *tssContext,
 	    }
 	    /* KDFa for the session key */
 	    if (rc == 0) {
-		uint32_t	counterInOut = 0;
-		session->sessionKey.b.size = 
-		    _cpri__KDFa(session->authHashAlg,
-				&key.b,
-				"ATH",
-				&session->nonceTPM.b,
-				&session->nonceCaller.b,
-				session->sizeInBytes * 8,
-				session->sessionKey.b.buffer,
-				&counterInOut,
-				FALSE);
-		if (session->sessionKey.b.size == 0) {
-		    if (tssVerbose) printf("TSS_HmacSession_SetSessionKey: KDFa failed\n");
-		    rc = TSS_RC_KDFA_FAILED;
-		}
+		rc = TSS_KDFA(session->sessionKey.b.buffer,
+			      session->authHashAlg,
+			      &key.b,
+			      "ATH",
+			      &session->nonceTPM.b,
+			      &session->nonceCaller.b,
+			      session->sizeInBytes * 8);
 	    }
 	    if (rc == 0) {
+		session->sessionKey.b.size = session->sizeInBytes;
 		if (tssVverbose)
 		    TSS_PrintAll("TSS_HmacSession_SetSessionKey: Session key",
 				 session->sessionKey.b.buffer, session->sessionKey.b.size);
@@ -2627,7 +2620,6 @@ static TPM_RC TSS_Command_DecryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
     uint8_t 		*decryptParamBuffer;
     uint8_t 		*mask = NULL;
     uint8_t 		*encryptParamBuffer = NULL;
-    uint16_t		maskSize;
 
     /* get the TPM2B parameter to encrypt */
     if (rc == 0) {
@@ -2672,7 +2664,6 @@ static TPM_RC TSS_Command_DecryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
     */
     /* KDFa for the XOR mask */
     if (rc == 0) {
-	uint32_t	counterInOut = 0;
 	if (tssVverbose) printf("TSS_Command_DecryptXor: hashAlg %04x\n", session->authHashAlg);
 	if (tssVverbose) printf("TSS_Command_DecryptXor: sizeInBits %04x\n", paramSize * 8);
 	if (tssVverbose)
@@ -2681,19 +2672,13 @@ static TPM_RC TSS_Command_DecryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
 	if (tssVverbose)
 	    TSS_PrintAll("TSS_Command_DecryptXor: sessionValue",
 			 session->sessionValue.b.buffer, session->sessionValue.b.size);
-	maskSize = _cpri__KDFa(session->authHashAlg,
-			       &session->sessionValue.b,
-			       "XOR",
-			       &session->nonceCaller.b,
-			       &session->nonceTPM.b,
-			       paramSize * 8,
-			       mask,
-			       &counterInOut,
-			       FALSE);
-	if (maskSize == 0) {
-	    if (tssVerbose) printf("TSS_Command_DecryptXor: KDFa failed\n");
-	    rc = TSS_RC_KDFA_FAILED;
-	}
+	rc = TSS_KDFA(mask,
+		      session->authHashAlg,
+		      &session->sessionValue.b,
+		      "XOR",
+		      &session->nonceCaller.b,
+		      &session->nonceTPM.b,
+		      paramSize * 8);
     }
     if (rc == 0) {
 	if (tssVverbose) TSS_PrintAll("TSS_Command_DecryptXor: mask",
@@ -2730,7 +2715,6 @@ static TPM_RC TSS_Command_DecryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
     uint8_t 		*encryptParamBuffer = NULL;
     TPM2B_IV		iv;
     uint32_t           	kdfaBits;
-    uint16_t		kdfRc;
     uint16_t		keySizeinBytes;
     uint8_t		symParmString[MAX_SYM_KEY_BYTES + MAX_SYM_BLOCK_SIZE];	/* AES key + IV */
     
@@ -2763,10 +2747,9 @@ static TPM_RC TSS_Command_DecryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
        bits		the number of bits required for the symmetric key plus an IV
     */
     if (rc == 0) {
-	uint32_t	counterInOut = 0;
 	
-	iv.t.size = _cpri__GetSymmetricBlockSize(session->symmetric.algorithm,
-						 session->symmetric.keyBits.aes);
+	iv.t.size = TSS_Sym_GetBlockSize(session->symmetric.algorithm,
+					 session->symmetric.keyBits.aes);
 	/* generate random values for both the AES key and the IV */
 	kdfaBits = session->symmetric.keyBits.aes + (iv.t.size * 8);
 
@@ -2779,19 +2762,13 @@ static TPM_RC TSS_Command_DecryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
 	if (tssVverbose) TSS_PrintAll("TSS_Command_DecryptAes: session key",
 				      session->sessionKey.b.buffer, session->sessionKey.b.size);
 
-	kdfRc = _cpri__KDFa(session->authHashAlg,
-			    &session->sessionValue.b,
-			    "CFB",
-			    &session->nonceCaller.b,
-			    &session->nonceTPM.b,
-			    kdfaBits,
-			    &symParmString[0],
-			    &counterInOut,
-			    FALSE);
-	if (kdfRc == 0) {
-	    if (tssVerbose) printf("TSS_Command_DecryptAes: KDFa failed\n");
-	    rc = TSS_RC_KDFA_FAILED;
-	}
+	rc = TSS_KDFA(&symParmString[0],
+		      session->authHashAlg,
+		      &session->sessionValue.b,
+		      "CFB",
+		      &session->nonceCaller.b,
+		      &session->nonceTPM.b,
+		      kdfaBits);
     }
     /* copy the latter part of the kdf output to the IV */
     if (rc == 0) {
@@ -2802,13 +2779,13 @@ static TPM_RC TSS_Command_DecryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     /* AES CFB encrypt the command */
     if (rc == 0) {
-	CRYPT_RESULT	crc;
-	crc = _cpri__AESEncryptCFB(encryptParamBuffer,	/* output */
-				   128,			/* FIXME session->symmetric.keyBits.aes */
-				   symParmString,	/* key */
-				   iv.t.buffer,		/* IV */
-				   paramSize,		/* length */
-				   (uint8_t *)decryptParamBuffer);	/* input */
+	TPM_RC crc;
+	crc = TSS_AES_EncryptCFB(encryptParamBuffer,	/* output */
+				 128,			/* FIXME session->symmetric.keyBits.aes */
+				 symParmString,		/* key */
+				 iv.t.buffer,		/* IV */
+				 paramSize,		/* length */
+				 (uint8_t *)decryptParamBuffer);	/* input */
 	if (crc != 0) {
 	    if (tssVerbose) printf("TSS_Command_DecryptAes: AES encrypt failed\n");
 	    rc = TSS_RC_AES_ENCRYPT_FAILURE;
@@ -2907,7 +2884,6 @@ static TPM_RC TSS_Response_EncryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
     uint8_t 		*encryptParamBuffer;
     uint8_t 		*mask = NULL;
     uint8_t 		*decryptParamBuffer = NULL;
-    uint16_t		maskSize;
 
     /* get the TPM2B parameter to decrypt */
     if (rc == 0) {
@@ -2954,24 +2930,17 @@ static TPM_RC TSS_Response_EncryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
     */
     /* KDFa for the XOR mask */
     if (rc == 0) {
-	uint32_t	counterInOut = 0;
 	if (tssVverbose) printf("TSS_Response_EncryptXor: hashAlg %04x\n", session->authHashAlg);
 	if (tssVverbose) printf("TSS_Response_EncryptXor: sizeInBits %04x\n", paramSize * 8);
-	if (tssVverbose) TSS_PrintAll("TSS_Command_DecryptXor: session key",
+	if (tssVverbose) TSS_PrintAll("TSS_Response_EncryptXor: session key",
 				      session->sessionKey.b.buffer, session->sessionKey.b.size);
-	maskSize = _cpri__KDFa(session->authHashAlg,
-			       &session->sessionValue.b,
-			       "XOR",
-			       &session->nonceTPM.b,
-			       &session->nonceCaller.b,
-			       paramSize * 8,
-			       mask,
-			       &counterInOut,
-			       FALSE);
-	if (maskSize == 0) {
-	    if (tssVerbose) printf("TSS_Command_DecryptXor: KDFa failed\n");
-	    rc = TSS_RC_KDFA_FAILED;
-	}
+	rc = TSS_KDFA(mask,
+		      session->authHashAlg,
+		      &session->sessionValue.b,
+		      "XOR",
+		      &session->nonceTPM.b,
+		      &session->nonceCaller.b,
+		      paramSize * 8);
     }
     if (rc == 0) {
 	if (tssVverbose) TSS_PrintAll("TSS_Response_EncryptXor: mask",
@@ -3009,7 +2978,6 @@ static TPM_RC TSS_Response_EncryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
     uint8_t 		*decryptParamBuffer = NULL;
     TPM2B_IV		iv;
     uint32_t           	kdfaBits;
-    uint16_t		kdfRc;
     uint16_t		keySizeinBytes;
     uint8_t		symParmString[MAX_SYM_KEY_BYTES + MAX_SYM_BLOCK_SIZE];	/* AES key + IV */
 
@@ -3036,10 +3004,9 @@ static TPM_RC TSS_Response_EncryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
        KDFa (hashAlg, sessionValue, "CFB", nonceNewer, nonceOlder, bits)	(34)
     */
     if (rc == 0) {
-	uint32_t	counterInOut = 0;
 	
-	iv.t.size = _cpri__GetSymmetricBlockSize(session->symmetric.algorithm,
-						 session->symmetric.keyBits.aes);
+	iv.t.size = TSS_Sym_GetBlockSize(session->symmetric.algorithm,
+					 session->symmetric.keyBits.aes);
 	/* generate random values for both the AES key and the IV */
 	kdfaBits = session->symmetric.keyBits.aes + (iv.t.size * 8);
 
@@ -3052,19 +3019,13 @@ static TPM_RC TSS_Response_EncryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
 	if (tssVverbose) TSS_PrintAll("TSS_Response_EncryptAes: session key",
 				      session->sessionKey.b.buffer, session->sessionKey.b.size);
 	
-	kdfRc = _cpri__KDFa(session->authHashAlg,
-			    &session->sessionValue.b,
-			    "CFB",
-			    &session->nonceTPM.b,
-			    &session->nonceCaller.b,
-			    kdfaBits,
-			    &symParmString[0],
-			    &counterInOut,
-			    FALSE);
-	if (kdfRc == 0) {
-	    if (tssVerbose) printf("TSS_Command_DecryptAes: KDFa failed\n");
-	    rc = TSS_RC_KDFA_FAILED;
-	}
+	rc = TSS_KDFA(&symParmString[0],
+		      session->authHashAlg,
+		      &session->sessionValue.b,
+		      "CFB",
+		      &session->nonceTPM.b,
+		      &session->nonceCaller.b,
+		      kdfaBits);
     }
     /* copy the latter part of the kdf output to the IV */
     if (rc == 0) {
@@ -3075,15 +3036,15 @@ static TPM_RC TSS_Response_EncryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     /* AES CFB decrypt the response */
     if (rc == 0) {
-	CRYPT_RESULT	crc;
-	crc = _cpri__AESDecryptCFB(decryptParamBuffer,	/* output */
-				   128,			/* FIXME session->symmetric.keyBits.aes */
-				   symParmString,	/* key */
-				   iv.t.buffer,		/* IV */
-				   paramSize,		/* length */
-				   (uint8_t *)encryptParamBuffer);	/* input */
+	TPM_RC crc;
+	crc = TSS_AES_DecryptCFB(decryptParamBuffer,	/* output */
+				 128,			/* FIXME session->symmetric.keyBits.aes */
+				 symParmString,	/* key */
+				 iv.t.buffer,		/* IV */
+				 paramSize,		/* length */
+				 (uint8_t *)encryptParamBuffer);	/* input */
 	if (crc != 0) {
-	    if (tssVerbose) printf("TSS_Command_DecryptAes: AES decrypt failed\n");
+	    if (tssVerbose) printf("TSS_Response_EncryptAes: AES decrypt failed\n");
 	    rc = TSS_RC_AES_DECRYPT_FAILURE;
 	}
     }		 

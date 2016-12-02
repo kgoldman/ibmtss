@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 820 2016-11-16 23:35:35Z kgoldman $		#
+#	      $Id: makefile.mak 848 2016-11-29 21:27:02Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015.						#
 # 										#
@@ -120,6 +120,8 @@ tssauth.o: 	$(TSS_HEADERS) tssauth.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth.c
 tssmarshal.o: 	$(TSS_HEADERS) tssmarshal.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssmarshal.c
+tsscryptoh.o: 	$(TSS_HEADERS) tsscryptoh.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscryptoh.c
 tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscrypto.c
 tssutils.o: 	$(TSS_HEADERS) tssutils.c
@@ -146,10 +148,10 @@ Commands.o: 	$(TSS_HEADERS) Commands.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) Commands.c
 CommandAttributeData.o: 	$(TSS_HEADERS) CommandAttributeData.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) CommandAttributeData.c
-CpriHash.o: 	$(TSS_HEADERS) CpriHash.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) CpriHash.c
-CpriSym.o: 	$(TSS_HEADERS) CpriSym.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) CpriSym.c
+ntc2lib.o:	$(TSS_HEADERS) ntc2lib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) ntc2lib.c
+tssntc.o:	$(TSS_HEADERS) tssntc.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssntc.c
 
 # TSS shared library build
 
@@ -178,6 +180,9 @@ eventextend.exe:	eventextend.o eventlib.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o eventlib.o $(LNLIBS) $(LIBTSS) 
 
 createek.exe:	createek.o ekutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o $(LNLIBS) $(LIBTSS)
+
+loadexternal.exe:	loadexternal.o ekutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o $(LNLIBS) $(LIBTSS)
 
 nvread.exe:	nvread.o ekutils.o $(LIBTSS) 

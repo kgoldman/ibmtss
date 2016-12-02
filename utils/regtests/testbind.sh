@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testbind.sh 663 2016-06-30 18:58:18Z kgoldman $			#
+#	$Id: testbind.sh 849 2016-12-01 20:17:03Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -148,11 +148,15 @@ echo "NV Read Public, unwritten Name"
 ${PREFIX}nvreadpublic -ha 01000000 > run.out
 checkSuccess $?
 
-echo "NV write PWAP to set written"
-${PREFIX}nvwrite -ha 01000000 -pwdn nnn -ic 123 > run.out
+echo "Bind session bound to unwritten NV index at 01000000"
+${PREFIX}startauthsession -se h -bi 01000000 -pwdb nnn > run.out
 checkSuccess $?
 
-echo "Bind session bound to NV index at 01000000"
+echo "NV write HMAC using bind session to set written"
+${PREFIX}nvwrite -ha 01000000 -pwdn nnn -ic 123 -se0 02000000 0 > run.out
+checkSuccess $?
+
+echo "Bind session bound to written NV index at 01000000"
 ${PREFIX}startauthsession -se h -bi 01000000 -pwdb nnn > run.out
 checkSuccess $?
 

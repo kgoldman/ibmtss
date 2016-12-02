@@ -3,7 +3,7 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 802 2016-11-15 20:06:21Z kgoldman $			*/
+/*	      $Id: sign.c 843 2016-11-29 19:58:14Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -55,6 +55,7 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
+#include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/Unmarshal_fp.h>
 
@@ -502,12 +503,21 @@ static TPM_RC RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
         rc = bin2bn(&n, narr, nbytes);	/* freed by caller */
     }
     if (rc == 0) {
-        (*rsa_pub_key)->n = n;
         rc = bin2bn(&e, earr, ebytes);	/* freed by caller */
     }
     if (rc == 0) {
-        (*rsa_pub_key)->e = e;
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+        (*rsa_pub_key)->n = n;
+	(*rsa_pub_key)->e = e;
         (*rsa_pub_key)->d = NULL;
+
+#else
+	int irc = RSA_set0_key(*rsa_pub_key, n, e, NULL);
+	if (irc != 1) {
+            if (verbose) printf("RSAGeneratePublicToken: Error in RSA_set0_key()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+#endif
     }
     return rc;
 }
