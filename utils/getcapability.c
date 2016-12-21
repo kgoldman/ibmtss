@@ -3,7 +3,7 @@
 /*			    Get Capability	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: getcapability.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -49,7 +49,6 @@
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
-#include <tss2/tssprint.h>
 
 static void printUsage(TPM_CAP capability);
 static TPM_RC printResponse(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);

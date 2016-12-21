@@ -3,7 +3,7 @@
 #		Linux TPM2 Makefile Sample for Fedora Installed rpms		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.sample 799 2016-11-14 18:53:34Z kgoldman $		#
+#	      $Id: makefile.sample 854 2016-12-07 17:42:37Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -61,6 +61,7 @@ LNFLAGS = 	-DTPM_POSIX		\
 
 ALL = 	activatecredential			\
 	eventextend				\
+	imaextend				\
 	certify					\
 	changeeps				\
 	changepps				\
@@ -173,6 +174,8 @@ activatecredential:	activatecredential.o
 			$(CC) $(LNFLAGS) activatecredential.o -o activatecredential
 eventextend:		eventextend.o eventlib.o
 			$(CC) $(LNFLAGS) eventextend.o eventlib.o -o eventextend
+imaextend:		imaextend.o imalib.o
+			$(CC) $(LNFLAGS) imaextend.o imalib.o -o imaextend
 certify:		certify.o
 			$(CC) $(LNFLAGS) certify.o -o certify
 changeeps:		changeeps.o

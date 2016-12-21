@@ -3,7 +3,7 @@
 /*			    TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss.c 850 2016-12-02 19:35:55Z kgoldman $			*/
+/*	      $Id: tss.c 885 2016-12-21 17:13:46Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2016.					*/
 /*										*/
@@ -51,18 +51,17 @@
 
 #include "tssauth.h"
 #include <tss2/tss.h>
-#include <tss2/tssproperties.h>
+#include "tssproperties.h"
 #include <tss2/tsstransmit.h>
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
 #include <tss2/Unmarshal_fp.h>
-#include <tssccattributes.h>
+#include "tssccattributes.h"
 #ifndef TPM_TSS_NOCRYPTO
 #include <tss2/tsscrypto.h>
 #include <tss2/tsscryptoh.h>
 #endif
-#include <tss2/tssprint.h>
 
 /* Files:
 
@@ -570,11 +569,15 @@ TPM_RC TSS_Create(TSS_CONTEXT **tssContext)
 static TPM_RC TSS_Context_Init(TSS_CONTEXT *tssContext)
 {
     TPM_RC		rc = 0;
-
+#ifndef TPM_TSS_NOCRYPTO
+    size_t		tssSessionEncKeySize;
+    size_t		tssSessionDecKeySize;
+#endif
+    
     /* at the first call to the TSS, initialize global variables */
     if (tssFirstCall) {		/* tssFirstCall is a library global */
 #ifndef TPM_TSS_NOCRYPTO
-	/* crypto module initializations */
+	/* crypto module initializations, crypto libray specific */
 	if (rc == 0) {
 	    rc = TSS_Crypto_Init();
 	}
@@ -589,6 +592,27 @@ static TPM_RC TSS_Context_Init(TSS_CONTEXT *tssContext)
     if (rc == 0) {
 	rc = TSS_Properties_Init(tssContext);
     }
+#ifndef TPM_TSS_NOCRYPTO
+    /* crypto library dependent code to allocate the session state encryption and decryption keys.
+       They are probably always the same size, but it's safer not to assume that. */
+    if (rc == 0) {
+	rc = TSS_AES_GetEncKeySize(&tssSessionEncKeySize);
+    }
+    if (rc == 0) {
+	rc = TSS_AES_GetDecKeySize(&tssSessionDecKeySize);
+    }
+    if (rc == 0) {
+        rc = TSS_Malloc((uint8_t **)&tssContext->tssSessionEncKey, tssSessionEncKeySize);
+    }
+    if (rc == 0) {
+        rc = TSS_Malloc((uint8_t **)&tssContext->tssSessionDecKey, tssSessionDecKeySize);
+    }
+    /* build the session encryption and decryption keys */
+    if (rc == 0) {
+	rc = TSS_AES_KeyGenerate(tssContext->tssSessionEncKey,
+				 tssContext->tssSessionDecKey);
+    }
+#endif
     return rc;
 }
 
@@ -611,6 +635,10 @@ TPM_RC TSS_Delete(TSS_CONTEXT *tssContext)
 		tssContext->sessions[i].sessionDataLength = 0;
 	    }
 	}
+#endif
+#ifndef TPM_TSS_NOCRYPTO
+	free(tssContext->tssSessionEncKey);
+	free(tssContext->tssSessionDecKey);
 #endif
 	rc = TSS_Close(tssContext);
 	free(tssContext);
@@ -993,12 +1021,7 @@ static TPM_RC TSS_HmacSession_GetContext(struct TSS_HMAC_CONTEXT **session)
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	*session = malloc(sizeof(TSS_HMAC_CONTEXT));
-	if (*session == NULL) {
-	    if (tssVerbose) printf("TSS_HmacSession_GetContext: malloc %u failed\n",
-				   (unsigned int)sizeof(TSS_HMAC_CONTEXT));
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+        rc = TSS_Malloc((uint8_t **)session, sizeof(TSS_HMAC_CONTEXT));
     }
     if (rc == 0) {
 	TSS_HmacSession_InitContext(*session);
@@ -1127,13 +1150,13 @@ static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
 					  struct TSS_HMAC_CONTEXT *session)
 {
     TPM_RC	rc = 0;
-    uint8_t 	*buffer = NULL;
+    uint8_t 	*buffer = NULL;		/* marshaled TSS_HMAC_CONTEXT */
     uint16_t	written = 0;
 #ifndef TPM_TSS_NOFILE
     char	sessionFilename[128];
-#endif
-    uint8_t *outBuffer = NULL; /* output, caller frees */
+    uint8_t *outBuffer = NULL;
     uint32_t outLength;
+#endif
     
     if (tssVverbose) printf("TSS_HmacSession_SaveSession: handle %08x\n", session->sessionHandle);
     if (rc == 0) {
@@ -1141,14 +1164,13 @@ static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
 				   &written,
 				   session,
 				   (MarshalFunction_t)TSS_HmacSession_Marshal);
-	outBuffer = buffer;
-	outLength = written;
     }
 #ifndef TPM_TSS_NOFILE
     if (rc == 0) {
 	/* if the flag is set, encrypt the session state before store */
 	if (tssContext->tssEncryptSessions) {
-	    rc = TSS_AES_Encrypt(&outBuffer,   	/* output, caller frees */
+	    rc = TSS_AES_Encrypt(tssContext->tssSessionEncKey,
+				 &outBuffer,   	/* output, freed @2 */
 				 &outLength,	/* output */
 				 buffer,	/* input */
 				 written);	/* input */
@@ -1171,13 +1193,13 @@ static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
 				      sessionFilename);
     }
     if (tssContext->tssEncryptSessions) {
-	free(outBuffer);
+	free(outBuffer);	/* @2 */
     }
-#else		/* no file support, save ton context */
+#else		/* no file support, save to context */
     if (rc == 0) {
 	rc = TSS_HmacSession_SaveData(tssContext,
 				      session->sessionHandle,
-				      outLength, outBuffer);
+				      written, buffer);
     }
 #endif
     free(buffer);	/* @1 */
@@ -1217,7 +1239,8 @@ static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	/* if the flag is set, decrypt the session state before unmarshal */
 	if (tssContext->tssEncryptSessions) {
-	    rc = TSS_AES_Decrypt(&inData,   	/* output, freed @2 */
+	    rc = TSS_AES_Decrypt(tssContext->tssSessionDecKey,
+				 &inData,   	/* output, freed @2 */
 				 &inLength,	/* output */
 				 buffer,	/* input */
 				 length);	/* input */
@@ -1360,6 +1383,7 @@ static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
 					int32_t *size)
 {
     TPM_RC rc = 0;
+
     if (rc == 0) {
 	rc = TSS_TPMI_SH_AUTH_SESSION_Marshal(&source->sessionHandle, written, buffer, size);
     }
@@ -1376,10 +1400,14 @@ static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
     }
     if (rc == 0) {
 	rc = TSS_TPMI_DH_ENTITY_Marshal(&source->bind, written, buffer, size);
-    }
+    }   
     if (rc == 0) {
 	rc = TSS_TPM2B_NAME_Marshal(&source->bindName, written, buffer, size);
     }
+#ifdef TPM_WINDOWS
+    /* FIXME Why does a VS release build need a printf here? */
+    if (tssVverbose) printf("");
+#endif
     if (rc == 0) {
 	rc = TSS_TPM2B_AUTH_Marshal(&source->bindAuthValue, written, buffer, size);
     }
@@ -1402,7 +1430,7 @@ static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
     }
     if (rc == 0) {
 	rc = TSS_UINT8_Marshal(&source->isAuthValueNeeded, written, buffer, size);
-    }
+    }  
     return rc;
 }
 
@@ -1778,8 +1806,8 @@ static TPM_RC TSS_Public_Copy(TSS_CONTEXT *tssContext,
 /* TSS_DeleteHandle() removes persistent state for a handle stored by the TSS
  */
 
-TPM_RC TSS_DeleteHandle(TSS_CONTEXT *tssContext,
-			TPM_HANDLE handle)
+static TPM_RC TSS_DeleteHandle(TSS_CONTEXT *tssContext,
+			       TPM_HANDLE handle)
 {
     TPM_RC		rc = 0;
 #ifndef TPM_TSS_NOFILE
@@ -2359,9 +2387,9 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
    validate the response HMAC
 */
 
-TPM_RC TSS_HmacSession_Verify(TSS_AUTH_CONTEXT *tssAuthContext,	/* authorization context */
-			      struct TSS_HMAC_CONTEXT *session,	/* TSS session context */
-			      TPMS_AUTH_RESPONSE *authResponse)	/* input: response authorization */
+static TPM_RC TSS_HmacSession_Verify(TSS_AUTH_CONTEXT *tssAuthContext,	/* authorization context */
+				     struct TSS_HMAC_CONTEXT *session,	/* TSS session context */
+				     TPMS_AUTH_RESPONSE *authResponse)	/* input: response authorization */
 {
     TPM_RC		rc = 0;
     uint32_t		rpBufferSize;
@@ -2630,20 +2658,10 @@ static TPM_RC TSS_Command_DecryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
 				      decryptParamBuffer, paramSize);
     }    
     if (rc == 0) {
-	mask = malloc(paramSize);
-	if (mask == NULL) {
-	    if (tssVerbose) printf("TSS_Command_DecryptXor: malloc %u failed\n",
-				   (unsigned int)sizeof(paramSize));
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+        rc = TSS_Malloc(&mask, paramSize);
     }
     if (rc == 0) {
-	encryptParamBuffer = malloc(paramSize);
-	if (mask == NULL) {
-	    if (tssVerbose) printf("TSS_Command_DecryptXor: malloc %u failed\n",
-				   (unsigned int)sizeof(paramSize));
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+        rc = TSS_Malloc(&encryptParamBuffer, paramSize);
     }
     /* generate the XOR pad */
     /* 21.2	XOR Parameter Obfuscation
@@ -2727,12 +2745,7 @@ static TPM_RC TSS_Command_DecryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
 				      decryptParamBuffer, paramSize);
     }    
     if (rc == 0) {
-	encryptParamBuffer = malloc(paramSize);
-	if (encryptParamBuffer == NULL) {
-	    if (tssVerbose) printf("TSS_Command_DecryptAes: malloc %u failed\n",
-				   (unsigned int)sizeof(paramSize));
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+        rc = TSS_Malloc(&encryptParamBuffer, paramSize);
     }
     /* generate the encryption key and IV */
     /* 21.3	CFB Mode Parameter Encryption
@@ -2895,20 +2908,10 @@ static TPM_RC TSS_Response_EncryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
 				      encryptParamBuffer, paramSize);
     }    
     if (rc == 0) {
-	mask = malloc(paramSize);
-	if (mask == NULL) {
-	    if (tssVerbose) printf("TSS_Response_EncryptXor: malloc %u failed\n",
-				   (unsigned int)sizeof(paramSize));
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+        rc = TSS_Malloc(&mask, paramSize);
     }
     if (rc == 0) {
-	decryptParamBuffer = malloc(paramSize);
-	if (mask == NULL) {
-	    if (tssVerbose) printf("TSS_Response_EncryptXor: malloc %u failed\n",
-				   (unsigned int)sizeof(paramSize));
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+        rc = TSS_Malloc(&decryptParamBuffer, paramSize);
     }
     /* generate the XOR pad */
     /* 21.2	XOR Parameter Obfuscation
@@ -2991,12 +2994,7 @@ static TPM_RC TSS_Response_EncryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
 				      encryptParamBuffer, paramSize);
     }    
     if (rc == 0) {
-	decryptParamBuffer = malloc(paramSize);
-	if (decryptParamBuffer == NULL) {
-	    if (tssVerbose) printf("TSS_Response_EncryptAes: malloc %u failed\n",
-				   (unsigned int)	sizeof(paramSize));
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+        rc = TSS_Malloc(&decryptParamBuffer, paramSize);
     }
     /* generate the encryption key and IV */
     /* 21.3	CFB Mode Parameter Encryption
@@ -3122,12 +3120,7 @@ static TPM_RC TSS_CA_HierarchyChangeAuth(TSS_CONTEXT *tssContext,
     }
     else {
 	if (rc == 0) {
-	    password = malloc(in->newAuth.t.size + 1);
-	    if (password == NULL) {
-		if (tssVerbose) printf("TSS_CA_HierarchyChangeAuth: malloc %u failed\n",
-				       in->newAuth.t.size + 1);
-		rc = TSS_RC_OUT_OF_MEMORY;
-	    }
+	    rc = TSS_Malloc((uint8_t **)&password , in->newAuth.t.size + 1);
 	}
 	if (rc == 0) {
 	    /* copy the password */
@@ -3165,12 +3158,7 @@ static TPM_RC TSS_CA_NV_ChangeAuth(TSS_CONTEXT *tssContext,
     }
     else {
 	if (rc == 0) {
-	    password = malloc(in->newAuth.t.size + 1);
-	    if (password == NULL) {
-		if (tssVerbose) printf("TSS_CA_NV_ChangeAuth: malloc %u failed\n",
-				       in->newAuth.t.size + 1);
-		rc = TSS_RC_OUT_OF_MEMORY;
-	    }
+	    rc = TSS_Malloc((uint8_t **)&password , in->newAuth.t.size + 1);
 	}
 	if (rc == 0) {
 	    /* copy the password */

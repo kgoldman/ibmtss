@@ -77,6 +77,9 @@ extern "C" {
 		    const TPM2B     *contextV,
 		    uint32_t         sizeInBits);
 
+    uint16_t TSS_Sym_GetBlockSize(TPM_ALG_ID	symmetricAlg, 
+				  uint16_t	keySizeInBits);
+
 #ifdef __cplusplus
 }
 #endif

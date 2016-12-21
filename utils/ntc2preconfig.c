@@ -3,7 +3,7 @@
 /*			   Nuvoton Preconfig 	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2preconfig.c 813 2016-11-16 22:24:37Z kgoldman $		*/
+/*	      $Id: ntc2preconfig.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /*			       IBM Confidential					*/
 /*			     OCO Source Materials				*/
@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
     TSS_CONTEXT			*tssContext = NULL;
     NTC2_GetConfig_Out 		out;
     NTC2_PreConfig_In 		in;
-    NTC2_CFG_STRUCT 		preConfigSet;	/* flags mark values to change */
-    NTC2_CFG_STRUCT 		preConfigIn;	/* values to change */
+    NTC2_CFG_STRUCT 		preConfigSet;		/* flags mark values to change */
+    NTC2_CFG_STRUCT 		preConfigIn;		/* values to change */
     int 			pRequiredVal = FALSE;	/* TRUE to set P required values */
     int 			override = FALSE;	/* TRUE to override P required values */
 

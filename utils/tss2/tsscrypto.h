@@ -3,7 +3,7 @@
 /*			     TSS Library Dependent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.h 841 2016-11-28 17:33:08Z kgoldman $		*/
+/*	      $Id: tsscrypto.h 878 2016-12-19 19:52:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -53,7 +53,8 @@
 #ifndef TPM_TSS
 #define TPM_TSS
 #endif
-#include <tss2/TPM_Types.h>
+
+#include <tss2/tss.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -101,14 +102,17 @@ extern "C" {
 				      const unsigned char *earr,   	/* public exponent */
 				      uint32_t ebytes);
 
-    uint16_t TSS_Sym_GetBlockSize(TPM_ALG_ID	symmetricAlg, 
-				  uint16_t	keySizeInBits);
-    TPM_RC TSS_AES_KeyGenerate(void);
-    TPM_RC TSS_AES_Encrypt(unsigned char **encrypt_data,
+    TPM_RC TSS_AES_GetEncKeySize(size_t *tssSessionEncKeySize);
+    TPM_RC TSS_AES_GetDecKeySize(size_t *tssSessionDecKeySize);
+    TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
+			       void *tssSessionDecKey);
+    TPM_RC TSS_AES_Encrypt(void *tssSessionEncKey,
+			   unsigned char **encrypt_data,
 			   uint32_t *encrypt_length,
 			   const unsigned char *decrypt_data,
 			   uint32_t decrypt_length);
-    TPM_RC TSS_AES_Decrypt(unsigned char **decrypt_data,
+    TPM_RC TSS_AES_Decrypt(void *tssSessionDecKey,
+			   unsigned char **decrypt_data,
 			   uint32_t *decrypt_length,
 			   const unsigned char *encrypt_data,
 			   uint32_t encrypt_length);

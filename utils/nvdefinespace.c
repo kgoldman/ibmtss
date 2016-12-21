@@ -3,7 +3,7 @@
 /*			    NV Define Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 802 2016-11-15 20:06:21Z kgoldman $		*/
+/*	      $Id: nvdefinespace.c 881 2016-12-20 21:44:25Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -543,6 +543,7 @@ static void printUsage(void)
     printf("\t-ha NV index handle\n");
     printf("\t\t01xxxxxx\n");
     printf("\t-hi authorizing hierarchy (o, p)\n");
+    printf("\t\to owner, p platform\n");
     printf("\t\tp sets PLATFORMCREATE\n");
     printf("\t[-pwdp password for hierarchy (default empty)]\n");
     printf("\t[-hia hierarchy authorization (o, p)(default index authorization)]\n");

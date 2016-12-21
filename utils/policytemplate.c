@@ -49,7 +49,6 @@
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
-#include <tss2/tssprint.h>
 
 static void   printUsage(void);
 

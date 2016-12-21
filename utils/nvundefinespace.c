@@ -3,7 +3,7 @@
 /*			    NV Undefine Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvundefinespace.c 778 2016-10-19 15:21:05Z kgoldman $	*/
+/*	      $Id: nvundefinespace.c 881 2016-12-20 21:44:25Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -247,6 +247,7 @@ static void printUsage(void)
     printf("Runs TPM2_NV_UndefineSpace\n");
     printf("\n");
     printf("\t-hi hierarchy (o, p)\n");
+    printf("\t\to owner, p platform\n");
     printf("\t-ha NV index handle\n");
     printf("\t-pwdp password for hierarchy (default empty)\n");
     printf("\n");

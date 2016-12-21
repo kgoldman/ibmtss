@@ -3,7 +3,7 @@
 /*			    TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssfile.c 797 2016-11-11 22:57:11Z kgoldman $		*/
+/*		$Id: tssfile.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -44,6 +44,7 @@
 
 #include <tss2/tssresponsecode.h>
 #include <tss2/tsserror.h>
+#include <tss2/tssprint.h>
 #include <tss2/tssfile.h>
 
 extern int tssVerbose;

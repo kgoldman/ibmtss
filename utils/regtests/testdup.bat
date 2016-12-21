@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 752 2016-09-23 14:18:20Z kgoldman $		#
+REM #		$Id: testdup.bat 882 2016-12-20 22:38:50Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -174,6 +174,61 @@ for %%E in ("" "-salg aes -ik tmprnd.bin") do (
 	)
 
     )
+)
+
+echo ""
+echo "Import PEM"
+echo ""
+
+echo "generate the signing key with openssl"
+openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048
+
+echo "Start an HMAC auth session"
+%TPM_EXE_PATH%startauthsession -se h > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+for %%S in ("" "-se0 02000000 1") do (
+    for %%H in (sha1 sha256) do (
+
+	echo "Import the signing key under the primary key %%H"
+	%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Load the TPM signing key"
+	%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmppub.bin -ipr tmppriv.bin > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Sign the message %%H  %%~S"
+	%TPM_EXE_PATH%sign -hk 80000001 -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H  %%~S > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Verify the signature %%H"
+	%TPM_EXE_PATH%verifysignature -hk 80000001 -if policies/aaa -is tmpsig.bin -halg %%H > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Flush the signing key"
+	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+   )
+)
+
+echo "Flush the auth session"
+%TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
 )
 
 echo ""

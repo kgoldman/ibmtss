@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.h 794 2016-11-10 22:07:50Z kgoldman $		*/
+/*	      $Id: tssmarshal.h 886 2016-12-21 17:22:26Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -166,219 +166,219 @@
 #include "ZGen_2Phase_fp.h"
 
 TPM_RC
-TSS_Startup_In_Marshal(Startup_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Startup_In_Marshal(const Startup_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Shutdown_In_Marshal(Shutdown_In  *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Shutdown_In_Marshal(const Shutdown_In  *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_SelfTest_In_Marshal(SelfTest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_SelfTest_In_Marshal(const SelfTest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_IncrementalSelfTest_In_Marshal(IncrementalSelfTest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_IncrementalSelfTest_In_Marshal(const IncrementalSelfTest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_StartAuthSession_In_Marshal(StartAuthSession_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_StartAuthSession_In_Marshal(const StartAuthSession_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyRestart_In_Marshal(PolicyRestart_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyRestart_In_Marshal(const PolicyRestart_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Create_In_Marshal(Create_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Create_In_Marshal(const Create_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Load_In_Marshal(Load_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Load_In_Marshal(const Load_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_LoadExternal_In_Marshal(LoadExternal_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_LoadExternal_In_Marshal(const LoadExternal_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ReadPublic_In_Marshal(ReadPublic_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ReadPublic_In_Marshal(const ReadPublic_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ActivateCredential_In_Marshal(ActivateCredential_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ActivateCredential_In_Marshal(const ActivateCredential_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_MakeCredential_In_Marshal(MakeCredential_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_MakeCredential_In_Marshal(const MakeCredential_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Unseal_In_Marshal(Unseal_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Unseal_In_Marshal(const Unseal_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ObjectChangeAuth_In_Marshal(ObjectChangeAuth_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ObjectChangeAuth_In_Marshal(const ObjectChangeAuth_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_CreateLoaded_In_Marshal(CreateLoaded_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_CreateLoaded_In_Marshal(const CreateLoaded_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Duplicate_In_Marshal(Duplicate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Duplicate_In_Marshal(const Duplicate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Rewrap_In_Marshal(Rewrap_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Rewrap_In_Marshal(const Rewrap_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Import_In_Marshal(Import_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Import_In_Marshal(const Import_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_RSA_Encrypt_In_Marshal(RSA_Encrypt_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_RSA_Encrypt_In_Marshal(const RSA_Encrypt_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_RSA_Decrypt_In_Marshal(RSA_Decrypt_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_RSA_Decrypt_In_Marshal(const RSA_Decrypt_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ECDH_KeyGen_In_Marshal(ECDH_KeyGen_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ECDH_KeyGen_In_Marshal(const ECDH_KeyGen_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ECDH_ZGen_In_Marshal(ECDH_ZGen_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ECDH_ZGen_In_Marshal(const ECDH_ZGen_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ECC_Parameters_In_Marshal(ECC_Parameters_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ECC_Parameters_In_Marshal(const ECC_Parameters_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ZGen_2Phase_In_Marshal(ZGen_2Phase_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ZGen_2Phase_In_Marshal(const ZGen_2Phase_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_EncryptDecrypt_In_Marshal(EncryptDecrypt_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_EncryptDecrypt_In_Marshal(const EncryptDecrypt_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_EncryptDecrypt2_In_Marshal(EncryptDecrypt2_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_EncryptDecrypt2_In_Marshal(const EncryptDecrypt2_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Hash_In_Marshal(Hash_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Hash_In_Marshal(const Hash_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_HMAC_In_Marshal(HMAC_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_HMAC_In_Marshal(const HMAC_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_GetRandom_In_Marshal(GetRandom_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_GetRandom_In_Marshal(const GetRandom_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_StirRandom_In_Marshal(StirRandom_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_StirRandom_In_Marshal(const StirRandom_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_HMAC_Start_In_Marshal(HMAC_Start_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_HMAC_Start_In_Marshal(const HMAC_Start_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_HashSequenceStart_In_Marshal(HashSequenceStart_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_HashSequenceStart_In_Marshal(const HashSequenceStart_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_SequenceUpdate_In_Marshal(SequenceUpdate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_SequenceUpdate_In_Marshal(const SequenceUpdate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_SequenceComplete_In_Marshal(SequenceComplete_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_SequenceComplete_In_Marshal(const SequenceComplete_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_EventSequenceComplete_In_Marshal(EventSequenceComplete_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_EventSequenceComplete_In_Marshal(const EventSequenceComplete_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Certify_In_Marshal(Certify_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Certify_In_Marshal(const Certify_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_CertifyCreation_In_Marshal(CertifyCreation_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_CertifyCreation_In_Marshal(const CertifyCreation_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Quote_In_Marshal(Quote_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Quote_In_Marshal(const Quote_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_GetSessionAuditDigest_In_Marshal(GetSessionAuditDigest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_GetSessionAuditDigest_In_Marshal(const GetSessionAuditDigest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_GetCommandAuditDigest_In_Marshal(GetCommandAuditDigest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_GetCommandAuditDigest_In_Marshal(const GetCommandAuditDigest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_GetTime_In_Marshal(GetTime_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_GetTime_In_Marshal(const GetTime_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Commit_In_Marshal(Commit_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Commit_In_Marshal(const Commit_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_EC_Ephemeral_In_Marshal(EC_Ephemeral_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_EC_Ephemeral_In_Marshal(const EC_Ephemeral_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_VerifySignature_In_Marshal(VerifySignature_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_VerifySignature_In_Marshal(const VerifySignature_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Sign_In_Marshal(Sign_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Sign_In_Marshal(const Sign_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_SetCommandCodeAuditStatus_In_Marshal(SetCommandCodeAuditStatus_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_SetCommandCodeAuditStatus_In_Marshal(const SetCommandCodeAuditStatus_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PCR_Extend_In_Marshal(PCR_Extend_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PCR_Extend_In_Marshal(const PCR_Extend_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PCR_Event_In_Marshal(PCR_Event_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PCR_Event_In_Marshal(const PCR_Event_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PCR_Read_In_Marshal(PCR_Read_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PCR_Read_In_Marshal(const PCR_Read_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PCR_Allocate_In_Marshal(PCR_Allocate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PCR_Allocate_In_Marshal(const PCR_Allocate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PCR_SetAuthPolicy_In_Marshal(PCR_SetAuthPolicy_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PCR_SetAuthPolicy_In_Marshal(const PCR_SetAuthPolicy_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PCR_SetAuthValue_In_Marshal(PCR_SetAuthValue_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PCR_SetAuthValue_In_Marshal(const PCR_SetAuthValue_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PCR_Reset_In_Marshal(PCR_Reset_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PCR_Reset_In_Marshal(const PCR_Reset_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicySigned_In_Marshal(PolicySigned_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicySigned_In_Marshal(const PolicySigned_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicySecret_In_Marshal(PolicySecret_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicySecret_In_Marshal(const PolicySecret_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyTicket_In_Marshal(PolicyTicket_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyTicket_In_Marshal(const PolicyTicket_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyOR_In_Marshal(PolicyOR_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyOR_In_Marshal(const PolicyOR_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyPCR_In_Marshal(PolicyPCR_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyPCR_In_Marshal(const PolicyPCR_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyLocality_In_Marshal(PolicyLocality_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyLocality_In_Marshal(const PolicyLocality_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyNV_In_Marshal(PolicyNV_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyNV_In_Marshal(const PolicyNV_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyAuthorizeNV_In_Marshal(PolicyAuthorizeNV_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyAuthorizeNV_In_Marshal(const PolicyAuthorizeNV_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyCounterTimer_In_Marshal(PolicyCounterTimer_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyCounterTimer_In_Marshal(const PolicyCounterTimer_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyCommandCode_In_Marshal(PolicyCommandCode_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyCommandCode_In_Marshal(const PolicyCommandCode_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyPhysicalPresence_In_Marshal(PolicyPhysicalPresence_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyPhysicalPresence_In_Marshal(const PolicyPhysicalPresence_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyCpHash_In_Marshal(PolicyCpHash_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyCpHash_In_Marshal(const PolicyCpHash_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyNameHash_In_Marshal(PolicyNameHash_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyNameHash_In_Marshal(const PolicyNameHash_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyDuplicationSelect_In_Marshal(PolicyDuplicationSelect_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyDuplicationSelect_In_Marshal(const PolicyDuplicationSelect_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyAuthorize_In_Marshal(PolicyAuthorize_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyAuthorize_In_Marshal(const PolicyAuthorize_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyAuthValue_In_Marshal(PolicyAuthValue_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyAuthValue_In_Marshal(const PolicyAuthValue_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyPassword_In_Marshal(PolicyPassword_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyPassword_In_Marshal(const PolicyPassword_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyGetDigest_In_Marshal(PolicyGetDigest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyGetDigest_In_Marshal(const PolicyGetDigest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyNvWritten_In_Marshal(PolicyNvWritten_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyNvWritten_In_Marshal(const PolicyNvWritten_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PolicyTemplate_In_Marshal(PolicyTemplate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PolicyTemplate_In_Marshal(const PolicyTemplate_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_CreatePrimary_In_Marshal(CreatePrimary_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_CreatePrimary_In_Marshal(const CreatePrimary_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_HierarchyControl_In_Marshal(HierarchyControl_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_HierarchyControl_In_Marshal(const HierarchyControl_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_SetPrimaryPolicy_In_Marshal(SetPrimaryPolicy_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_SetPrimaryPolicy_In_Marshal(const SetPrimaryPolicy_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ChangePPS_In_Marshal(ChangePPS_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ChangePPS_In_Marshal(const ChangePPS_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ChangeEPS_In_Marshal(ChangeEPS_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ChangeEPS_In_Marshal(const ChangeEPS_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_Clear_In_Marshal(Clear_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Clear_In_Marshal(const Clear_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ClearControl_In_Marshal(ClearControl_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ClearControl_In_Marshal(const ClearControl_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_HierarchyChangeAuth_In_Marshal(HierarchyChangeAuth_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_HierarchyChangeAuth_In_Marshal(const HierarchyChangeAuth_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_DictionaryAttackLockReset_In_Marshal(DictionaryAttackLockReset_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_DictionaryAttackLockReset_In_Marshal(const DictionaryAttackLockReset_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_DictionaryAttackParameters_In_Marshal(DictionaryAttackParameters_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_DictionaryAttackParameters_In_Marshal(const DictionaryAttackParameters_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_PP_Commands_In_Marshal(PP_Commands_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_PP_Commands_In_Marshal(const PP_Commands_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_SetAlgorithmSet_In_Marshal(SetAlgorithmSet_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_SetAlgorithmSet_In_Marshal(const SetAlgorithmSet_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ContextSave_In_Marshal(ContextSave_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ContextSave_In_Marshal(const ContextSave_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ContextLoad_In_Marshal(ContextLoad_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ContextLoad_In_Marshal(const ContextLoad_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_FlushContext_In_Marshal(FlushContext_In *source, UINT16 *written, BYTE **buffer, INT32 *size) ;
+TSS_FlushContext_In_Marshal(const FlushContext_In *source, UINT16 *written, BYTE **buffer, INT32 *size) ;
 TPM_RC
-TSS_EvictControl_In_Marshal(EvictControl_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_EvictControl_In_Marshal(const EvictControl_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ClockSet_In_Marshal(ClockSet_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ClockSet_In_Marshal(const ClockSet_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_ClockRateAdjust_In_Marshal(ClockRateAdjust_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_ClockRateAdjust_In_Marshal(const ClockRateAdjust_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_GetCapability_In_Marshal(GetCapability_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_GetCapability_In_Marshal(const GetCapability_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_TestParms_In_Marshal(TestParms_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TestParms_In_Marshal(const TestParms_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_DefineSpace_In_Marshal(NV_DefineSpace_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_DefineSpace_In_Marshal(const NV_DefineSpace_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_UndefineSpace_In_Marshal(NV_UndefineSpace_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_UndefineSpace_In_Marshal(const NV_UndefineSpace_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_UndefineSpaceSpecial_In_Marshal(NV_UndefineSpaceSpecial_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_UndefineSpaceSpecial_In_Marshal(const NV_UndefineSpaceSpecial_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_ReadPublic_In_Marshal(NV_ReadPublic_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_ReadPublic_In_Marshal(const NV_ReadPublic_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_Write_In_Marshal(NV_Write_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_Write_In_Marshal(const NV_Write_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_Increment_In_Marshal(NV_Increment_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_Increment_In_Marshal(const NV_Increment_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_Extend_In_Marshal(NV_Extend_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_Extend_In_Marshal(const NV_Extend_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_SetBits_In_Marshal(NV_SetBits_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_SetBits_In_Marshal(const NV_SetBits_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_WriteLock_In_Marshal(NV_WriteLock_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_WriteLock_In_Marshal(const NV_WriteLock_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_GlobalWriteLock_In_Marshal(NV_GlobalWriteLock_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_GlobalWriteLock_In_Marshal(const NV_GlobalWriteLock_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_Read_In_Marshal(NV_Read_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_Read_In_Marshal(const NV_Read_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_ReadLock_In_Marshal(NV_ReadLock_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_ReadLock_In_Marshal(const NV_ReadLock_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_ChangeAuth_In_Marshal(NV_ChangeAuth_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_ChangeAuth_In_Marshal(const NV_ChangeAuth_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 TPM_RC
-TSS_NV_Certify_In_Marshal(NV_Certify_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_NV_Certify_In_Marshal(const NV_Certify_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 
 TPM_RC
 TSS_IncrementalSelfTest_Out_Unmarshal(IncrementalSelfTest_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
@@ -490,382 +490,382 @@ TPM_RC
 TSS_NV_Certify_Out_Unmarshal(NV_Certify_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
 
 LIB_EXPORT TPM_RC
-TSS_UINT8_Marshal(UINT8 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_UINT8_Marshal(const UINT8 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_INT8_Marshal(INT8 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_INT8_Marshal(const INT8 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_UINT16_Marshal(UINT16 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_UINT16_Marshal(const UINT16 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_UINT32_Marshal(UINT32 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_UINT32_Marshal(const UINT32 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_INT32_Marshal(INT32 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_INT32_Marshal(const INT32 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_UINT64_Marshal(UINT64 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_UINT64_Marshal(const UINT64 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_Array_Marshal(BYTE *source, UINT16 sourceSize, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_Array_Marshal(const BYTE *source, UINT16 sourceSize, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_Marshal(TPM2B *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_Marshal(const TPM2B *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_KEY_BITS_Marshal(TPM_KEY_BITS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_KEY_BITS_Marshal(const TPM_KEY_BITS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_GENERATED_Marshal(TPM_GENERATED *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_GENERATED_Marshal(const TPM_GENERATED *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_ALG_ID_Marshal(TPM_ALG_ID *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_ALG_ID_Marshal(const TPM_ALG_ID *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_ECC_CURVE_Marshal(TPM_ECC_CURVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_ECC_CURVE_Marshal(const TPM_ECC_CURVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_RC_Marshal(TPM_RC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_RC_Marshal(const TPM_RC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_CLOCK_ADJUST_Marshal(TPM_CLOCK_ADJUST *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_CLOCK_ADJUST_Marshal(const TPM_CLOCK_ADJUST *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_EO_Marshal(TPM_EO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_EO_Marshal(const TPM_EO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_ST_Marshal(TPM_ST *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_ST_Marshal(const TPM_ST *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_SU_Marshal(TPM_ST *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_SU_Marshal(const TPM_ST *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_SE_Marshal(TPM_SE  *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_SE_Marshal(const TPM_SE  *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_CAP_Marshal(TPM_CAP *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_CAP_Marshal(const TPM_CAP *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_PT_Marshal(TPM_PT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_PT_Marshal(const TPM_PT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_PT_PCR_Marshal(TPM_PT_PCR *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_PT_PCR_Marshal(const TPM_PT_PCR *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_HANDLE_Marshal(TPM_HANDLE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_HANDLE_Marshal(const TPM_HANDLE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMA_ALGORITHM_Marshal(TPMA_ALGORITHM *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMA_ALGORITHM_Marshal(const TPMA_ALGORITHM *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMA_OBJECT_Marshal(TPMA_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMA_OBJECT_Marshal(const TPMA_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMA_SESSION_Marshal(TPMA_SESSION *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMA_SESSION_Marshal(const TPMA_SESSION *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMA_LOCALITY_Marshal(TPMA_LOCALITY *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMA_LOCALITY_Marshal(const TPMA_LOCALITY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM_CC_Marshal(TPM_CC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM_CC_Marshal(const TPM_CC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMA_CC_Marshal(TPMA_CC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMA_CC_Marshal(const TPMA_CC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_YES_NO_Marshal(TPMI_YES_NO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_YES_NO_Marshal(const TPMI_YES_NO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_DH_OBJECT_Marshal(TPMI_DH_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_DH_OBJECT_Marshal(const TPMI_DH_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_DH_PERSISTENT_Marshal(TPMI_DH_PERSISTENT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_DH_PERSISTENT_Marshal(const TPMI_DH_PERSISTENT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_DH_ENTITY_Marshal(TPMI_DH_ENTITY *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_DH_ENTITY_Marshal(const TPMI_DH_ENTITY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_DH_PCR_Marshal(TPMI_DH_PCR  *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_DH_PCR_Marshal(const TPMI_DH_PCR  *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_SH_AUTH_SESSION_Marshal(TPMI_SH_AUTH_SESSION *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_SH_AUTH_SESSION_Marshal(const TPMI_SH_AUTH_SESSION *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_SH_HMAC_Marshal(TPMI_SH_HMAC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_SH_HMAC_Marshal(const TPMI_SH_HMAC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_SH_POLICY_Marshal(TPMI_SH_POLICY*source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_SH_POLICY_Marshal(const TPMI_SH_POLICY*source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_DH_CONTEXT_Marshal(TPMI_DH_CONTEXT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_DH_CONTEXT_Marshal(const TPMI_DH_CONTEXT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_HIERARCHY_Marshal(TPMI_RH_HIERARCHY *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_HIERARCHY_Marshal(const TPMI_RH_HIERARCHY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_ENABLES_Marshal(TPMI_RH_ENABLES *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_ENABLES_Marshal(const TPMI_RH_ENABLES *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_HIERARCHY_AUTH_Marshal(TPMI_RH_HIERARCHY_AUTH *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_HIERARCHY_AUTH_Marshal(const TPMI_RH_HIERARCHY_AUTH *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_PLATFORM_Marshal(TPMI_RH_PLATFORM *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_PLATFORM_Marshal(const TPMI_RH_PLATFORM *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_ENDORSEMENT_Marshal(TPMI_RH_ENDORSEMENT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_ENDORSEMENT_Marshal(const TPMI_RH_ENDORSEMENT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_PROVISION_Marshal(TPMI_RH_PROVISION *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_PROVISION_Marshal(const TPMI_RH_PROVISION *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_CLEAR_Marshal(TPMI_RH_CLEAR *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_CLEAR_Marshal(const TPMI_RH_CLEAR *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_NV_AUTH_Marshal(TPMI_RH_NV_AUTH *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_NV_AUTH_Marshal(const TPMI_RH_NV_AUTH *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_LOCKOUT_Marshal(TPMI_RH_LOCKOUT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_LOCKOUT_Marshal(const TPMI_RH_LOCKOUT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RH_NV_INDEX_Marshal(TPMI_RH_NV_INDEX *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RH_NV_INDEX_Marshal(const TPMI_RH_NV_INDEX *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_HASH_Marshal(TPMI_ALG_HASH *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_HASH_Marshal(const TPMI_ALG_HASH *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_SYM_Marshal(TPMI_ALG_SYM *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_SYM_Marshal(const TPMI_ALG_SYM *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_SYM_OBJECT_Marshal(TPMI_ALG_SYM_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_SYM_OBJECT_Marshal(const TPMI_ALG_SYM_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_SYM_MODE_Marshal(TPMI_ALG_SYM_MODE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_SYM_MODE_Marshal(const TPMI_ALG_SYM_MODE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_KDF_Marshal(TPMI_ALG_KDF *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_KDF_Marshal(const TPMI_ALG_KDF *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_SIG_SCHEME_Marshal(TPMI_ALG_SIG_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_SIG_SCHEME_Marshal(const TPMI_ALG_SIG_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ECC_KEY_EXCHANGE_Marshal(TPMI_ECC_KEY_EXCHANGE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ECC_KEY_EXCHANGE_Marshal(const TPMI_ECC_KEY_EXCHANGE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ST_COMMAND_TAG_Marshal(TPMI_ST_COMMAND_TAG *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ST_COMMAND_TAG_Marshal(const TPMI_ST_COMMAND_TAG *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_HA_Marshal(TPMU_HA *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_HA_Marshal(const TPMU_HA *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMT_HA_Marshal(TPMT_HA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_HA_Marshal(const TPMT_HA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_DIGEST_Marshal(TPM2B_DIGEST *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_DIGEST_Marshal(const TPM2B_DIGEST *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_DATA_Marshal(TPM2B_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_DATA_Marshal(const TPM2B_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_NONCE_Marshal(TPM2B_NONCE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_NONCE_Marshal(const TPM2B_NONCE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_AUTH_Marshal(TPM2B_AUTH *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_AUTH_Marshal(const TPM2B_AUTH *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_OPERAND_Marshal(TPM2B_OPERAND *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_OPERAND_Marshal(const TPM2B_OPERAND *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_EVENT_Marshal(TPM2B_EVENT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_EVENT_Marshal(const TPM2B_EVENT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_MAX_BUFFER_Marshal(TPM2B_MAX_BUFFER *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_MAX_BUFFER_Marshal(const TPM2B_MAX_BUFFER *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_MAX_NV_BUFFER_Marshal(TPM2B_MAX_NV_BUFFER *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_MAX_NV_BUFFER_Marshal(const TPM2B_MAX_NV_BUFFER *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_TIMEOUT_Marshal(TPM2B_TIMEOUT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_TIMEOUT_Marshal(const TPM2B_TIMEOUT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_IV_Marshal(TPM2B_IV *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_IV_Marshal(const TPM2B_IV *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_NAME_Marshal(TPM2B_NAME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_NAME_Marshal(const TPM2B_NAME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_PCR_SELECTION_Marshal(TPMS_PCR_SELECTION *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_PCR_SELECTION_Marshal(const TPMS_PCR_SELECTION *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_TK_CREATION_Marshal(TPMT_TK_CREATION *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_TK_CREATION_Marshal(const TPMT_TK_CREATION *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_TK_VERIFIED_Marshal(TPMT_TK_VERIFIED *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_TK_VERIFIED_Marshal(const TPMT_TK_VERIFIED *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_TK_AUTH_Marshal(TPMT_TK_AUTH *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_TK_AUTH_Marshal(const TPMT_TK_AUTH *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_TK_HASHCHECK_Marshal(TPMT_TK_HASHCHECK *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_TK_HASHCHECK_Marshal(const TPMT_TK_HASHCHECK *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_ALG_PROPERTY_Marshal(TPMS_ALG_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_ALG_PROPERTY_Marshal(const TPMS_ALG_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_TAGGED_PROPERTY_Marshal(TPMS_TAGGED_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_TAGGED_PROPERTY_Marshal(const TPMS_TAGGED_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_TAGGED_PCR_SELECT_Marshal(TPMS_TAGGED_PCR_SELECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_TAGGED_PCR_SELECT_Marshal(const TPMS_TAGGED_PCR_SELECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_CC_Marshal(TPML_CC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_CC_Marshal(const TPML_CC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_CCA_Marshal(TPML_CCA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_CCA_Marshal(const TPML_CCA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_ALG_Marshal(TPML_ALG *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_ALG_Marshal(const TPML_ALG *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_HANDLE_Marshal(TPML_HANDLE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_HANDLE_Marshal(const TPML_HANDLE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_DIGEST_Marshal(TPML_DIGEST *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_DIGEST_Marshal(const TPML_DIGEST *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_DIGEST_VALUES_Marshal(TPML_DIGEST_VALUES *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_DIGEST_VALUES_Marshal(const TPML_DIGEST_VALUES *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_PCR_SELECTION_Marshal(TPML_PCR_SELECTION *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_PCR_SELECTION_Marshal(const TPML_PCR_SELECTION *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_ALG_PROPERTY_Marshal(TPML_ALG_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_ALG_PROPERTY_Marshal(const TPML_ALG_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_TAGGED_TPM_PROPERTY_Marshal(TPML_TAGGED_TPM_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_TAGGED_TPM_PROPERTY_Marshal(const TPML_TAGGED_TPM_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_TAGGED_PCR_PROPERTY_Marshal(TPML_TAGGED_PCR_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_TAGGED_PCR_PROPERTY_Marshal(const TPML_TAGGED_PCR_PROPERTY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPML_ECC_CURVE_Marshal(TPML_ECC_CURVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPML_ECC_CURVE_Marshal(const TPML_ECC_CURVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_CAPABILITIES_Marshal(TPMU_CAPABILITIES *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_CAPABILITIES_Marshal(const TPMU_CAPABILITIES *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMS_CAPABILITY_DATA_Marshal(TPMS_CAPABILITY_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_CAPABILITY_DATA_Marshal(const TPMS_CAPABILITY_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_CLOCK_INFO_Marshal(TPMS_CLOCK_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_CLOCK_INFO_Marshal(const TPMS_CLOCK_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_TIME_INFO_Marshal(TPMS_TIME_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_TIME_INFO_Marshal(const TPMS_TIME_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_TIME_ATTEST_INFO_Marshal(TPMS_TIME_ATTEST_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_TIME_ATTEST_INFO_Marshal(const TPMS_TIME_ATTEST_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_CERTIFY_INFO_Marshal(TPMS_CERTIFY_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_CERTIFY_INFO_Marshal(const TPMS_CERTIFY_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_QUOTE_INFO_Marshal(TPMS_QUOTE_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_QUOTE_INFO_Marshal(const TPMS_QUOTE_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_COMMAND_AUDIT_INFO_Marshal(TPMS_COMMAND_AUDIT_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_COMMAND_AUDIT_INFO_Marshal(const TPMS_COMMAND_AUDIT_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SESSION_AUDIT_INFO_Marshal(TPMS_SESSION_AUDIT_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SESSION_AUDIT_INFO_Marshal(const TPMS_SESSION_AUDIT_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_CREATION_INFO_Marshal(TPMS_CREATION_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_CREATION_INFO_Marshal(const TPMS_CREATION_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_NV_CERTIFY_INFO_Marshal(TPMS_NV_CERTIFY_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_NV_CERTIFY_INFO_Marshal(const TPMS_NV_CERTIFY_INFO *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ST_ATTEST_Marshal(TPMI_ST_ATTEST *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ST_ATTEST_Marshal(const TPMI_ST_ATTEST *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_ATTEST_Marshal(TPMU_ATTEST  *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_ATTEST_Marshal(const TPMU_ATTEST  *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMS_ATTEST_Marshal(TPMS_ATTEST  *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_ATTEST_Marshal(const TPMS_ATTEST  *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_ATTEST_Marshal(TPM2B_ATTEST *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_ATTEST_Marshal(const TPM2B_ATTEST *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_AUTH_COMMAND_Marshal(TPMS_AUTH_COMMAND *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_AUTH_COMMAND_Marshal(const TPMS_AUTH_COMMAND *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_AES_KEY_BITS_Marshal(TPMI_AES_KEY_BITS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_AES_KEY_BITS_Marshal(const TPMI_AES_KEY_BITS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_SYM_KEY_BITS_Marshal(TPMU_SYM_KEY_BITS *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_SYM_KEY_BITS_Marshal(const TPMU_SYM_KEY_BITS *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMU_SYM_MODE_Marshal(TPMU_SYM_MODE *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_SYM_MODE_Marshal(const TPMU_SYM_MODE *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMT_SYM_DEF_Marshal(TPMT_SYM_DEF *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_SYM_DEF_Marshal(const TPMT_SYM_DEF *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_SYM_DEF_OBJECT_Marshal(TPMT_SYM_DEF_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_SYM_DEF_OBJECT_Marshal(const TPMT_SYM_DEF_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_SYM_KEY_Marshal(TPM2B_SYM_KEY *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_SYM_KEY_Marshal(const TPM2B_SYM_KEY *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_LABEL_Marshal(TPM2B_LABEL *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_LABEL_Marshal(const TPM2B_LABEL *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SYMCIPHER_PARMS_Marshal(TPMS_SYMCIPHER_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SYMCIPHER_PARMS_Marshal(const TPMS_SYMCIPHER_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_SENSITIVE_DATA_Marshal(TPM2B_SENSITIVE_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_SENSITIVE_DATA_Marshal(const TPM2B_SENSITIVE_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SENSITIVE_CREATE_Marshal(TPMS_SENSITIVE_CREATE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SENSITIVE_CREATE_Marshal(const TPMS_SENSITIVE_CREATE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_SENSITIVE_CREATE_Marshal(TPM2B_SENSITIVE_CREATE  *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_SENSITIVE_CREATE_Marshal(const TPM2B_SENSITIVE_CREATE  *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SCHEME_HASH_Marshal(TPMS_SCHEME_HASH *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SCHEME_HASH_Marshal(const TPMS_SCHEME_HASH *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SCHEME_ECDAA_Marshal(TPMS_SCHEME_ECDAA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SCHEME_ECDAA_Marshal(const TPMS_SCHEME_ECDAA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_KEYEDHASH_SCHEME_Marshal(TPMI_ALG_KEYEDHASH_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_KEYEDHASH_SCHEME_Marshal(const TPMI_ALG_KEYEDHASH_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SCHEME_HMAC_Marshal(TPMS_SCHEME_HMAC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SCHEME_HMAC_Marshal(const TPMS_SCHEME_HMAC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SCHEME_XOR_Marshal(TPMS_SCHEME_XOR *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SCHEME_XOR_Marshal(const TPMS_SCHEME_XOR *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_SCHEME_KEYEDHASH_Marshal(TPMU_SCHEME_KEYEDHASH *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_SCHEME_KEYEDHASH_Marshal(const TPMU_SCHEME_KEYEDHASH *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMT_KEYEDHASH_SCHEME_Marshal(TPMT_KEYEDHASH_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_KEYEDHASH_SCHEME_Marshal(const TPMT_KEYEDHASH_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIG_SCHEME_RSASSA_Marshal(TPMS_SIG_SCHEME_RSASSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIG_SCHEME_RSASSA_Marshal(const TPMS_SIG_SCHEME_RSASSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIG_SCHEME_RSAPSS_Marshal(TPMS_SIG_SCHEME_RSAPSS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIG_SCHEME_RSAPSS_Marshal(const TPMS_SIG_SCHEME_RSAPSS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIG_SCHEME_ECDSA_Marshal(TPMS_SIG_SCHEME_ECDSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIG_SCHEME_ECDSA_Marshal(const TPMS_SIG_SCHEME_ECDSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIG_SCHEME_SM2_Marshal(TPMS_SIG_SCHEME_SM2 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIG_SCHEME_SM2_Marshal(const TPMS_SIG_SCHEME_SM2 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIG_SCHEME_ECSCHNORR_Marshal(TPMS_SIG_SCHEME_ECSCHNORR *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIG_SCHEME_ECSCHNORR_Marshal(const TPMS_SIG_SCHEME_ECSCHNORR *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIG_SCHEME_ECDAA_Marshal(TPMS_SIG_SCHEME_ECDAA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIG_SCHEME_ECDAA_Marshal(const TPMS_SIG_SCHEME_ECDAA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_SIG_SCHEME_Marshal(TPMU_SIG_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_SIG_SCHEME_Marshal(const TPMU_SIG_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMT_SIG_SCHEME_Marshal(TPMT_SIG_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_SIG_SCHEME_Marshal(const TPMT_SIG_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_ENC_SCHEME_OAEP_Marshal(TPMS_ENC_SCHEME_OAEP *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_ENC_SCHEME_OAEP_Marshal(const TPMS_ENC_SCHEME_OAEP *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_ENC_SCHEME_RSAES_Marshal(TPMS_ENC_SCHEME_RSAES *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_ENC_SCHEME_RSAES_Marshal(const TPMS_ENC_SCHEME_RSAES *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_KEY_SCHEME_ECDH_Marshal(TPMS_KEY_SCHEME_ECDH *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_KEY_SCHEME_ECDH_Marshal(const TPMS_KEY_SCHEME_ECDH *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_KEY_SCHEME_ECMQV_Marshal(TPMS_KEY_SCHEME_ECMQV *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_KEY_SCHEME_ECMQV_Marshal(const TPMS_KEY_SCHEME_ECMQV *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SCHEME_MGF1_Marshal(TPMS_SCHEME_MGF1 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SCHEME_MGF1_Marshal(const TPMS_SCHEME_MGF1 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SCHEME_KDF1_SP800_56A_Marshal(TPMS_SCHEME_KDF1_SP800_56A *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SCHEME_KDF1_SP800_56A_Marshal(const TPMS_SCHEME_KDF1_SP800_56A *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SCHEME_KDF2_Marshal(TPMS_SCHEME_KDF2 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SCHEME_KDF2_Marshal(const TPMS_SCHEME_KDF2 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SCHEME_KDF1_SP800_108_Marshal(TPMS_SCHEME_KDF1_SP800_108 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SCHEME_KDF1_SP800_108_Marshal(const TPMS_SCHEME_KDF1_SP800_108 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_KDF_SCHEME_Marshal(TPMU_KDF_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_KDF_SCHEME_Marshal(const TPMU_KDF_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMT_KDF_SCHEME_Marshal(TPMT_KDF_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_KDF_SCHEME_Marshal(const TPMT_KDF_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_ASYM_SCHEME_Marshal(TPMU_ASYM_SCHEME  *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_ASYM_SCHEME_Marshal(const TPMU_ASYM_SCHEME  *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_RSA_SCHEME_Marshal(TPMI_ALG_RSA_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_RSA_SCHEME_Marshal(const TPMI_ALG_RSA_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_RSA_SCHEME_Marshal(TPMT_RSA_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_RSA_SCHEME_Marshal(const TPMT_RSA_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_RSA_DECRYPT_Marshal(TPMI_ALG_RSA_DECRYPT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_RSA_DECRYPT_Marshal(const TPMI_ALG_RSA_DECRYPT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_RSA_DECRYPT_Marshal(TPMT_RSA_DECRYPT  *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_RSA_DECRYPT_Marshal(const TPMT_RSA_DECRYPT  *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_PUBLIC_KEY_RSA_Marshal(TPM2B_PUBLIC_KEY_RSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_PUBLIC_KEY_RSA_Marshal(const TPM2B_PUBLIC_KEY_RSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_RSA_KEY_BITS_Marshal(TPMI_RSA_KEY_BITS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_RSA_KEY_BITS_Marshal(const TPMI_RSA_KEY_BITS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_PRIVATE_KEY_RSA_Marshal(TPM2B_PRIVATE_KEY_RSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_PRIVATE_KEY_RSA_Marshal(const TPM2B_PRIVATE_KEY_RSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_ECC_PARAMETER_Marshal(TPM2B_ECC_PARAMETER *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_ECC_PARAMETER_Marshal(const TPM2B_ECC_PARAMETER *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_ECC_POINT_Marshal(TPMS_ECC_POINT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_ECC_POINT_Marshal(const TPMS_ECC_POINT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_ECC_POINT_Marshal(TPM2B_ECC_POINT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_ECC_POINT_Marshal(const TPM2B_ECC_POINT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_ECC_SCHEME_Marshal(TPMI_ALG_ECC_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_ECC_SCHEME_Marshal(const TPMI_ALG_ECC_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ECC_CURVE_Marshal(TPMI_ECC_CURVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ECC_CURVE_Marshal(const TPMI_ECC_CURVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_ECC_SCHEME_Marshal(TPMT_ECC_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_ECC_SCHEME_Marshal(const TPMT_ECC_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_ALGORITHM_DETAIL_ECC_Marshal(TPMS_ALGORITHM_DETAIL_ECC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_ALGORITHM_DETAIL_ECC_Marshal(const TPMS_ALGORITHM_DETAIL_ECC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIGNATURE_RSA_Marshal(TPMS_SIGNATURE_RSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIGNATURE_RSA_Marshal(const TPMS_SIGNATURE_RSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIGNATURE_RSASSA_Marshal(TPMS_SIGNATURE_RSASSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIGNATURE_RSASSA_Marshal(const TPMS_SIGNATURE_RSASSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIGNATURE_RSAPSS_Marshal(TPMS_SIGNATURE_RSAPSS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIGNATURE_RSAPSS_Marshal(const TPMS_SIGNATURE_RSAPSS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIGNATURE_ECC_Marshal(TPMS_SIGNATURE_ECC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIGNATURE_ECC_Marshal(const TPMS_SIGNATURE_ECC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIGNATURE_ECDSA_Marshal(TPMS_SIGNATURE_ECDSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIGNATURE_ECDSA_Marshal(const TPMS_SIGNATURE_ECDSA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIGNATURE_ECDAA_Marshal(TPMS_SIGNATURE_ECDAA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIGNATURE_ECDAA_Marshal(const TPMS_SIGNATURE_ECDAA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIGNATURE_SM2_Marshal(TPMS_SIGNATURE_SM2 *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIGNATURE_SM2_Marshal(const TPMS_SIGNATURE_SM2 *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_SIGNATURE_ECSCHNORR_Marshal(TPMS_SIGNATURE_ECSCHNORR *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_SIGNATURE_ECSCHNORR_Marshal(const TPMS_SIGNATURE_ECSCHNORR *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_SIGNATURE_Marshal(TPMU_SIGNATURE *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_SIGNATURE_Marshal(const TPMU_SIGNATURE *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMT_SIGNATURE_Marshal(TPMT_SIGNATURE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_SIGNATURE_Marshal(const TPMT_SIGNATURE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_ENCRYPTED_SECRET_Marshal(TPM2B_ENCRYPTED_SECRET *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_ENCRYPTED_SECRET_Marshal(const TPM2B_ENCRYPTED_SECRET *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMI_ALG_PUBLIC_Marshal(TPMI_ALG_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMI_ALG_PUBLIC_Marshal(const TPMI_ALG_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_PUBLIC_ID_Marshal(TPMU_PUBLIC_ID *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_PUBLIC_ID_Marshal(const TPMU_PUBLIC_ID *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMS_KEYEDHASH_PARMS_Marshal(TPMS_KEYEDHASH_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_KEYEDHASH_PARMS_Marshal(const TPMS_KEYEDHASH_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_RSA_PARMS_Marshal(TPMS_RSA_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_RSA_PARMS_Marshal(const TPMS_RSA_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_ECC_PARMS_Marshal(TPMS_ECC_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_ECC_PARMS_Marshal(const TPMS_ECC_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_PUBLIC_PARMS_Marshal(TPMU_PUBLIC_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_PUBLIC_PARMS_Marshal(const TPMU_PUBLIC_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMT_PUBLIC_PARMS_Marshal(TPMT_PUBLIC_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_PUBLIC_PARMS_Marshal(const TPMT_PUBLIC_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_PUBLIC_Marshal(TPMT_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_PUBLIC_Marshal(const TPMT_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMT_PUBLIC_D_Marshal(TPMT_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_PUBLIC_D_Marshal(const TPMT_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_PUBLIC_Marshal(TPM2B_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_PUBLIC_Marshal(const TPM2B_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_TEMPLATE_Marshal(TPM2B_TEMPLATE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_TEMPLATE_Marshal(const TPM2B_TEMPLATE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMU_SENSITIVE_COMPOSITE_Marshal(TPMU_SENSITIVE_COMPOSITE *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
+TSS_TPMU_SENSITIVE_COMPOSITE_Marshal(const TPMU_SENSITIVE_COMPOSITE *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
 LIB_EXPORT TPM_RC
-TSS_TPMT_SENSITIVE_Marshal(TPMT_SENSITIVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMT_SENSITIVE_Marshal(const TPMT_SENSITIVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_SENSITIVE_Marshal(TPM2B_SENSITIVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_SENSITIVE_Marshal(const TPM2B_SENSITIVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_PRIVATE_Marshal(TPM2B_PRIVATE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_PRIVATE_Marshal(const TPM2B_PRIVATE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_ID_OBJECT_Marshal(TPM2B_ID_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_ID_OBJECT_Marshal(const TPM2B_ID_OBJECT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMA_NV_Marshal(TPMA_NV *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMA_NV_Marshal(const TPMA_NV *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_NV_PUBLIC_Marshal(TPMS_NV_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_NV_PUBLIC_Marshal(const TPMS_NV_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_NV_PUBLIC_Marshal(TPM2B_NV_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_NV_PUBLIC_Marshal(const TPM2B_NV_PUBLIC *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_CONTEXT_SENSITIVE_Marshal(TPM2B_CONTEXT_SENSITIVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_CONTEXT_SENSITIVE_Marshal(const TPM2B_CONTEXT_SENSITIVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_CONTEXT_DATA_Marshal(TPM2B_CONTEXT_DATA  *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_CONTEXT_DATA_Marshal(const TPM2B_CONTEXT_DATA  *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_CONTEXT_Marshal(TPMS_CONTEXT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_CONTEXT_Marshal(const TPMS_CONTEXT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPMS_CREATION_DATA_Marshal(TPMS_CREATION_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPMS_CREATION_DATA_Marshal(const TPMS_CREATION_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 LIB_EXPORT TPM_RC
-TSS_TPM2B_CREATION_DATA_Marshal(TPM2B_CREATION_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
+TSS_TPM2B_CREATION_DATA_Marshal(const TPM2B_CREATION_DATA *source, UINT16 *written, BYTE **buffer, INT32 *size);
 
 #endif

@@ -3,7 +3,7 @@
 /*			    ClearControl 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: clearcontrol.c 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: clearcontrol.c 881 2016-12-20 21:44:25Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -247,6 +247,7 @@ static void printUsage(void)
     printf("Runs TPM2_ClearControl\n");
     printf("\n");
     printf("\t-hi authhandle hierarchy l, p\n");
+    printf("\t\tl lockout, p platform\n");
     printf("\t-pwda authorization password (default empty)\n");
     printf("\t-state (0 to disable, 1 to enable (default enable)\n");
     printf("\n");

@@ -3,7 +3,7 @@
 /*			   Socket Transmit and Receive Utilities		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsssocket.c 684 2016-07-18 21:22:01Z kgoldman $		*/
+/*	      $Id: tsssocket.c 878 2016-12-19 19:52:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -64,7 +64,7 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/tsserror.h>
 #include <tss2/tssprint.h>
-#include <tss2/tssproperties.h>
+#include "tssproperties.h"
 #include <tss2/tsstransmit.h>
 
 #include "tsssocket.h"

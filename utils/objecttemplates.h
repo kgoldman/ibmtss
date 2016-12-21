@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.h 793 2016-11-10 21:27:40Z kgoldman $	*/
+/*	      $Id: objecttemplates.h 880 2016-12-20 20:26:50Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -82,6 +82,9 @@ TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,
 			const char *policyFilename);
 
 void printUsageTemplate(void);
+
+TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
+		 const char *policyFilename);
 
 
 #endif

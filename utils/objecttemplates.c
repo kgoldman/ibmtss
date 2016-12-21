@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 838 2016-11-22 22:44:57Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 880 2016-12-20 20:26:50Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -53,9 +53,6 @@
 #include <tss2/tssmarshal.h>
 
 #include "objecttemplates.h"
-
-static TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
-			const char *policyFilename);
 
 /* asymPublicTemplate() is a template for an ECC or RSA 2048 key.
 
@@ -472,8 +469,8 @@ TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
     return rc;
 }
 
-static TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
-			const char *policyFilename)
+TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
+		 const char *policyFilename)
 {
     TPM_RC rc = 0;
 

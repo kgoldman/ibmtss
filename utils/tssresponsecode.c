@@ -3,7 +3,7 @@
 /*			     TPM2 Response Code Printer				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.c 767 2016-10-17 16:59:30Z kgoldman $	*/
+/*	      $Id: tssresponsecode.c 885 2016-12-21 17:13:46Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -42,6 +42,7 @@
 
 #include <tss2/tssresponsecode.h>
 #include <tss2/tsserror.h>
+#include <tss2/tssprint.h>
 
 /* The intended usage is:
 

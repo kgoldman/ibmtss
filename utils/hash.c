@@ -3,7 +3,7 @@
 /*			    Hash						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hash.c 813 2016-11-16 22:24:37Z kgoldman $			*/
+/*	      $Id: hash.c 885 2016-12-21 17:13:46Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -49,7 +49,6 @@
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
-#include <tss2/tssprint.h>
 #include <tss2/tssmarshal.h>
 
 static void printUsage(void);
@@ -285,6 +284,7 @@ static void printUsage(void)
     printf("Runs TPM2_Hash\n");
     printf("\n");
     printf("\t-hi hierarchy (e, o, p, n) (default null)\n");
+    printf("\t\te endorsement, o owner, p platform, n null\n");
     printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
     printf("\t-if input file to be hashed\n");
     printf("\t-ic data string to be hashed\n");

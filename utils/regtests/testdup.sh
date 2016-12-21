@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 751 2016-09-22 20:00:12Z kgoldman $		#
+#		$Id: testdup.sh 881 2016-12-20 21:44:25Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -78,11 +78,11 @@ do
 	checkSuccess $?
 
 	echo "Sign a digest, $HALG"
-	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig  > run.out
+	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig  > run.out
 	checkSuccess $?
 
 	echo "Verify the signature, $HALG"
-	${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is sig.bin > run.out
+	${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is tmpsig.bin > run.out
 	checkSuccess $?
 
 	echo "Start a policy session"
@@ -114,7 +114,7 @@ do
 	checkSuccess $?
 
 	echo "Sign under K2, $HALG - should fail"
-	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig > run.out
+	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
 	checkFailure $?
 
 	echo "Load the duplicated signing key K2"
@@ -122,11 +122,11 @@ do
 	checkSuccess $?
 
 	echo "Sign using duplicated K2, $HALG"
-	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig > run.out
+	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
 	checkSuccess $?
 
 	echo "Verify the signature, $HALG"
-	${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is sig.bin > run.out
+	${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is tmpsig.bin > run.out
 	checkSuccess $?
 
 	echo "Flush the duplicated K2"
@@ -143,6 +143,49 @@ do
 
     done
 done
+
+echo ""
+echo "Import PEM"
+echo ""
+
+echo "generate the signing key with openssl"
+openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048
+
+echo "Start an HMAC auth session"
+${PREFIX}startauthsession -se h > run.out
+checkSuccess $?
+
+for SESS in "" "-se0 02000000 1"
+do
+    for HALG in sha1 sha256
+    do
+
+	echo "Import the signing key under the primary key ${HALG}"
+	${PREFIX}importpem -hp 80000000 -pwdp pps -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
+	checkSuccess $?
+
+	echo "Load the TPM signing key"
+	${PREFIX}load -hp 80000000 -pwdp pps -ipu tmppub.bin -ipr tmppriv.bin > run.out
+	checkSuccess $?
+
+	echo "Sign the message ${HALG} ${SESS}"
+	${PREFIX}sign -hk 80000001 -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
+	checkSuccess $?
+
+	echo "Verify the signature ${HALG}"
+	${PREFIX}verifysignature -hk 80000001 -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
+	checkSuccess $?
+
+	echo "Flush the signing key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
+
+   done
+done
+
+echo "Flush the auth session"
+${PREFIX}flushcontext -ha 02000000 > run.out
+checkSuccess $?
 
 echo ""
 echo "Rewrap"
@@ -240,11 +283,11 @@ ${PREFIX}load -hp 80000001 -ipr tmpsignpriv3.bin -ipu tmpsignpub.bin -pwdp k2 > 
 checkSuccess $?
 
 echo "Sign using duplicated K2"
-${PREFIX}sign -hk 80000002  -if policies/aaa -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 80000002  -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
 checkSuccess $?
 
 echo "Verify the signature"
-${PREFIX}verifysignature -hk 80000002 -if policies/aaa -is sig.bin > run.out
+${PREFIX}verifysignature -hk 80000002 -if policies/aaa -is tmpsig.bin > run.out
 checkSuccess $?
 
 echo "Flush storage key K2 80000001"
@@ -262,10 +305,13 @@ rm -f tmprnd.bin
 rm -f tmpdup.bin
 rm -f tmpss.bin
 rm -f tmpsignpriv3.bin
-rm -f sig.bin
+rm -f tmpsig.bin
 rm -f tmpk2priv.bin
 rm -f tmpk2pub.bin
 rm -f tmposs.bin 
+rm -f tmpprivkey.pem
+rm -f tmppub.bin
+rm -f tmppriv.bin
 
 # ${PREFIX}flushcontext -ha 80000001
 # ${PREFIX}flushcontext -ha 80000002

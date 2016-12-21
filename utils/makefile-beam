@@ -3,7 +3,7 @@
 #			   	TPM 2.0 makefile - Linux, to run beam		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile-beam 841 2016-11-28 17:33:08Z kgoldman $		#
+#	      $Id: makefile-beam 885 2016-12-21 17:13:46Z kgoldman $		#
 #										#
 #			       IBM Confidential					#
 #			     OCO Source Materials				#
@@ -19,29 +19,27 @@
 BEAM_OPTIONS = 
 
 CCFLAGS = 	\
-	-DTPM_POSIX			\
+	-DTPM_POSIX -DTPM_TSS			\
 	-Wall  -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
 	-ggdb -O0 -c 			\
-	-DTPM_BITFIELD_LE		\
-	-I.				\
-	-DTPM_ENCRYPT_SESSIONS_DEFAULT="\"0\""
+	-I.
 
 beam_targets = 				\
 		tss.berr		\
+		tssproperties.berr	\
+		tssmarshal.berr		\
 		tssauth.berr		\
-		tssccattributes.berr	\
 		tsscryptoh.berr		\
 		tsscrypto.berr		\
-		tssdev.berr		\
-		tssfile.berr		\
-		tssmarshal.berr		\
-		tssprint.berr		\
-		tssproperties.berr	\
-		tssresponsecode.berr	\
+		tssutils.berr		\
 		tsssocket.berr		\
-		tsstbsi.berr		\
+		tssdev.berr		\
 		tsstransmit.berr	\
-		tssutils.berr
+		tssresponsecode.berr	\
+		tssccattributes.berr	\
+		tssprint.berr		\
+		tsstbsi.berr		\
+		tssfile.berr
 
 all:	$(beam_targets)
 
@@ -50,4 +48,4 @@ $(beam_targets): %.berr : %.c
 	$(CCFLAGS) $(BEAM_OPTIONS) > $@
 
 clean:
-	rm tpm_*.beam tpm_*.berr
+	rm -f tss*.beam tss*.berr

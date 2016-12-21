@@ -3,7 +3,7 @@
 /*			    PolicyPCR	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policypcr.c 779 2016-10-19 18:25:09Z kgoldman $		*/
+/*	      $Id: policypcr.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -49,7 +49,6 @@
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
-#include <tss2/tssprint.h>
 
 static void printUsage(void);
 

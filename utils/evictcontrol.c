@@ -3,7 +3,7 @@
 /*			   EvictControl		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: evictcontrol.c 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: evictcontrol.c 881 2016-12-20 21:44:25Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -264,6 +264,7 @@ static void printUsage(void)
     printf("Runs TPM2_EvictControl\n");
     printf("\n");
     printf("\t-hi authhandle hierarchy o, p\n");
+    printf("\t\to owner, p platform \n");
     printf("\t-ho object handle\n");
     printf("\t-hp persistent handle\n");
     printf("\t-pwda authorization password (default empty)\n");

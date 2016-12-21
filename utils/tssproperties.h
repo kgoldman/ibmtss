@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.h 781 2016-10-21 19:17:39Z kgoldman $		*/
+/*	      $Id: tssproperties.h 878 2016-12-19 19:52:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -79,65 +79,73 @@ extern "C" {
 #include <tss2/tss.h>
 #include "tssauth.h"
 
-/* Structure to hold sessions within the context */
+    /* Structure to hold sessions within the context */
 
-typedef struct TSS_SESSIONS {
-    TPMI_SH_AUTH_SESSION sessionHandle;
-    uint8_t *sessionData;
-    uint16_t sessionDataLength;
-} TSS_SESSIONS;
+    typedef struct TSS_SESSIONS {
+	TPMI_SH_AUTH_SESSION sessionHandle;
+	uint8_t *sessionData;
+	uint16_t sessionDataLength;
+    } TSS_SESSIONS;
     
-/* Context for TSS global parameters */
+    /* Context for TSS global parameters.
 
-struct TSS_CONTEXT {
+       NOTE:  Keep this in sync with TSS_Properties_Init() and TSS_Delete() */
 
-    TSS_AUTH_CONTEXT *tssAuthContext;
+    struct TSS_CONTEXT {
 
-    /* directory for persistant storage */
-    const char *tssDataDirectory;
+	TSS_AUTH_CONTEXT *tssAuthContext;
 
-    /* encrypt saved session state */
-    int tssEncryptSessions;
+	/* directory for persistant storage */
+	const char *tssDataDirectory;
 
-    /* a minimal TSS with no file support stores the sessions in a structure.  SCripting will not
-       work, but a single application will */
-#ifdef TPM_TSS_NOFILE
-    TSS_SESSIONS sessions[MAX_ACTIVE_SESSIONS];
+	/* encrypt saved session state */
+	int tssEncryptSessions;
+
+	/* saved session encryption key.  This seems to port to openssl 1.0 and 1.1, but will have to
+	   become a malloced void * for other crypto libraries. */
+#ifndef TPM_TSS_NOCRYPTO
+	void *tssSessionEncKey;
+	void *tssSessionDecKey;
 #endif
-    /* ports, host name, server (packet) type for socket interface */
-    short tssCommandPort;
-    short tssPlatformPort;
-    const char *tssServerName;
-    const char *tssServerType;
+	/* a minimal TSS with no file support stores the sessions in a structure.  SCripting will not
+	   work, but a single application will */
+#ifdef TPM_TSS_NOFILE
+	TSS_SESSIONS sessions[MAX_ACTIVE_SESSIONS];
+#endif
+	/* ports, host name, server (packet) type for socket interface */
+	short tssCommandPort;
+	short tssPlatformPort;
+	const char *tssServerName;
+	const char *tssServerType;
 
-    /* interface type */
-    const char *tssInterfaceType;
+	/* interface type */
+	const char *tssInterfaceType;
 
-    /* device driver interface */
-    const char *tssDevice;
+	/* device driver interface */
+	const char *tssDevice;
 
-    /* TRUE for the first time through, indicates that interface open must occur */
-    int tssFirstTransmit;
+	/* TRUE for the first time through, indicates that interface open must occur */
+	int tssFirstTransmit;
 
-    /* socket file descriptor */
+	/* socket file descriptor */
 #ifndef TPM_NOSOCKET
-    TSS_SOCKET_FD sock_fd;
+	TSS_SOCKET_FD sock_fd;
 #endif 	/* TPM_NOSOCKET */
 
-    /* Linux device file descriptor */
-    int dev_fd;
+	/* Linux device file descriptor */
+	int dev_fd;
 
-    /* Windows device driver handle */
+	/* Windows device driver handle */
 #ifdef TPM_WINDOWS
 #ifdef TPM_WINDOWS_TBSI
-    TBS_HCONTEXT hContext;
+	TBS_HCONTEXT hContext;
 #endif
 #endif
 
-};
+    };
 
-TPM_RC TSS_GlobalProperties_Init(void);
-TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext);
+    TPM_RC TSS_GlobalProperties_Init(void);
+    TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext);
     
 #ifdef __cplusplus
 }

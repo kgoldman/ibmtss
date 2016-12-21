@@ -3,7 +3,7 @@
 /*		Linux Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.c 779 2016-10-19 18:25:09Z kgoldman $ 		*/
+/*	      $Id: tssdev.c 878 2016-12-19 19:52:56Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -54,7 +54,7 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/tsserror.h>
 #include <tss2/tssprint.h>
-#include <tss2/tssproperties.h>
+#include "tssproperties.h"
 
 #include "tssdev.h"
 

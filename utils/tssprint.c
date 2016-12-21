@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			     Structure Print Utilities				*/
+/*			     Structure Print and Scan Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 796 2016-11-11 19:26:16Z kgoldman $		*/
+/*	      $Id: tssprint.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -43,8 +43,61 @@
 #include <inttypes.h>
 
 #include <tss2/Unmarshal_fp.h>
+#include <tss2/tsserror.h>
+#include <tss2/tssutils.h>
 
 #include <tss2/tssprint.h>
+
+extern int tssVerbose;
+
+#ifdef TPM_NO_PRINT
+
+/* false to compile out printf */
+int tssSwallowRc = 0;
+/* function prototype to match the printf prototype */
+int TSS_SwallowPrintf(const char *format, ...)
+{
+    format = format;
+    return 0;
+}
+
+#endif
+
+/* TSS_Array_Scan() converts a string to a binary array */
+
+uint32_t TSS_Array_Scan(unsigned char **data,	/* output binary, freed by caller */
+			size_t *len,
+			const char *string)	/* input string */
+{
+    uint32_t rc = 0;
+    size_t strLength;
+    
+    if (rc == 0) {
+	strLength = strlen(string);
+	if ((strLength %2) != 0) {
+	    if (tssVerbose) printf("TSS_Array_Scan: Error, string length %lu is not even\n",
+				   (unsigned long)strLength);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+    }
+    if (rc == 0) {
+	*len = strLength / 2;		/* safe because already tested for even number of bytes */
+        rc = TSS_Malloc(data, (*len) + 8);
+    }
+    if (rc == 0) {
+	unsigned int i;
+	for (i = 0 ; i < *len ; i++) {
+	    unsigned int tmpint;
+	    int irc = sscanf(string + (2*i), "%2x", &tmpint);
+	    *((*data)+i) = tmpint;
+	    if (irc != 1) {
+		if (tssVerbose) printf("TSS_Array_Scan: invalid hexascii\n");
+		rc = TSS_RC_BAD_PROPERTY_VALUE;
+	    }
+	}
+    }
+    return rc;
+}
 
 /* TSS_PrintAll() prints 'string', the length, and then the entire byte array
  */

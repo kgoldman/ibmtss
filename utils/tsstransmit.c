@@ -3,7 +3,7 @@
 /*			    Transmit and Receive Utility			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstransmit.c 781 2016-10-21 19:17:39Z kgoldman $		*/
+/*	      $Id: tsstransmit.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -43,11 +43,12 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <tss2/tssproperties.h>
+#include "tssproperties.h"
 #ifndef TPM_NOSOCKET
 #include "tsssocket.h"
 #endif
 #include <tss2/tsserror.h>
+#include <tss2/tssprint.h>
 
 #ifdef TPM_POSIX
 #include "tssdev.h"

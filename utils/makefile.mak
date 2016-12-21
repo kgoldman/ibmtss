@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 848 2016-11-29 21:27:02Z kgoldman $		#
+#	      $Id: makefile.mak 882 2016-12-20 22:38:50Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015.						#
 # 										#
@@ -179,8 +179,14 @@ createprimary.exe:	createprimary.o objecttemplates.o  $(LIBTSS)
 eventextend.exe:	eventextend.o eventlib.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o eventlib.o $(LNLIBS) $(LIBTSS) 
 
+imaextend.exe:	imaextend.o imalib.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o imalib.o $(LNLIBS) $(LIBTSS) 
+
 createek.exe:	createek.o ekutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o $(LNLIBS) $(LIBTSS)
+
+importpem.exe:	importpem.o objecttemplates.o ekutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o ekutils.o $(LNLIBS) $(LIBTSS)
 
 loadexternal.exe:	loadexternal.o ekutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o $(LNLIBS) $(LIBTSS)

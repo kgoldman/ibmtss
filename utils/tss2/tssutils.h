@@ -3,7 +3,7 @@
 /*			TSS and Application Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssutils.h 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: tssutils.h 874 2016-12-19 15:23:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -58,37 +58,37 @@
 extern "C" {
 #endif
 
-typedef TPM_RC (*UnmarshalFunction_t)(void *target, uint8_t **buffer, int32_t *size);
-typedef TPM_RC (*MarshalFunction_t)(void *source, uint16_t *written, uint8_t **buffer, int32_t *size);
+    typedef TPM_RC (*UnmarshalFunction_t)(void *target, uint8_t **buffer, int32_t *size);
+    typedef TPM_RC (*MarshalFunction_t)(void *source, uint16_t *written, uint8_t **buffer, int32_t *size);
 
-LIB_EXPORT
-TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size);
-LIB_EXPORT
-TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size);
+    LIB_EXPORT
+    TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size);
+    LIB_EXPORT
+    TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size);
 
-LIB_EXPORT
-TPM_RC TSS_Structure_Marshal(uint8_t		**buffer,
-			     uint16_t		*written,
-			     void 		*structure,
-			     MarshalFunction_t 	marshalFunction);
+    LIB_EXPORT
+    TPM_RC TSS_Structure_Marshal(uint8_t		**buffer,
+				 uint16_t		*written,
+				 void 		*structure,
+				 MarshalFunction_t 	marshalFunction);
 
-LIB_EXPORT 
-TPM_RC TSS_TPM2B_Copy(TPM2B *target, TPM2B *source, uint16_t targetSize);
+    LIB_EXPORT 
+    TPM_RC TSS_TPM2B_Copy(TPM2B *target, TPM2B *source, uint16_t targetSize);
     
-LIB_EXPORT 
-TPM_RC TSS_TPM2B_Append(TPM2B *target, TPM2B *source, uint16_t targetSize);
+    LIB_EXPORT 
+    TPM_RC TSS_TPM2B_Append(TPM2B *target, TPM2B *source, uint16_t targetSize);
     
-LIB_EXPORT 
-TPM_RC TSS_TPM2B_Create(TPM2B *target, uint8_t *buffer, uint16_t size, uint16_t targetSize);
+    LIB_EXPORT 
+    TPM_RC TSS_TPM2B_Create(TPM2B *target, uint8_t *buffer, uint16_t size, uint16_t targetSize);
     
-LIB_EXPORT 
-TPM_RC TSS_TPM2B_CreateUint32(TPM2B *target, uint32_t source, uint16_t targetSize);
+    LIB_EXPORT 
+    TPM_RC TSS_TPM2B_CreateUint32(TPM2B *target, uint32_t source, uint16_t targetSize);
     
-LIB_EXPORT 
-TPM_RC TSS_TPM2B_StringCopy(TPM2B *target, const char *source, uint16_t targetSize);
+    LIB_EXPORT 
+    TPM_RC TSS_TPM2B_StringCopy(TPM2B *target, const char *source, uint16_t targetSize);
     
-LIB_EXPORT 
-BOOL TSS_TPM2B_Compare(TPM2B *expect, TPM2B *actual);
+    LIB_EXPORT 
+    BOOL TSS_TPM2B_Compare(TPM2B *expect, TPM2B *actual);
     
 #ifdef __cplusplus
 }

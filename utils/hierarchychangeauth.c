@@ -3,7 +3,7 @@
 /*			    HierarchyChangeAuth	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hierarchychangeauth.c 778 2016-10-19 15:21:05Z kgoldman $	*/
+/*	      $Id: hierarchychangeauth.c 881 2016-12-20 21:44:25Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -349,6 +349,7 @@ static void printUsage(void)
     printf("Runs TPM2_HierarchyChangeAuth\n");
     printf("\n");
     printf("\t-hi hierarchy l, e, o, p\n");
+    printf("\t\te endorsement, o owner, p platform, n null\n");
     printf("\t-pwdn new authorization password (default empty)\n");
     printf("\t-pwdni new authorization password file name (default empty)\n");
     printf("\t-pwda authorization password (default empty)\n");

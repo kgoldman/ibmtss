@@ -3,7 +3,7 @@
 /*			     TSS Library Dependent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.c 850 2016-12-02 19:35:55Z kgoldman $		*/
+/*	      $Id: tsscrypto.c 878 2016-12-19 19:52:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -84,7 +84,6 @@ TPM_RC TSS_Crypto_Init()
     TPM_RC		rc = 0;
     ERR_load_crypto_strings ();
     OpenSSL_add_all_algorithms();
-    rc = TSS_AES_KeyGenerate();
     return rc;
 }
 
@@ -445,26 +444,66 @@ static TPM_RC TSS_bin2bn(BIGNUM **bn, const unsigned char *bin, unsigned int byt
   AES
 */
 
+TPM_RC TSS_AES_GetEncKeySize(size_t *tssSessionEncKeySize)
+{
+    *tssSessionEncKeySize = sizeof(AES_KEY);
+    return 0;
+}
+TPM_RC TSS_AES_GetDecKeySize(size_t *tssSessionDecKeySize)
+{
+    *tssSessionDecKeySize = sizeof(AES_KEY);
+    return 0;
+}
+
 #define TSS_AES_KEY_BITS 128
 
-static AES_KEY aes_enc_key;
-static AES_KEY aes_dec_key;
-
-TPM_RC TSS_AES_KeyGenerate()
+TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
+			   void *tssSessionDecKey)
 {
     TPM_RC		rc = 0;
     int 		irc;
     unsigned char 	userKey[AES_128_BLOCK_SIZE_BYTES];
-
-    /* generate a random key */
+    const char 		*envKeyString = NULL;
+    unsigned char 	*envKeyBin = NULL;
+    size_t 		envKeyBinLen;
+    
     if (rc == 0) {
-	rc = TSS_RandBytes(userKey, AES_128_BLOCK_SIZE_BYTES);
+	envKeyString = getenv("TPM_SESSION_ENCKEY");
+    }
+    if (envKeyString == NULL) {
+	/* If the env variable TPM_SESSION_ENCKEY is not set, generate a random key for this
+	   TSS_CONTEXT */
+	if (rc == 0) {
+	    rc = TSS_RandBytes(userKey, AES_128_BLOCK_SIZE_BYTES);
+	}
+    }
+    /* The env variable TPM_SESSION_ENCKEY can set a (typically constant) encryption key.  This is
+       useful for scripting, where the env variable is set to a random seed at the beginning of the
+       script. */
+    else {
+	/* hexascii to binary */
+	if (rc == 0) {
+	    rc = TSS_Array_Scan(&envKeyBin, &envKeyBinLen, envKeyString);
+	}
+	/* range check */
+	if (rc == 0) {
+	    if (envKeyBinLen != AES_128_BLOCK_SIZE_BYTES) {
+		if (tssVerbose)
+		    printf("TSS_AES_KeyGenerate: Error, env variable length %lu not %lu\n",
+			   (unsigned long)envKeyBinLen, (unsigned long)sizeof(userKey));
+		rc = TSS_RC_BAD_PROPERTY_VALUE;
+	    }
+	}
+	/* copy the binary to the common userKey for use below */
+	if (rc == 0) {
+	    memcpy(userKey, envKeyBin, envKeyBinLen);  
+	}
     }
     /* translate to an openssl key token */
     if (rc == 0) {
         irc = AES_set_encrypt_key(userKey,
                                   TSS_AES_KEY_BITS,
-                                  &aes_enc_key);
+                                  tssSessionEncKey);
 	/* should never occur, null pointers or bad bit size */
 	if (irc != 0) {
             if (tssVerbose)
@@ -475,7 +514,7 @@ TPM_RC TSS_AES_KeyGenerate()
     if (rc == 0) {
 	irc = AES_set_decrypt_key(userKey,
 				  TSS_AES_KEY_BITS,
-				  &aes_dec_key);
+				  tssSessionDecKey);
 	/* should never occur, null pointers or bad bit size */
 	if (irc != 0) {
             if (tssVerbose)
@@ -483,18 +522,20 @@ TPM_RC TSS_AES_KeyGenerate()
 	    rc = TSS_RC_AES_KEYGEN_FAILURE; 
 	}
     }
+    free(envKeyBin);
     return rc;
 }
 
 /* TSS_AES_Encrypt() is AES non-portable code to encrypt 'decrypt_data' to 'encrypt_data' using CBC.
-   This function uses the global key, and it really intended just for encrypting session state.
+   This function uses the session encryption key for encrypting session state.
 
    The stream is padded as per PKCS#7 / RFC2630
 
    'encrypt_data' must be free by the caller
 */
    
-TPM_RC TSS_AES_Encrypt(unsigned char **encrypt_data,   		/* output, caller frees */
+TPM_RC TSS_AES_Encrypt(void *tssSessionEncKey,
+		       unsigned char **encrypt_data,   		/* output, caller frees */
 		       uint32_t *encrypt_length,		/* output */
 		       const unsigned char *decrypt_data,	/* input */
 		       uint32_t decrypt_length)			/* input */
@@ -528,7 +569,7 @@ TPM_RC TSS_AES_Encrypt(unsigned char **encrypt_data,   		/* output, caller frees
         AES_cbc_encrypt(decrypt_data_pad,
                         *encrypt_data,
                         *encrypt_length,
-                        &aes_enc_key,
+                        tssSessionEncKey,
                         ivec,
                         AES_ENCRYPT);
     }
@@ -537,14 +578,15 @@ TPM_RC TSS_AES_Encrypt(unsigned char **encrypt_data,   		/* output, caller frees
 }
 
 /* TSS_AES_Decrypt() is AES non-portable code to decrypt 'encrypt_data' to 'decrypt_data' using CBC.
-   This function uses the global key, and it really intended just for decrypting session state.
+   This function uses the session encryption key for decrypting session state.
 
    The stream must be padded as per PKCS#7 / RFC2630
 
    decrypt_data must be free by the caller
 */
 
-TPM_RC TSS_AES_Decrypt(unsigned char **decrypt_data,   		/* output, caller frees */
+TPM_RC TSS_AES_Decrypt(void *tssSessionDecKey,
+		       unsigned char **decrypt_data,   		/* output, caller frees */
 		       uint32_t *decrypt_length,		/* output */
 		       const unsigned char *encrypt_data,	/* input */
 		       uint32_t encrypt_length)			/* input */
@@ -575,7 +617,7 @@ TPM_RC TSS_AES_Decrypt(unsigned char **decrypt_data,   		/* output, caller frees
         AES_cbc_encrypt(encrypt_data,
                         *decrypt_data,
                         encrypt_length,
-                        &aes_dec_key,
+                        tssSessionDecKey,
                         ivec,
                         AES_DECRYPT);
     }

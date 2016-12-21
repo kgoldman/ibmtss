@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile for minimal TSS			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.min 841 2016-11-28 17:33:08Z kgoldman $		#
+#	      $Id: makefile.min 885 2016-12-21 17:13:46Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -81,16 +81,14 @@ TSS_OBJS += 	tss.o			\
 		tssprint.o		\
 		Unmarshal.o 		\
 		Commands.o 		\
-		CommandAttributeData.o 	\
-		CpriHash.o		\
-		CpriSym.o
+		CommandAttributeData.o
 
 # TSS shared library headers 
 
 TSS_HEADERS += 	tssauth.h 			\
 		tss2/tssmarshal.h		\
 		tss2/tss.h			\
-		tss2/tssproperties.h		\
+		tssproperties.h			\
 		tss2/tssutils.h			\
 		tss2/tsserror.h			\
 		tss2/tssresponsecode.h		\
@@ -103,19 +101,6 @@ TSS_HEADERS += 	tssauth.h 			\
 # default build target
 
 all:	$(ALL)
-
-# TSS library source shared with TPM (for TSS library)
-
-Unmarshal.c:			../src/Unmarshal.c
-				sed '/TPM_TSS/a #define TPM_TSS' ../src/Unmarshal.c > Unmarshal.c
-CpriSym.c:			../src/CpriSym.c
-				ln -s ../src/CpriSym.c .
-CpriHash.c:			../src/CpriHash.c
-				ln -s ../src/CpriHash.c .
-Commands.c:			../src/Commands.c
-				ln -s ../src/Commands.c .
-CommandAttributeData.c:		../src/CommandAttributeData.c
-				ln -s ../src/CommandAttributeData.c .
 
 # TSS shared library source
 
@@ -153,10 +138,6 @@ Commands.o: 		$(TSS_HEADERS) Commands.c
 			$(CC) $(CCFLAGS) -fPIC Commands.c
 CommandAttributeData.o: $(TSS_HEADERS) CommandAttributeData.c
 			$(CC) $(CCFLAGS) -fPIC CommandAttributeData.c
-CpriHash.o: 		$(TSS_HEADERS) CpriHash.c
-			$(CC) $(CCFLAGS) -fPIC CpriHash.c
-CpriSym.o: 		$(TSS_HEADERS) CpriSym.c
-			$(CC) $(CCFLAGS) -fPIC CpriSym.c
 
 # TSS shared library build
 

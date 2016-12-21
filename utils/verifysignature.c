@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 843 2016-11-29 19:58:14Z kgoldman $	*/
+/*	      $Id: verifysignature.c 885 2016-12-21 17:13:46Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -54,7 +54,6 @@
 #include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/tssmarshal.h>
-#include <tss2/tssprint.h>
 #include <tss2/tssresponsecode.h>
 
 static void printUsage(void);
@@ -336,9 +335,9 @@ TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,
 #endif
 	    rBytes = BN_num_bytes(pr);
 	    sBytes = BN_num_bytes(ps);
-	    if ((rBytes != 32) ||
-		(sBytes != 32)) {
-		printf("rawUnmarshal: signature rBytes %u sBytes %u not both 32\n",
+	    if ((rBytes > 32) ||
+		(sBytes > 32)) {
+		printf("rawUnmarshal: signature rBytes %u or sBytes %u greater than 32\n",
 		       rBytes, sBytes);
 		rc = TPM_RC_VALUE;
 	    }
@@ -369,19 +368,20 @@ TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,
 static void printUsage(void)
 {
     printf("\n");
-    printf("verifySignature\n");
+    printf("verifysignature\n");
     printf("\n");
-    printf("Runs TPM2_Verifysignature\n");
+    printf("Runs TPM2_VerifySignature\n");
     printf("\n");
     printf("\t-hk key handle\n");
     printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
-    printf("\t[Asymmetric Key Algorithm]\n");
+    printf("\t[asymmetric key algorithm]\n");
     printf("\t\t[-rsa (default)]\n");
     printf("\t\t[-ecc curve (P256)]\n");
     printf("\t-if input message file name\n");
     printf("\t-ih input hash file name\n");
     printf("\t-is signature file name\n");
-    printf("\t-raw signature in raw format (default TPMT_SIGNATURE)\n");
+    printf("\t[-raw (flag) signature specified by -is is in raw format]\n");
+    printf("\t\t(default TPMT_SIGNATURE)\n");
     printf("\t[-tk ticket file name]\n");
     exit(1);	
 }

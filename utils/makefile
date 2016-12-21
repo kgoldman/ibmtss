@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 843 2016-11-29 19:58:14Z kgoldman $			#
+#	      $Id: makefile 885 2016-12-21 17:13:46Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -52,6 +52,9 @@ CCFLAGS = 	-DTPM_POSIX
 # compile - for TSS library
 
 CCLFLAGS = 	-I. -DTPM_TSS
+
+# to compile out printf's (regression test will fail) because it tries to print a structure
+# -DTPM_NO_PRINT
 
 # example of changing the default interface type
 #	-DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
@@ -168,6 +171,8 @@ activatecredential:	tss2/tss.h activatecredential.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) activatecredential.o $(LNALIBS) -o activatecredential
 eventextend:		eventextend.o eventlib.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o eventlib.o $(LNALIBS) -o eventextend
+imaextend:		imaextend.o imalib.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o imalib.o $(LNALIBS) -o imaextend
 certify:		tss2/tss.h certify.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) certify.o $(LNALIBS) -o certify
 changeeps:		tss2/tss.h changeeps.o libtss.so
@@ -232,6 +237,8 @@ hmacstart:		tss2/tss.h hmacstart.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) hmacstart.o $(LNALIBS) -o hmacstart
 import:			tss2/tss.h import.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) import.o $(LNALIBS) -o import
+importpem:		tss2/tss.h importpem.o objecttemplates.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) importpem.o objecttemplates.o ekutils.o $(LNALIBS) -o importpem
 load:			tss2/tss.h load.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) load.o $(LNALIBS) -o load
 loadexternal:		tss2/tss.h loadexternal.o ekutils.o libtss.so
@@ -358,14 +365,12 @@ writeapp:		tss2/tss.h writeapp.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o $(LNALIBS) -o writeapp
 createek:		createek.o ekutils.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createek.o ekutils.o $(LNALIBS) -o createek
-pprovision:		pprovision.o ekutils.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) pprovision.o ekutils.o $(LNALIBS) -o pprovision
 
-ntc2getconfig:		ntc2getconfig.o ntc2lib.o
+ntc2getconfig:		ntc2getconfig.o ntc2lib.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2getconfig.o ntc2lib.o $(LNALIBS) -o ntc2getconfig
-ntc2preconfig:		ntc2preconfig.o ntc2lib.o
+ntc2preconfig:		ntc2preconfig.o ntc2lib.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2preconfig.o ntc2lib.o $(LNALIBS) -o ntc2preconfig
-ntc2lockconfig:		ntc2lockconfig.o ntc2lib.o
+ntc2lockconfig:		ntc2lockconfig.o ntc2lib.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2lockconfig.o ntc2lib.o $(LNALIBS) -o ntc2lockconfig
 
 t:		t.o

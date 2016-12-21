@@ -3,7 +3,7 @@
 /*			   Import		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: import.c 778 2016-10-19 15:21:05Z kgoldman $			*/
+/*	      $Id: import.c 880 2016-12-20 20:26:50Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (parentHandle == 0) {
-	printf("Missing or bad object handle parameter -ho\n");
+	printf("Missing or bad object handle parameter -hp\n");
 	printUsage();
     }
     if (objectPublicFilename == NULL) {

@@ -49,6 +49,7 @@
 
 /* include this as a convenience to applications */
 #include <tss2/tsserror.h>
+#include <tss2/tssprint.h>
 
 typedef struct TSS_CONTEXT TSS_CONTEXT; 
    
@@ -56,30 +57,30 @@ typedef struct TSS_CONTEXT TSS_CONTEXT;
 extern "C" {
 #endif
 
-/* extra parameters as required */
+    /* extra parameters as required */
 
-typedef struct {
-    const char 		*bindPassword;
-    TPM2B_DIGEST 	salt;
-} StartAuthSession_Extra;
+    typedef struct {
+	const char 		*bindPassword;
+	TPM2B_DIGEST 	salt;
+    } StartAuthSession_Extra;
 	
-typedef union {
-    StartAuthSession_Extra 	StartAuthSession;
-} EXTRA_PARAMETERS;
+    typedef union {
+	StartAuthSession_Extra 	StartAuthSession;
+    } EXTRA_PARAMETERS;
 
-LIB_EXPORT
-TPM_RC TSS_Create(TSS_CONTEXT **tssContext);
+    LIB_EXPORT
+    TPM_RC TSS_Create(TSS_CONTEXT **tssContext);
 
-LIB_EXPORT
-TPM_RC TSS_Delete(TSS_CONTEXT *tssContext);
+    LIB_EXPORT
+    TPM_RC TSS_Delete(TSS_CONTEXT *tssContext);
 
-LIB_EXPORT
-TPM_RC TSS_Execute(TSS_CONTEXT *tssContext,
-		   RESPONSE_PARAMETERS *out,	
-		   COMMAND_PARAMETERS *in,
-		   EXTRA_PARAMETERS *extra,
-		   TPM_CC commandCode,
-		   ...);
+    LIB_EXPORT
+    TPM_RC TSS_Execute(TSS_CONTEXT *tssContext,
+		       RESPONSE_PARAMETERS *out,	
+		       COMMAND_PARAMETERS *in,
+		       EXTRA_PARAMETERS *extra,
+		       TPM_CC commandCode,
+		       ...);
 
 #define TPM_TRACE_LEVEL		1
 #define TPM_DATA_DIR		2
@@ -91,10 +92,10 @@ TPM_RC TSS_Execute(TSS_CONTEXT *tssContext,
 #define TPM_ENCRYPT_SESSIONS	8
 #define TPM_SERVER_TYPE		9
 
-LIB_EXPORT
-TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,
-		       int property,
-		       const char *value);
+    LIB_EXPORT
+    TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,
+			   int property,
+			   const char *value);
 
 #ifdef __cplusplus
 }

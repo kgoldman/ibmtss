@@ -3,7 +3,7 @@
 /*			   ClockSet						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: clockset.c 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: clockset.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -51,7 +51,6 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/Unmarshal_fp.h>
-#include <tss2/tssprint.h>
 
 static void printUsage(void);
 
@@ -254,6 +253,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-time new time\n");
     printf("\t-hi hierarchy o, p (default platform)\n");
+    printf("\t\to owner, p platform\n");
     printf("\t-pwdp password for hierarchy (default empty)\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

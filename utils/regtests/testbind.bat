@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #	$Id: testbind.bat 480 2015-12-29 22:41:45Z kgoldman $			#
+REM #	$Id: testbind.bat 875 2016-12-19 17:09:00Z kgoldman $			#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -192,13 +192,19 @@ echo "NV Read Public, unwritten Name"
        exit /B 1
        )
 
-echo "NV write PWAP to set written"
-%TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -ic 123 > run.out
+echo "Bind session bound to unwritten NV index at 01000000"
+%TPM_EXE_PATH%startauthsession -se h -bi 01000000 -pwdb nnn > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
-echo "Bind session bound to NV index at 01000000"
+echo "NV write HMAC using bind session to set written"
+%TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -ic 123 -se0 02000000 0 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+       )
+
+echo "Bind session bound to written NV index at 01000000"
 %TPM_EXE_PATH%startauthsession -se h -bi 01000000 -pwdb nnn > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1

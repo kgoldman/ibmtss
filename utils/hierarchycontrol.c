@@ -3,7 +3,7 @@
 /*			    HierarchyControl	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hierarchycontrol.c 778 2016-10-19 15:21:05Z kgoldman $	*/
+/*	      $Id: hierarchycontrol.c 881 2016-12-20 21:44:25Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -280,6 +280,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-hi authhandle hierarchy e, o, p\n");
     printf("\t-he enable hierarchy e, o, p, n\n");
+    printf("\t\te endorsement, o owner, p platform, n null\n");
     printf("\t-pwda authorization password (default empty)\n");
     printf("\t-state (0 to disable, 1 to enable (default enable)\n");
     printf("\n");

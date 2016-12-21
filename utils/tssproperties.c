@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.c 781 2016-10-21 19:17:39Z kgoldman $		*/
+/*	      $Id: tssproperties.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -48,8 +48,9 @@
 #ifndef TPM_TSS_NOCRYPTO
 #include <tss2/tsscrypto.h>
 #endif
+#include <tss2/tssprint.h>
 
-#include <tss2/tssproperties.h>
+#include "tssproperties.h"
 
 /* local prototypes */
 
@@ -159,6 +160,10 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 #ifdef TPM_WINDOWS_TBSI
 	tssContext->hContext = 0;	/* FIXME:  Guess at an illegal value */
 #endif
+#endif
+#ifndef TPM_TSS_NOCRYPTO
+	tssContext->tssSessionEncKey = NULL;
+	tssContext->tssSessionDecKey = NULL;
 #endif
     }
     /* for a minimal TSS with no file support */

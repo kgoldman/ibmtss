@@ -5,7 +5,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: reg.bat 797 2016-11-11 22:57:11Z kgoldman $		#
+REM #		$Id: reg.bat 875 2016-12-19 17:09:00Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -67,6 +67,10 @@ if defined mssim (
       exit /B 1
    )
 )
+
+for /f %%i in ('%TPM_EXE_PATH%getrandom -by 16 -ns') do set TPM_SESSION_ENCKEY=%%i
+echo "Session state encryption key"
+echo %TPM_SESSION_ENCKEY%
 
 call regtests\initkeys.bat
 IF !ERRORLEVEL! NEQ 0 (

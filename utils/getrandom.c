@@ -3,7 +3,7 @@
 /*			   GetRandom						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getrandom.c 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: getrandom.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -50,7 +50,6 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/Unmarshal_fp.h>
-#include <tss2/tssprint.h>
 
 static void printUsage(void);
 
@@ -68,6 +67,7 @@ int main(int argc, char *argv[])
     const char 			*outFilename = NULL;
     unsigned char 		*randomBuffer = NULL;
     int				noZeros = FALSE;
+    int				noSpace = FALSE;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
     unsigned int		sessionAttributes0 = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
@@ -101,6 +101,9 @@ int main(int argc, char *argv[])
 	}
  	else if (strcmp(argv[i],"-nz") == 0) {
 	    noZeros = TRUE;
+	}
+ 	else if (strcmp(argv[i],"-ns") == 0) {
+	    noSpace = TRUE;
 	}
 	else if (strcmp(argv[i],"-se0") == 0) {
 	    i++;
@@ -194,7 +197,7 @@ int main(int argc, char *argv[])
 	rc = TSS_Create(&tssContext);
     }
     /* This is somewhat optimized, but if a zero byte is obtained in the last pass, an extra pass is
-       needed.  The tradeoff is that, in general, asking for more random number than needed may slow
+       needed.  The tradeoff is that, in general, asking for more random numbers than needed may slow
        down the TPM.  In any case, needing non-zero values for random auth should not happen very
        often.
      */
@@ -245,7 +248,19 @@ int main(int argc, char *argv[])
 				      outFilename);
     }
     if (rc == 0) {
-	TSS_PrintAll("randomBytes", randomBuffer, bytesRequested);
+	/* machine readable format */
+	if (noSpace) {
+	    uint32_t i;
+	    for (i = 0 ; i < bytesRequested ; i++) {
+		printf("%02x", randomBuffer[i]);
+	    }
+	    printf("\n");
+
+	}
+	/* human readble format */
+	else {
+	    TSS_PrintAll("randomBytes", randomBuffer, bytesRequested);
+	}
     }
     else {
 	const char *msg;
@@ -270,6 +285,8 @@ static void printUsage(void)
     printf("\t-by bytes requested\n");
     printf("\t[-of output file, with -nz, appends nul terminator]\n");
     printf("\t[-nz get random number with no zero bytes (for authorization value)]\n");
+    printf("\t[-ns no space, no text, no newlines]\n");
+    printf("\t\tjust a string of hexascii suitable for a symmetric key\n");
     printf("\t-se[0-2] session handle / attributes\n");
     printf("\t\t01 continue\n");
     printf("\t\t20 command decrypt\n");

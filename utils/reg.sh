@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: reg.sh 793 2016-11-10 21:27:40Z kgoldman $				#
+#	$Id: reg.sh 874 2016-12-19 15:23:05Z kgoldman $				#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -131,7 +131,6 @@ if [ $1 -ne 0 ]; then
 else
     echo " INFO:"
 fi
-
 }
 
 checkFailure()
@@ -143,7 +142,6 @@ if [ $1 -eq 0 ]; then
 else
     echo " INFO:"
 fi
-
 }
 
 cleanup()
@@ -198,6 +196,9 @@ export -f checkFailure
 export WARN
 export PREFIX
 
+# example for running scripts with encrypted sessions, see TPM_SESSION_ENCKEY=getrandom below
+export TPM_SESSION_ENCKEY
+
 main ()
 {
     RC=0
@@ -218,6 +219,9 @@ main ()
 	if [ $RC -eq 255 ]; then
 	    exit 255
 	fi
+	# example for running scripts with encrypted sessions, see TPM_ENCRYPT_SESSIONS above
+	# getrandom must wait until after inittpm.sh (powerup and startup)
+	TPM_SESSION_ENCKEY=`./getrandom -by 16 -ns`
 	./regtests/initkeys.sh
 	RC=$?
 	if [ $RC -eq 255 ]; then

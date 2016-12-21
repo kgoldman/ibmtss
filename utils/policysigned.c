@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 849 2016-12-01 20:17:03Z kgoldman $		*/
+/*	      $Id: policysigned.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -63,7 +63,6 @@
 #include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/tssresponsecode.h>
-#include <tss2/tssprint.h>
 #include <tss2/tssmarshal.h>
 
 static void   printUsage(void);

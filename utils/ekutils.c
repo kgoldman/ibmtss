@@ -3,7 +3,7 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 849 2016-12-01 20:17:03Z kgoldman $		*/
+/*	      $Id: ekutils.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -59,7 +59,6 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssutils.h>
 #include <tss2/tsscrypto.h>
-#include <tss2/tssprint.h>
 #include <tss2/Unmarshal_fp.h>
 
 #include "ekutils.h"
@@ -1168,7 +1167,7 @@ TPM_RC TSS_RSAGetKey(const BIGNUM **n,
     return rc;
 }
 
-/* TSS_Pubkey_GetAlgorithm() returns the openssl algorithn type for the EVP_PKEY public key. */
+/* TSS_Pubkey_GetAlgorithm() returns the openssl algorithm type for the EVP_PKEY public key. */
 
 int TSS_Pubkey_GetAlgorithm(EVP_PKEY *pkey)
 {

@@ -3,7 +3,7 @@
 /*			   ClockRateAdjust					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: clockrateadjust.c 778 2016-10-19 15:21:05Z kgoldman $	*/
+/*	      $Id: clockrateadjust.c 885 2016-12-21 17:13:46Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -51,7 +51,6 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/Unmarshal_fp.h>
-#include <tss2/tssprint.h>
 
 static void printUsage(void);
 

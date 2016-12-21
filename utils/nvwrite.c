@@ -3,7 +3,7 @@
 /*			    NV Write		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvwrite.c 799 2016-11-14 18:53:34Z kgoldman $		*/
+/*	      $Id: nvwrite.c 885 2016-12-21 17:13:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -149,12 +149,16 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		pinPass = atoi(argv[i]);
-	    }
-	    i++;
-	    if (i < argc) {
-		pinLimit = atoi(argv[i]);
-		dataSource++;
-		inData = TRUE;
+		i++;
+		if (i < argc) {
+		    pinLimit = atoi(argv[i]);
+		    dataSource++;
+		    inData = TRUE;
+		}
+		else {
+		    printf("-id option needs two values\n");
+		    printUsage();
+		}
 	    }
 	    else {
 		printf("-id option needs two values\n");

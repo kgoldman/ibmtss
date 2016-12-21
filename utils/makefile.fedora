@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile - for Fedora source RPM ONLY!	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.fedora 841 2016-11-28 17:33:08Z kgoldman $		#
+#	      $Id: makefile.fedora 854 2016-12-07 17:42:37Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -202,6 +202,8 @@ activatecredential:	tss2/tss.h activatecredential.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) activatecredential.o $(LNALIBS) -o activatecredential
 eventextend:		eventextend.o eventlib.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o eventlib.o $(LNALIBS) -o eventextend
+imaextend:		imaextend.o imalib.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o imalib.o $(LNALIBS) -o imaextend
 certify:		tss2/tss.h certify.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) certify.o $(LNALIBS) -o certify
 changeeps:		tss2/tss.h changeeps.o libtss.so
