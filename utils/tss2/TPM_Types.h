@@ -738,11 +738,11 @@ typedef TPM_HANDLE TPM_RH;
 #define PCR_FIRST		(HR_PCR + 0)					/* first PCR */
 #define PCR_LAST		(PCR_FIRST + IMPLEMENTATION_PCR-1)		/* last PCR */
 #define HMAC_SESSION_FIRST	(HR_HMAC_SESSION + 0)				/* first HMAC session */
-#define HMAC_SESSION_LAST	(HMAC_SESSION_FIRST+MAX_ACTIVE_SESSIONS-1)	/* last HMAC session */
+#define HMAC_SESSION_LAST	(HMAC_SESSION_FIRST | 0x00FFFFFF)	/* last HMAC session */
 #define LOADED_SESSION_FIRST  	HMAC_SESSION_FIRST				/* used in GetCapability */
 #define LOADED_SESSION_LAST	HMAC_SESSION_LAST				/* used in GetCapability */
 #define POLICY_SESSION_FIRST	(HR_POLICY_SESSION + 0)				/* first policy session */
-#define POLICY_SESSION_LAST	(POLICY_SESSION_FIRST + MAX_ACTIVE_SESSIONS-1)	/* last policy session */
+#define POLICY_SESSION_LAST	(POLICY_SESSION_FIRST | 0x00FFFFFF)	/* last policy session */
 #define TRANSIENT_FIRST		((UINT32)(HR_TRANSIENT + 0))			/* first transient object */
 #define ACTIVE_SESSION_FIRST	POLICY_SESSION_FIRST				/* used in GetCapability */
 #define ACTIVE_SESSION_LAST	POLICY_SESSION_LAST				/* used in GetCapability */
