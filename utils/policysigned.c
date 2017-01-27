@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: policysigned.c 916 2017-01-19 22:31:42Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -383,8 +383,8 @@ TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
     /* read the PEM format private key into the OpenSSL structure */
     if (rc == 0) {
 	keyFile = fopen(signingKeyFilename, "r");
-	printf("signAHash: Error opening %s\n", signingKeyFilename);
 	if (keyFile == NULL) {
+	    printf("signAHash: Error opening %s\n", signingKeyFilename);
 	    rc = -1;
 	}
     }

@@ -3,7 +3,7 @@
 /*	Windows 7,8,10 Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstbsi.c 878 2016-12-19 19:52:56Z kgoldman $ 		*/
+/*	      $Id: tsstbsi.c 907 2017-01-10 21:44:19Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -221,7 +221,7 @@ static uint32_t TSS_Tbsi_SubmitCommand(TBS_HCONTEXT hContext,
 TPM_RC TSS_Tbsi_Close(TSS_CONTEXT *tssContext)
 {
     TPM_RC rc = 0;
-    if (tssVverbose) printf("TSS_Tbsi_Close: Clising connection\n");
+    if (tssVverbose) printf("TSS_Tbsi_Close: Closing connection\n");
     rc = Tbsip_Context_Close(tssContext->hContext);
     return rc;
 }

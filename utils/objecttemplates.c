@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 880 2016-12-20 20:26:50Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 891 2016-12-29 20:57:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -207,7 +207,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	      case TYPE_SI:
 		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
 		/* Table 165 - Definition of {ECC} (TPM_ECC_CURVE) TPMI_ECC_CURVE Type */
-		/* Table 10 - Definition of (UINT16) {ECC} TPM_ECC_CURVE Constants <IN/OUT, S> curveID */
+		/* Table 10 - Definition of (UINT16) {ECC} TPM_ECC_CURVE Constants curveID */
 		publicArea->parameters.eccDetail.curveID = curveID;
 		/* Table 150 - Definition of TPMT_KDF_SCHEME Structure kdf */
 		/* Table 64 - Definition of (TPM_ALG_ID) TPMI_ALG_KDF Type */
@@ -219,7 +219,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 		/* Table 143 - Definition of {ECC} Types for ECC Signature Schemes */
 		publicArea->parameters.eccDetail.scheme.details.ecdsa.hashAlg = halg;
 		/* Table 165 - Definition of {ECC} (TPM_ECC_CURVE) TPMI_ECC_CURVE Type */
-		/* Table 10 - Definition of (UINT16) {ECC} TPM_ECC_CURVE Constants <IN/OUT, S> curveID */
+		/* Table 10 - Definition of (UINT16) {ECC} TPM_ECC_CURVE Constants curveID */
 		publicArea->parameters.eccDetail.curveID = curveID;
 		/* Table 150 - Definition of TPMT_KDF_SCHEME Structure kdf */
 		/* Table 64 - Definition of (TPM_ALG_ID) TPMI_ALG_KDF Type */
@@ -235,14 +235,15 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 		printf("Decryption key type for ECC keys not implemented yet\n");
 		rc = TPM_RC_VALUE;
 		/* FIXME keys other than signing are wrong, not implemented yet */
-		publicArea->parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
 		/* Table 152 - Definition of TPMU_ASYM_SCHEME details */
 		break;
 	      case TYPE_ST:
-		printf("Storage key for ECC keys not implemented yet\n");
-		rc = TPM_RC_VALUE;
-		/* FIXME keys other than signing are wrong, not implemented yet */
-		publicArea->parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
+		publicArea->parameters.eccDetail.scheme.details.anySig.hashAlg = 0;
+		publicArea->parameters.eccDetail.curveID = TPM_ECC_NIST_P256;
+		publicArea->parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
+		publicArea->parameters.eccDetail.kdf.details.mgf1.hashAlg = 0;
 		break;
 	    }
 	    /* Table 177 - TPMU_PUBLIC_ID unique */
@@ -264,7 +265,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 TPM_RC symmetricCipherTemplate(TPMT_PUBLIC *publicArea,		/* output */
 			       TPMA_OBJECT objectAttributes,	/* default, can be overridden here */
 			       TPMI_ALG_HASH nalg,		/* Name algorithm */
-			       int rev116,			/* TPM rev 116 compatibility, sets SIGN */
+			       int rev116,		/* TPM rev 116 compatibility, sets SIGN */
 			       const char *policyFilename)	/* binary policy, NULL means empty */
 {
     TPM_RC rc = 0;

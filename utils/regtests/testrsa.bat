@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testrsa.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testrsa.bat 914 2017-01-16 22:05:26Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -74,6 +74,10 @@ echo "Flush the decryption key"
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
+
+rm -f tmpmsg.bin
+rm -f tmpdig.bin
+rm -f tmpsig.bin
 
 exit /B 0
 

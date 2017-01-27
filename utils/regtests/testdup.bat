@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 882 2016-12-20 22:38:50Z kgoldman $		#
+REM #		$Id: testdup.bat 919 2017-01-20 15:11:51Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -177,7 +177,7 @@ for %%E in ("" "-salg aes -ik tmprnd.bin") do (
 )
 
 echo ""
-echo "Import PEM"
+echo "Import PEM RSA"
 echo ""
 
 echo "generate the signing key with openssl"
@@ -222,6 +222,48 @@ for %%S in ("" "-se0 02000000 1") do (
 	    exit /B 1
 	)
 
+   )
+)
+
+echo ""
+echo "Import PEM EC "
+echo ""
+
+echo "generate the signing key with openssl"
+openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem
+
+for %%S in ("" "-se0 02000000 1") do (
+    for %%H in (sha1 sha256) do (
+
+	echo "Import the signing key under the primary key %%H"
+	%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem tmpecprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Load the TPM signing key"
+	%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmppub.bin -ipr tmppriv.bin > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Sign the message %%H %%~S"
+	%TPM_EXE_PATH%sign -hk 80000001 -ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H %%~S > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Verify the signature %%H"
+	%TPM_EXE_PATH%verifysignature -hk 80000001 -ecc -if policies/aaa -is tmpsig.bin -halg %%H > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Flush the signing key"
+	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
    )
 )
 
@@ -399,6 +441,11 @@ rm -f sig.bin
 rm -f tmpk2priv.bin
 rm -f tmpk2pub.bin
 rm -f tmposs.bin 
+rm -f tmpprivkey.pem
+rm -f tmpecprivkey.pem
+rm -f tmppub.bin
+rm -f tmppriv.bin
+rm -f tmpsig.bin
 
 exit /B 0
 

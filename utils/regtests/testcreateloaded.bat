@@ -180,3 +180,5 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+rm -f tmpdppriv.bin
+rm -f tmpdppub.bin

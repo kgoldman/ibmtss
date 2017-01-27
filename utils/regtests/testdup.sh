@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 881 2016-12-20 21:44:25Z kgoldman $		#
+#		$Id: testdup.sh 921 2017-01-23 15:56:08Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -145,7 +145,7 @@ do
 done
 
 echo ""
-echo "Import PEM"
+echo "Import PEM RSA"
 echo ""
 
 echo "generate the signing key with openssl"
@@ -174,6 +174,41 @@ do
 
 	echo "Verify the signature ${HALG}"
 	${PREFIX}verifysignature -hk 80000001 -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
+	checkSuccess $?
+
+	echo "Flush the signing key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
+
+   done
+done
+
+echo ""
+echo "Import PEM EC "
+echo ""
+
+echo "generate the signing key with openssl"
+openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem
+
+for SESS in "" "-se0 02000000 1"
+do
+    for HALG in sha1 sha256
+    do
+
+	echo "Import the signing key under the primary key ${HALG}"
+	${PREFIX}importpem -hp 80000000 -pwdp pps -ipem tmpecprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
+	checkSuccess $?
+
+	echo "Load the TPM signing key"
+	${PREFIX}load -hp 80000000 -pwdp pps -ipu tmppub.bin -ipr tmppriv.bin > run.out
+	checkSuccess $?
+
+	echo "Sign the message ${HALG} ${SESS}"
+	${PREFIX}sign -hk 80000001 -ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
+	checkSuccess $?
+
+	echo "Verify the signature ${HALG}"
+	${PREFIX}verifysignature -hk 80000001 -ecc -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
 	checkSuccess $?
 
 	echo "Flush the signing key"
@@ -310,6 +345,7 @@ rm -f tmpk2priv.bin
 rm -f tmpk2pub.bin
 rm -f tmposs.bin 
 rm -f tmpprivkey.pem
+rm -f tmpecprivkey.pem
 rm -f tmppub.bin
 rm -f tmppriv.bin
 

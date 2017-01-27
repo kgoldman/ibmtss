@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 882 2016-12-20 22:38:50Z kgoldman $		#
+#	      $Id: makefile.mak 918 2017-01-19 22:42:09Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015.						#
 # 										#
@@ -182,23 +182,23 @@ eventextend.exe:	eventextend.o eventlib.o $(LIBTSS)
 imaextend.exe:	imaextend.o imalib.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o imalib.o $(LNLIBS) $(LIBTSS) 
 
-createek.exe:	createek.o ekutils.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o $(LNLIBS) $(LIBTSS)
+createek.exe:	createek.o ekutils.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
-importpem.exe:	importpem.o objecttemplates.o ekutils.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o ekutils.o $(LNLIBS) $(LIBTSS)
+importpem.exe:	importpem.o objecttemplates.o ekutils.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
-loadexternal.exe:	loadexternal.o ekutils.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o $(LNLIBS) $(LIBTSS)
+loadexternal.exe:	loadexternal.o cryptoutils.o ekutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o cryptoutils.o ekutils.o $(LNLIBS) $(LIBTSS)
 
-nvread.exe:	nvread.o ekutils.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o  $(LNLIBS) $(LIBTSS)
+nvread.exe:	nvread.o ekutils.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
-nvwrite.exe:	nvwrite.o ekutils.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o  $(LNLIBS) $(LIBTSS)
+nvwrite.exe:	nvwrite.o ekutils.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
-pprovision.exe:	pprovision.o ekutils.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o $(LNLIBS) $(LIBTSS)
+pprovision.exe:	pprovision.o ekutils.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
 %.exe:		%.o applink.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)

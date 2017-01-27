@@ -3,7 +3,7 @@
 /*			   RSA_Encrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsaencrypt.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: rsaencrypt.c 887 2016-12-23 17:00:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -220,7 +220,7 @@ static void printUsage(void)
     printf("\n");
     printf("rsaencrypt\n");
     printf("\n");
-    printf("Runs TPM2_Rsaencrypt\n");
+    printf("Runs TPM2_RSA_Encrypt\n");
     printf("\n");
     printf("\t-hk key handle\n");
     printf("\t-id decrypt file name\n");

@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsign.bat 755 2016-09-23 19:45:16Z kgoldman $		#
+REM #		$Id: testsign.bat 914 2017-01-16 22:05:26Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -269,6 +269,8 @@ rm tmpkeypair.pem
 rm tmpkeypair.der
 rm signpub.pem
 rm pssig.bin
+rm -r tmppub.bin
+rm -r tmppub.pem
 
 exit /B 0
 

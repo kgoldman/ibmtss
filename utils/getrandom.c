@@ -3,7 +3,7 @@
 /*			   GetRandom						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getrandom.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: getrandom.c 890 2016-12-28 21:55:25Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -255,7 +255,6 @@ int main(int argc, char *argv[])
 		printf("%02x", randomBuffer[i]);
 	    }
 	    printf("\n");
-
 	}
 	/* human readble format */
 	else {

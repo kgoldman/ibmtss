@@ -83,6 +83,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\utils\applink.c" />
     <ClCompile Include="..\..\utils\createek.c" />
+    <ClCompile Include="..\..\utils\cryptoutils.c" />
     <ClCompile Include="..\..\utils\ekutils.c" />
   </ItemGroup>
   <ItemGroup>

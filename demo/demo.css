@@ -1,7 +1,7 @@
-/* $Id: demo.css 486 2016-01-08 21:03:06Z kgoldman $: */
+/* $Id: demo.css 900 2017-01-06 19:25:47Z kgoldman $: */
 
 #header {
-    background-color:#7889fb;
+    background-color:#1d6ab2;
     color:white;
     text-align:center;
     padding:5px;
@@ -20,7 +20,7 @@
     padding:10px;	 	 
 }
 #footer {
-    background-color:#7889fb;
+    background-color:#1d6ab2;
     color:white;
     clear:both;
     text-align:center;

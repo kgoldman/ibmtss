@@ -3,7 +3,7 @@
 /*			     	IMA Routines					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id$			*/
+/*            $Id: imalib.h 870 2016-12-15 19:33:24Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/

@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 885 2016-12-21 17:13:46Z kgoldman $			#
+#	      $Id: makefile 926 2017-01-25 22:42:12Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -68,6 +68,9 @@ CCAFLAGS = 	-I.
 LNFLAGS = 	-DTPM_POSIX		\
 		-L.
 
+# This seems to be required on some Ubuntu distros due to an issue with the gold linker
+#		-fuse-ld=bfd
+
 # example of pointing to a locally built openssl 1.1
 # LNFLAGS +=	 -L/home/kgold/openssl-1.1.0c
 # This also requires setting the environment variable LD_LIBRARY_PATH.  E.g.,
@@ -75,7 +78,8 @@ LNFLAGS = 	-DTPM_POSIX		\
 
 # link - for TSS library
 
-LNLFLAGS = 
+#	This is an alternative to using the bfd linker on Ubuntu
+LNLFLAGS = -lcrypto
 
 # link - for applications, TSS path, TSS and OpenSSl libraries
 
@@ -237,12 +241,12 @@ hmacstart:		tss2/tss.h hmacstart.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) hmacstart.o $(LNALIBS) -o hmacstart
 import:			tss2/tss.h import.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) import.o $(LNALIBS) -o import
-importpem:		tss2/tss.h importpem.o objecttemplates.o ekutils.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) importpem.o objecttemplates.o ekutils.o $(LNALIBS) -o importpem
+importpem:		tss2/tss.h importpem.o objecttemplates.o ekutils.o cryptoutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) importpem.o objecttemplates.o ekutils.o cryptoutils.o $(LNALIBS) -o importpem
 load:			tss2/tss.h load.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) load.o $(LNALIBS) -o load
-loadexternal:		tss2/tss.h loadexternal.o ekutils.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) loadexternal.o ekutils.o $(LNALIBS) -o loadexternal
+loadexternal:		tss2/tss.h loadexternal.o cryptoutils.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) loadexternal.o cryptoutils.o ekutils.o $(LNALIBS) -o loadexternal
 makecredential:		tss2/tss.h makecredential.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) makecredential.o $(LNALIBS) -o makecredential
 nvcertify:		tss2/tss.h nvcertify.o libtss.so
@@ -257,8 +261,8 @@ nvglobalwritelock:	tss2/tss.h nvglobalwritelock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvglobalwritelock.o $(LNALIBS) -o nvglobalwritelock
 nvincrement:		tss2/tss.h nvincrement.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvincrement.o $(LNALIBS) -o nvincrement
-nvread:			tss2/tss.h nvread.o ekutils.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) nvread.o ekutils.o $(LNALIBS) -o nvread
+nvread:			tss2/tss.h nvread.o cryptoutils.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvread.o cryptoutils.o ekutils.o $(LNALIBS) -o nvread
 nvreadlock:		tss2/tss.h nvreadlock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadlock.o $(LNALIBS) -o nvreadlock
 nvreadpublic:		tss2/tss.h nvreadpublic.o libtss.so
@@ -269,8 +273,8 @@ nvundefinespace:	tss2/tss.h nvundefinespace.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespace.o $(LNALIBS) -o nvundefinespace
 nvundefinespacespecial:	tss2/tss.h nvundefinespacespecial.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespacespecial.o $(LNALIBS) -o nvundefinespacespecial
-nvwrite:		tss2/tss.h nvwrite.o ekutils.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwrite.o ekutils.o $(LNALIBS) -o nvwrite
+nvwrite:		tss2/tss.h nvwrite.o cryptoutils.o ekutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwrite.o cryptoutils.o ekutils.o $(LNALIBS) -o nvwrite
 nvwritelock:		tss2/tss.h nvwritelock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwritelock.o $(LNALIBS) -o nvwritelock
 objectchangeauth:	tss2/tss.h objectchangeauth.o libtss.so
@@ -363,8 +367,10 @@ signapp:		tss2/tss.h signapp.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o $(LNALIBS) -o signapp
 writeapp:		tss2/tss.h writeapp.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o $(LNALIBS) -o writeapp
+timepacket:		tss2/tss.h timepacket.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) timepacket.o $(LNALIBS) -o timepacket
 createek:		createek.o ekutils.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) createek.o ekutils.o $(LNALIBS) -o createek
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createek.o cryptoutils.o ekutils.o $(LNALIBS) -o createek
 
 ntc2getconfig:		ntc2getconfig.o ntc2lib.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2getconfig.o ntc2lib.o $(LNALIBS) -o ntc2getconfig

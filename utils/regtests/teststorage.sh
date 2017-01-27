@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: teststorage.sh 680 2016-07-14 18:19:00Z kgoldman $			#
+#	$Id: teststorage.sh 893 2016-12-29 22:13:21Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -104,9 +104,54 @@ echo "Flush the auth session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
 
+echo ""
+echo "ECC Storage key"
+echo ""
+
+echo "Create a ECC primary storage key 80000001"
+${PREFIX}createprimary -ecc nistp256 > run.out
+checkSuccess $?
+
+echo "Create a ECC storage key under the ECC primary storage key 80000001"
+${PREFIX}create -hp 80000001 -ecc nistp256 -st -opr tmppriv.bin -opu tmppub.bin > run.out
+checkSuccess $?
+
+echo "Load the ECC storage key 80000002 under the ECC primary key 80000001"
+${PREFIX}load -hp 80000001 -ipu tmppub.bin -ipr tmppriv.bin > run.out
+checkSuccess $?
+
+echo "Flush the ECC primary storage key 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Create a signing key under the ECC storage key 80000002"
+${PREFIX}create -hp 80000002 -ecc nistp256 -si -opr tmppriv.bin -opu tmppub.bin > run.out
+checkSuccess $?
+
+echo "Load the ECC storage key 80000001 under the ECC storage key 80000002"
+${PREFIX}load -hp 80000002 -ipu tmppub.bin -ipr tmppriv.bin > run.out
+checkSuccess $?
+
+echo "Sign a digest woith ECC signing key 80000001"
+${PREFIX}sign -hk 80000001 -ecc -if policies/sha256aaa.bin -os tmpsig.bin > run.out
+checkSuccess $?
+
+echo "Verify the signature using the ECC signing key 80000001"
+verifysignature -hk 80000001 -ecc -if policies/sha256aaa.bin -is tmpsig.bin > run.out
+checkSuccess $?
+
+echo "Flush the signing key 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Flush the storage key 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
 rm -f tmppub2.bin
 rm -f tmppub.bin
 rm -f tmppriv.bin
+rm -f tmpsig.bin
 
 # ${PREFIX}getcapability  -cap 1 -pr 80000000
 # ${PREFIX}getcapability  -cap 1 -pr 02000000

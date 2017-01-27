@@ -3,7 +3,7 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: pcrread.c 923 2017-01-24 16:34:33Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -39,7 +39,7 @@
 
 /* 
 
-*/
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,10 +64,12 @@ int main(int argc, char *argv[])
     PCR_Read_In 		in;
     PCR_Read_Out 		out;
     TPMI_DH_PCR 		pcrHandle = IMPLEMENTATION_PCR;
-    TPMI_ALG_HASH		halg = TPM_ALG_SHA256;		/* default */
     const char 			*datafilename = NULL;
-   
+    int				noSpace = FALSE;
+  
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+    
+    in.pcrSelectionIn.count = 0xffffffff;
 
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
@@ -82,16 +84,26 @@ int main(int argc, char *argv[])
 	    }
 	}
 	else if (strcmp(argv[i],"-halg") == 0) {
+	    if (in.pcrSelectionIn.count == 0xffffffff) {
+		in.pcrSelectionIn.count = 1;
+	    }
+	    else {
+		in.pcrSelectionIn.count++;
+	    }
+	    if (in.pcrSelectionIn.count > HASH_COUNT) {
+		printf("Too many -halg specifiers, %u permitted\n", HASH_COUNT);
+		printUsage();
+	    }
 	    i++;
 	    if (i < argc) {
 		if (strcmp(argv[i],"sha1") == 0) {
-		    halg = TPM_ALG_SHA1;
+		    in.pcrSelectionIn.pcrSelections[in.pcrSelectionIn.count-1].hash = TPM_ALG_SHA1;
 		}
 		else if (strcmp(argv[i],"sha256") == 0) {
-		    halg = TPM_ALG_SHA256;
+		    in.pcrSelectionIn.pcrSelections[in.pcrSelectionIn.count-1].hash = TPM_ALG_SHA256;
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
-		    halg = TPM_ALG_SHA384;
+		    in.pcrSelectionIn.pcrSelections[in.pcrSelectionIn.count-1].hash = TPM_ALG_SHA384;
 		}
 		else {
 		    printf("Bad parameter for -halg\n");
@@ -112,6 +124,9 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-ns") == 0) {
+	    noSpace = TRUE;
+	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
@@ -128,16 +143,23 @@ int main(int argc, char *argv[])
 	printf("Missing or bad PCR handle parameter -ha\n");
 	printUsage();
     }
-    if (rc == 0) {
-	/* Table 102 - Definition of TPML_PCR_SELECTION Structure */
+    /* handle default hash algorithm */
+    if (in.pcrSelectionIn.count == 0xffffffff) {	/* if none specified */
 	in.pcrSelectionIn.count = 1;
+	in.pcrSelectionIn.pcrSelections[0].hash = TPM_ALG_SHA256;
+    }
+    
+    if (rc == 0) {
+	uint16_t i;
+	/* Table 102 - Definition of TPML_PCR_SELECTION Structure */
 	/* Table 85 - Definition of TPMS_PCR_SELECTION Structure */
-	in.pcrSelectionIn.pcrSelections[0].hash  = halg;
-	in.pcrSelectionIn.pcrSelections[0].sizeofSelect = 3;
-	in.pcrSelectionIn.pcrSelections[0].pcrSelect[0] = 0;
-	in.pcrSelectionIn.pcrSelections[0].pcrSelect[1] = 0;
-	in.pcrSelectionIn.pcrSelections[0].pcrSelect[2] = 0;
-	in.pcrSelectionIn.pcrSelections[0].pcrSelect[pcrHandle / 8] = 1 << (pcrHandle % 8);
+	for (i = 0 ; i < in.pcrSelectionIn.count ; i++) {
+	    in.pcrSelectionIn.pcrSelections[i].sizeofSelect = 3;
+	    in.pcrSelectionIn.pcrSelections[i].pcrSelect[0] = 0;
+	    in.pcrSelectionIn.pcrSelections[i].pcrSelect[1] = 0;
+	    in.pcrSelectionIn.pcrSelections[i].pcrSelect[2] = 0;
+	    in.pcrSelectionIn.pcrSelections[i].pcrSelect[pcrHandle / 8] = 1 << (pcrHandle % 8);
+	}
     }
     /* Start a TSS context */
     if (rc == 0) {
@@ -158,14 +180,26 @@ int main(int argc, char *argv[])
 	    rc = rc1;
 	}
     }
+    /* first hash algorithm, in binary */
     if ((rc == 0) && (datafilename != NULL)) {
 	rc = TSS_File_WriteBinaryFile(out.pcrValues.digests[0].t.buffer,
 				      out.pcrValues.digests[0].t.size,
 				      datafilename);
     }
     if (rc == 0) {
-	printPcrRead(&out);
-	if (verbose) printf("pcrread: success\n");
+	/* machine readable format, first hash algorithm */
+	if (noSpace) {
+	    uint32_t i;
+	    for (i = 0 ; i < out.pcrValues.digests[0].t.size ; i++) {
+		printf("%02x", out.pcrValues.digests[0].t.buffer[i]);
+	    }
+	    printf("\n");
+	}
+	/* human readble format, all hash algorithms */
+	else {
+	    printPcrRead(&out);
+	    if (verbose) printf("pcrread: success\n");
+	}
     }
     else {
 	const char *msg;
@@ -200,6 +234,9 @@ static void printUsage(void)
     printf("\n");
     printf("\t-ha pcr handle\n");
     printf("\t-halg [sha1, sha256, sha384] (default sha256)\n");
-    printf("\t[-of data file]\n");
+    printf("\t\t-halg may be specified more than once\n");
+    printf("\t[-of data file for first algorithm specified, in binary]\n");
+    printf("\t[-ns no space, no text, no newlines, first algorithm]\n");
+    printf("\t\tUsed for scripting policy construction\n");
     exit(1);	
 }

@@ -3,7 +3,7 @@
 /*			   RSA_Decrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsadecrypt.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: rsadecrypt.c 887 2016-12-23 17:00:21Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -50,8 +50,13 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
+#include <tss2/tsscryptoh.h>
 
 static void printRsaDecrypt(RSA_Decrypt_Out *out);
+static TPM_RC padData(uint8_t 		**buffer,
+		      size_t		*padLength,
+		      TPMI_ALG_HASH 	halg,
+		      TPMI_RSA_KEY_BITS	keyBits);
 static void printUsage(void);
 
 int verbose = FALSE;
@@ -66,7 +71,8 @@ int main(int argc, char *argv[])
     TPMI_DH_OBJECT		keyHandle = 0;
     const char			*encryptFilename = NULL;
     const char			*decryptFilename = NULL;
-    const char			*keyPassword = NULL; 
+    const char			*keyPassword = NULL;
+    TPMI_ALG_HASH 		halg = TPM_ALG_NULL;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
@@ -75,7 +81,7 @@ int main(int argc, char *argv[])
     unsigned int		sessionAttributes2 = 0;
  
     uint16_t			written;
-    size_t			length;
+    size_t			length;			/* input data */
     uint8_t			*buffer = NULL;		/* for the free */
     uint8_t			*buffer1 = NULL;	/* for marshaling */
 
@@ -100,6 +106,28 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-pwdk option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-oid") == 0) {
+	    i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"sha1") == 0) {
+		    halg = TPM_ALG_SHA1;
+		}
+		else if (strcmp(argv[i],"sha256") == 0) {
+		    halg = TPM_ALG_SHA256;
+		}
+		else if (strcmp(argv[i],"sha384") == 0) {
+		    halg = TPM_ALG_SHA384;
+		}
+		else {
+		    printf("Bad parameter for -oid\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("-oid option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -214,6 +242,14 @@ int main(int argc, char *argv[])
 				     &length,
 				     encryptFilename);
     }
+    /* if an OID was requested, treat the encryptFilename as a hash to be signed */
+    if ((rc == 0) && (halg != TPM_ALG_NULL)) {
+	rc = padData(&buffer,		/* realloced to fit */
+		     &length,		/* resized for OID and pad */
+		     halg,
+		     2048);		/* hard coded RSA-2048 */
+	/* FIXME use readpublic and get bit size or maybe byte size */
+    }
     if (rc == 0) {
 	/* Handle of key that will perform rsa decrypt */
 	in.keyHandle = keyHandle;
@@ -291,6 +327,75 @@ int main(int argc, char *argv[])
     return rc;
 }
 
+static TPM_RC padData(uint8_t 			**buffer,
+		      size_t			*padLength,
+		      TPMI_ALG_HASH 		halg,
+		      TPMI_RSA_KEY_BITS		keyBits)
+{
+    TPM_RC		rc = 0;
+    uint16_t 		digestSize;
+    const uint8_t	*oid;
+    uint16_t		oidSize;
+    const uint8_t	sha1Oid[] = {SHA1_DER};
+    const uint8_t	sha256Oid[] = {SHA256_DER};
+    const uint8_t	sha384Oid[] = {SHA384_DER};
+    
+    /* check that the original buffer length matches the hash algorithm */
+    if (rc == 0) {
+	digestSize = TSS_GetDigestSize(halg);
+	if (digestSize == 0) {
+	    printf("padData: Unsupported hash algorithm %04x\n", halg);
+	    rc = TPM_RC_HASH;
+	}
+    }
+    if (rc == 0) {
+	if (digestSize != *padLength) {
+	    unsigned long pl = *padLength;
+	    printf("paddata: hash algorithm length %u not equal data length %lu\n",
+		   digestSize, pl);
+	    rc = TPM_RC_VALUE;
+	}
+    }
+    /* realloc the buffer to the key size in bytes */
+    if (rc == 0) {
+	*padLength = keyBits / 8;
+	rc = TSS_Realloc(buffer, *padLength);
+    }
+    /* determine the OID */
+    if (rc == 0) {
+	switch (halg) {
+	  case TPM_ALG_SHA1:
+	    oid = sha1Oid;
+	    oidSize = SHA1_DER_SIZE;
+	    break;
+	  case TPM_ALG_SHA256:
+	    oid = sha256Oid;
+	    oidSize = SHA256_DER_SIZE;
+	    break;
+	  case TPM_ALG_SHA384:
+	    oid = sha384Oid;
+	    oidSize = SHA384_DER_SIZE;
+	    break;
+	  default:
+	    printf("padData: Unsupported hash algorithm %04x\n", halg);
+	    rc = TPM_RC_HASH;
+	}
+    }
+    if (rc == 0) {
+	/* move the hash to the end */
+	memmove(*buffer + *padLength - digestSize, *buffer, digestSize);
+	/* prepend the OID */
+	memcpy(*buffer + *padLength - digestSize - oidSize, oid, oidSize);
+	/* prepend the PKCS1 pad */
+	(*buffer)[0] = 0x00;
+	(*buffer)[1] = 0x01;
+	memset(&(*buffer)[2], 0xff, *padLength - 3 - oidSize - digestSize);
+	(*buffer)[*padLength - oidSize - digestSize - 1] = 0x00;
+	if (verbose) TSS_PrintAll("padData: padded data", *buffer, *padLength);
+    }
+    return rc;
+}
+
 static void printRsaDecrypt(RSA_Decrypt_Out *out)
 {
     TSS_PrintAll("outData", out->message.t.buffer, out->message.t.size);
@@ -301,12 +406,14 @@ static void printUsage(void)
     printf("\n");
     printf("rsadecrypt\n");
     printf("\n");
-    printf("Runs TPM2_Rsadecrypt\n");
+    printf("Runs TPM2_RSA_Decrypt\n");
     printf("\n");
     printf("\t-hk key handle\n");
     printf("\t-pwdk password for key (default empty)\n");
     printf("\t-ie encrypt file name\n");
     printf("\t-od decrypt file name\n");
+    printf("\t[-oid [sha1, sha256, sha384] optionally add OID and PKCS1 padding\n");
+    printf("\t\tto the encrypt data (demo of signing with arbitrary OID)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

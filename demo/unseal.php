@@ -1,4 +1,4 @@
-<!-- $Id: unseal.php 737 2016-08-29 16:34:54Z kgoldman $ -->
+<!-- $Id: unseal.php 900 2017-01-06 19:25:47Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -46,6 +46,7 @@ echo gethostname();
 <body>
 			
 <div id="header">
+<img src="ibm.png" style="float:right;width:200px;height:70px">
 <h2>IBM TSS Demo Unseal - 
 <?php
 echo gethostname();

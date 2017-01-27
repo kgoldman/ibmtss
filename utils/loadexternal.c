@@ -3,7 +3,7 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: loadexternal.c 924 2017-01-24 19:07:18Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -65,6 +65,7 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/Unmarshal_fp.h>
+#include "cryptoutils.h"
 #include "ekutils.h"
 
 static void printUsage(void);
@@ -403,7 +404,7 @@ int main(int argc, char *argv[])
     return rc;
 }
 
-/* loadExternalTPM() loads a key pair saved in TPM format
+/* loadExternalTPM() loads a public key saved in TPM format
 
  */
 
@@ -433,89 +434,30 @@ TPM_RC loadExternalDer(LoadExternal_In 	*in,
     RSA 		*rsaKey = NULL;
     unsigned char	*derBuffer = NULL;
     size_t		derSize;
-    int         	bytes;
-    const BIGNUM 	*n;
-    const BIGNUM 	*e;
-    const BIGNUM 	*d;
-    const BIGNUM 	*p;
-    const BIGNUM 	*q;
 
     /* read the DER file */
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&derBuffer,     /* freed @1 */
+	rc = TSS_File_ReadBinaryFile(&derBuffer,     	/* freed @1 */
 				     &derSize,
 				     derKeyFilename); 
     }    
     if (rc == 0) {
 	const unsigned char *tmpPtr = derBuffer;
-	d2i_RSAPrivateKey(&rsaKey, &tmpPtr, derSize);		/* freed @2 */
-    }    
-    if (rc == 0) {
-	/* Table 184 - Definition of TPMT_PUBLIC Structure */
-	in->inPublic.publicArea.type = TPM_ALG_RSA;
-	in->inPublic.publicArea.nameAlg = nalg;
-	in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_NODA;
-	if (keyType == TYPE_SI) {
-	    in->inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_SIGN;
-	}
-	else {
-	    in->inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_DECRYPT;
-	}
-	in->inPublic.publicArea.objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
-	in->inPublic.publicArea.authPolicy.t.size = 0;
-	/* Table 182 - Definition of TPMU_PUBLIC_PARMS Union <IN/OUT, S> */
-	/* Table 180 - Definition of {RSA} TPMS_RSA_PARMS Structure */
-	in->inPublic.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
-	/* Table 155 - Definition of {RSA} TPMT_RSA_SCHEME Structure */
-	/* the scheme openssl uses on the command line? */
-	if (keyType == TYPE_SI) {
-	    in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
-	}
-	else {
-	    in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-	}
-	/* Table 152 - Definition of TPMU_ASYM_SCHEME Union */
-	in->inPublic.publicArea.parameters.rsaDetail.scheme.details.rsassa.hashAlg = halg;
-	in->inPublic.publicArea.parameters.rsaDetail.keyBits = 2048;	
-	in->inPublic.publicArea.parameters.rsaDetail.exponent = 0;
-	/* Table 177 - Definition of TPMU_PUBLIC_ID Union <IN/OUT, S> */
-    }
-    /* get the public modulus */
-    /* Table 158 - Definition of {RSA} TPM2B_PUBLIC_KEY_RSA Structure */
-    if (rc == 0) {
-	rc = TSS_RSAGetKey(&n, &e, &d, &p, &q, rsaKey);
+	d2i_RSAPrivateKey(&rsaKey, &tmpPtr, derSize);	/* freed @2 */
     }
     if (rc == 0) {
-	bytes = BN_num_bytes(n);
-	if (bytes > MAX_RSA_KEY_BYTES) {
-	    printf("Error, public key modulus %d greater than %u\n", bytes, MAX_RSA_KEY_BYTES);
-	    rc = EXIT_FAILURE;
-	}
-	else {
-	    in->inPublic.publicArea.unique.rsa.t.size =
-		BN_bn2bin(n,
-			  (uint8_t *)&in->inPublic.publicArea.unique.rsa.t.buffer);
-	}
-    }
+	rc = convertRsaKeyToPrivate(NULL,
+				    &in->inPrivate,
+				    rsaKey,
+				    NULL);		/* Empty Auth */	
+	in->inPrivate.t.size = 1;			/* mark that private area should be used */
+    }	
     if (rc == 0) {
-	in->inPrivate.t.size = 1;		/* true means optional parameter present, flag for
-						   marshaler */
-	in->inPrivate.t.sensitiveArea.sensitiveType = TPM_ALG_RSA;
-	in->inPrivate.t.sensitiveArea.authValue.t.size = 0;
-	in->inPrivate.t.sensitiveArea.seedValue.t.size = 0;
-    }
-    /* get a prime factor */
-    if (rc == 0) {
-	bytes = BN_num_bytes(p);
-	if (bytes > MAX_RSA_KEY_BYTES/2) {
-	    printf("Error, private prime p %d greater than %u\n", bytes, MAX_RSA_KEY_BYTES/2);
-	    rc = EXIT_FAILURE;
-	}
-	else {
-	    in->inPrivate.t.sensitiveArea.sensitive.rsa.t.size =
-		BN_bn2bin(p,
-			  (uint8_t *)&in->inPrivate.t.sensitiveArea.sensitive.rsa.t.buffer);
-	}
+	rc = convertRsaKeyToPublic(&in->inPublic,
+				   keyType,
+				   nalg,
+				   halg,
+				   rsaKey);
     }
     free(derBuffer);			/* @1 */
     if (rsaKey != NULL) {
@@ -532,90 +474,33 @@ TPM_RC loadExternalPEMRSA(LoadExternal_In 	*in,
 			  TPMI_ALG_HASH		halg,
 			  const char		*pemKeyFilename)
 {
-    TPM_RC			rc = 0;
-    FILE 			*pemKeyFile = NULL;
-    EVP_PKEY 			*pemKeyEvp = NULL;
-    RSA 			*rsaPubkey = NULL;
+    TPM_RC	rc = 0;
+    EVP_PKEY 	*evpPkey = NULL;
+    RSA		*rsaKey = NULL;
 
-    /* open the pem format file */
     if (rc == 0) {
-	rc = TSS_File_Open(&pemKeyFile, pemKeyFilename, "rb"); 	/* closed @2 */
-    }
-    /* convert the file to an EVP public key */
-    if (rc == 0) {
-	pemKeyEvp = PEM_read_PUBKEY(pemKeyFile, NULL, NULL, NULL);
-	if (pemKeyEvp == NULL) {
-	    printf("Error PEM_read_PUBKEY reading public key file %s\n", pemKeyFilename);
-	    rc = EXIT_FAILURE;
-	}
-    }
-    /* convert to openssl key token */
-    if (rc == 0) {
-	rsaPubkey = EVP_PKEY_get1_RSA(pemKeyEvp);	/* freed @1 */
-	if (rsaPubkey == NULL) {
-	    printf("Error: EVP_PKEY_get1_RSA converting public key\n");
-	    rc = EXIT_FAILURE;
-	}
+	rc = convertPemToEvpPubKey(&evpPkey,		/* freed @1 */
+				   pemKeyFilename);
     }
     if (rc == 0) {
-	/* Table 184 - Definition of TPMT_PUBLIC Structure */
-	in->inPublic.publicArea.type = TPM_ALG_RSA;
-	in->inPublic.publicArea.nameAlg = nalg;
-	if (keyType == TYPE_SI) {
-	    in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_SIGN;
-	}
-	else {
-	    in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_DECRYPT;
-	}
-	in->inPublic.publicArea.authPolicy.t.size = 0;
-	/* Table 182 - Definition of TPMU_PUBLIC_PARMS Union <IN/OUT, S> */
-	/* Table 180 - Definition of {RSA} TPMS_RSA_PARMS Structure */
-	in->inPublic.publicArea.parameters.rsaDetail.symmetric.algorithm = TPM_ALG_NULL;
-	/* Table 155 - Definition of {RSA} TPMT_RSA_SCHEME Structure */
-	if (keyType == TYPE_SI) {
-	    in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
-	}
-	else {
-	    in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
-	}
-	/* or always use RSASSA (sample code) */
-	in->inPublic.publicArea.parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
-	/* Table 152 - Definition of TPMU_ASYM_SCHEME Union */
-	in->inPublic.publicArea.parameters.rsaDetail.scheme.details.rsassa.hashAlg = halg;
-	in->inPublic.publicArea.parameters.rsaDetail.keyBits = 2048;	
-	in->inPublic.publicArea.parameters.rsaDetail.exponent = 0;
-	/* Table 177 - Definition of TPMU_PUBLIC_ID Union <IN/OUT, S> */
+	rc = convertEvpPkeyToRsakey(&rsaKey,		/* freed @2 */
+				    evpPkey);
     }
-    /* get the public modulus */
-    /* Table 158 - Definition of {RSA} TPM2B_PUBLIC_KEY_RSA Structure */
     if (rc == 0) {
-	int     bytes;
-	const BIGNUM	*n;
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-	n = rsaPubkey->n;
-#else
-	const BIGNUM *e;
-	const BIGNUM *d;
-	RSA_get0_key(rsaPubkey, &n, &e, &d);
-#endif
-	bytes = BN_num_bytes(n);
-	if (bytes > MAX_RSA_KEY_BYTES) {
-	    printf("Error, public key modulus %d greater than %u\n", bytes, MAX_RSA_KEY_BYTES);
-	    rc = EXIT_FAILURE;
-	}
-	else {
-	    in->inPublic.publicArea.unique.rsa.t.size =
-		BN_bn2bin(n, (uint8_t *)&in->inPublic.publicArea.unique.rsa.t.buffer);
-	}
+	rc = convertRsaKeyToPublic(&in->inPublic,
+				   keyType,
+				   nalg,
+				   halg,
+				   rsaKey);
     }
     if (rc == 0) {
 	in->inPrivate.t.size = 0;
     }
-    if (rsaPubkey != NULL) {
-	RSA_free(rsaPubkey);			/* @1 */
+    if (rsaKey != NULL) {
+	RSA_free(rsaKey);		/* @2 */
     }
-    if (pemKeyFile != NULL) {
-	fclose(pemKeyFile);			/* @2 */
+    if (evpPkey != NULL) {
+	EVP_PKEY_free(evpPkey);		/* @1 */
     }
     return rc;
 }
@@ -628,122 +513,32 @@ TPM_RC loadExternalPEMECC(LoadExternal_In 	*in,
 			  TPMI_ALG_HASH		halg,
 			  const char		*pemKeyFilename)
 {
-    TPM_RC			rc = 0;
-    FILE 			*pemKeyFile = NULL;
-    EVP_PKEY 			*pemKeyEvp = NULL;
-    int 			pkeyType;	/* RSA or EC */
-    EC_KEY 			*ecKey = NULL;
-    const EC_POINT 		*ecPoint;
-    const EC_GROUP 		*ecGroup;
-    uint8_t 			*modulusBin = NULL;
-    int 			modulusBytes;
+    TPM_RC	rc = 0;
+    EVP_PKEY  	*evpPkey = NULL;
+    EC_KEY 	*ecKey = NULL;
 
-    /* open the pem format file */
     if (rc == 0) {
-	rc = TSS_File_Open(&pemKeyFile, pemKeyFilename, "rb"); 	/* closed @2 */
-    }
-    /* convert the file to an EVP public key */
-    if (rc == 0) {
-	pemKeyEvp = PEM_read_PUBKEY(pemKeyFile, NULL, NULL, NULL);
-	if (pemKeyEvp == NULL) {
-	    printf("Error PEM_read_PUBKEY reading public key file %s\n", pemKeyFilename);
-	    rc = EXIT_FAILURE;
-	}
+	rc = convertPemToEvpPubKey(&evpPkey,		/* freed @1 */
+				   pemKeyFilename);
     }
     if (rc == 0) {
-	pkeyType = TSS_Pubkey_GetAlgorithm(pemKeyEvp);
-	if (pkeyType != EVP_PKEY_EC) {
-	    printf("PEM Public key is not EC\n");
-	    rc = TPM_RC_INTEGRITY;
-	}
-    }
-    /* convert the public key to openssl structure */
-    if (rc == 0) {
-	ecKey = EVP_PKEY_get1_EC_KEY(pemKeyEvp);		/* freed @3 */
-	if (ecKey == NULL) {
-	    printf("Could not extract EC public key from X509 certificate\n");
-	    rc = TPM_RC_INTEGRITY;
-	}
+	rc = convertEvpPkeyToEckey(&ecKey,		/* freed @2 */
+				   evpPkey);
     }
     if (rc == 0) {
-	ecPoint = EC_KEY_get0_public_key(ecKey);
-	if (ecPoint == NULL) {
-	    printf("Could not extract EC point from EC public key\n");
-	    rc = TPM_RC_INTEGRITY;
-	}
-    }
-    if (rc == 0) {   
-	ecGroup = EC_KEY_get0_group(ecKey);
-	if (ecGroup  == NULL) {
-	    printf("Could not extract EC group from EC public key\n");
-	    rc = TPM_RC_INTEGRITY;
-	}
-    }
-
-    /* get the public modulus */
-    if (rc == 0) {   
-	modulusBytes = EC_POINT_point2oct(ecGroup, ecPoint,
-					  POINT_CONVERSION_UNCOMPRESSED,
-					  NULL, 0, NULL);
-	if (modulusBytes != 65) {	/* 1 for compression + 32 + 32 */
-	    printf("Public modulus expected 65 bytes, actual %u\n", modulusBytes);
-	    rc = TPM_RC_INTEGRITY;
-	}	    
-    }
-    if (rc == 0) {   
-	modulusBin = malloc(modulusBytes);	/* freed @3 */
-	if (modulusBin == NULL) {
-	    printf("Error allocating %u bytes for modulusBin\n", modulusBytes);
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
-    }
-    if (rc == 0) {
-	EC_POINT_point2oct(ecGroup, ecPoint,
-			   POINT_CONVERSION_UNCOMPRESSED,
-			   modulusBin, modulusBytes, NULL);
-	if (verbose) TSS_PrintAll("ECC public key:", modulusBin, modulusBytes);
-    }
-    if (rc == 0) {
-	/* Table 184 - Definition of TPMT_PUBLIC Structure */
-	in->inPublic.publicArea.type = TPM_ALG_ECC;
-	in->inPublic.publicArea.nameAlg = nalg;
-	if (keyType == TYPE_SI) {
-	    in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_SIGN;
-	}
-	else {
-	    in->inPublic.publicArea.objectAttributes.val = TPMA_OBJECT_DECRYPT;
-	}
-	in->inPublic.publicArea.authPolicy.t.size = 0;
-	/* Table 182 - Definition of TPMU_PUBLIC_PARMS Union <IN/OUT, S> */
-	in->inPublic.publicArea.parameters.eccDetail.symmetric.algorithm = TPM_ALG_NULL;
-	if (keyType == TYPE_SI) {
-	    in->inPublic.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_ECDSA;
-	}
-	else {
-	    in->inPublic.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
-	}
-	/* or always use ECDS (sample code) */
-	in->inPublic.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_ECDSA;
-	/* Table 152 - Definition of TPMU_ASYM_SCHEME Union */
-	in->inPublic.publicArea.parameters.eccDetail.scheme.details.ecdsa.hashAlg = halg;
-	in->inPublic.publicArea.parameters.eccDetail.curveID = TPM_ECC_NIST_P256;	
-	in->inPublic.publicArea.parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
-	in->inPublic.publicArea.parameters.eccDetail.kdf.details.mgf1.hashAlg = halg;
-    }
-    if (rc == 0) {
-	in->inPublic.publicArea.unique.ecc.x.t.size = 32;	
-	memcpy(in->inPublic.publicArea.unique.ecc.x.t.buffer, modulusBin +1, 32);	
-
-	in->inPublic.publicArea.unique.ecc.y.t.size = 32;	
-	memcpy(in->inPublic.publicArea.unique.ecc.y.t.buffer, modulusBin +33, 32);	
+	rc = convertEcKeyToPublic(&in->inPublic,
+				  keyType,
+				  nalg,
+				  halg,
+				  ecKey);
     }
     if (rc == 0) {
 	in->inPrivate.t.size = 0;
     }
-    if (pemKeyFile != NULL) {
-	fclose(pemKeyFile);			/* @2 */
+    EC_KEY_free(ecKey);   		/* @2 */
+    if (evpPkey != NULL) {
+	EVP_PKEY_free(evpPkey);		/* @1 */
     }
-    free(modulusBin);				/* @3 */
     return rc;
 }
 

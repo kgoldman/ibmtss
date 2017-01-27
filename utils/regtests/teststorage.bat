@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: teststorage.bat 681 2016-07-14 20:08:10Z kgoldman $	#
+REM #		$Id: teststorage.bat 893 2016-12-29 22:13:21Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -125,9 +125,74 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+echo ""
+echo "ECC Storage key"
+echo ""
+
+echo "Create a ECC primary storage key 80000001"
+%TPM_EXE_PATH%createprimary -ecc nistp256 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Create a ECC storage key under the ECC primary storage key 80000001"
+%TPM_EXE_PATH%create -hp 80000001 -ecc nistp256 -st -opr tmppriv.bin -opu tmppub.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the ECC storage key 80000002 under the ECC primary key 80000001"
+%TPM_EXE_PATH%load -hp 80000001 -ipu tmppub.bin -ipr tmppriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the ECC primary storage key 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Create a signing key under the ECC storage key 80000002"
+%TPM_EXE_PATH%create -hp 80000002 -ecc nistp256 -si -opr tmppriv.bin -opu tmppub.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the ECC storage key 80000001 under the ECC storage key 80000002"
+%TPM_EXE_PATH%load -hp 80000002 -ipu tmppub.bin -ipr tmppriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign a digest woith ECC signing key 80000001"
+%TPM_EXE_PATH%sign -hk 80000001 -ecc -if policies/sha256aaa.bin -os tmpsig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature using the ECC signing key 80000001"
+verifysignature -hk 80000001 -ecc -if policies/sha256aaa.bin -is tmpsig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the signing key 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the storage key 80000002"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
 rm -f tmppub2.bin
 rm -f tmppub.bin
 rm -f tmppriv.bin
+rm -f tmpsig.bin
 
 exit /B 0
 

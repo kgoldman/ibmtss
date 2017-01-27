@@ -3,7 +3,7 @@
 /*			    Get Capability	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: getcapability.c 922 2017-01-23 22:09:43Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -442,6 +442,8 @@ static PT_TABLE ptTable [] = {
     {(PT_FIXED + 42), "TPM_PT_LIBRARY_COMMANDS - number of commands from the TPM library that are implemented"},
     {(PT_FIXED + 43), "TPM_PT_VENDOR_COMMANDS - number of vendor commands that are implemented"},
     {(PT_FIXED + 44), "TPM_PT_NV_BUFFER_MAX - the maximum data size in one NV write command"},
+    {(PT_FIXED + 45) ,"TPM_PT_MODES - a TPMA_MODES value, indicating that the TPM is designed for these modes"},
+    {(PT_FIXED + 46) ,"TPM_PT_MAX_CAP_BUFFER - the maximum size of a TPMS_CAPABILITY_DATA structure returned in TPM2_GetCapability"},
     {(PT_VAR + 0), "TPM_PT_PERMANENT - TPMA_PERMANENT "},
     {(PT_VAR + 1), "TPM_PT_STARTUP_CLEAR - TPMA_STARTUP_CLEAR "},
     {(PT_VAR + 2), "TPM_PT_HR_NV_INDEX - the number of NV Indexes currently defined "},

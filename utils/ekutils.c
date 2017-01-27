@@ -3,7 +3,7 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: ekutils.c 922 2017-01-23 22:09:43Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -59,8 +59,10 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssutils.h>
 #include <tss2/tsscrypto.h>
+#include <tss2/tssprint.h>
 #include <tss2/Unmarshal_fp.h>
 
+#include "cryptoutils.h"
 #include "ekutils.h"
 
 /* windows apparently uses _MAX_PATH in stdlib.h */
@@ -102,7 +104,9 @@ TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
     }
     /* sanity check that the property name is correct (demo of how to parse the structure) */
     if (rc == 0) {
-	if (out.capabilityData.data.tpmProperties.tpmProperty[0].property == TPM_PT_NV_BUFFER_MAX) {
+	if ((out.capabilityData.data.tpmProperties.count > 0) &&
+	    (out.capabilityData.data.tpmProperties.tpmProperty[0].property ==
+	     TPM_PT_NV_BUFFER_MAX)) {
 	    *nvBufferMax = out.capabilityData.data.tpmProperties.tpmProperty[0].value;
 	}
 	else {
@@ -666,7 +670,7 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	}
     }
     if (rc == 0) {
-	pkeyType = TSS_Pubkey_GetAlgorithm(pkey);
+	pkeyType = getRsaPubkeyAlgorithm(pkey);
     }
     if (ekCertIndex == EK_CERT_RSA_INDEX) {
 	RSA *rsaKey = NULL;
@@ -689,7 +693,7 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	if (rc == 0) {
 	    const BIGNUM *e;
 	    const BIGNUM *d;
-	    rc = TSS_RSAGetKey(&modulusBn, &e, &d, NULL, NULL, rsaKey);
+	    rc = getRsaKeyParts(&modulusBn, &e, &d, NULL, NULL, rsaKey);
 	}
 	if (rc == 0) {
 	    *modulusBytes = BN_num_bytes(modulusBn);
@@ -1129,55 +1133,5 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-/*
-  RSA Key Functions
-*/
-
-/* TSS_RSAGetKey() gets the RSA key parts from an OpenSSL RSA key token.
-
-   If n is not NULL, returns n, e, and d.  If p is not NULL, returns p and q.
-*/
-
-TPM_RC TSS_RSAGetKey(const BIGNUM **n,
-		     const BIGNUM **e,
-		     const BIGNUM **d,
-		     const BIGNUM **p,
-		     const BIGNUM **q,
-		     const RSA *rsaKey)
-{
-    TPM_RC  	rc = 0;
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    if (n != NULL) {
-	*n = rsaKey->n;
-	*e = rsaKey->e;
-	*d = rsaKey->d;
-    }
-    if (p != NULL) {
-	*p = rsaKey->p;
-	*q = rsaKey->q;
-    }
-#else
-    if (n != NULL) {
-	RSA_get0_key(rsaKey, n, e, d);
-    }
-    if (p != NULL) {
-	RSA_get0_factors(rsaKey, p, q);
-    }
-#endif
-    return rc;
-}
-
-/* TSS_Pubkey_GetAlgorithm() returns the openssl algorithm type for the EVP_PKEY public key. */
-
-int TSS_Pubkey_GetAlgorithm(EVP_PKEY *pkey)
-{
-    int 			pkeyType;	/* RSA or EC */
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    pkeyType = pkey->type;
-#else
-    pkeyType = EVP_PKEY_base_id(pkey);
-#endif
-    return pkeyType;
-}
 
 

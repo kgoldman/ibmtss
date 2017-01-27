@@ -3,7 +3,7 @@
 /*			     IMA Routines					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id$			*/
+/*            $Id: imalib.c 894 2016-12-30 21:35:27Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -51,13 +51,17 @@
 #include <arpa/inet.h>
 #endif
 
+#ifdef TPM_WINDOWS
+#include <winsock2.h>
+#endif
+
 #include <openssl/sha.h>
 #include <openssl/engine.h>
 
-#include <tss2/tssprint.h>
 #include <tss2/TPM_Types.h>
 #include <tss2/tsscryptoh.h>
 #include <tss2/tssmarshal.h>
+#include <tss2/tssprint.h>
 
 #include "imalib.h"
 

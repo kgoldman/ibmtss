@@ -3,7 +3,7 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*            $Id: tssauth.c 916 2017-01-19 22:31:42Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -702,7 +702,7 @@ static TPM_RC TSS_MarshalTable_Process(TSS_AUTH_CONTEXT *tssAuthContext,
 	tssAuthContext->unmarshalInFunction = marshalTable[index].unmarshalInFunction;
     }
     else {
-	printf("TSS_MarshalTable_Process: commandCode %08x not found\n", commandCode);
+	if (tssVerbose) printf("TSS_MarshalTable_Process: commandCode %08x not found\n", commandCode);
 	rc = TSS_RC_COMMAND_UNIMPLEMENTED;
     }
     return rc;
@@ -772,7 +772,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     if (rc == 0) {
 	tssAuthContext->tpmCommandIndex = CommandCodeToCommandIndex(commandCode);
 	if (tssAuthContext->tpmCommandIndex == UNIMPLEMENTED_COMMAND_INDEX) {
-	    printf("TSS_Marshal: commandCode %08x not found\n", commandCode);
+	    if (tssVerbose) printf("TSS_Marshal: commandCode %08x not found\n", commandCode);
 	    rc = TSS_RC_COMMAND_UNIMPLEMENTED;
 	}
     }
@@ -1335,8 +1335,10 @@ TPM_RC TSS_AuthExecute(TSS_CONTEXT *tssContext)
     /* transmit the command and receive the response.  Normally returns the TPM response code. */
     if (rc == 0) {
 	rc = TSS_Transmit(tssContext,
-			  tssContext->tssAuthContext->responseBuffer, &tssContext->tssAuthContext->responseSize,
-			  tssContext->tssAuthContext->commandBuffer, tssContext->tssAuthContext->commandSize,
+			  tssContext->tssAuthContext->responseBuffer,
+			  &tssContext->tssAuthContext->responseSize,
+			  tssContext->tssAuthContext->commandBuffer,
+			  tssContext->tssAuthContext->commandSize,
 			  tssContext->tssAuthContext->commandText);
     }
     return rc;

@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy.sh 800 2016-11-15 15:05:25Z kgoldman $		#
+#		$Id: testpolicy.sh 916 2017-01-19 22:31:42Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -281,15 +281,17 @@ echo ""
 #
 # create the policy:
 # after loadexternal, get the name from ${TPM_DATA_DIR}/h80000001.bin
+# 0004 4234 c24f c1b9 de66 93a6 2453 417d 2734 d753 8f6f
+
 # 00000160 plus the above name as text, add a blank line for empty policyRef
 # to create policies/policysigned.txt
 #
 # > policymaker -if policies/policysigned.txt -of policies/policysigned.bin -pr
 #
-# 000001600004c8481987a024d6a47c14df9515908f1a7ec05815
+# 0000016000044234c24fc1b9de6693a62453417d2734d7538f6f
 #
-# f877 5115 bc62 bd3f 0047 9083 5bc8 b24f
-# 7df2 d426 6141 03e6 10dd d61a 345c 4a7b
+# 9d 81 7a 4e e0 76 eb b5 cf ee c1 82 05 cc 4c 01 
+# b3 a0 5e 59 a9 b9 65 a1 59 af 1e cd 3d bf 54 fb 
 #
 # 80000000 primary key
 # 80000001 verification public key
@@ -516,6 +518,18 @@ echo ""
 # 80000001 verification public key, openssl
 # 80000002 signing key
 # 03000000 policy session
+
+# Name for 80000001 0004 4234 c24f c1b9 de66 93a6 2453 417d 2734 d753 8f6f
+#
+# policyauthorize.txt
+# 0000016a00044234c24fc1b9de6693a62453417d2734d7538f6f
+#
+# (need blank line for policyRef)
+#
+# > policymaker -if policies/policyauthorize.txt -of policies/policyauthorize.bin -pr
+#
+# 46 d4 8c 7e 17 0a 71 ca 9e 1f c7 e1 77 e5 7b 53 
+# 75 df c4 3a 44 c9 65 4b 18 97 ce b1 92 e0 21 50 
 
 echo "Create a signing key with policy authorize"
 ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyauthorize.bin > run.out

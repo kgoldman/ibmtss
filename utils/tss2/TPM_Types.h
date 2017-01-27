@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 827 2016-11-18 20:45:01Z kgoldman $		*/
+/*            $Id: TPM_Types.h 913 2017-01-16 21:41:07Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/

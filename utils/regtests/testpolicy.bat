@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testpolicy.bat 752 2016-09-23 14:18:20Z kgoldman $		#
+REM #		$Id: testpolicy.bat 919 2017-01-20 15:11:51Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -368,14 +368,17 @@ REM # sign a test message msg.bin
 REM # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 REM #
 REM # create the policy, after loadexternal, get the name from ${TPM_DATA_DIR}/h80000001.bin
+REM # 0004 4234 c24f c1b9 de66 93a6 2453 417d 2734 d753 8f6f
+
 REM # 00000160 plus the above name as text, add a blank line for empty policyRef
+REM # to create policies/policysigned.txt
 REM #
 REM # > policymaker -if policysigned.txt -of policysigned.bin -pr
 REM #
-REM # 000001600004c8481987a024d6a47c14df9515908f1a7ec05815
+REM # 0000016000044234c24fc1b9de6693a62453417d2734d7538f6f
 REM #
-REM # f877 5115 bc62 bd3f 0047 9083 5bc8 b24f
-REM # 7df2 d426 6141 03e6 10dd d61a 345c 4a7b
+REM # 9d 81 7a 4e e0 76 eb b5 cf ee c1 82 05 cc 4c 01 
+REM # b3 a0 5e 59 a9 b9 65 a1 59 af 1e cd 3d bf 54 fb 
 REM #
 REM #
 REM # 80000000 primary key
@@ -693,6 +696,18 @@ REM # 80000000 primary
 REM # 80000001 verification public key, openssl
 REM # 80000002 signing key
 REM # 03000000 policy session
+
+REM # Name for 80000001 0004 4234 c24f c1b9 de66 93a6 2453 417d 2734 d753 8f6f
+REM #
+REM # policyauthorize.txt
+REM # 0000016a00044234c24fc1b9de6693a62453417d2734d7538f6f
+REM #
+REM # (need blank line for policyRef)
+REM #
+REM # > policymaker -if policies/policyauthorize.txt -of policies/policyauthorize.bin -pr
+REM #
+REM # 46 d4 8c 7e 17 0a 71 ca 9e 1f c7 e1 77 e5 7b 53 
+REM # 75 df c4 3a 44 c9 65 4b 18 97 ce b1 92 e0 21 50 
 
 echo "Create a signing key with policy authorize"
 %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyauthorize.bin > run.out

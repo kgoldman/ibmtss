@@ -1,4 +1,4 @@
-<!-- $Id: pcr.php 740 2016-08-29 18:26:38Z kgoldman $ -->
+<!-- $Id: pcr.php 900 2017-01-06 19:25:47Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -46,6 +46,7 @@ echo gethostname();
 <body>
 
 <div id="header">
+<img src="ibm.png" style="float:right;width:200px;height:70px">
 <h2>IBM TSS Demo PCRs - 
 <?php
 echo gethostname();

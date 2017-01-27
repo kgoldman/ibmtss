@@ -1,4 +1,4 @@
-<!-- $Id: keycreate.php 795 2016-11-10 22:32:20Z kgoldman $ -->
+<!-- $Id: keycreate.php 910 2017-01-13 16:38:29Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -46,6 +46,7 @@ echo gethostname();
 <body>
 
 <div id="header">
+<img src="ibm.png" style="float:right;width:200px;height:70px">
 <h2>IBM TSS Demo Key Creation - 
 <?php
 echo gethostname();
@@ -157,7 +158,7 @@ if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
 	    }
 	}
 	if ($retval == 0) {
-	    echo "Command string: $commandStr. <br>"; $retval = 0;
+	    //echo "Command string: $commandStr. <br>"; $retval = 0;
 	    unset($output);
 	    exec ($commandStr, $output, $retval);
 	    if ($retval == 0) {

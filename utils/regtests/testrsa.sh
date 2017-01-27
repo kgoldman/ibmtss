@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testrsa.sh 663 2016-06-30 18:58:18Z kgoldman $			#
+#	$Id: testrsa.sh 914 2017-01-16 22:05:26Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -65,6 +65,43 @@ checkSuccess $?
 echo "Flush the decryption key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
+
+echo ""
+echo "RSA decryption key to sign with OID"
+echo ""
+
+echo "Load the RSA decryption key"
+${PREFIX}load -hp 80000000 -ipu derpub.bin -ipr derpriv.bin -pwdp pps > run.out
+checkSuccess $?
+
+HALG=("sha1" "sha256" "sha384")
+HSIZ=("20" "32" "48")
+
+for ((i = 0 ; i < 3 ; i++))
+do
+
+    echo "Decrypt/Sign with a caller specified OID - ${HALG[i]}"
+    ${PREFIX}rsadecrypt -hk 80000001 -pwdk dec -ie policies/${HALG[i]}aaa.bin -od tmpsig.bin -oid ${HALG[i]} > run.out
+    checkSuccess $?
+
+    echo "Encrypt/Verify - ${HALG[i]}"
+    ${PREFIX}rsaencrypt -hk 80000001 -id tmpsig.bin -oe tmpmsg.bin
+    checkSuccess $?
+
+    echo "Verify Result - ${HALG[i]} ${HSIZ[i]} bytes"
+    tail -c ${HSIZ[i]} tmpmsg.bin > tmpdig.bin
+    diff tmpdig.bin policies/${HALG[i]}aaa.bin
+    checkSuccess $?
+
+done
+
+echo "Flush the RSA signing key"
+${PREFIX}flushcontext -ha 80000001
+checkSuccess $?
+
+rm -f tmpmsg.bin
+rm -f tmpdig.bin
+rm -f tmpsig.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 02000000

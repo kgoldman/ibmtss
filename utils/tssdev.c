@@ -3,7 +3,7 @@
 /*		Linux Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.c 878 2016-12-19 19:52:56Z kgoldman $ 		*/
+/*	      $Id: tssdev.c 906 2017-01-10 15:02:58Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -49,7 +49,12 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <sys/ioctl.h>
 #include <fcntl.h>
+
+/* FIXME: Linux definition of TPM_IOC_NEW_SPACE eventually needs
+ * to come from linux/tpm.h */
+#define TPM_IOC_NEW_SPACE _IO(0xa2, 0x00)
 
 #include <tss2/tssresponsecode.h>
 #include <tss2/tsserror.h>
@@ -61,7 +66,8 @@
 /* local prototypes */
 
 static uint32_t TSS_Dev_Open(TSS_CONTEXT *tssContext);
-static uint32_t TSS_Dev_SendCommand(int dev_fd, const uint8_t *buffer, uint16_t length, const char *message);
+static uint32_t TSS_Dev_SendCommand(int dev_fd, const uint8_t *buffer, uint16_t length,
+				    const char *message);
 static uint32_t TSS_Dev_ReceiveCommand(int dev_fd, uint8_t *buffer, uint32_t *length);
 
 /* global configuration */
@@ -107,13 +113,22 @@ TPM_RC TSS_Dev_Transmit(TSS_CONTEXT *tssContext,
 static uint32_t TSS_Dev_Open(TSS_CONTEXT *tssContext)
 {
     uint32_t rc = 0;
-
+    int irc;
+    
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_Dev_Open: Opening %s\n", tssContext->tssDevice);
 	tssContext->dev_fd = open(tssContext->tssDevice, O_RDWR);
 	if (tssContext->dev_fd <= 0) {
 	    if (tssVerbose) printf("TSS_Dev_Open: Error opening %s\n", tssContext->tssDevice);
 	    rc = TSS_RC_NO_CONNECTION;
+	}
+	if (rc == 0 && tssContext->tssUseResourceManager) {
+	    if (tssVverbose) printf("TSS_Dev_Open: Using a Resource Manager\n");
+	    irc = ioctl(tssContext->dev_fd, TPM_IOC_NEW_SPACE);
+	    if (irc != 0) {
+		if (tssVerbose) printf("TSS_Dev_Open: ioctl to set Resource Manager failed");
+		rc = TSS_RC_NO_CONNECTION;
+	    }
 	}
     }
     if (rc == 0) {

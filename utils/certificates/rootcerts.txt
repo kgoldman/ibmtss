@@ -10,3 +10,14 @@
 /gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/NuvotonTPMRootCA1110.pem
 /gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/NuvotonTPMRootCA2110.pem
 /gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/cacert.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/cacertecc.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/gstpmroot.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmeccint01.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmeccroot01.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmekint01.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmekint02.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmekint03.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmekint04.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmekint05.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmekroot.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/tpmeccroot.pem

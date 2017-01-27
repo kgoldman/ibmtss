@@ -158,6 +158,7 @@ ALL += 	$(LIBTSS)				\
 						\
 	signapp$(EXE)				\
 	writeapp$(EXE)				\
+	timepacket$(EXE)			\
 	createek$(EXE)
 
 ALL	+= 					\

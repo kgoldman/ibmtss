@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.h 878 2016-12-19 19:52:56Z kgoldman $		*/
+/*	      $Id: tssproperties.h 905 2017-01-09 21:59:16Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -107,7 +107,7 @@ extern "C" {
 	void *tssSessionEncKey;
 	void *tssSessionDecKey;
 #endif
-	/* a minimal TSS with no file support stores the sessions in a structure.  SCripting will not
+	/* a minimal TSS with no file support stores the sessions in a structure.  Scripting will not
 	   work, but a single application will */
 #ifdef TPM_TSS_NOFILE
 	TSS_SESSIONS sessions[MAX_ACTIVE_SESSIONS];
@@ -123,6 +123,9 @@ extern "C" {
 
 	/* device driver interface */
 	const char *tssDevice;
+
+	/* whether to activate resource manager (tss device only) */
+	int tssUseResourceManager;
 
 	/* TRUE for the first time through, indicates that interface open must occur */
 	int tssFirstTransmit;
