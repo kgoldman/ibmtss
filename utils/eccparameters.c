@@ -3,7 +3,7 @@
 /*			   ECC_Parameters					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eccparameters.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: eccparameters.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     ECC_Parameters_Out 		out;
     const char 			*datafilename = NULL;
    
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     in.curveID = TPM_ECC_NONE;

@@ -3,7 +3,7 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 922 2017-01-23 22:09:43Z kgoldman $		*/
+/*	      $Id: ekutils.c 951 2017-03-02 22:12:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -377,6 +377,8 @@ TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
    Returns both the OpenSSL X509 certificate token and RSA public key token.
 */
 
+#ifndef TPM_TSS_NOFILE
+
 uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
 				  X509 **x509,
 				  const char *derCertificateFileName)
@@ -414,6 +416,10 @@ uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
     return rc;
 }
 
+#endif
+
+#ifndef TPM_TSS_NOFILE
+
 /* getPubKeyFromX509Cert() gets an OpenSSL RSA public key token from an OpenSSL X509 certificate
    token. */
 
@@ -443,12 +449,16 @@ uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
     return rc;
 }
 
+#endif
+
 /* getRootCertificateFilenames() reads listFilename, which is a list of filenames.  The intent is
    that the filenames are a list of EK TPM vendor root certificates in PEM format.
 
    It accepts up to MAX_ROOTS filenames, which is a #define.
 
 */
+
+#ifndef TPM_TSS_NOFILE
 
 TPM_RC getRootCertificateFilenames(char *rootFilename[],
 				   unsigned int *rootFileCount,
@@ -505,6 +515,8 @@ TPM_RC getRootCertificateFilenames(char *rootFilename[],
     return rc;
 }
 
+#endif
+
 /* getCaStore() creates an OpenSSL X509_STORE, populated by the root certificates in the
    rootFilename array.  Depending on the vendor, some certificates may be intermediate certificates.
    OpenSSL handles this internally by walking the chain back to the root.
@@ -513,6 +525,8 @@ TPM_RC getRootCertificateFilenames(char *rootFilename[],
 
    NOTE:  There is no TPM interaction.
 */ 
+
+#ifndef TPM_TSS_NOFILE
 
 TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
 		  X509 	*caCert[],		/* freed by caller */
@@ -558,6 +572,8 @@ TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
     }
     return rc;
 }
+
+#endif
 
 /* processEKNonce()reads the EK nonce from NV and returns the contents and size */
    
@@ -705,9 +721,11 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	    if (print) TSS_PrintAll("Certificate public key:", *modulusBin, *modulusBytes);
 	}    
 	/* use openssl to print the X509 certificate */
+#ifndef TPM_TSS_NOFILE
 	if (rc == 0) {
 	    if (print) X509_print_fp(stdout, ekCertificate);
 	}
+#endif
 	RSA_free(rsaKey);   		/* @3 */
     }
     else {	/* EC index */
@@ -756,9 +774,11 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	    if (print) TSS_PrintAll("Certificate public key:", *modulusBin, *modulusBytes);
 	}
 	/* use openssl to print the X509 certificate */
+#ifndef TPM_TSS_NOFILE
 	if (rc == 0) {
 	    if (print) X509_print_fp(stdout, ekCertificate);
 	}
+#endif
 	EC_KEY_free(ecKey);   		/* @3 */
     }
     EVP_PKEY_free(pkey);   		/* @2 */
@@ -768,6 +788,8 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 /* processRoot() validates the certificate at ekCertIndex against the root CA certificate at
    rootFilename.
  */
+
+#ifndef TPM_TSS_NOFILE
 
 TPM_RC processRoot(TSS_CONTEXT *tssContext,
 		   TPMI_RH_NV_INDEX ekCertIndex,
@@ -840,6 +862,8 @@ TPM_RC processRoot(TSS_CONTEXT *tssContext,
     }
     return rc;
 }
+
+#endif
 
 /* processCreatePrimary() combines the EK nonce and EK template from NV to form the
    createprimary input.  It creates the primary key.
@@ -1066,6 +1090,7 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,		/* from certificate */
 */
 
 TPM_RC processPrimary(TSS_CONTEXT *tssContext,
+		      TPM_HANDLE *keyHandle,		/* primary key handle */
 		      TPMI_RH_NV_INDEX ekCertIndex,
 		      TPMI_RH_NV_INDEX ekNonceIndex, 
 		      TPMI_RH_NV_INDEX ekTemplateIndex,
@@ -1076,7 +1101,6 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
     X509 			*ekCertificate = NULL;
     unsigned char 		*nonce = NULL;
     uint16_t 			nonceSize;
-    TPM_HANDLE			keyHandle;		/* primary key handle */
     TPMT_PUBLIC 		tpmtPublicIn;		/* template */
     TPMT_PUBLIC 		tpmtPublicOut;		/* primary key */
     uint8_t 			*publicKeyBin = NULL;	/* from certificate */
@@ -1099,7 +1123,7 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
     /* create the primary key */
     if (rc == 0) {
 	rc = processCreatePrimary(tssContext,
-				  &keyHandle,
+				  keyHandle,
 				  ekCertIndex,
 				  nonce, nonceSize,		/* EK nonce, can be NULL */
 				  &tpmtPublicIn,		/* template */
@@ -1115,6 +1139,7 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
 				  ekCertIndex,
 				  print);
     }
+    /* compare the public key in the EK certificate to the public key output */
     if (rc == 0) {
 	rc = processValidatePrimary(publicKeyBin,	/* certificate */
 				    publicKeyBytes,

@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: CommandAttributeData.c 815 2016-11-16 23:16:48Z kgoldman $	*/
+/*            $Id: CommandAttributeData.c 954 2017-03-07 20:39:39Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -151,7 +151,7 @@ const TPMA_CC_TSS    s_ccAttr [] = {
     {{0x0131, 0, 0, 0, 0, 1, 1, 0, 0}},     // TPM_CC_CreatePrimary
 #endif
 #if (PAD_LIST || CC_NV_GlobalWriteLock)
-    {{0x0132, 0, 0, 0, 0, 1, 0, 0, 0}},     // TPM_CC_NV_GlobalWriteLock
+    {{0x0132, 0, 1, 0, 0, 1, 0, 0, 0}},     // TPM_CC_NV_GlobalWriteLock
 #endif
 #if (PAD_LIST || CC_GetCommandAuditDigest)
     {{0x0133, 0, 1, 0, 0, 2, 0, 0, 0}},     // TPM_CC_GetCommandAuditDigest
@@ -238,7 +238,7 @@ const TPMA_CC_TSS    s_ccAttr [] = {
     {{0x014e, 0, 0, 0, 0, 2, 0, 0, 0}},     // TPM_CC_NV_Read
 #endif
 #if (PAD_LIST || CC_NV_ReadLock)
-    {{0x014f, 0, 0, 0, 0, 2, 0, 0, 0}},     // TPM_CC_NV_ReadLock
+    {{0x014f, 0, 1, 0, 0, 2, 0, 0, 0}},     // TPM_CC_NV_ReadLock
 #endif
 #if (PAD_LIST || CC_ObjectChangeAuth)
     {{0x0150, 0, 0, 0, 0, 2, 0, 0, 0}},     // TPM_CC_ObjectChangeAuth

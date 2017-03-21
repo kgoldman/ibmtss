@@ -91,7 +91,6 @@ extern "C" {
 #define TPM_DEVICE		7
 #define TPM_ENCRYPT_SESSIONS	8
 #define TPM_SERVER_TYPE		9
-#define TPM_USE_RESOURCE_MANAGER	10
 
     LIB_EXPORT
     TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,

@@ -3,7 +3,7 @@
 /*			     Structure Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.h 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: tssprint.h 967 2017-03-17 18:58:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -98,6 +98,10 @@ extern "C" {
     void TSS_TPMS_QUOTE_INFO_Print(TPMS_QUOTE_INFO *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMS_SESSION_AUDIT_INFO_Print(TPMS_SESSION_AUDIT_INFO *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMS_CREATION_INFO_Print(TPMS_CREATION_INFO *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMS_NV_CERTIFY_INFO_Print(TPMS_NV_CERTIFY_INFO  *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMI_ST_ATTEST_Print(TPMI_ST_ATTEST selector, unsigned int indent);
     LIB_EXPORT

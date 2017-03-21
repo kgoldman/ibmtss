@@ -3,7 +3,7 @@
 /*			     TPM2 Response Code Printer				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.c 885 2016-12-21 17:13:46Z kgoldman $	*/
+/*	      $Id: tssresponsecode.c 941 2017-02-16 18:33:03Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -252,7 +252,9 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_IN_PARAMETER, "TSS_RC_IN_PARAMETER - Bad in parameter to TSS_Execute"},
     {TSS_RC_OUT_PARAMETER, "TSS_RC_OUT_PARAMETER - Bad out parameter to TSS_Execute"},
     {TSS_RC_BAD_HANDLE_NUMBER, "TSS_RC_BAD_HANDLE_NUMBER - Bad handle number for this command"},
-    {TSS_RC_NO_SESSION_SLOT, "TSS_RC_NO_SESSION_SLOT - TSS context has no session slot for handle"}
+    {TSS_RC_NO_SESSION_SLOT, "TSS_RC_NO_SESSION_SLOT - TSS context has no session slot for handle"},
+    {TSS_RC_NO_OBJECTPUBLIC_SLOT, "TSS_RC_NO_OBJECTPUBLIC_SLOT - TSS context has no object public slot for handle"},
+    {TSS_RC_NO_NVPUBLIC_SLOT, "TSS_RC_NO_NVPUBLIC_SLOT -TSS context has no NV public slot for handle"}
 };
 
 #define BITS1108	0xf00

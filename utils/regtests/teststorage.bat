@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: teststorage.bat 893 2016-12-29 22:13:21Z kgoldman $	#
+REM #		$Id: teststorage.bat 943 2017-02-22 15:03:11Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -172,7 +172,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Verify the signature using the ECC signing key 80000001"
-verifysignature -hk 80000001 -ecc -if policies/sha256aaa.bin -is tmpsig.bin > run.out
+%TPM_EXE_PATH%verifysignature -hk 80000001 -ecc -if policies/sha256aaa.bin -is tmpsig.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

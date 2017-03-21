@@ -3,7 +3,7 @@
 /*			    Certify						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: certify.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: certify.c 971 2017-03-20 17:58:01Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
     TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
     unsigned int		sessionAttributes2 = 0;
 
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */
@@ -338,7 +339,9 @@ int main(int argc, char *argv[])
 	rc = TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
 	if (verbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
     }
-    if (rc == 0) {
+    /* For an attestation command using the ECDAA scheme, both the qualifiedSigner and extraData
+       fields in the attestation block (a TPMS_ATTEST) are set to be the Empty Buffer */
+    if ((rc == 0) && (in.inScheme.scheme != ALG_ECDAA_VALUE)) {
 	int match;
 	match = TSS_TPM2B_Compare(&in.qualifyingData.b, &tpmsAttest.extraData.b);
 	if (!match) {

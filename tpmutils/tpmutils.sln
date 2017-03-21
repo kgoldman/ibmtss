@@ -197,6 +197,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "policyauthorizenv", "policy
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "importpem", "importpem\importpem.vcxproj", "{4E46B941-806C-4EBC-AF95-3DE9BDA89D3F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "writeapp", "writeapp\writeapp.vcxproj", "{BEFBAF6A-9211-4422-B3AB-E06D8689193E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1177,6 +1179,16 @@ Global
 		{4E46B941-806C-4EBC-AF95-3DE9BDA89D3F}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{4E46B941-806C-4EBC-AF95-3DE9BDA89D3F}.Release|Win32.ActiveCfg = Release|Win32
 		{4E46B941-806C-4EBC-AF95-3DE9BDA89D3F}.Release|Win32.Build.0 = Release|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Debug|Win32.Build.0 = Debug|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Release|Any CPU.ActiveCfg = Release|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Release|Win32.ActiveCfg = Release|Win32
+		{BEFBAF6A-9211-4422-B3AB-E06D8689193E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

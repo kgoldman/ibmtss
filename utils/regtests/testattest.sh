@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testattest.sh 663 2016-06-30 18:58:18Z kgoldman $			#
+#	$Id: testattest.sh 967 2017-03-17 18:58:34Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -250,6 +250,47 @@ checkSuccess $?
 echo "Flush the session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
+
+echo ""
+echo "Certify Creation"
+echo ""
+
+echo "Load the RSA signing key under the primary key"
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Certify the creation data for the primary key 80000000"
+${PREFIX}certifycreation -ho 80000000 -hk 80000001 -pwdk sig -tk pritk.bin -ch prich.bin -os sig.bin -oa tmp.bin > run.out
+checkSuccess $?
+
+echo "Verify the signature"
+${PREFIX}verifysignature -hk 80000001 -if tmp.bin -is sig.bin > run.out
+checkSuccess $?
+
+echo "Load the RSA storage key under the primary key"
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Certify the creation data for the storage key 80000002"
+${PREFIX}certifycreation -ho 80000002 -hk 80000001 -pwdk sig -tk stotk.bin -ch stoch.bin -os sig.bin -oa tmp.bin > run.out
+checkSuccess $?
+
+echo "Verify the signature"
+${PREFIX}verifysignature -hk 80000001 -if tmp.bin -is sig.bin > run.out
+checkSuccess $?
+
+echo "Flush the storage key 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Flush the signing key 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+rm -f tmppriv.bin
+rm -f tmppub.bin
+rm -f sig.bin
+rm -f tmp.bin
 
 exit ${WARN}
 

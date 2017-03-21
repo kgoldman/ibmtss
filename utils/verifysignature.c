@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 885 2016-12-21 17:13:46Z kgoldman $	*/
+/*	      $Id: verifysignature.c 945 2017-02-27 23:24:31Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
     uint32_t           		sizeInBytes;	/* hash algorithm mapped to size */           		
     TPMT_HA 			digest;		/* digest of the message */
 
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1"); 
 
     /* command line argument defaults */

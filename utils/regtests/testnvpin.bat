@@ -3,7 +3,7 @@ REM #										    #
 REM #			TPM2 regression test					    #
 REM #			     Written by Ken Goldman				    #
 REM #		       IBM Thomas J. Watson Research Center			    #
-REM #		$Id: testnvpin.bat 786 2016-10-24 19:58:18Z kgoldman $		#
+REM #		$Id: testnvpin.bat 974 2017-03-20 19:20:10Z kgoldman $		#
 REM #										    #
 REM # (c) Copyright IBM Corporation 2016					    #
 REM # 										    #
@@ -107,7 +107,7 @@ echo "NV PIN Pass Index"
 echo ""
 
 echo "Set phEnableNV"
-hierarchycontrol -hi p -he n > run.out
+%TPM_EXE_PATH%hierarchycontrol -hi p -he n > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

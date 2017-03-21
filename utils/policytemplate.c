@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     TPMI_SH_POLICY		policySession = 0;
     const char 			*templateFilename = NULL;
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

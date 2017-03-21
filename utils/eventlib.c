@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 843 2016-11-29 19:58:14Z kgoldman $		*/
+/*	      $Id: eventlib.c 957 2017-03-09 14:16:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -665,5 +665,21 @@ static void TSS_EVENT_EventType_Trace(uint32_t eventType)
     }
     printf("TSS_EVENT_EventType_Trace: %08x Unknown\n", eventType);
     return;
+}
+
+const char *TSS_EVENT_EventTypeToString(uint32_t eventType)
+{
+    const char *crc = NULL;
+    size_t i;
+
+    for (i = 0 ; i < sizeof(eventTypeTable) / sizeof(EVENT_TYPE_TABLE) ; i++) {
+	if (eventTypeTable[i].eventType == eventType) {
+	    crc = eventTypeTable[i].text;
+	}
+    }
+    if (crc == NULL) {
+	crc = "Unknown event type";
+    }
+    return crc;
 }
 

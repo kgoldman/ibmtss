@@ -3,7 +3,7 @@
 /*			     	IMA Routines					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: imalib.h 870 2016-12-15 19:33:24Z kgoldman $			*/
+/*            $Id: imalib.h 963 2017-03-15 20:37:25Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -50,7 +50,11 @@
 #include <tss2/TPM_Types.h>
 
 #define IMA_PCR 		10
+
+/* FIXME need better error codes */
+
 #define ERR_STRUCTURE  		1 	/* this is not the stream for the structure to be parsed */
+#define ERR_HASH_ALGORITHM	2 	/* unsupported hash algorithm */
 #define TCG_EVENT_NAME_LEN_MAX	255	/* FIXME need verification */
 
 #define TCG_TEMPLATE_DATA_LEN_MAX				\
@@ -148,7 +152,8 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 uint32_t IMA_Event_Write(ImaEvent *imaEvent,
 		    FILE *outFile);
 uint32_t IMA_Extend(TPMT_HA *imapcr,
-		    ImaEvent *imaEvent);
+		    ImaEvent *imaEvent,
+		    TPMI_ALG_HASH hashAlg);
 uint32_t IMA_VerifyImaDigest(uint32_t *badEvent,
 			     ImaEvent *imaEvent,
 			     int eventNum);

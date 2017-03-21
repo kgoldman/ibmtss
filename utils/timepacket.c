@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
     time_t 			startTime;
     time_t			endTime;
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */
@@ -130,7 +131,8 @@ int main(int argc, char *argv[])
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Scan(&commandBuffer, &commandLength, (char *)commandBufferString);
+	rc = TSS_Array_Scan(&commandBuffer,		/* freed @1 */
+			    &commandLength, (char *)commandBufferString);
     }
     /* Start a TSS context */
     if (rc == 0) {
@@ -172,7 +174,7 @@ int main(int argc, char *argv[])
 	rc = EXIT_FAILURE;
     }
     free(commandBufferString);
-    free(commandBuffer);
+    free(commandBuffer);		/* @1 */
     return rc;
 }
 

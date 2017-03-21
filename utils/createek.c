@@ -3,7 +3,7 @@
 /*			     IWG EK Index Parsing				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createek.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: createek.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -113,6 +113,7 @@ int main(int argc, char *argv[])
     int				modulusBytes;
     unsigned int 		noFlush = 0;		/* default flush after validation */
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* for free */
@@ -204,6 +205,7 @@ int main(int argc, char *argv[])
 	rc = TSS_Create(&tssContext);
     }
     if (rc == 0) {
+	TPM_HANDLE keyHandle;		/* primary key handle */
 	switch (inputType) {
 	  case EKTemplateType:
 	    rc = processEKTemplate(tssContext, &tpmtPublic, ekTemplateIndex, TRUE);
@@ -219,7 +221,8 @@ int main(int argc, char *argv[])
 				      TRUE);
 	    break;
 	  case CreateprimaryType:
-	    rc = processPrimary(tssContext, ekCertIndex, ekNonceIndex, ekTemplateIndex,
+	    rc = processPrimary(tssContext, &keyHandle,
+				ekCertIndex, ekNonceIndex, ekTemplateIndex,
 				noFlush, TRUE);
 	    break;
 	}

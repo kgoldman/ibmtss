@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testencsession.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testencsession.bat 948 2017-02-28 21:21:38Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -39,6 +39,13 @@ REM #										#
 REM #############################################################################
 
 setlocal enableDelayedExpansion
+
+set TWOAUTH0=01 01 01 01 21 21 41 41 61
+set TWOAUTH1=01 21 41 61 01 41 01 21 01
+
+set THREEAUTH0=01 01 01 01 01 21 41
+set THREEAUTH1=01 01 01 21 41 01 01
+set THREEAUTH2=21 41 61 41 21 41 21
 
 echo ""
 echo "Parameter Encryption"
@@ -90,9 +97,6 @@ for %%M in (xor aes) do (
 
 	    REM two auth
 
-	    set TWOAUTH0=01 01 01 01 21 21 41 41 61
-	    set TWOAUTH1=01 21 41 61 01 41 01 21 01
-
 	    set i=0
 	    for %%a in (!TWOAUTH0!) do set /A i+=1 & set TWOAUTH0[!i!]=%%a
 	    set i=0
@@ -112,10 +116,6 @@ for %%M in (xor aes) do (
 
 	    REM three auth, first 01
 
-	    set THREEAUTH0=01 01 01 01 01 01 01 01 01
-	    set THREEAUTH1=01 01 01 01 21 21 41 41 61
-	    set THREEAUTH2=01 21 41 61 01 41 01 21 01
-
 	    set i=0
 	    for %%a in (!THREEAUTH0!) do set /A i+=1 & set THREEAUTH0[!i!]=%%a
 	    set i=0
@@ -128,34 +128,10 @@ for %%M in (xor aes) do (
 
 		echo "Signing Key Self Certify, three auth !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
 		%TPM_EXE_PATH%certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -qd policies/aaa -os sig.bin -oa tmp.bin ^
-		    -se0 02000000 !THREEAUTH0[%%i]! -se1 02000001 !THREEAUTH1[%%i]! -se1 02000002 !THREEAUTH2[%%i]! > run.out
+		    -se0 02000000 !THREEAUTH0[%%i]! -se1 02000001 !THREEAUTH1[%%i]! -se2 02000002 !THREEAUTH2[%%i]! > run.out
 	        IF !ERRORLEVEL! NEQ 0 (
 	   	   exit /B 1
 	   	)
-	    )
-
-	    REM three auth, first 21 41 61
-		
-	    set THREEAUTH0=21 21 21 41 41 41 61
-	    set THREEAUTH1=01 01 41 01 01 21 01
-	    set THREEAUTH2=01 41 01 01 21 01 01
-
-	    set i=0
-	    for %%a in (!THREEAUTH0!) do set /A i+=1 & set THREEAUTH0[!i!]=%%a
-	    set i=0
-	    for %%b in (!THREEAUTH1!) do set /A i+=1 & set THREEAUTH1[!i!]=%%b
-	    set i=0
-	    for %%c in (!THREEAUTH2!) do set /A i+=1 & set THREEAUTH2[!i!]=%%c
-	    set L=!i!
-
-	    for /L %%i in (1,1,!L!) do (
-
-		echo "Signing Key Self Certify, three auth !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
-		%TPM_EXE_PATH%certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -qd policies/aaa -os sig.bin -oa tmp.bin ^
-		    -se0 02000000 !THREEAUTH0[%%i]! -se1 02000001 !THREEAUTH1[%%i]! -se1 02000002 !THREEAUTH2[%%i]! > run.out
-	        IF !ERRORLEVEL! NEQ 0 (
-	   	   exit /B 1
-	        )
 	    )
 
 	    echo "Flush the sessions"
@@ -178,6 +154,322 @@ for %%M in (xor aes) do (
 
 	)
     )
+)
+
+echo "Flush the signing key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Create a signing key, policy command code certify"
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policycccertify.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Salt encrypt and decrypt HMAC sessions"
+echo ""
+
+echo "Load the signing key under the primary key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an auth session"
+%TPM_EXE_PATH%startauthsession -se h -hs 80000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an auth session"
+%TPM_EXE_PATH%startauthsession -se h -hs 80000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an encrypt session"
+%TPM_EXE_PATH%startauthsession -se h -hs 80000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+set i=0
+for %%a in (!THREEAUTH0!) do set /A i+=1 & set THREEAUTH0[!i!]=%%a
+set i=0
+for %%b in (!THREEAUTH1!) do set /A i+=1 & set THREEAUTH1[!i!]=%%b
+set i=0
+for %%c in (!THREEAUTH2!) do set /A i+=1 & set THREEAUTH2[!i!]=%%c
+set L=!i!
+
+for /L %%i in (1,1,!L!) do (
+
+    echo "Signing Key Self Certify, three auth, salted paramter encryption !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
+    %TPM_EXE_PATH%certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -qd policies/aaa -os sig.bin -oa tmp.bin ^
+        -se0 02000000 !THREEAUTH0[%%i]! -se1 02000001 !THREEAUTH1[%%i]! -se2 02000002 !THREEAUTH2[%%i]! > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+)
+
+echo "Flush the sessions"
+%TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the sessions"
+%TPM_EXE_PATH%flushcontext -ha 02000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the sessions"
+%TPM_EXE_PATH%flushcontext -ha 02000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the signing key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Bind encrypt and decrypt HMAC sessions"
+echo ""
+
+echo "Load the signing key under the primary key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an auth session"
+%TPM_EXE_PATH%startauthsession -se h -bi 80000001 -pwdb sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an auth session"
+%TPM_EXE_PATH%startauthsession -se h -bi 80000001 -pwdb sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an encrypt session"
+%TPM_EXE_PATH%startauthsession -se h -bi 80000001 -pwdb sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+set i=0
+for %%a in (!THREEAUTH0!) do set /A i+=1 & set THREEAUTH0[!i!]=%%a
+set i=0
+for %%b in (!THREEAUTH1!) do set /A i+=1 & set THREEAUTH1[!i!]=%%b
+set i=0
+for %%c in (!THREEAUTH2!) do set /A i+=1 & set THREEAUTH2[!i!]=%%c
+set L=!i!
+
+for /L %%i in (1,1,!L!) do (
+
+    echo "Signing Key Self Certify, three auth, salted paramter encryption !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
+    %TPM_EXE_PATH%certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -qd policies/aaa -os sig.bin -oa tmp.bin ^
+        -se0 02000000 !THREEAUTH0[%%i]! -se1 02000001 !THREEAUTH1[%%i]! -se2 02000002 !THREEAUTH2[%%i]! > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+)
+
+echo "Flush the sessions"
+%TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the sessions"
+%TPM_EXE_PATH%flushcontext -ha 02000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the sessions"
+%TPM_EXE_PATH%flushcontext -ha 02000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the signing key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+
+REM # policycccertify.txt 0000016c00000148
+REM # policymaker -if policies/policycccertify.txt -of policies/policycccertify.bin -v -pr 
+REM # 04 8e 9a 3a ce 08 58 3f 79 f3 44 ff 78 5b be a9 
+REM # f0 7a c7 fa 33 25 b3 d4 9a 21 dd 51 94 c6 58 50 
+
+echo ""
+echo "Salt encrypt and decrypt policy sessions"
+echo ""
+
+echo "Load the signing key under the primary key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an auth session"
+%TPM_EXE_PATH%startauthsession -se h -hs 80000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start a policy session"
+%TPM_EXE_PATH%startauthsession -se p -hs 80000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an encrypt session"
+%TPM_EXE_PATH%startauthsession -se h -hs 80000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+set i=0
+for %%a in (!THREEAUTH0!) do set /A i+=1 & set THREEAUTH0[!i!]=%%a
+set i=0
+for %%b in (!THREEAUTH1!) do set /A i+=1 & set THREEAUTH1[!i!]=%%b
+set i=0
+for %%c in (!THREEAUTH2!) do set /A i+=1 & set THREEAUTH2[!i!]=%%c
+set L=!i!
+
+for /L %%i in (1,1,!L!) do (
+
+    echo "Policy restart"
+    %TPM_EXE_PATH%policyrestart -ha 03000001
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Policy command code - certify"
+    %TPM_EXE_PATH%policycommandcode -ha 03000001 -cc 148 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Signing Key Self Certify, three auth, salted paramter encryption !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
+    %TPM_EXE_PATH%certify -hk 80000001 -ho 80000001 -pwdo sig -pwdk sig -qd policies/aaa -os sig.bin -oa tmp.bin ^
+        -se0 02000000 !THREEAUTH0[%%i]! -se1 03000001 !THREEAUTH1[%%i]! -se2 02000002 !THREEAUTH2[%%i]! > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+)
+
+echo "Flush the sessions"
+%TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the sessions "
+%TPM_EXE_PATH%flushcontext -ha 03000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the sessions "
+%TPM_EXE_PATH%flushcontext -ha 02000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the signing key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Bind encrypt and decrypt policy sessions"
+echo ""
+
+echo "Load the signing key under the primary key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an auth session"
+%TPM_EXE_PATH%startauthsession -se h -bi 80000001 -pwdb sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start a policy session"
+%TPM_EXE_PATH%startauthsession -se p -bi 80000001 -pwdb sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start an encrypt session"
+%TPM_EXE_PATH%startauthsession -se h -bi 80000001 -pwdb sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+set i=0
+for %%a in (!THREEAUTH0!) do set /A i+=1 & set THREEAUTH0[!i!]=%%a
+set i=0
+for %%b in (!THREEAUTH1!) do set /A i+=1 & set THREEAUTH1[!i!]=%%b
+set i=0
+for %%c in (!THREEAUTH2!) do set /A i+=1 & set THREEAUTH2[!i!]=%%c
+set L=!i!
+
+for /L %%i in (1,1,!L!) do (
+
+    echo "Policy restart"
+    %TPM_EXE_PATH%policyrestart -ha 03000001
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Policy command code - certify"
+    %TPM_EXE_PATH%policycommandcode -ha 03000001 -cc 148 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Signing Key Self Certify, three auth, salted paramter encryption !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
+    %TPM_EXE_PATH%certify -hk 80000001 -ho 80000001 -pwdo sig -pwdk xxx -qd policies/aaa -os sig.bin -oa tmp.bin ^
+        -se0 02000000 !THREEAUTH0[%%i]! -se1 03000001 !THREEAUTH1[%%i]! -se2 02000002 !THREEAUTH2[%%i]! > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+)
+
+echo "Flush the sessions"
+%TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the sessions "
+%TPM_EXE_PATH%flushcontext -ha 03000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the sessions "
+%TPM_EXE_PATH%flushcontext -ha 02000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
 )
 
 echo "Flush the signing key"

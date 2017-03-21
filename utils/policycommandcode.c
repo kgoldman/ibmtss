@@ -3,7 +3,7 @@
 /*			    PolicyCommandCode	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policycommandcode.c 885 2016-12-21 17:13:46Z kgoldman $	*/
+/*	      $Id: policycommandcode.c 945 2017-02-27 23:24:31Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     TPM_CC			commandCode = 0;
     PolicyCommandCode_In 	in;
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

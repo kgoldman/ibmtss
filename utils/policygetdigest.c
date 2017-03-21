@@ -3,7 +3,7 @@
 /*			    PolicyGetDigest	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policygetdigest.c 885 2016-12-21 17:13:46Z kgoldman $	*/
+/*	      $Id: policygetdigest.c 945 2017-02-27 23:24:31Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     TPMI_SH_POLICY		policySession = 0;
     const char			*digestFilename = NULL;
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

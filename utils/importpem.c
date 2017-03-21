@@ -3,7 +3,7 @@
 /*			   Import a PEM RSA keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 916 2017-01-19 22:31:42Z kgoldman $		*/
+/*	      $Id: importpem.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
     RSA				*rsaKey = NULL;
     FILE 			*pemKeyFile = NULL;
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

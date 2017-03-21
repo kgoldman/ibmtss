@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.h 905 2017-01-09 21:59:16Z kgoldman $		*/
+/*	      $Id: tssproperties.h 941 2017-02-16 18:33:03Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -79,14 +79,30 @@ extern "C" {
 #include <tss2/tss.h>
 #include "tssauth.h"
 
-    /* Structure to hold sessions within the context */
+    /* Structure to hold session data within the context */
 
     typedef struct TSS_SESSIONS {
 	TPMI_SH_AUTH_SESSION sessionHandle;
 	uint8_t *sessionData;
 	uint16_t sessionDataLength;
     } TSS_SESSIONS;
+
+    /* Structure to hold transient or persistent object data within the context */
     
+    typedef struct TSS_OBJECT_PUBLIC {
+	TPM_HANDLE objectHandle;
+	TPM2B_NAME name;
+	TPM2B_PUBLIC objectPublic;
+    } TSS_OBJECT_PUBLIC;
+
+    /* Structure to hold NV index  data within the context */
+
+    typedef struct TSS_NVPUBLIC {
+	TPMI_RH_NV_INDEX nvIndex;
+	TPM2B_NAME name;
+	TPMS_NV_PUBLIC	nvPublic;
+    } TSS_NVPUBLIC;
+
     /* Context for TSS global parameters.
 
        NOTE:  Keep this in sync with TSS_Properties_Init() and TSS_Delete() */
@@ -107,10 +123,13 @@ extern "C" {
 	void *tssSessionEncKey;
 	void *tssSessionDecKey;
 #endif
-	/* a minimal TSS with no file support stores the sessions in a structure.  Scripting will not
-	   work, but a single application will */
+	/* a minimal TSS with no file support stores the sessions, objects, and NV metadata in a
+	   structure.  Scripting will not work, and persistent objects will not work, but a single
+	   application will otherwise work. */
 #ifdef TPM_TSS_NOFILE
 	TSS_SESSIONS sessions[MAX_ACTIVE_SESSIONS];
+	TSS_OBJECT_PUBLIC objectPublic[64];
+	TSS_NVPUBLIC nvPublic[64];
 #endif
 	/* ports, host name, server (packet) type for socket interface */
 	short tssCommandPort;
@@ -123,9 +142,6 @@ extern "C" {
 
 	/* device driver interface */
 	const char *tssDevice;
-
-	/* whether to activate resource manager (tss device only) */
-	int tssUseResourceManager;
 
 	/* TRUE for the first time through, indicates that interface open must occur */
 	int tssFirstTransmit;

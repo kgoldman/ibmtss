@@ -3,7 +3,7 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.h 849 2016-12-01 20:17:03Z kgoldman $		*/
+/*	      $Id: ekutils.h 941 2017-02-16 18:33:03Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -127,6 +127,7 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,
 			      TPMI_RH_NV_INDEX ekCertIndex,
 			      int print);
 TPM_RC processPrimary(TSS_CONTEXT *tssContext,
+		      TPM_HANDLE *keyHandle,
 		      TPMI_RH_NV_INDEX ekCertIndex,
 		      TPMI_RH_NV_INDEX ekNonceIndex, 
 		      TPMI_RH_NV_INDEX ekTemplateIndex,

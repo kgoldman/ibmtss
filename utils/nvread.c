@@ -3,7 +3,7 @@
 /*			    NV Read		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvread.c 885 2016-12-21 17:13:46Z kgoldman $			*/
+/*	      $Id: nvread.c 945 2017-02-27 23:24:31Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
     uint16_t 			bytesRead;			/* bytes read so far */
     int				done = FALSE;
    
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {

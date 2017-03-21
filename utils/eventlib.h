@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.h 682 2016-07-15 18:49:19Z kgoldman $		*/
+/*	      $Id: eventlib.h 957 2017-03-09 14:16:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -163,5 +163,7 @@ TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
 				 uint8_t *event);
 
 void TSS_SpecIdEvent_Trace(TCG_EfiSpecIDEvent *specIdEvent);
+
+const char *TSS_EVENT_EventTypeToString(uint32_t eventType);
 
 #endif

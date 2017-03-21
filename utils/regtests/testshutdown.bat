@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testshutdown.bat 503 2016-03-04 15:20:48Z kgoldman $		#
+REM #		$Id: testshutdown.bat 948 2017-02-28 21:21:38Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -41,7 +41,7 @@ REM ############################################################################
 setlocal enableDelayedExpansion
 
 echo ""
-echo "TPM Resume (state/state)"
+echo "TPM Resume (state/state) - suspend"
 echo ""
 
 echo "PCR 0 Extend"
@@ -76,6 +76,12 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "Load the signing key"
 %TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Context save the signing key"
+%TPM_EXE_PATH%contextsave -ha 80000001 -of tmpsk.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -136,6 +142,24 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "Verify that PCR 0 is restored"
 diff tmp1.bin tmp2.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Context load the signing key"
+%TPM_EXE_PATH%contextload -if tmpsk.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Signing Key Self Certify"
+%TPM_EXE_PATH%certify -hk 80000000 -ho 80000000 -pwdk sig -pwdo sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the signing key"
+%TPM_EXE_PATH%flushcontext -ha 80000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -207,8 +231,32 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo ""
-echo "TPM Restart (state/clear)"
+echo "TPM Restart (state/clear) - hibernate"
 echo ""
+
+echo "Load the signing key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Context save the signing key"
+%TPM_EXE_PATH%contextsave -ha 80000001 -of tmpsk.bin > run.out 
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Start a session"
+%TPM_EXE_PATH%startauthsession -se h > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Save the session"
+%TPM_EXE_PATH%contextsave -ha 02000000 -of tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 
 echo "Shutdown state"
 %TPM_EXE_PATH%shutdown -s > run.out
@@ -224,6 +272,24 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "Startup clear"
 %TPM_EXE_PATH%startup -c > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the session"
+%TPM_EXE_PATH%contextload -if tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the session"
+%TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Context load the signing key"
+%TPM_EXE_PATH%contextload -if tmpsk.bin > run.out 
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -264,8 +330,55 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+echo ""
+echo "TPM Reset (clear/clear) - cold boot"
+echo ""
+
+echo "Start a session"
+%TPM_EXE_PATH%startauthsession -se h > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Save the session"
+%TPM_EXE_PATH%contextsave -ha 02000000 -of tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Shutdown clear"
+%TPM_EXE_PATH%shutdown -c > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Power cycle"
+%TPM_EXE_PATH%powerup > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Startup clear"
+%TPM_EXE_PATH%startup -c > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the session - should fail"
+%TPM_EXE_PATH%contextload -if tmp.bin > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "Recreate a platform primary storage key"
+%TPM_EXE_PATH%createprimary -hi p -pwdk pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
 REM shutdown removes the session
 rm h02000000.bin
+rm tmpsk.bin
 
 exit /B 0
 

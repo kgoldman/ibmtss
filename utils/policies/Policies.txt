@@ -3,7 +3,7 @@
 #			TPM2 regression test Directory of files			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: Policies.txt 789 2016-10-25 20:18:50Z kgoldman $		#
+#		$Id: Policies.txt 961 2017-03-10 21:53:29Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
@@ -46,6 +46,7 @@ bits48321601.bin			uint64 with those bits set
 msgtpmgen.bin				message with TPM_GENERATED
 policyauthorize.txt			policy authorize
 policyauthorizenv.txt			policy authorize NV
+policycccertify.txt			policy command code certify
 policycccreate-auth.txt			policy command code create + policy authvalue
 policyccnvchangeauth-auth.txt		policy command code nvchangeauth
 policyccquote.txt			policy command code quote

@@ -3,7 +3,7 @@
 /*			    NV Undefine Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvundefinespace.c 881 2016-12-20 21:44:25Z kgoldman $	*/
+/*	      $Id: nvundefinespace.c 945 2017-02-27 23:24:31Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     TPM_RC			rc = 0;
     int				i;    /* argc iterator */
     TSS_CONTEXT			*tssContext = NULL;
-    NV_UndefineSpace_In 		in;
+    NV_UndefineSpace_In 	in;
     char 			hierarchyChar = 0;
     TPMI_RH_NV_INDEX		nvIndex = 0;
     const char			*parentPassword = NULL; 
@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
     unsigned int		sessionAttributes2 = 0;
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {

@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: reg.sh 874 2016-12-19 15:23:05Z kgoldman $				#
+#	$Id: reg.sh 967 2017-03-17 18:58:34Z kgoldman $				#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -167,6 +167,10 @@ cleanup()
     rm -f khpubsha256.bin
     rm -f khpubsha384.bin
     rm -f khprivsha384.bin
+    rm -f pritk.bin
+    rm -f stotk.bin
+    rm -f prich.bin
+    rm -f stoch.bin
 # misc
     rm -f dec.bin
     rm -f enc.bin

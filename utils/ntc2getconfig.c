@@ -3,7 +3,7 @@
 /*			   Nuvoton GetConfig 	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2getconfig.c 927 2017-01-26 14:42:59Z kgoldman $		*/
+/*	      $Id: ntc2getconfig.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
     int 			verify = FALSE;
     int 			verifyLocked = FALSE;
   
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

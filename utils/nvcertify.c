@@ -3,7 +3,7 @@
 /*			    NV_Certify						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvcertify.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: nvcertify.c 962 2017-03-14 21:10:28Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -50,6 +50,7 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
+#include <tss2/Unmarshal_fp.h>
 
 static void printUsage(void);
 static void printSignature(NV_Certify_Out *out);
@@ -81,6 +82,7 @@ int main(int argc, char *argv[])
     TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
     unsigned int		sessionAttributes2 = 0;
 
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */
@@ -364,6 +366,13 @@ int main(int argc, char *argv[])
 	rc = TSS_File_WriteBinaryFile(out.certifyInfo.t.attestationData,
 				      out.certifyInfo.t.size,
 				      attestInfoFilename);
+    }
+    if (rc == 0) {
+	TPMS_ATTEST 		tpmsAttest;
+	uint8_t *tmpBuffer = out.certifyInfo.t.attestationData;
+	int32_t tmpSize = out.certifyInfo.t.size;
+	rc = TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
+	if (verbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
     }
     if (rc == 0) {
 	if (verbose) printSignature(&out);

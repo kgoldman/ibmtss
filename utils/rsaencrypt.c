@@ -3,7 +3,7 @@
 /*			   RSA_Encrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsaencrypt.c 887 2016-12-23 17:00:21Z kgoldman $		*/
+/*	      $Id: rsaencrypt.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
     uint8_t			*buffer = NULL;	/* for the free */
     uint8_t			*buffer1 = NULL;	/* for marshaling */
 
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

@@ -3,7 +3,7 @@
 /*			   StirRandom						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: stirrandom.c 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: stirrandom.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
     uint8_t			*buffer = NULL;		/* for the free */
     size_t 			length = 0;
    
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 918 2017-01-19 22:42:09Z kgoldman $		#
+#	      $Id: makefile.mak 955 2017-03-08 17:34:11Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015.						#
 # 										#
@@ -89,7 +89,9 @@ ALL =
 
 # default TSS library
 
-TSS_OBJS = tssfile.o
+TSS_OBJS = 	tssfile.o 		\
+		tsscryptoh.o 		\
+		tsscrypto.o
 
 # common to all builds
 
@@ -99,6 +101,7 @@ include makefile-common
 
 # CCFLAGS +=	-DTPM_WINDOWS_TBSI		\
 # 		-DTPM_WINDOWS_TBSI_WIN8		\
+
 # 		-D_WIN32_WINNT=0x0600
 
 # TSS_OBJS += tsstbsi.o 
@@ -195,6 +198,12 @@ nvread.exe:	nvread.o ekutils.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
 nvwrite.exe:	nvwrite.o ekutils.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
+signapp.exe:	signapp.o ekutils.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
+writeapp.exe:	writeapp.o ekutils.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
 pprovision.exe:	pprovision.o ekutils.o cryptoutils.o $(LIBTSS) 

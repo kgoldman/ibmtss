@@ -3,7 +3,7 @@
 /*			     Structure Print and Scan Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: tssprint.c 970 2017-03-20 15:03:57Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -136,173 +136,110 @@ void TSS_PrintAlli(const char *string, unsigned int indent, const unsigned char*
 void TSS_TPM_ALG_ID_Print(TPM_ALG_ID source, unsigned int indent)
 {
     switch (source) {
-#ifdef TPM_ALG_AES
-      case TPM_ALG_AES:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_AES\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_CAMELLIA
-      case TPM_ALG_CAMELLIA:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_CAMELLIA\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_CBC
-      case TPM_ALG_CBC:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_CBC\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_CFB
-      case TPM_ALG_CFB:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_CFB\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_CTR
-      case TPM_ALG_CTR:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_CTR\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_ECB
-      case TPM_ALG_ECB:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_ECB\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_ECC
-      case TPM_ALG_ECC:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_ECC\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_ECDAA
-      case TPM_ALG_ECDAA:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_ECDAA\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_ECDH
-      case TPM_ALG_ECDH:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_ECDH\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_ECDSA
-      case TPM_ALG_ECDSA:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_ECDSA\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_ECMQV
-      case TPM_ALG_ECMQV:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_ECMQV\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_ECSCHNORR
-      case TPM_ALG_ECSCHNORR:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_ECSCHNORR\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_HMAC
-      case TPM_ALG_HMAC:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_HMAC\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_KDF1_SP800_108
-      case TPM_ALG_KDF1_SP800_108:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_KDF1_SP800_108\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_KDF1_SP800_56A
-      case TPM_ALG_KDF1_SP800_56A:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_KDF1_SP800_56A\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_KDF2
-      case TPM_ALG_KDF2:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_KDF2\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_KEYEDHASH
-      case TPM_ALG_KEYEDHASH:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_KEYEDHASH\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_MGF1
-      case TPM_ALG_MGF1:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_MGF1\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_OAEP
-      case TPM_ALG_OAEP:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_OAEP\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_OFB
-      case TPM_ALG_OFB:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_OFB\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_RSA
-      case TPM_ALG_RSA:
+      case  ALG_RSA_VALUE:
 	printf("%*s" "TPM_ALG_ID TPM_ALG_RSA\n", indent, "");
 	break;
-#endif
-#ifdef TPM_ALG_RSAES
-      case TPM_ALG_RSAES:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_RSAES\n", indent, "");
+      case  ALG_TDES_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_TDES\n", indent, "");
 	break;
-#endif
-#ifdef TPM_ALG_RSAPSS
-      case TPM_ALG_RSAPSS:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_RSAPSS\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_RSASSA
-      case TPM_ALG_RSASSA:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_RSASSA\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_SHA1
-      case TPM_ALG_SHA1:
+      case  ALG_SHA1_VALUE:
 	printf("%*s" "TPM_ALG_ID TPM_ALG_SHA1\n", indent, "");
 	break;
-#endif
-#ifdef TPM_ALG_SHA256
-      case TPM_ALG_SHA256:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_SHA256\n", indent, "");
+      case  ALG_HMAC_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_HMAC\n", indent, "");
 	break;
-#endif
-#ifdef TPM_ALG_SHA384
-      case TPM_ALG_SHA384:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_SHA384\n", indent, "");
+      case  ALG_AES_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_AES\n", indent, "");
 	break;
-#endif
-#ifdef TPM_ALG_SHA512
-      case TPM_ALG_SHA512:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_SHA512\n", indent, "");
+      case  ALG_MGF1_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_MGF1\n", indent, "");
 	break;
-#endif
-#ifdef TPM_ALG_SM2
-      case TPM_ALG_SM2:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_SM2\n", indent, "");
+      case  ALG_KEYEDHASH_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_KEYEDHASH\n", indent, "");
 	break;
-#endif
-#ifdef TPM_ALG_SM3_256
-      case TPM_ALG_SM3_256:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_SM3_256\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_SM4
-      case TPM_ALG_SM4:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_SM4\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_SYMCIPHER
-      case TPM_ALG_SYMCIPHER:
-	printf("%*s" "TPM_ALG_ID TPM_ALG_SYMCIPHER\n", indent, "");
-	break;
-#endif
-#ifdef TPM_ALG_XOR
-      case TPM_ALG_XOR:
+      case  ALG_XOR_VALUE:
 	printf("%*s" "TPM_ALG_ID TPM_ALG_XOR\n", indent, "");
 	break;
-#endif
-      case TPM_ALG_NULL:
+      case  ALG_SHA256_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_SHA256\n", indent, "");
+	break;
+      case  ALG_SHA384_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_SHA384\n", indent, "");
+	break;
+      case  ALG_SHA512_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_SHA512\n", indent, "");
+	break;
+      case  ALG_NULL_VALUE:
 	printf("%*s" "TPM_ALG_ID TPM_ALG_NULL\n", indent, "");
+	break;
+      case  ALG_SM3_256_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_SM3_256\n", indent, "");
+	break;
+      case  ALG_SM4_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_SM4\n", indent, "");
+	break;
+      case  ALG_RSASSA_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_RSASSA\n", indent, "");
+	break;
+      case  ALG_RSAES_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_RSAES\n", indent, "");
+	break;
+      case  ALG_RSAPSS_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_RSAPSS\n", indent, "");
+	break;
+      case  ALG_OAEP_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_OAEP\n", indent, "");
+	break;
+      case  ALG_ECDSA_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_ECDSA\n", indent, "");
+	break;
+      case  ALG_ECDH_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_ECDH\n", indent, "");
+	break;
+      case  ALG_ECDAA_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_ECDAA\n", indent, "");
+	break;
+      case  ALG_SM2_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_SM2\n", indent, "");
+	break;
+      case  ALG_ECSCHNORR_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_ECSCHNORR\n", indent, "");
+	break;
+      case  ALG_ECMQV_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_ECMQV\n", indent, "");
+	break;
+      case  ALG_KDF1_SP800_56A_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_KDF1_SP800_56A\n", indent, "");
+	break;
+      case  ALG_KDF2_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_KDF2\n", indent, "");
+	break;
+      case  ALG_KDF1_SP800_108_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_KDF1_SP800_108\n", indent, "");
+	break;
+      case  ALG_ECC_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_ECC\n", indent, "");
+	break;
+      case  ALG_SYMCIPHER_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_SYMCIPHER\n", indent, "");
+	break;
+      case  ALG_CAMELLIA_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_CAMELLIA\n", indent, "");
+	break;
+      case  ALG_CTR_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_CTR\n", indent, "");
+	break;
+      case  ALG_OFB_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_OFB\n", indent, "");
+	break;
+      case  ALG_CBC_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_CBC\n", indent, "");
+	break;
+      case  ALG_CFB_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_CFB\n", indent, "");
+	break;
+      case  ALG_ECB_VALUE:
+	printf("%*s" "TPM_ALG_ID TPM_ALG_ECB\n", indent, "");
 	break;
       default:
 	printf("%*s" "TPM_ALG_ID algorithm %04hx unknown\n", indent, "", source);
@@ -418,18 +355,46 @@ void TSS_TPMS_QUOTE_INFO_Print(TPMS_QUOTE_INFO *source, unsigned int indent)
     return;
 }
 
-/* Table 115 - Definition of TPMS_SESSION_AUDIT_INFO Structure <OUT> */
+/* Table 2:118 - Definition of TPMS_SESSION_AUDIT_INFO Structure */
 
 void TSS_TPMS_SESSION_AUDIT_INFO_Print(TPMS_SESSION_AUDIT_INFO *source, unsigned int indent)
 {
-    printf("%*s" "TPMS_SESSION_AUDIT_INFO exclusiveSession %d\n", indent, "",  source->exclusiveSession);
+    printf("%*s" "TPMS_SESSION_AUDIT_INFO exclusiveSession %d\n", indent, "",
+	   source->exclusiveSession);
     TSS_PrintAlli("TPMS_SESSION_AUDIT_INFO sessionDigest", indent,
 		  source->sessionDigest.b.buffer,
 		  source->sessionDigest.b.size);
     return;
 }
 
-/* Table 118 - Definition of (TPM_ST) TPMI_ST_ATTEST Type <OUT> */
+/* Table 2:119 - Definition of TPMS_CREATION_INFO Structure */
+
+void TSS_TPMS_CREATION_INFO_Print(TPMS_CREATION_INFO *source, unsigned int indent)
+{
+    TSS_PrintAlli("TPMS_CREATION_INFO objectName", indent,
+		  source->objectName.b.buffer,
+		  source->objectName.b.size);
+    TSS_PrintAlli("TPMS_CREATION_INFO creationHash", indent,
+		  source->creationHash.b.buffer,
+		  source->creationHash.b.size);
+    return;
+}
+
+/* Table 2:120 - Definition of TPMS_NV_CERTIFY_INFO Structure */
+
+void TSS_TPMS_NV_CERTIFY_INFO_Print(TPMS_NV_CERTIFY_INFO  *source, unsigned int indent)
+{
+    TSS_PrintAlli("TPMS_NV_CERTIFY_INFO indexName", indent,
+		  source->indexName.b.buffer,
+		  source->indexName.b.size);
+    printf("%*s" "TPMS_NV_CERTIFY_INFO offset %d\n", indent, "",  source->offset);
+    TSS_PrintAlli("TPMS_NV_CERTIFY_INFO nvContents", indent,
+		  source->nvContents.b.buffer,
+		  source->nvContents.b.size);
+    return;
+}
+
+/* Table 121 - Definition of (TPM_ST) TPMI_ST_ATTEST Type <OUT> */
 
 void TSS_TPMI_ST_ATTEST_Print(TPMI_ST_ATTEST selector, unsigned int indent)
 {
@@ -459,10 +424,9 @@ void TSS_TPMI_ST_ATTEST_Print(TPMI_ST_ATTEST selector, unsigned int indent)
 	printf("%*s" "TPMI_ST_ATTEST_Print: selection %04hx not implemented\n", indent, "", selector);
     }
     return;
-    
 }
 
-/* Table 119 - Definition of TPMU_ATTEST Union <OUT> */
+/* Table 122 - Definition of TPMU_ATTEST Union <OUT> */
 
 void TSS_TPMU_ATTEST_Print(TPMU_ATTEST *source, TPMI_ST_ATTEST selector, unsigned int indent)
 {
@@ -470,11 +434,9 @@ void TSS_TPMU_ATTEST_Print(TPMU_ATTEST *source, TPMI_ST_ATTEST selector, unsigne
       case TPM_ST_ATTEST_CERTIFY:
 	TSS_TPMS_CERTIFY_INFO_Print(&source->certify, indent+2);
 	break;
-#if 0
       case TPM_ST_ATTEST_CREATION:
 	TSS_TPMS_CREATION_INFO_Print(&source->creation, indent+2);
 	break;
-#endif
       case TPM_ST_ATTEST_QUOTE:
 	TSS_TPMS_QUOTE_INFO_Print(&source->quote, indent+2);
 	break;
@@ -489,23 +451,20 @@ void TSS_TPMU_ATTEST_Print(TPMU_ATTEST *source, TPMI_ST_ATTEST selector, unsigne
       case TPM_ST_ATTEST_TIME:
 	TSS_TPMS_TIME_ATTEST_INFO_Print(&source->time, indent+2);
 	break;
-#if 0
       case TPM_ST_ATTEST_NV:
 	TSS_TPMS_NV_CERTIFY_INFO_Print(&source->nv, indent+2);
 	break;
-#endif
       default:
 	printf("%*s" "TPMU_ATTEST selection %04hx not implemented\n", indent, "", selector);
-	
     }
     return;
 }
 
-/* Table 120 - Definition of TPMS_ATTEST Structure <OUT> */
+/* Table 123 - Definition of TPMS_ATTEST Structure <OUT> */
 
 void TSS_TPMS_ATTEST_Print(TPMS_ATTEST *source, unsigned int indent)
 {
-    printf("%*s" "TPMS_ATTEST magic %08x\n", indent, "", source->magic);
+    printf("%*s" "TPMS_ATTEST magic %08x\n", indent+2, "", source->magic);
     TSS_TPMI_ST_ATTEST_Print(source->type, indent+2);
     TSS_PrintAlli("TPMS_ATTEST extraData", indent+2,
 		  source->extraData.b.buffer,
@@ -515,7 +474,7 @@ void TSS_TPMS_ATTEST_Print(TPMS_ATTEST *source, unsigned int indent)
     return;
 }
 
-/* Table 121 - Definition of TPM2B_ATTEST Structure <OUT> */
+/* Table 124 - Definition of TPM2B_ATTEST Structure <OUT> */
 
 void TSS_TPM2B_ATTEST_Print(TPM2B_ATTEST *source, unsigned int indent)
 {

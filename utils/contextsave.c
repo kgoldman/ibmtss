@@ -3,7 +3,7 @@
 /*			   ContextSave 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: contextsave.c 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: contextsave.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
     TPMI_DH_CONTEXT		saveHandle = 0;
     const char			*contextFilename = NULL;
 
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {

@@ -3,7 +3,7 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 923 2017-01-24 16:34:33Z kgoldman $		*/
+/*	      $Id: pcrread.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
     const char 			*datafilename = NULL;
     int				noSpace = FALSE;
   
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     
     in.pcrSelectionIn.count = 0xffffffff;

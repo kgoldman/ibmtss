@@ -3,7 +3,7 @@
 /*			    Flush Context	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: flushcontext.c 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: flushcontext.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
     uint32_t 			handle = 0;
     FlushContext_In 		in;
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: teststorage.sh 893 2016-12-29 22:13:21Z kgoldman $			#
+#	$Id: teststorage.sh 943 2017-02-22 15:03:11Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -137,7 +137,7 @@ ${PREFIX}sign -hk 80000001 -ecc -if policies/sha256aaa.bin -os tmpsig.bin > run.
 checkSuccess $?
 
 echo "Verify the signature using the ECC signing key 80000001"
-verifysignature -hk 80000001 -ecc -if policies/sha256aaa.bin -is tmpsig.bin > run.out
+${PREFIX}verifysignature -hk 80000001 -ecc -if policies/sha256aaa.bin -is tmpsig.bin > run.out
 checkSuccess $?
 
 echo "Flush the signing key 80000001"

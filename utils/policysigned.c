@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 916 2017-01-19 22:31:42Z kgoldman $		*/
+/*	      $Id: policysigned.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMT_HA 			aHash;
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     OpenSSL_add_all_algorithms();
     ERR_load_crypto_strings();

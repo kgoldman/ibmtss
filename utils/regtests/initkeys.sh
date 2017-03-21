@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: initkeys.sh 663 2016-06-30 18:58:18Z kgoldman $		#
+#		$Id: initkeys.sh 967 2017-03-17 18:58:34Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015						#
 # 										#
@@ -56,11 +56,11 @@ echo "Initialize Regression Test Keys"
 echo ""
 
 echo "Create a platform primary storage key"
-${PREFIX}createprimary -hi p -pwdk pps > run.out
+${PREFIX}createprimary -hi p -pwdk pps -tk pritk.bin -ch prich.bin > run.out
 checkSuccess $?
 
 echo "Create a storage key under the primary key"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -opr storepriv.bin -opu storepub.bin -pwdp pps -pwdk sto > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -opr storepriv.bin -opu storepub.bin -tk stotk.bin -ch stoch.bin -pwdp pps -pwdk sto > run.out
 checkSuccess $?
 
 echo "Create an unrestricted RSA signing key under the primary key"

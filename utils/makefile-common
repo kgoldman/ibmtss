@@ -63,6 +63,7 @@ ALL += 	$(LIBTSS)				\
 	eventextend$(EXE)			\
 	imaextend$(EXE)				\
 	certify$(EXE)				\
+	certifycreation$(EXE)			\
 	changeeps$(EXE)				\
 	changepps$(EXE)				\
 	clear$(EXE)				\
@@ -192,8 +193,6 @@ TSS_OBJS += 	tss.o			\
 		tssproperties.o		\
 		tssmarshal.o		\
 		tssauth.o 		\
-		tsscryptoh.o 		\
-		tsscrypto.o 		\
 		tssutils.o 		\
 		tsssocket.o 		\
 		tssdev.o 		\

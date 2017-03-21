@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.c 921 2017-01-23 15:56:08Z kgoldman $		*/
+/*	      $Id: cryptoutils.c 954 2017-03-07 20:39:39Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -52,13 +52,18 @@
 #include <stdint.h>
 #include <limits.h>
 
+#ifndef TPM_TSS_NOFILE
 #include <tss2/tssfile.h>
+#endif
+#include <tss2/tssutils.h>
 #include <tss2/tssmarshal.h>
 
 #include "objecttemplates.h"
 #include "cryptoutils.h"
 
 extern int verbose;
+
+#ifndef TPM_TSS_NOFILE
 
 TPM_RC convertPemToEvpPrivKey(EVP_PKEY **evpPkey,		/* freed by caller */
 			      const char *pemKeyFilename,
@@ -83,6 +88,10 @@ TPM_RC convertPemToEvpPrivKey(EVP_PKEY **evpPkey,		/* freed by caller */
     return rc;
 }
 
+#endif
+
+#ifndef TPM_TSS_NOFILE
+
 TPM_RC convertPemToEvpPubKey(EVP_PKEY **evpPkey,		/* freed by caller */
 			     const char *pemKeyFilename)
 {
@@ -104,6 +113,8 @@ TPM_RC convertPemToEvpPubKey(EVP_PKEY **evpPkey,		/* freed by caller */
     }
     return rc;
 }
+
+#endif
 
 TPM_RC convertEvpPkeyToEckey(EC_KEY **ecKey,		/* freed by caller */
 			     EVP_PKEY *evpPkey)
@@ -273,7 +284,7 @@ TPM_RC convertEcPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 	rc = TSS_TPM2B_StringCopy(&tSensitive.authValue.b, password, sizeof(TPMU_HA));
     }
     if (rc == 0) {
-	if (privateKeyBytes != 32) {	/* hard code NISTP256 */
+	if (privateKeyBytes > 32) {	/* hard code NISTP256 */
 	    printf("convertEcPrivateKeyBinToPrivate: Error, private key size %u not 32\n",
 		   privateKeyBytes);
 	    rc = EXIT_FAILURE;
@@ -594,6 +605,8 @@ TPM_RC convertRsaKeyToPublic(TPM2B_PUBLIC 	*objectPublic,
     return rc;
 }
 
+#ifndef TPM_TSS_NOFILE
+
 TPM_RC convertEcPemToKeyPair(TPM2B_PUBLIC 	*objectPublic,
 			     TPM2B_PRIVATE 	*objectPrivate,
 			     int		keyType,
@@ -633,6 +646,10 @@ TPM_RC convertEcPemToKeyPair(TPM2B_PUBLIC 	*objectPublic,
     }
     return rc;
 }
+
+#endif
+
+#ifndef TPM_TSS_NOFILE
 
 TPM_RC convertRsaPemToKeyPair(TPM2B_PUBLIC 	*objectPublic,
 			      TPM2B_PRIVATE 	*objectPrivate,
@@ -676,6 +693,8 @@ TPM_RC convertRsaPemToKeyPair(TPM2B_PUBLIC 	*objectPublic,
     }
     return rc;
 }
+
+#endif
 
 /* getRsaKeyParts() gets the RSA key parts from an OpenSSL RSA key token.
 

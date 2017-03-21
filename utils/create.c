@@ -3,7 +3,7 @@
 /*			    Create 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: create.c 802 2016-11-15 20:06:21Z kgoldman $			*/
+/*	      $Id: create.c 967 2017-03-17 18:58:34Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -50,6 +50,7 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
+#include <tss2/tsscryptoh.h>
 
 #include "objecttemplates.h"
 
@@ -76,6 +77,8 @@ int main(int argc, char *argv[])
     const char			*policyFilename = NULL;
     const char			*publicKeyFilename = NULL;
     const char			*privateKeyFilename = NULL;
+    const char			*ticketFilename = NULL;
+    const char			*creationHashFilename = NULL;
     const char 			*dataFilename = NULL;
     const char			*keyPassword = NULL; 
     const char			*parentPassword = NULL; 
@@ -86,6 +89,7 @@ int main(int argc, char *argv[])
     TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
     unsigned int		sessionAttributes2 = 0;
 
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */
@@ -256,6 +260,26 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-opr option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-tk") == 0) {
+	    i++;
+	    if (i < argc) {
+		ticketFilename = argv[i];
+	    }
+	    else {
+		printf("-tk option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-ch") == 0) {
+	    i++;
+	    if (i < argc) {
+		creationHashFilename = argv[i];
+	    }
+	    else {
+		printf("-ch option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -496,6 +520,50 @@ int main(int argc, char *argv[])
 	    rc = rc1;
 	}
     }
+    /*
+      validate the creation data
+    */
+    {
+	uint16_t	written = 0;;
+	uint8_t		*buffer = NULL;		/* for the free */
+	uint32_t 	sizeInBytes;
+	TPMT_HA		digest;
+
+	/* get the digest size from the Name algorithm */
+	if (rc == 0) {
+	    sizeInBytes = TSS_GetDigestSize(nalg);
+	    if (out.creationHash.b.size != sizeInBytes) {
+		printf("create: failed, "
+		       "creationData size %u incompatible with name algorithm %04x\n",
+		       out.creationHash.b.size, nalg);
+		rc = EXIT_FAILURE;
+	    }
+	}
+	/* re-marshal the output structure */
+	if (rc == 0) {
+	    rc = TSS_Structure_Marshal(&buffer,	/* freed @1 */
+				       &written,
+				       &out.creationData.creationData,
+				       (MarshalFunction_t)TSS_TPMS_CREATION_DATA_Marshal);
+	}
+	/* recalculate the creationHash from creationData */
+	if (rc == 0) {
+	    digest.hashAlg = nalg;			/* Name digest algorithm */
+	    rc = TSS_Hash_Generate(&digest,	
+				   written, buffer,
+				   0, NULL);
+	}
+	/* compare the digest to creation hash */
+	if (rc == 0) {
+	    int irc;
+	    irc = memcmp((uint8_t *)&digest.digest, &out.creationHash.b.buffer, sizeInBytes);
+	    if (irc != 0) {
+		printf("create: failed, creationData hash does not match creationHash\n");
+		rc = EXIT_FAILURE;
+	    }
+	}
+	free(buffer);	/* @1 */
+    }
     /* save the private key */
     if ((rc == 0) && (privateKeyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.outPrivate,
@@ -507,6 +575,18 @@ int main(int argc, char *argv[])
 	rc = TSS_File_WriteStructure(&out.outPublic,
 				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
 				     publicKeyFilename);
+    }
+    /* save the optional creation ticket */
+    if ((rc == 0) && (ticketFilename != NULL)) {
+	rc = TSS_File_WriteStructure(&out.creationTicket,
+				     (MarshalFunction_t)TSS_TPMT_TK_CREATION_Marshal,
+				     ticketFilename);
+    }
+    /* save the optional creation hash */
+    if ((rc == 0) && (creationHashFilename != NULL)) {
+	rc = TSS_File_WriteBinaryFile(out.creationHash.b.buffer,
+				      out.creationHash.b.size,
+				      creationHashFilename);
     }
     if (rc == 0) {
 	if (verbose) printf("create: success\n");
@@ -539,6 +619,8 @@ static void printUsage(void)
     printf("\n");
     printf("\t[-opu public key file name (default do not save)]\n");
     printf("\t[-opr private key file name (default do not save)]\n");
+    printf("\t[-tk output ticket file name]\n");
+    printf("\t[-ch output creation hash file name]\n");
     printf("\n");
     printf("\t-se[0-2] session handle (default PWAP)\n");
     printf("\t\t01 continue\n");

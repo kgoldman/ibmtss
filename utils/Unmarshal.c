@@ -1670,7 +1670,7 @@ TPMS_TAGGED_PCR_SELECT_Unmarshal(TPMS_TAGGED_PCR_SELECT *target, BYTE **buffer, 
     if (rc == TPM_RC_SUCCESS) {
 	rc = Array_Unmarshal(target->pcrSelect, target->sizeofSelect, buffer, size);
     }
-     return rc;
+    return rc;
 }
 
 /* Table 95 - Definition of TPML_CC Structure */
@@ -2128,7 +2128,6 @@ TPMS_NV_CERTIFY_INFO_Unmarshal(TPMS_NV_CERTIFY_INFO *target, BYTE **buffer, INT3
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
-    return rc;
     if (rc == TPM_RC_SUCCESS) {
 	rc = TPM2B_NAME_Unmarshal(&target->indexName, buffer, size);
     }
@@ -2138,6 +2137,7 @@ TPMS_NV_CERTIFY_INFO_Unmarshal(TPMS_NV_CERTIFY_INFO *target, BYTE **buffer, INT3
     if (rc == TPM_RC_SUCCESS) {
 	rc = TPM2B_MAX_NV_BUFFER_Unmarshal(&target->nvContents, buffer, size);
     }
+    return rc;
 }
 
 /* Table 118 - Definition of (TPM_ST) TPMI_ST_ATTEST Type <OUT> */
@@ -3296,7 +3296,6 @@ TPM2B_ECC_POINT_Unmarshal(TPM2B_ECC_POINT *target, BYTE **buffer, INT32 *size)
 	    rc = TPM_RC_SIZE;
 	}
     }
-    return rc;
     return rc;
 }
 

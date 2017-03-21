@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.c 905 2017-01-09 21:59:16Z kgoldman $		*/
+/*	      $Id: tssproperties.c 941 2017-02-16 18:33:03Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -63,7 +63,6 @@ static TPM_RC TSS_SetServerType(TSS_CONTEXT *tssContext, const char *value);
 static TPM_RC TSS_SetInterfaceType(TSS_CONTEXT *tssContext, const char *value);
 static TPM_RC TSS_SetDevice(TSS_CONTEXT *tssContext, const char *value);
 static TPM_RC TSS_SetEncryptSessions(TSS_CONTEXT *tssContext, const char *value);
-static TPM_RC TSS_SetUseResourceManager(TSS_CONTEXT *tssContext, const char *value);
 
 /* globals for the library */
 
@@ -117,10 +116,6 @@ int tssFirstCall = TRUE;
 
 #ifndef TPM_ENCRYPT_SESSIONS_DEFAULT
 #define TPM_ENCRYPT_SESSIONS_DEFAULT	"1"
-#endif
-
-#ifndef TPM_USE_RESOURCE_MANAGER_DEFAULT
-#define TPM_USE_RESOURCE_MANAGER_DEFAULT	"0"
 #endif
 
 /* TSS_GlobalProperties_Init() sets the global verbose trace flags at the first entry points to the
@@ -180,6 +175,12 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 	    tssContext->sessions[i].sessionData = NULL;
 	    tssContext->sessions[i].sessionDataLength = 0;
 	}
+	for (i = 0 ; i < (sizeof(tssContext->objectPublic) / sizeof(TSS_OBJECT_PUBLIC)) ; i++) {
+	    tssContext->objectPublic[i].objectHandle = TPM_RH_NULL;
+	}
+	for (i = 0 ; i < (sizeof(tssContext->nvPublic) / sizeof(TSS_NVPUBLIC)) ; i++) {
+	    tssContext->nvPublic[i].nvIndex = TPM_RH_NULL;
+	}
     }
 #endif
     /* data directory */
@@ -191,10 +192,6 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
     if (rc == 0) {
 	value = getenv("TPM_ENCRYPT_SESSIONS");
 	rc = TSS_SetEncryptSessions(tssContext, value);
-    }
-    if (rc == 0) {
-	value = getenv("TPM_USE_RESOURCE_MANAGER");
-	rc = TSS_SetUseResourceManager(tssContext, value);
     }
     /* TPM socket command port */
     if (rc == 0) {
@@ -283,9 +280,6 @@ TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,
 	    break;
 	  case TPM_ENCRYPT_SESSIONS:
 	    rc = TSS_SetEncryptSessions(tssContext, value);
-	    break;
-	  case TPM_USE_RESOURCE_MANAGER:
-	    rc = TSS_SetUseResourceManager(tssContext, value);
 	    break;
 	  default:
 	    rc = TSS_RC_BAD_PROPERTY;
@@ -492,30 +486,6 @@ static TPM_RC TSS_SetEncryptSessions(TSS_CONTEXT *tssContext, const char *value)
 	irc = sscanf(value, "%u", &tssContext->tssEncryptSessions);
 	if (irc != 1) {
 	    if (tssVerbose) printf("TSS_SetEncryptSessions: Error, value invalid\n");
-	    rc = TSS_RC_BAD_PROPERTY_VALUE;
-	}
-    }
-    return rc;
-}
-
-static TPM_RC TSS_SetUseResourceManager(TSS_CONTEXT *tssContext, const char *value)
-{
-    TPM_RC		rc = 0;
-    int			irc;
-
-    /* close an open connection before changing property */
-    if (rc == 0) {
-	rc = TSS_Close(tssContext);
-    }
-    if (rc == 0) {
-	if (value == NULL) {
-	    value = TPM_USE_RESOURCE_MANAGER_DEFAULT;
-	}
-    }
-    if (rc == 0) {
-	irc = sscanf(value, "%u", &tssContext->tssUseResourceManager);
-	if (irc != 1) {
-	    if (tssVerbose) printf("TSS_SetUseResourceManager: error, value invalid\n");
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }

@@ -3,7 +3,7 @@
 /*			    Startup		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: startup.c 693 2016-07-22 18:25:58Z kgoldman $		*/
+/*	      $Id: startup.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -58,6 +58,7 @@ int main(int argc, char *argv[])
     int                 doSelftest = FALSE;		/* default no self test */
     TPM_SU		startupType = TPM_SU_CLEAR;
    
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

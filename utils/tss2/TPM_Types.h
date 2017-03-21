@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			     				*/
+/*			 Headers from Part 2    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 913 2017-01-16 21:41:07Z kgoldman $		*/
+/*            $Id: TPM_Types.h 970 2017-03-20 15:03:57Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,7 +55,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2015				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2017				*/
 /*										*/
 /********************************************************************************/
 
@@ -1797,7 +1797,7 @@ typedef struct {
     TPM2B_AUTH			hmac;			/* either an HMAC, a password, or an EmptyAuth */
 } TPMS_AUTH_COMMAND;
 
-/* Table 122 - Definition of TPMS_AUTH_RESPONSE Structure <OUT> */
+/* Table 126 - Definition of TPMS_AUTH_RESPONSE Structure <OUT> */
 
 typedef struct {
     TPM2B_NONCE		nonce;			/* the session nonce, may be the Empty Buffer */
@@ -1805,15 +1805,19 @@ typedef struct {
     TPM2B_AUTH		hmac;			/* either an HMAC or an EmptyAuth */
 } TPMS_AUTH_RESPONSE;
 
-/* Table 123 - Definition of {AES} (TPM_KEY_BITS) TPMI_!ALG.S_KEY_BITS Type */
+/* Table 127 - Definition of {AES} (TPM_KEY_BITS) TPMI_!ALG.S_KEY_BITS Type */
 
+typedef TPM_KEY_BITS TPMI_TDES_KEY_BITS;
 typedef TPM_KEY_BITS TPMI_AES_KEY_BITS;
 typedef TPM_KEY_BITS TPMI_SM4_KEY_BITS;
 typedef TPM_KEY_BITS TPMI_CAMELLIA_KEY_BITS;
 
-/* Table 124 - Definition of TPMU_SYM_KEY_BITS Union */
+/* Table 128 - Definition of TPMU_SYM_KEY_BITS Union */
 
 typedef union {
+#ifdef      TPM_ALG_TDES
+    TPMI_TDES_KEY_BITS        	tdes;   /* TPM_ALG_TDES */
+#endif
 #ifdef TPM_ALG_AES
     TPMI_AES_KEY_BITS		aes;	/* TPM_ALG_AES */
 #endif
@@ -1829,9 +1833,12 @@ typedef union {
     TPM_KEY_BITS		sym;	/* when selector may be any of the symmetric block ciphers */
 } TPMU_SYM_KEY_BITS;
 
-/* Table 125 - Definition of TPMU_SYM_MODE Union */
+/* Table 129 - Definition of TPMU_SYM_MODE Union */
 
 typedef union {
+#ifdef TPM_ALG_TDES
+    TPMI_ALG_SYM_MODE   tdes;		/* TPM_ALG_TDES */
+#endif
 #ifdef TPM_ALG_AES
     TPMI_ALG_SYM_MODE	aes;		/* TPM_ALG_AES */
 #endif

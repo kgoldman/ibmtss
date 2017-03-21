@@ -3,7 +3,7 @@
 /*			     IMA Routines					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: imalib.c 894 2016-12-30 21:35:27Z kgoldman $			*/
+/*            $Id: imalib.c 963 2017-03-15 20:37:25Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -785,41 +785,69 @@ uint32_t IMA_Event_Write(ImaEvent *imaEvent,
     return rc;
 }
 
-/* IMA_Extend() extends the event into the previousImaPcr.
+/* IMA_Extend() extends the event into the imaPcr.
 
    An IMA quirk is that, if the event is all zero, all ones is extended.
 
-   FIXME does not yet support hash agile logs.
+   halg indicates whether to calculate the digest for the SHA-1 or SHA-256 PCR bank.  The IMA event
+   log itself is always SHA-1.
+
+   This function assumes that the same hash algorithm / PCR bank is used for all calls.
 */
 
 uint32_t IMA_Extend(TPMT_HA *imapcr,
-		    ImaEvent *imaEvent)
+		    ImaEvent *imaEvent,
+		    TPMI_ALG_HASH hashAlg)
 {
     uint32_t 	rc = 0;
+    uint16_t	digestSize;
+    uint16_t	zeroPad;
 
     /* FIXME sanity check TPM_IMA_PCR imaEvent->pcrIndex */
     
     /* extend based on the previous IMA PCR value */
     if (rc == 0) {
-	unsigned char zeroDigest[SHA1_DIGEST_SIZE];
-	unsigned char oneDigest[SHA1_DIGEST_SIZE];
+	unsigned char zeroDigest[SHA256_DIGEST_SIZE];
+	unsigned char oneDigest[SHA256_DIGEST_SIZE];
 	int notAllZero;
-	memset(zeroDigest, 0, SHA1_DIGEST_SIZE);
-	memset(oneDigest, 0xff, SHA1_DIGEST_SIZE);
-	imapcr->hashAlg = TPM_ALG_SHA1;	/* FIXME hard coded for now */
-	notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
+	memset(zeroDigest, 0, SHA256_DIGEST_SIZE);
+	memset(oneDigest, 0xff, SHA256_DIGEST_SIZE);
+	if (hashAlg == TPM_ALG_SHA1) {
+	    digestSize = SHA1_DIGEST_SIZE;
+	    zeroPad = 0;
+	}
+	else if (hashAlg == TPM_ALG_SHA256) {
+	    digestSize = SHA256_DIGEST_SIZE;
+	    /* pad the SHA-1 event with zeros for the SHA-256 bank */
+	    zeroPad = SHA256_DIGEST_SIZE - SHA1_DIGEST_SIZE;
+	}
+	else {
+	    printf("ERROR: IMA_Extend: Unsupported hash algorithm: %04x\n", hashAlg);
+	    rc = 1;
+	}
+	notAllZero = memcmp(imaEvent->digest, zeroDigest, digestSize);
+	imapcr->hashAlg = hashAlg;
 	if (notAllZero) {
+#if 0
+	    TSS_PrintAll("IMA_Extend: Start PCR", (uint8_t *)&imapcr->digest, digestSize);
+	    TSS_PrintAll("IMA_Extend: Extend", (uint8_t *)&imaEvent->digest, SHA1_DIGEST_SIZE);
+	    TSS_PrintAll("IMA_Extend: Pad", zeroDigest, zeroPad);
+#endif
 	    rc = TSS_Hash_Generate(imapcr,
-				   SHA1_DIGEST_SIZE, (uint8_t *)&imapcr->digest,
+				   digestSize, (uint8_t *)&imapcr->digest,
 				   SHA1_DIGEST_SIZE, &imaEvent->digest,
+				   /* SHA-1 PCR extend gets zero padded */
+				   zeroPad, zeroDigest,
 				   0, NULL);
 	}
 	/* IMA has a quirk where, when it places all all zero digest into the measurement log, it
 	   extends all ones into IMA PCR */
 	else {
 	    rc = TSS_Hash_Generate(imapcr,
-				   SHA1_DIGEST_SIZE, (uint8_t *)&imapcr->digest,
-				   SHA1_DIGEST_SIZE, oneDigest,
+				   digestSize, (uint8_t *)&imapcr->digest,
+				   digestSize, oneDigest,
+				   /* SHA-1 gets zero padded */
+				   zeroPad, zeroDigest,
 				   0, NULL);
 	}
     }
@@ -831,7 +859,8 @@ uint32_t IMA_Extend(TPMT_HA *imapcr,
 
 /* IMA_VerifyImaDigest() verifies the IMA digest against the hash of the template data.
 
- */
+   This handles the SHA-1 IMA event log.
+*/
 
 uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match */
 			     ImaEvent *imaEvent, /* the current IMA event being processed */

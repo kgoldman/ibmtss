@@ -3,7 +3,7 @@
 /*			   Nuvoton Preconfig 	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2preconfig.c 927 2017-01-26 14:42:59Z kgoldman $		*/
+/*	      $Id: ntc2preconfig.c 945 2017-02-27 23:24:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -81,6 +81,7 @@ int main(int argc, char *argv[])
     int 			pRequiredVal = FALSE;	/* TRUE to set P required values */
     int 			override = FALSE;	/* TRUE to override P required values */
 
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     memset(&preConfigSet, 0, sizeof(NTC2_CFG_STRUCT));	/* default nothing to change */
     

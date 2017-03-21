@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsserror.h 767 2016-10-17 16:59:30Z kgoldman $		*/
+/*	      $Id: tsserror.h 941 2017-02-16 18:33:03Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -101,5 +101,6 @@
 #define TSS_RC_OUT_PARAMETER		0x000b0082	/* Bad out parameter to TSS_Execute */
 #define TSS_RC_BAD_HANDLE_NUMBER	0x000b0083	/* Bad handle number for this command */
 #define TSS_RC_NO_SESSION_SLOT		0x000b0090	/* TSS context has no session slot for handle */
-
+#define TSS_RC_NO_OBJECTPUBLIC_SLOT	0x000b0091	/* TSS context has no object public slot for handle */
+#define TSS_RC_NO_NVPUBLIC_SLOT		0x000b0092	/* TSS context has no NV public slot for handle */
 #endif

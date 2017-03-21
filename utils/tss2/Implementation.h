@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Implementation.h 793 2016-11-10 21:27:40Z kgoldman $		*/
+/*            $Id: Implementation.h 970 2017-03-20 15:03:57Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -109,6 +109,7 @@
 #define  ALG_RSA               ALG_YES
 #define  ALG_SHA1              ALG_YES
 #define  ALG_HMAC              ALG_YES
+#define  ALG_TDES              ALG_YES
 #define  ALG_AES               ALG_YES
 #define  ALG_MGF1              ALG_YES
 #define  ALG_XOR               ALG_YES
@@ -146,6 +147,14 @@
 #define  RSA_KEY_SIZE_BITS_2048     RSA_ALLOWED_KEY_SIZE_2048
 #define  MAX_RSA_KEY_BITS           2048
 #define  MAX_RSA_KEY_BYTES          256
+#define  TDES_KEY_SIZES_BITS        {128,192}
+#define  TDES_KEY_SIZE_BITS_128     TDES_ALLOWED_KEY_SIZE_128
+#define  TDES_KEY_SIZE_BITS_192     TDES_ALLOWED_KEY_SIZE_192
+#define  MAX_TDES_KEY_BITS          192
+#define  MAX_TDES_KEY_BYTES         24
+#define MAX_TDES_BLOCK_SIZE_BYTES				      \
+    MAX(TDES_128_BLOCK_SIZE_BYTES,					\
+	MAX(TDES_192_BLOCK_SIZE_BYTES, 0))
 #define  AES_KEY_SIZES_BITS         {128,256}
 #define  AES_KEY_SIZE_BITS_128      AES_ALLOWED_KEY_SIZE_128
 #define  AES_KEY_SIZE_BITS_256      AES_ALLOWED_KEY_SIZE_256
@@ -416,147 +425,151 @@
 
 // From TCG Algorithm Registry: Table 2 - Definition of TPM_ALG_ID Constants
 
-/* typedef  UINT16             TPM_ALG_ID; kgold - in Table 9 */
-#define  TPM_ALG_ERROR               (TPM_ALG_ID)(0x0000)
+//typedef  UINT16             TPM_ALG_ID;
 #define  ALG_ERROR_VALUE             0x0000
-#if defined ALG_RSA && ALG_RSA == YES
-#define  TPM_ALG_RSA                 (TPM_ALG_ID)(0x0001)
-#endif
+#define  TPM_ALG_ERROR               (TPM_ALG_ID)(ALG_ERROR_VALUE)
 #define  ALG_RSA_VALUE               0x0001
-#if defined ALG_SHA && ALG_SHA == YES
-#define  TPM_ALG_SHA                 (TPM_ALG_ID)(0x0004)
+#if defined ALG_RSA && ALG_RSA == YES
+#define  TPM_ALG_RSA                 (TPM_ALG_ID)(ALG_RSA_VALUE)
+#endif
+#define  ALG_TDES_VALUE              0x0003
+#if defined ALG_TDES && ALG_TDES == YES
+#define  TPM_ALG_TDES                (TPM_ALG_ID)(ALG_TDES_VALUE)
 #endif
 #define  ALG_SHA_VALUE               0x0004
-#if defined ALG_SHA1 && ALG_SHA1 == YES
-#define  TPM_ALG_SHA1                (TPM_ALG_ID)(0x0004)
+#if defined ALG_SHA && ALG_SHA == YES
+#define  TPM_ALG_SHA                 (TPM_ALG_ID)(ALG_SHA_VALUE)
 #endif
 #define  ALG_SHA1_VALUE              0x0004
-#if defined ALG_HMAC && ALG_HMAC == YES
-#define  TPM_ALG_HMAC                (TPM_ALG_ID)(0x0005)
+#if defined ALG_SHA1 && ALG_SHA1 == YES
+#define  TPM_ALG_SHA1                (TPM_ALG_ID)(ALG_SHA1_VALUE)
 #endif
 #define  ALG_HMAC_VALUE              0x0005
-#if defined ALG_AES && ALG_AES == YES
-#define  TPM_ALG_AES                 (TPM_ALG_ID)(0x0006)
+#if defined ALG_HMAC && ALG_HMAC == YES
+#define  TPM_ALG_HMAC                (TPM_ALG_ID)(ALG_HMAC_VALUE)
 #endif
 #define  ALG_AES_VALUE               0x0006
-#if defined ALG_MGF1 && ALG_MGF1 == YES
-#define  TPM_ALG_MGF1                (TPM_ALG_ID)(0x0007)
+#if defined ALG_AES && ALG_AES == YES
+#define  TPM_ALG_AES                 (TPM_ALG_ID)(ALG_AES_VALUE)
 #endif
 #define  ALG_MGF1_VALUE              0x0007
-#if defined ALG_KEYEDHASH && ALG_KEYEDHASH == YES
-#define  TPM_ALG_KEYEDHASH           (TPM_ALG_ID)(0x0008)
+#if defined ALG_MGF1 && ALG_MGF1 == YES
+#define  TPM_ALG_MGF1                (TPM_ALG_ID)(ALG_MGF1_VALUE)
 #endif
 #define  ALG_KEYEDHASH_VALUE         0x0008
-#if defined ALG_XOR && ALG_XOR == YES
-#define  TPM_ALG_XOR                 (TPM_ALG_ID)(0x000A)
+#if defined ALG_KEYEDHASH && ALG_KEYEDHASH == YES
+#define  TPM_ALG_KEYEDHASH           (TPM_ALG_ID)(ALG_KEYEDHASH_VALUE)
 #endif
 #define  ALG_XOR_VALUE               0x000A
-#if defined ALG_SHA256 && ALG_SHA256 == YES
-#define  TPM_ALG_SHA256              (TPM_ALG_ID)(0x000B)
+#if defined ALG_XOR && ALG_XOR == YES
+#define  TPM_ALG_XOR                 (TPM_ALG_ID)(ALG_XOR_VALUE)
 #endif
 #define  ALG_SHA256_VALUE            0x000B
-#if defined ALG_SHA384 && ALG_SHA384 == YES
-#define  TPM_ALG_SHA384              (TPM_ALG_ID)(0x000C)
+#if defined ALG_SHA256 && ALG_SHA256 == YES
+#define  TPM_ALG_SHA256              (TPM_ALG_ID)(ALG_SHA256_VALUE)
 #endif
 #define  ALG_SHA384_VALUE            0x000C
-#if defined ALG_SHA512 && ALG_SHA512 == YES
-#define  TPM_ALG_SHA512              (TPM_ALG_ID)(0x000D)
+#if defined ALG_SHA384 && ALG_SHA384 == YES
+#define  TPM_ALG_SHA384              (TPM_ALG_ID)(ALG_SHA384_VALUE)
 #endif
 #define  ALG_SHA512_VALUE            0x000D
-#define  TPM_ALG_NULL                (TPM_ALG_ID)(0x0010)
-#define  ALG_NULL_VALUE              0x0010
-#if defined ALG_SM3_256 && ALG_SM3_256 == YES
-#define  TPM_ALG_SM3_256             (TPM_ALG_ID)(0x0012)
+#if defined ALG_SHA512 && ALG_SHA512 == YES
+#define  TPM_ALG_SHA512              (TPM_ALG_ID)(ALG_SHA512_VALUE)
 #endif
+#define  ALG_NULL_VALUE              0x0010
+#define  TPM_ALG_NULL                (TPM_ALG_ID)(ALG_NULL_VALUE)
 #define  ALG_SM3_256_VALUE           0x0012
-#if defined ALG_SM4 && ALG_SM4 == YES
-#define  TPM_ALG_SM4                 (TPM_ALG_ID)(0x0013)
+#if defined ALG_SM3_256 && ALG_SM3_256 == YES
+#define  TPM_ALG_SM3_256             (TPM_ALG_ID)(ALG_SM3_256_VALUE)
 #endif
 #define  ALG_SM4_VALUE               0x0013
-#if defined ALG_RSASSA && ALG_RSASSA == YES
-#define  TPM_ALG_RSASSA              (TPM_ALG_ID)(0x0014)
+#if defined ALG_SM4 && ALG_SM4 == YES
+#define  TPM_ALG_SM4                 (TPM_ALG_ID)(ALG_SM4_VALUE)
 #endif
 #define  ALG_RSASSA_VALUE            0x0014
-#if defined ALG_RSAES && ALG_RSAES == YES
-#define  TPM_ALG_RSAES               (TPM_ALG_ID)(0x0015)
+#if defined ALG_RSASSA && ALG_RSASSA == YES
+#define  TPM_ALG_RSASSA              (TPM_ALG_ID)(ALG_RSASSA_VALUE)
 #endif
 #define  ALG_RSAES_VALUE             0x0015
-#if defined ALG_RSAPSS && ALG_RSAPSS == YES
-#define  TPM_ALG_RSAPSS              (TPM_ALG_ID)(0x0016)
+#if defined ALG_RSAES && ALG_RSAES == YES
+#define  TPM_ALG_RSAES               (TPM_ALG_ID)(ALG_RSAES_VALUE)
 #endif
 #define  ALG_RSAPSS_VALUE            0x0016
-#if defined ALG_OAEP && ALG_OAEP == YES
-#define  TPM_ALG_OAEP                (TPM_ALG_ID)(0x0017)
+#if defined ALG_RSAPSS && ALG_RSAPSS == YES
+#define  TPM_ALG_RSAPSS              (TPM_ALG_ID)(ALG_RSAPSS_VALUE)
 #endif
 #define  ALG_OAEP_VALUE              0x0017
-#if defined ALG_ECDSA && ALG_ECDSA == YES
-#define  TPM_ALG_ECDSA               (TPM_ALG_ID)(0x0018)
+#if defined ALG_OAEP && ALG_OAEP == YES
+#define  TPM_ALG_OAEP                (TPM_ALG_ID)(ALG_OAEP_VALUE)
 #endif
 #define  ALG_ECDSA_VALUE             0x0018
-#if defined ALG_ECDH && ALG_ECDH == YES
-#define  TPM_ALG_ECDH                (TPM_ALG_ID)(0x0019)
+#if defined ALG_ECDSA && ALG_ECDSA == YES
+#define  TPM_ALG_ECDSA               (TPM_ALG_ID)(ALG_ECDSA_VALUE)
 #endif
 #define  ALG_ECDH_VALUE              0x0019
-#if defined ALG_ECDAA && ALG_ECDAA == YES
-#define  TPM_ALG_ECDAA               (TPM_ALG_ID)(0x001A)
+#if defined ALG_ECDH && ALG_ECDH == YES
+#define  TPM_ALG_ECDH                (TPM_ALG_ID)(ALG_ECDH_VALUE)
 #endif
 #define  ALG_ECDAA_VALUE             0x001A
-#if defined ALG_SM2 && ALG_SM2 == YES
-#define  TPM_ALG_SM2                 (TPM_ALG_ID)(0x001B)
+#if defined ALG_ECDAA && ALG_ECDAA == YES
+#define  TPM_ALG_ECDAA               (TPM_ALG_ID)(ALG_ECDAA_VALUE)
 #endif
 #define  ALG_SM2_VALUE               0x001B
-#if defined ALG_ECSCHNORR && ALG_ECSCHNORR == YES
-#define  TPM_ALG_ECSCHNORR           (TPM_ALG_ID)(0x001C)
+#if defined ALG_SM2 && ALG_SM2 == YES
+#define  TPM_ALG_SM2                 (TPM_ALG_ID)(ALG_SM2_VALUE)
 #endif
 #define  ALG_ECSCHNORR_VALUE         0x001C
-#if defined ALG_ECMQV && ALG_ECMQV == YES
-#define  TPM_ALG_ECMQV               (TPM_ALG_ID)(0x001D)
+#if defined ALG_ECSCHNORR && ALG_ECSCHNORR == YES
+#define  TPM_ALG_ECSCHNORR           (TPM_ALG_ID)(ALG_ECSCHNORR_VALUE)
 #endif
 #define  ALG_ECMQV_VALUE             0x001D
-#if defined ALG_KDF1_SP800_56A && ALG_KDF1_SP800_56A == YES
-#define  TPM_ALG_KDF1_SP800_56A      (TPM_ALG_ID)(0x0020)
+#if defined ALG_ECMQV && ALG_ECMQV == YES
+#define  TPM_ALG_ECMQV               (TPM_ALG_ID)(ALG_ECMQV_VALUE)
 #endif
 #define  ALG_KDF1_SP800_56A_VALUE    0x0020
-#if defined ALG_KDF2 && ALG_KDF2 == YES
-#define  TPM_ALG_KDF2                (TPM_ALG_ID)(0x0021)
+#if defined ALG_KDF1_SP800_56A && ALG_KDF1_SP800_56A == YES
+#define  TPM_ALG_KDF1_SP800_56A      (TPM_ALG_ID)(ALG_KDF1_SP800_56A_VALUE)
 #endif
 #define  ALG_KDF2_VALUE              0x0021
-#if defined ALG_KDF1_SP800_108 && ALG_KDF1_SP800_108 == YES
-#define  TPM_ALG_KDF1_SP800_108      (TPM_ALG_ID)(0x0022)
+#if defined ALG_KDF2 && ALG_KDF2 == YES
+#define  TPM_ALG_KDF2                (TPM_ALG_ID)(ALG_KDF2_VALUE)
 #endif
 #define  ALG_KDF1_SP800_108_VALUE    0x0022
-#if defined ALG_ECC && ALG_ECC == YES
-#define  TPM_ALG_ECC                 (TPM_ALG_ID)(0x0023)
+#if defined ALG_KDF1_SP800_108 && ALG_KDF1_SP800_108 == YES
+#define  TPM_ALG_KDF1_SP800_108      (TPM_ALG_ID)(ALG_KDF1_SP800_108_VALUE)
 #endif
 #define  ALG_ECC_VALUE               0x0023
-#if defined ALG_SYMCIPHER && ALG_SYMCIPHER == YES
-#define  TPM_ALG_SYMCIPHER           (TPM_ALG_ID)(0x0025)
+#if defined ALG_ECC && ALG_ECC == YES
+#define  TPM_ALG_ECC                 (TPM_ALG_ID)(ALG_ECC_VALUE)
 #endif
 #define  ALG_SYMCIPHER_VALUE         0x0025
-#if defined ALG_CAMELLIA && ALG_CAMELLIA == YES
-#define  TPM_ALG_CAMELLIA            (TPM_ALG_ID)(0x0026)
+#if defined ALG_SYMCIPHER && ALG_SYMCIPHER == YES
+#define  TPM_ALG_SYMCIPHER           (TPM_ALG_ID)(ALG_SYMCIPHER_VALUE)
 #endif
 #define  ALG_CAMELLIA_VALUE          0x0026
-#if defined ALG_CTR && ALG_CTR == YES
-#define  TPM_ALG_CTR                 (TPM_ALG_ID)(0x0040)
+#if defined ALG_CAMELLIA && ALG_CAMELLIA == YES
+#define  TPM_ALG_CAMELLIA            (TPM_ALG_ID)(ALG_CAMELLIA_VALUE)
 #endif
 #define  ALG_CTR_VALUE               0x0040
-#if defined ALG_OFB && ALG_OFB == YES
-#define  TPM_ALG_OFB                 (TPM_ALG_ID)(0x0041)
+#if defined ALG_CTR && ALG_CTR == YES
+#define  TPM_ALG_CTR                 (TPM_ALG_ID)(ALG_CTR_VALUE)
 #endif
 #define  ALG_OFB_VALUE               0x0041
-#if defined ALG_CBC && ALG_CBC == YES
-#define  TPM_ALG_CBC                 (TPM_ALG_ID)(0x0042)
+#if defined ALG_OFB && ALG_OFB == YES
+#define  TPM_ALG_OFB                 (TPM_ALG_ID)(ALG_OFB_VALUE)
 #endif
 #define  ALG_CBC_VALUE               0x0042
-#if defined ALG_CFB && ALG_CFB == YES
-#define  TPM_ALG_CFB                 (TPM_ALG_ID)(0x0043)
+#if defined ALG_CBC && ALG_CBC == YES
+#define  TPM_ALG_CBC                 (TPM_ALG_ID)(ALG_CBC_VALUE)
 #endif
 #define  ALG_CFB_VALUE               0x0043
-#if defined ALG_ECB && ALG_ECB == YES
-#define  TPM_ALG_ECB                 (TPM_ALG_ID)(0x0044)
+#if defined ALG_CFB && ALG_CFB == YES
+#define  TPM_ALG_CFB                 (TPM_ALG_ID)(ALG_CFB_VALUE)
 #endif
 #define  ALG_ECB_VALUE               0x0044
+#if defined ALG_ECB && ALG_ECB == YES
+#define  TPM_ALG_ECB                 (TPM_ALG_ID)(ALG_ECB_VALUE)
+#endif
 #define  TPM_ALG_FIRST               (TPM_ALG_ID)(0x0001)
 #define  ALG_FIRST_VALUE             0x0001
 #define  TPM_ALG_LAST                (TPM_ALG_ID)(0x0044)

@@ -70,6 +70,7 @@ int main(int argc, char * argv[])
     FILE 		*infile = NULL;
     int 		littleEndian = FALSE;
 	
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 	
     for (i=1 ; i<argc ; i++) {

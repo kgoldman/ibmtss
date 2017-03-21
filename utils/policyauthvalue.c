@@ -3,7 +3,7 @@
 /*			    PolicyAuthValue	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyauthvalue.c 885 2016-12-21 17:13:46Z kgoldman $	*/
+/*	      $Id: policyauthvalue.c 945 2017-02-27 23:24:31Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
     TPMI_SH_POLICY		policySession = 0;
     PolicyAuthValue_In 		in;
     
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

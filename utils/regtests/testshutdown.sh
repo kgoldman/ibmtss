@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testshutdown.sh 663 2016-06-30 18:58:18Z kgoldman $		#
+#	$Id: testshutdown.sh 948 2017-02-28 21:21:38Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -42,7 +42,7 @@
 #################################################################################
 
 echo ""
-echo "TPM Resume (state/state)"
+echo "TPM Resume (state/state) - suspend"
 echo ""
 
 echo "PCR 0 Extend"
@@ -67,6 +67,10 @@ checkSuccess $?
 
 echo "Load the signing key"
 ${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Context save the signing key"
+${PREFIX}contextsave -ha 80000001 -of tmpsk.bin > run.out 
 checkSuccess $?
 
 echo "Define index with write stclear, read stclear"
@@ -107,6 +111,18 @@ checkSuccess $?
 
 echo "Verify that PCR 0 is restored"
 diff tmp1.bin tmp2.bin > run.out
+checkSuccess $?
+
+echo "Context load the signing key"
+${PREFIX}contextload -if tmpsk.bin > run.out 
+checkSuccess $?
+
+echo "Signing Key Self Certify"
+${PREFIX}certify -hk 80000000 -ho 80000000 -pwdk sig -pwdo sig > run.out
+checkSuccess $?
+
+echo "Flush the signing key"
+${PREFIX}flushcontext -ha 80000000 > run.out
 checkSuccess $?
 
 echo "Signing Key Self Certify - should fail, signing key missing"
@@ -154,8 +170,24 @@ ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo ""
-echo "TPM Restart (state/clear)"
+echo "TPM Restart (state/clear) - hibernate"
 echo ""
+
+echo "Load the signing key"
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Context save the signing key"
+${PREFIX}contextsave -ha 80000001 -of tmpsk.bin > run.out 
+checkSuccess $?
+
+echo "Start a session"
+${PREFIX}startauthsession -se h > run.out
+checkSuccess $?
+
+echo "Save the session"
+${PREFIX}contextsave -ha 02000000 -of tmp.bin > run.out
+checkSuccess $?
 
 echo "Shutdown state"
 ${PREFIX}shutdown -s > run.out
@@ -167,6 +199,18 @@ checkSuccess $?
 
 echo "Startup clear"
 ${PREFIX}startup -c > run.out
+checkSuccess $?
+
+echo "Load the session"
+${PREFIX}contextload -if tmp.bin > run.out
+checkSuccess $?
+
+echo "Flush the session"
+${PREFIX}flushcontext -ha 02000000 > run.out
+checkSuccess $?
+
+echo "Context load the signing key"
+${PREFIX}contextload -if tmpsk.bin > run.out 
 checkSuccess $?
 
 echo "PCR 0 Read"
@@ -193,10 +237,43 @@ echo "Recreate a platform primary storage key"
 ${PREFIX}createprimary -hi p -pwdk pps > run.out
 checkSuccess $?
 
+echo ""
+echo "TPM Reset (clear/clear) - cold boot"
+echo ""
+
+echo "Start a session"
+${PREFIX}startauthsession -se h > run.out
+checkSuccess $?
+
+echo "Save the session"
+${PREFIX}contextsave -ha 02000000 -of tmp.bin > run.out
+checkSuccess $?
+
+echo "Shutdown clear"
+${PREFIX}shutdown -c > run.out
+checkSuccess $?
+
+echo "Power cycle"
+${PREFIX}powerup > run.out
+checkSuccess $?
+
+echo "Startup clear"
+${PREFIX}startup -c > run.out
+checkSuccess $?
+
+echo "Load the session - should fail"
+${PREFIX}contextload -if tmp.bin > run.out
+checkFailure $?
+
+echo "Recreate a platform primary storage key"
+${PREFIX}createprimary -hi p -pwdk pps > run.out
+checkSuccess $?
+
 # cleanup 
 
 # shutdown removes the session
 rm h02000000.bin
+rm tmpsk.bin
 
 exit
 
