@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testbind.sh 849 2016-12-01 20:17:03Z kgoldman $			#
+#	$Id: testbind.sh 990 2017-04-19 13:31:24Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -78,7 +78,7 @@ ${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp xxx -pwdk 222 -se0 02000000 1
 checkFailure $?
 
 echo "Flush the session"
-${PREFIX}flushcontext -ha 02000000  > run.out
+${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
 
 echo "Bind session bound to primary key at 80000000, wrong password"
@@ -90,7 +90,7 @@ ${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 0
 checkFailure $?
 
 echo "Flush the failing session"
-${PREFIX}flushcontext -ha 02000000  > run.out
+${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
 
 echo "Flush the second primary key"
@@ -161,15 +161,15 @@ ${PREFIX}startauthsession -se h -bi 01000000 -pwdb nnn > run.out
 checkSuccess $?
 
 echo "NV Write HMAC using bind session"
-${PREFIX}nvwrite -ha 01000000 -pwdn nnn -ic 123 -se0 02000000 1  > run.out
+${PREFIX}nvwrite -ha 01000000 -pwdn nnn -ic 123 -se0 02000000 1 > run.out
 checkSuccess $?
 
 echo "NV Read HMAC using bind session"
-${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 3 -se0 02000000 1  > run.out
+${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 3 -se0 02000000 1 > run.out
 checkSuccess $?
 
 echo "NV Read HMAC using bind session, wrong password does not matter"
-${PREFIX}nvread -ha 01000000 -pwdn xxx -sz 3 -se0 02000000 1  > run.out
+${PREFIX}nvread -ha 01000000 -pwdn xxx -sz 3 -se0 02000000 1 > run.out
 checkSuccess $?
 
 echo "Create storage key using that bind session"
@@ -384,7 +384,7 @@ echo "PolicyAuthValue and bind to same object, response encryption"
 echo ""
 
 echo "Create a storage key under the primary key - policy command code - create, auth"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp pps -pwdk sto -pol policies/policycccreate-auth.bin  > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp pps -pwdk sto -pol policies/policycccreate-auth.bin > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key"

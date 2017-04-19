@@ -3,7 +3,7 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: initkeys.bat 593 2016-05-18 15:04:15Z kgoldman $	#
+REM		$Id: initkeys.bat 991 2017-04-19 13:57:39Z kgoldman $		#
 REM										#
 REM (c) Copyright IBM Corporation 2015						#
 REM 										#
@@ -60,26 +60,32 @@ IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
-echo "Create a storage key under the primary key"
+echo "Create an RSA storage key under the primary key"
 %TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr storepriv.bin -opu storepub.bin -pwdp pps -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
+echo "Create an ECC storage key under the primary key"
+%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -st -kt f -kt p -opr storeeccpriv.bin -opu storeeccpub.bin -pwdp pps -pwdk sto > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
 echo "Create an unrestricted RSA signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr signpriv.bin -opu signpub.bin -pwdp pps -pwdk sig > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr signpriv.bin -opu signpub.bin -opem signpub.pem -pwdp pps -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
 echo "Create an unrestricted ECC signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signeccpriv.bin -opu signeccpub.bin -pwdp pps -pwdk sig > run.out
+%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signeccpriv.bin -opu signeccpub.bin -opem signeccpub.pem -pwdp pps -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
-echo "Create a restricted signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -sir -kt f -kt p -opr signrpriv.bin -opu signrpub.bin -pwdp pps -pwdk sig > run.out
+echo "Create a restricted RSA signing key under the primary key"
+%TPM_EXE_PATH%create -hp 80000000 -sir -kt f -kt p -opr signrpriv.bin -opu signrpub.bin -opem signrpub.pem -pwdp pps -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )

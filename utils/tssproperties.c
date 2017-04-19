@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.c 941 2017-02-16 18:33:03Z kgoldman $		*/
+/*	      $Id: tssproperties.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -291,7 +291,7 @@ TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,
 /* TSS_SetTraceLevel() sets the trace level.
 
    0:	no printing
-   1:	error primting
+   1:	error printing
    2:	trace printing
 */
 

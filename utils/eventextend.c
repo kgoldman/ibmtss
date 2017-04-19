@@ -3,7 +3,7 @@
 /*		      Extend an EVENT measurement file into PCRs		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventextend.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: eventextend.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -214,7 +214,7 @@ int main(int argc, char * argv[])
     return rc;
 }
 
-static void printUsage()
+static void printUsage(void)
 {
     printf("Usage: eventextend -if <measurement file> [-v]\n");
     printf("\n");

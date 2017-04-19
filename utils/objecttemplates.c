@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 891 2016-12-29 20:57:09Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -105,11 +105,13 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	    publicArea->objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
 	    break;
 	  case TYPE_SI:
+	  case TYPE_DAA:
 	    publicArea->objectAttributes.val |= TPMA_OBJECT_SIGN;
 	    publicArea->objectAttributes.val &= ~TPMA_OBJECT_DECRYPT;
 	    publicArea->objectAttributes.val &= ~TPMA_OBJECT_RESTRICTED;
 	    break;
 	  case TYPE_SIR:
+	  case TYPE_DAAR:
 	    publicArea->objectAttributes.val |= TPMA_OBJECT_SIGN;
 	    publicArea->objectAttributes.val &= ~TPMA_OBJECT_DECRYPT;
 	    publicArea->objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
@@ -188,6 +190,8 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	      case TYPE_DEO:
 	      case TYPE_SI:
 	      case TYPE_SIR:
+	      case TYPE_DAA:
+	      case TYPE_DAAR:
 	      case TYPE_GP:
 		/* Non-storage keys must have TPM_ALG_NULL for the symmetric algorithm */
 		publicArea->parameters.eccDetail.symmetric.algorithm = TPM_ALG_NULL;
@@ -205,6 +209,8 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	    switch (keyType) {
 	      case TYPE_GP:
 	      case TYPE_SI:
+	      case TYPE_DEN:
+	      case TYPE_DEO:
 		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
 		/* Table 165 - Definition of {ECC} (TPM_ECC_CURVE) TPMI_ECC_CURVE Type */
 		/* Table 10 - Definition of (UINT16) {ECC} TPM_ECC_CURVE Constants curveID */
@@ -230,13 +236,15 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 		/* Table 135 - Definition of TPMS_SCHEME_HASH Structure hashAlg */
 		publicArea->parameters.eccDetail.kdf.details.mgf1.hashAlg = halg;
 		break;
-	      case TYPE_DEN:
-	      case TYPE_DEO:
-		printf("Decryption key type for ECC keys not implemented yet\n");
-		rc = TPM_RC_VALUE;
-		/* FIXME keys other than signing are wrong, not implemented yet */
-		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
-		/* Table 152 - Definition of TPMU_ASYM_SCHEME details */
+	      case TYPE_DAA:
+	      case TYPE_DAAR:
+		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_ECDAA;
+		publicArea->parameters.eccDetail.scheme.details.ecdaa.hashAlg = halg;
+		publicArea->parameters.eccDetail.scheme.details.ecdaa.count = 1;
+		publicArea->parameters.eccDetail.curveID = curveID;
+		publicArea->parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
+		publicArea->unique.ecc.y.t.size = 0;
+		publicArea->unique.ecc.x.t.size = 0;
 		break;
 	      case TYPE_ST:
 		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
@@ -470,6 +478,15 @@ TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
     return rc;
 }
 
+TPM_RC keyECDAAPublicTemplate(TPMT_PUBLIC *publicArea,
+			      TPMA_OBJECT objectAttributes,
+			      int type,
+			      TPMI_ALG_PUBLIC algPublic,
+			      TPMI_ECC_CURVE curveID,       
+			      TPMI_ALG_HASH nalg,
+			      TPMI_ALG_HASH halg,
+			      const char *policyFilename);
+
 TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
 		 const char *policyFilename)
 {
@@ -509,6 +526,8 @@ void printUsageTemplate(void)
     printf("\t\t\t[default for primary keys]\n");
     printf("\t\t-si signing\n");
     printf("\t\t-sir restricted signing\n");
+    printf("\t\t-dau create unrestricted ECDAA key pair\n");
+    printf("\t\t-dar create restricted ECDAA key pair\n");
     printf("\t\t-kh keyed hash (hmac)\n");
     printf("\t\t-dp derivation parent\n");
     printf("\t\t-gp general purpose, not storage\n");
@@ -519,7 +538,7 @@ void printUsageTemplate(void)
     printf("\t\t[-da object subject to DA protection) (default no)]\n");
     printf("\t[-pol policy file (default empty)]\n");
     printf("\n");
-    printf("\t[-nalg name hash algorithm [sha1, sha256, sha384] (default sha256)]\n");
-    printf("\t[-halg scheme hash algorithm [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg scheme hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
     return;	
 }

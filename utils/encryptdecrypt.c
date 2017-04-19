@@ -3,7 +3,7 @@
 /*			   EncryptDecrypt					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: encryptdecrypt.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: encryptdecrypt.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -348,7 +348,7 @@ static void printUsage(void)
     printf("\t-pwdk password for key (default empty)\n");
     printf("\t-d decrypt (default encrypt)\n");
     printf("\t-if input file name\n");
-    printf("\t-of output file name\n");
+    printf("\t[-of output file name (default do not save)]\n");
     printf("\t[-2 use TPM2_EncryptDecrypt2]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testprimary.sh 759 2016-10-05 18:42:42Z kgoldman $			#
+#	$Id: testprimary.sh 990 2017-04-19 13:31:24Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -50,7 +50,7 @@ ${PREFIX}createprimary -hi p -pwdk pps > run.out
 checkSuccess $?
 
 echo "Read the public part"
-${PREFIX}readpublic -ho 80000001  > run.out
+${PREFIX}readpublic -ho 80000001 > run.out
 checkSuccess $?
 
 echo "Create a storage key under the primary key"

@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testsign.sh 787 2016-10-25 12:55:28Z kgoldman $		#
+#		$Id: testsign.sh 991 2017-04-19 13:57:39Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -59,15 +59,27 @@ echo "Convert key pair to plaintext DER format"
 
 openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
 
-for HALG in sha1 sha256
+for HALG in sha1 sha256 sha384
 do
 
     echo "Sign a digest - $HALG"
-    ${PREFIX}sign -hk 80000001 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig -ipu signpub.bin -ipem signpub.pem > run.out
+    ${PREFIX}sign -hk 80000001 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig -ipu signpub.bin > run.out
     checkSuccess $?
 
-    echo "Verify the signature - $HALG"
+    echo "Verify the signature using the TPM - $HALG"
     ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature using PEM - $HALG"
+    ${PREFIX}verifysignature -ipem signpub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Read the public part"
+    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+    checkSuccess $?
+
+    echo "Verify the signature using readpublic PEM - $HALG"
+    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
     checkSuccess $?
 
     echo "Load the openssl key pair in the NULL hierarchy - $HALG"
@@ -100,15 +112,27 @@ echo "Load the ECC signing key under the primary key"
 ${PREFIX}load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp pps > run.out
 checkSuccess $?
 
-for HALG in sha1 sha256
+for HALG in sha1 sha256 sha384
 do
 
     echo "Sign a digest - $HALG"
     ${PREFIX}sign -hk 80000001 -halg $HALG -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
     checkSuccess $?
 
-    echo "Verify the ECC signature - $HALG"
-    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -ecc -if policies/aaa -is sig.bin  > run.out
+    echo "Verify the ECC signature using the TPM - $HALG"
+    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -ecc -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature using PEM - $HALG"
+    ${PREFIX}verifysignature -ipem signeccpub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Read the public part"
+    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+    checkSuccess $?
+
+    echo "Verify the signature using readpublic PEM - $HALG"
+    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
     checkSuccess $?
 
 done
@@ -118,50 +142,91 @@ ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo ""
-echo "Primary Signing Key"
+echo "Primary RSA Signing Key"
 echo ""
 
 # primary signing key 80000001
 
-for HALG in sha1 sha256
+echo "Create primary signing key - RSA"
+${PREFIX}createprimary -si -opu tmppub.bin -opem tmppub.pem -pwdk sig > run.out
+checkSuccess $?
+
+for HALG in sha1 sha256 sha384
 do
     
-    echo "Create primary signing key - RSA, $HALG"
-    ${PREFIX}createprimary -si -opu tmppub.bin -pwdk sig > run.out
-    checkSuccess $?
-
     echo "Sign a digest - $HALG"
-    ${PREFIX}sign -hk 80000001 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig -ipu tmppub.bin -ipem tmppub.pem > run.out
+    ${PREFIX}sign -hk 80000001 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig -ipu tmppub.bin > run.out
     checkSuccess $?
 
     echo "Verify the signature - $HALG"
     ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
     checkSuccess $?
 
-    echo "Flush the primary signing key"
-    ${PREFIX}flushcontext -ha 80000001 > run.out
+    echo "Verify the signature using PEM - $HALG"
+    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Read the public part"
+    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+    checkSuccess $?
+
+    echo "Verify the signature using readpublic PEM - $HALG"
+    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
     checkSuccess $?
 
 done
 
-echo "Create primary signing key - ECC"
-${PREFIX}createprimary -si -opu tmppub.bin -ecc nistp256 -pwdk sig > run.out
-checkSuccess $?
-
-echo "Sign a digest - SHA1"
-${PREFIX}sign -hk 80000001 -halg sha1 -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
-checkSuccess $?
-
-echo "Flush the signing key"
+echo "Flush the primary signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
+echo ""
+echo "Primary ECC Signing Key"
+echo ""
+
+echo "Create primary signing key - ECC"
+${PREFIX}createprimary -si -opu tmppub.bin -opem tmppub.pem -ecc nistp256 -pwdk sig > run.out
+checkSuccess $?
+
+for HALG in sha1 sha256 sha384
+do
+    
+    echo "Sign a digest - $HALG"
+    ${PREFIX}sign -hk 80000001 -halg $HALG -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
+    checkSuccess $?
+
+    echo "Verify the signature - $HALG"
+    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature using PEM - $HALG"
+    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Read the public part"
+    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+    checkSuccess $?
+
+    echo "Verify the signature using readpublic PEM - $HALG"
+    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+done
+
+echo "Flush the primary signing key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo ""
+echo "Restricted Signing Key"
+echo ""
+
 echo "Create primary signing key - restricted"
-${PREFIX}createprimary -sir -opu tmppub.bin -pwdk sig  > run.out
+${PREFIX}createprimary -sir -opu tmppub.bin -pwdk sig > run.out
 checkSuccess $?
 
 echo "Sign a digest - SHA256 - should fail TPM_RC_TICKET"
-${PREFIX}sign -hk 80000001 -halg sha256  -if policies/aaa -os sig.bin  -pwdk sig -ipu tmppub.bin -ipem signpub.pem > run.out
+${PREFIX}sign -hk 80000001 -halg sha256  -if policies/aaa -os sig.bin -pwdk sig -ipu tmppub.bin > run.out
 checkFailure $?
 
 echo "Flush the signing key"

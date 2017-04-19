@@ -1,11 +1,11 @@
 /********************************************************************************/
 /*										*/
-/*			    HashSequence_Start					*/
+/*			    HashSequenceStart					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hashsequencestart.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: hashsequencestart.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -240,7 +240,7 @@ static void printUsage(void)
     printf("Runs TPM2_HashSequenceStart\n");
     printf("\n");
     printf("\t-pwda password for sequence (default empty)\n");
-    printf("\t-halg [sha1, sha256, sha384, null] (default sha256)\n");
+    printf("\t-halg (sha1, sha256, sha384, null) (default sha256)\n");
     printf("\t\tnull is an event sequence\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

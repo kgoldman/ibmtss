@@ -3,7 +3,7 @@
 /*			    Get Capability	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: getcapability.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -590,7 +590,7 @@ static void printUsage(TPM_CAP capability)
     exit(1);
 }
 
-static void usageCapability()
+static void usageCapability(void)
 {
     printf("-cap values\n"
 	   "\n"
@@ -607,13 +607,13 @@ static void usageCapability()
     return;
 }
 
-static void usageAlgs()
+static void usageAlgs(void)
 {
     printf("TPM_CAP_ALGS -pr not used\n");
     return;
 }
 
-static void usageHandles()
+static void usageHandles(void)
 {
     printf("TPM_CAP_HANDLES -pr values\n"
 	   "\n"
@@ -628,32 +628,32 @@ static void usageHandles()
     return;
 }
 
-static void usageCommands()
+static void usageCommands(void)
 {
     printf("TPM_CAP_COMMANDS -pr is first command\n");
     return;
 }
 
 ;
-static void usagePpCommands()
+static void usagePpCommands(void)
 {
     printf("TPM_CAP_PP_COMMANDS -pr is first command\n");
     return;
 }
 
-static void usageAuditCommands()
+static void usageAuditCommands(void)
 {
     printf("TPM_CAP_AUDIT_COMMANDS -pr is first command\n");
     return;
 }
 
-static void usagePcrs()
+static void usagePcrs(void)
 {
     printf("TPM_CAP_PCRS -pr is not used\n");
     return;
 }
 
-static void usageTpmProperties()
+static void usageTpmProperties(void)
 {
     printf("TPM_CAP_TPM_PROPERTIES -pr is first property\n");
     printf("\tPT_FIXED starts at %08x\n", PT_FIXED);	
@@ -661,13 +661,13 @@ static void usageTpmProperties()
     return;
 }
 
-static void usagePcrProperties()
+static void usagePcrProperties(void)
 {
     printf("TPM_CAP_PCR_PROPERTIES -pr is the first property\n");
     return;
 }
 
-static void usageEccCurves()
+static void usageEccCurves(void)
 {
     printf("unimplemented\n");
     return;

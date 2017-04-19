@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testsalt.sh 751 2016-09-22 20:00:12Z kgoldman $			#
+#	$Id: testsalt.sh 985 2017-04-14 18:49:47Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -45,29 +45,36 @@ echo ""
 echo "Salt Session - Load"
 echo ""
 
-for HALG in sha1 sha256 sha384
+for ASY in "-rsa" "-ecc nistp256"
 do
+    for HALG in sha1 sha256 sha384
+    do
 
-    echo "Create a ${HALG} storage key under the primary key "
-    ${PREFIX}create -hp 80000000 -nalg ${HALG} -halg ${HALG} -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 222 > run.out
-    checkSuccess $?
+	# In general a storage key can be used.  A decryption key is
+	# used here because the hash algorithm doesn't have to match
+	# that of the parent.
 
-    echo "Load the storage key under the primary key"
-    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
-    checkSuccess $?
+	echo "Create a ${ASY} ${HALG} storage key under the primary key "
+	${PREFIX}create -hp 80000000 -nalg ${HALG} -halg ${HALG} ${ASY} -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 222 > run.out
+	checkSuccess $?
 
-    echo "Start a salted HMAC auth session"
-    ${PREFIX}startauthsession -se h -hs 80000001 > run.out
-    checkSuccess $?
+	echo "Load the RSA storage key under the primary key"
+	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+	checkSuccess $?
 
-    echo "Create a signing key using the salt"
-    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
-    checkSuccess $?
+	echo "Start a RSA salted HMAC auth session"
+	${PREFIX}startauthsession -se h -hs 80000001 > run.out
+	checkSuccess $?
 
-    echo "Flush the storage key"
-    ${PREFIX}flushcontext -ha 80000001 > run.out
-    checkSuccess $?
+	echo "Create a signing key using the salt"
+	${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+	checkSuccess $?
 
+	echo "Flush the storage key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
+
+    done
 done
 
 echo ""
@@ -82,7 +89,7 @@ echo "Convert key pair to plaintext DER format"
 
 openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
 
-for HALG in sha1 sha256
+for HALG in sha1 sha256 sha384
 do
 
     echo "Load the openssl key pair in the NULL hierarchy - $HALG"
@@ -107,7 +114,7 @@ echo ""
 echo "Salt Session - CreatePrimary storage key"
 echo ""
 
-for HALG in sha1 sha256
+for HALG in sha1 sha256 sha384
 do
     
     echo "Create a primary storage key - $HALG"
@@ -132,7 +139,7 @@ echo ""
 echo "Salt Session - CreatePrimary RSA key"
 echo ""
 
-for HALG in sha1 sha256
+for HALG in sha1 sha256 sha384
 do
     
     echo "Create a primary RSA key - $HALG"

@@ -3,7 +3,7 @@
 /*			    PolicyPassword	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policypassword.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: policypassword.c 981 2017-04-05 16:39:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
 		printf("Missing parameter for -ha\n");
 		printUsage();
 	    }
-	    
 	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();

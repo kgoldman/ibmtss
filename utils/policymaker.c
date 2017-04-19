@@ -3,7 +3,7 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymaker.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: policymaker.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015,2016					*/
 /*										*/
@@ -46,7 +46,7 @@
    a file with lines in hexascii, to be extended into the policy digest, big endian
 
    NOTE: Empty lines are permitted and cause a double hash.  This is useful for
-   e.g. TPM2_PolicySigned when the policyZRef is empty.
+   e.g. TPM2_PolicySigned when the policyRef is empty.
 
    Outputs are:
 
@@ -291,7 +291,7 @@ static int Format_ByteFromHexascii(unsigned char *byte,
 	}
 	else {
 	    printf("Format_ByteFromHexascii: "
-				 "Error: Line has non hex ascii character: %c\n", c);
+		   "Error: Line has non hex ascii character: %c\n", c);
 	    rc = EXIT_FAILURE;
 	}
     }
@@ -303,7 +303,7 @@ static void printUsage(void)
 {
     printf("policymaker\n");
     printf("\n");
-    printf("[-halg hash algorithm (default sha256)\n");
+    printf("[-halg hash algorithm (sha1 sha256 sha384) (default sha256)\n");
     printf("[-nz do not extend starting with zeros, just hash the last line]\n");
     printf("-if input policy statements in hex ascii\n");
     printf("[-of] output file - policy hash in binary\n");

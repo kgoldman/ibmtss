@@ -3,7 +3,7 @@
 /*			    NV GlobalWriteLock	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvglobalwritelock.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: nvglobalwritelock.c 978 2017-04-04 15:37:15Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/

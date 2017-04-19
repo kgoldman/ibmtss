@@ -3,7 +3,7 @@
 /*			    NV Read		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvread.c 945 2017-02-27 23:24:31Z kgoldman $			*/
+/*	      $Id: nvread.c 987 2017-04-17 18:27:09Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -338,7 +338,7 @@ static void printUsage(void)
     printf("\t[-pwdn password for NV index (default empty)]\n");
     printf("\t[-sz data size (default 0)]\n");
     printf("\t[-off offset (default 0)]\n");
-    printf("\t[-of data file]\n");
+    printf("\t[-of data file (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

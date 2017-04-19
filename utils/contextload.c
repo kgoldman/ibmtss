@@ -3,7 +3,7 @@
 /*			   ContextLoad 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: contextload.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: contextload.c 984 2017-04-13 19:34:30Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -92,6 +92,7 @@ int main(int argc, char *argv[])
     }
     if (contextFilename == NULL) {
 	printf("Missing context file parameter -if\n");
+	printUsage();
     }
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.context,

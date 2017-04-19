@@ -3,7 +3,7 @@
 /*			    Sign Application					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: signapp.c 961 2017-03-10 21:53:29Z kgoldman $		*/
+/*	      $Id: signapp.c 980 2017-04-04 21:11:44Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("signapp: success\n");
+	printf("signapp: success\n");
     }
     else {
 	const char *msg;
@@ -401,7 +401,7 @@ int main(int argc, char *argv[])
     return rc;
 }
 
-/* startSession() starts eithe a policy or HMAC session.
+/* startSession() starts either a policy or HMAC session.
 
    If tpmKey is not null, a salted session is used.
 

@@ -1,11 +1,11 @@
 /********************************************************************************/
 /*										*/
-/*			    Hmac_Start						*/
+/*			    HmacStart						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hmacstart.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: hmacstart.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -267,7 +267,7 @@ static void printUsage(void)
     printf("\t-hk key handle\n");
     printf("\t-pwdk password for key (default empty)\n");
     printf("\t-pwda password for sequence (default empty)\n");
-    printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

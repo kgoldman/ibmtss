@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testhierarchy.sh 663 2016-06-30 18:58:18Z kgoldman $	#
+#		$Id: testhierarchy.sh 990 2017-04-19 13:31:24Z kgoldman $	#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -202,7 +202,7 @@ ${PREFIX}createprimary -hi o -pwdp ooo > run.out
 checkSuccess $?
 
 echo "Read the public part"
-${PREFIX}readpublic -ho 80000001  > run.out
+${PREFIX}readpublic -ho 80000001 > run.out
 checkSuccess $?
 
 echo "ClearControl disable"
@@ -222,7 +222,7 @@ ${PREFIX}clear -hi p > run.out
 checkSuccess $?
 
 echo "Read the public part - should fail"
-${PREFIX}readpublic -ho 80000001  > run.out
+${PREFIX}readpublic -ho 80000001 > run.out
 checkFailure $?
 
 echo "Create a primary key - old owner password should fail"

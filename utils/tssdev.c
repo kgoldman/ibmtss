@@ -3,7 +3,7 @@
 /*		Linux Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.c 933 2017-01-31 21:49:54Z kgoldman $ 		*/
+/*	      $Id: tssdev.c 978 2017-04-04 15:37:15Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -181,7 +181,7 @@ static uint32_t TSS_Dev_ReceiveCommand(int dev_fd, uint8_t *buffer, uint32_t *le
 	TSS_PrintAll("TSS_Dev_ReceiveCommand",
 		     buffer, irc);
     }
-    /* verify that there is at leat a tag, responseSize, and responseCode */
+    /* verify that there is at least a tag, responseSize, and responseCode */
     if (rc == 0) {
 	if ((unsigned int)irc < (sizeof(TPM_ST) + sizeof(uint32_t) + sizeof(uint32_t))) {
 	    if (tssVerbose) printf("TSS_Dev_ReceiveCommand: read bytes %u < header\n", irc);

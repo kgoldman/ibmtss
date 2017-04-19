@@ -3,7 +3,7 @@
 /*			    DictionaryAttackParameters 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*      $Id: dictionaryattackparameters.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*      $Id: dictionaryattackparameters.c 982 2017-04-13 13:00:10Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -250,7 +250,6 @@ static void printUsage(void)
     printf("\t[-lr lockout recovery (default 1 second)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t-se1 session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     exit(1);	
 }

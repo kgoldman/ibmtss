@@ -116,31 +116,55 @@ echo ""
 echo "CreateLoaded Child Key"
 echo ""
 
-echo "CreateLoaded child key, parent 80000000"
-%TPM_EXE_PATH%createloaded -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk ppp > run.out
+echo "CreateLoaded child storage key at 80000001, parent 80000000"
+%TPM_EXE_PATH%createloaded -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk ppp  -opu tmpppub.bin -opr tmpppriv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Create a signing key under the child key"
+echo "Create a signing key under the child storage key 80000001"
 %TPM_EXE_PATH%create -hp 80000001 -si -opr tmppriv.bin -opu tmppub.bin -pwdp ppp > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Load the signing key under the child key"
+echo "Load the signing key at 80000002 under the child storage key 80000001"
 %TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Flush the storage key"
+echo "Flush the child storage key 80000002"
 %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Flush the child key"
+echo "Flush the child signing key 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Reload the createloaded child storage key at 80000001, parent 80000000"
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmpppriv.bin -ipu tmpppub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Reload the child signing key at 80000002 under the child storage key 80000001"
+%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the child storage key 80000002 "
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the child signing key 80000001 "
 %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1

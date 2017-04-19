@@ -3,7 +3,7 @@
 /*			     TSS Library Dependent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.h 878 2016-12-19 19:52:56Z kgoldman $		*/
+/*	      $Id: tsscrypto.h 983 2017-04-13 17:33:54Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -49,12 +49,24 @@
 #include <stdio.h>
 
 #include <openssl/rsa.h>
+#include <openssl/ec.h>
+#include <openssl/bn.h>
 
 #ifndef TPM_TSS
 #define TPM_TSS
 #endif
 
 #include <tss2/tss.h>
+
+/* FIXME move to static */
+
+/* ECC salt */
+
+typedef struct
+{
+    EC_GROUP            *G;
+    BN_CTX              *ctx;
+} CURVE_DATA;
 
 #ifdef __cplusplus
 extern "C" {
@@ -101,6 +113,10 @@ extern "C" {
 				      uint32_t nbytes,
 				      const unsigned char *earr,   	/* public exponent */
 				      uint32_t ebytes);
+
+    TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
+			TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
+			TPMT_PUBLIC		*publicArea);
 
     TPM_RC TSS_AES_GetEncKeySize(size_t *tssSessionEncKeySize);
     TPM_RC TSS_AES_GetDecKeySize(size_t *tssSessionDecKeySize);

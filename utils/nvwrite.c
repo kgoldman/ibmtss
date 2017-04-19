@@ -3,9 +3,9 @@
 /*			    NV Write		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvwrite.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: nvwrite.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -300,9 +300,12 @@ int main(int argc, char *argv[])
     }
     /* -id, for pin pass or pin fail */
     if (inData) {
+	uint32_t tmpData;
 	in.data.b.size = sizeof(uint32_t) + sizeof(uint32_t);
-	*(uint32_t *)(in.data.b.buffer) = htonl(pinPass);
-	*((uint32_t *)(in.data.b.buffer) + 1) = htonl(pinLimit);
+	tmpData = htonl(pinPass);
+	memcpy(in.data.b.buffer, &tmpData, sizeof(tmpData));
+	tmpData = htonl(pinLimit);
+	memcpy(in.data.b.buffer + sizeof(tmpData), &tmpData, sizeof(tmpData));
     }
     /* -ic, command line data must fit in one write */
     if (commandData != NULL) {

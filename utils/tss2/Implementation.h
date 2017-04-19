@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Implementation.h 970 2017-03-20 15:03:57Z kgoldman $		*/
+/*            $Id: Implementation.h 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -117,6 +117,9 @@
 #define  ALG_SHA256            ALG_YES
 #define  ALG_SHA384            ALG_YES
 #define  ALG_SHA512            ALG_NO
+#define  ALG_SHA3_256          ALG_NO
+#define  ALG_SHA3_384          ALG_NO
+#define  ALG_SHA3_512          ALG_NO
 #define  ALG_SM3_256           ALG_NO
 #define  ALG_SM4               ALG_NO
 #define  ALG_RSASSA            (ALG_YES*ALG_RSA)
@@ -549,6 +552,18 @@
 #define  ALG_CAMELLIA_VALUE          0x0026
 #if defined ALG_CAMELLIA && ALG_CAMELLIA == YES
 #define  TPM_ALG_CAMELLIA            (TPM_ALG_ID)(ALG_CAMELLIA_VALUE)
+#endif
+#define  ALG_SHA3_256_VALUE	     0x0027
+#if defined ALG_SHA3_256 && ALG_SHA3_256 == YES
+#define TPM_ALGSHA3_256              (TPM_ALG_ID)(ALG_SHA3_256_VALUE)
+#endif
+#define  ALG_SHA3_384_VALUE	     0x0028
+#if defined ALG_SHA3_384 && ALG_SHA3_384 == YES
+#define TPM_ALGSHA3_384              (TPM_ALG_ID)(ALG_SHA3_384_VALUE)
+#endif
+#define  ALG_SHA3_512_VALUE	     0x0029
+#if defined ALG_SHA3_512 && ALG_SHA3_512 == YES
+#define TPM_ALGSHA3_512              (TPM_ALG_ID)(ALG_SHA3_512_VALUE)
 #endif
 #define  ALG_CTR_VALUE               0x0040
 #if defined ALG_CTR && ALG_CTR == YES

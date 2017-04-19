@@ -3,7 +3,7 @@
 #		Linux TPM2 Makefile Sample for Fedora Installed rpms		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.sample 967 2017-03-17 18:58:34Z kgoldman $		#
+#	      $Id: makefile.sample 990 2017-04-19 13:31:24Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -78,6 +78,7 @@ ALL = 	activatecredential			\
 	dictionaryattackparameters	 	\
 	duplicate				\
 	eccparameters				\
+	ecephemeral				\
 	encryptdecrypt				\
 	evictcontrol				\
 	eventsequencecomplete			\
@@ -192,16 +193,18 @@ clockrateadjust:	clockrateadjust.o
 			$(CC) $(LNFLAGS) clockrateadjust.o -o clockrateadjust
 clockset:		clockset.o
 			$(CC) $(LNFLAGS) clockset.o -o clockset
+commit:			commit.o
+			$(CC) $(LNFLAGS) commit.o -o commit
 contextload:		contextload.o
 			$(CC) $(LNFLAGS) contextload.o -o contextload
 contextsave:		contextsave.o
 			$(CC) $(LNFLAGS) contextsave.o -o contextsave
-create:			create.o
-			$(CC) $(LNFLAGS) create.o -o create
-createloaded:		createloaded.o
-			$(CC) $(LNFLAGS) createloaded.o -o createloaded
-createprimary:		createprimary.o
-			$(CC) $(LNFLAGS) createprimary.o -o createprimary
+create:			create.o cryptoutils.o 
+			$(CC) $(LNFLAGS) create.o cryptoutils.o -o create
+createloaded:		createloaded.o cryptoutils.o 
+			$(CC) $(LNFLAGS) createloaded.o cryptoutils.o -o createloaded
+createprimary:		createprimary.o cryptoutils.o 
+			$(CC) $(LNFLAGS) createprimary.o cryptoutils.o -o createprimary
 dictionaryattacklockreset:		dictionaryattacklockreset.o
 			$(CC) $(LNFLAGS) dictionaryattacklockreset.o -o dictionaryattacklockreset
 dictionaryattackparameters:		dictionaryattackparameters.o
@@ -210,6 +213,8 @@ duplicate:		duplicate.o
 			$(CC) $(LNFLAGS) duplicate.o -o duplicate 
 eccparameters:		eccparameters.o
 			$(CC) $(LNFLAGS) eccparameters.o -o eccparameters 
+ecephemeral:		ecephemeral.o
+			$(CC) $(LNFLAGS) ecephemeral.o -o ecephemeral 
 encryptdecrypt:		encryptdecrypt.o
 			$(CC) $(LNFLAGS) encryptdecrypt.o -o encryptdecrypt	
 eventsequencecomplete:	eventsequencecomplete.o
@@ -332,8 +337,8 @@ powerup:		powerup.o
 			$(CC) $(LNFLAGS) powerup.o -o powerup
 readclock:		readclock.o
 			$(CC) $(LNFLAGS) readclock.o -o readclock
-readpublic:		readpublic.o
-			$(CC) $(LNFLAGS) readpublic.o -o readpublic
+readpublic:		readpublic.o cryptoutils.o 
+			$(CC) $(LNFLAGS) readpublic.o cryptoutils.o -o readpublic
 returncode:		returncode.o
 			$(CC) $(LNFLAGS) returncode.o -o returncode
 rewrap:			rewrap.o
@@ -360,8 +365,8 @@ stirrandom:		stirrandom.o
 			$(CC) $(LNFLAGS) stirrandom.o -o stirrandom
 unseal:			unseal.o
 			$(CC) $(LNFLAGS) unseal.o -o unseal
-verifysignature:	verifysignature.o
-			$(CC) $(LNFLAGS) verifysignature.o -o verifysignature
+verifysignature:	verifysignature.o cryptoutils.o 
+			$(CC) $(LNFLAGS) verifysignature.o cryptoutils.o -o verifysignature
 signapp:		signapp.o
 			$(CC) $(LNFLAGS) signapp.o -o signapp
 writeapp:		writeapp.o

@@ -3,7 +3,7 @@
 /*			    PolicyCounterTimer	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policycountertimer.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: policycountertimer.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -288,10 +288,10 @@ static void printUsage(void)
     printf("\t\t3	A > B unsigned	 \n");
     printf("\t\t4	A < B signed	 \n");
     printf("\t\t5	A < B unsigned	 \n");
-    printf("\t\t6	A = B signed	 \n");
-    printf("\t\t7	A = B unsigned	 \n");
-    printf("\t\t8	A = B signed	 \n");
-    printf("\t\t9	A = B unsigned	 \n");
+    printf("\t\t6	A >= B signed	 \n");
+    printf("\t\t7	A >= B unsigned	 \n");
+    printf("\t\t8	A <= B signed	 \n");
+    printf("\t\t9	A <= B unsigned	 \n");
     printf("\t\tA	All bits SET in B are SET in A. ((A&B)=B) \n");
     printf("\t\tB	All bits SET in B are CLEAR in A. ((A&B)=0) \n");
     printf("\n");

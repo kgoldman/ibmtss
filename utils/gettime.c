@@ -3,7 +3,7 @@
 /*			    GetTime						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: gettime.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: gettime.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -370,14 +370,13 @@ static void printUsage(void)
     printf("\t-hk signing key handle\n");
     printf("\t[-pwdk password for signing key (default empty)]\n");
     printf("\t[-pwde password for endorsement hierarchy (default empty)]\n");
-    printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
-    printf("\t[-salg signature algorithm [rsa, ecc] (default rsa)]\n");
+    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-salg signature algorithm (rsa, ecc) (default rsa)]\n");
     printf("\t[-qd qualifying data file name]\n");
-    printf("\t[-os gettimeature file name (default none)]\n");
-    printf("\t[-oa attestation output file name]\n");
+    printf("\t[-os signature file name  (default do not save)]\n");
+    printf("\t[-oa attestation output file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t-se1 session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     exit(1);	
 }

@@ -3,7 +3,7 @@
 /*			    PolicyPCR	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policypcr.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: policypcr.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 	in.pcrs.count = 1;		/* hard code one hash algorithm */
 	/* Table 85 - Definition of TPMS_PCR_SELECTION Structure - pcrSelections */
 	in.pcrs.pcrSelections[0].hash = halg;
-	in.pcrs.pcrSelections[0].sizeofSelect= 3;	/* hard code 24 pcrs */
+	in.pcrs.pcrSelections[0].sizeofSelect= 3;	/* hard code 24 PCRs */
 	/* TCG always marshals lower PCR first */
 	in.pcrs.pcrSelections[0].pcrSelect[0] = (pcrmask >>  0) & 0xff;
 	in.pcrs.pcrSelections[0].pcrSelect[1] = (pcrmask >>  8) & 0xff;
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
 	const char *msg;
 	const char *submsg;
 	const char *num;
-	printf("policygetpcr: failed, rc %08x\n", rc);
+	printf("policypcr: failed, rc %08x\n", rc);
 	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
@@ -263,7 +263,7 @@ static void printUsage(void)
     printf("Runs TPM2_PolicyPCR\n");
     printf("\n");
     printf("\t-ha policy session handle\n");
-    printf("\t-halg [sha1, sha256] (default sha256)\n");
+    printf("\t-halg (sha1, sha256) (default sha256)\n");
     printf("\t-bm pcr mask in hex\n");
     printf("\t\te.g., -bm 10000 is PCR 16, 000001 is PCR 0\n");
     exit(1);	

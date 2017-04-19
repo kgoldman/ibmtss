@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsign.bat 914 2017-01-16 22:05:26Z kgoldman $		#
+REM #		$Id: testsign.bat 991 2017-04-19 13:57:39Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -60,16 +60,34 @@ echo "Convert key pair to plaintext DER format"
 
 openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
 
-for %%H in (sha1 sha256) do (
+for %%H in (sha1 sha256 sha384) do (
 
     echo "Sign a digest - %%H"
-    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu signpub.bin -ipem signpub.pem > run.out
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu signpub.bin  > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "Verify the signature - %%H"
+    echo "Verify the signature signature using the TPM - %%H"
     %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if policies/aaa -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature using PEM - %%H"
+    %TPM_EXE_PATH%verifysignature -ipem signpub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Read the public part"
+    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature using readpublic PEM - %%H"
+    %TPM_EXE_PATH%verifysignature -ipem tmppub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -115,7 +133,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-for %%H in (sha1 sha256) do (
+for %%H in (sha1 sha256 sha384) do (
 
     echo "Sign a digest - %%H"
     %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
@@ -123,8 +141,26 @@ for %%H in (sha1 sha256) do (
        exit /B 1
     )
 
-    echo "Verify the ECC signature - %%H"
+    echo "Verify the ECC signature using the TPM - %%H"
     %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -ecc -if policies/aaa -is sig.bin  > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature using PEM - %%H"
+    %TPM_EXE_PATH%verifysignature -ipem signeccpub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+   
+    echo "Read the public part"
+    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature using readpublic PEM - %%H"
+    %TPM_EXE_PATH%verifysignature -ipem tmppub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -138,21 +174,21 @@ echo "Flush the ECC signing key"
     )
 
 echo ""
-echo "Primary Signing Key"
+echo "Primary RSA Signing Key"
 echo ""
 
 REM # primary signing key 80000001
 
-for %%H in (sha1 sha256) do (
-    
-    echo "Create primary signing key - RSA, %%H"
-    %TPM_EXE_PATH%createprimary -si -opu tmppub.bin -pwdk sig > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
+echo "Create primary signing key - RSA"
+%TPM_EXE_PATH%createprimary -si -opu tmppub.bin -opem tmppub.pem -pwdk sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 
+for %%H in (sha1 sha256 sha384) do (
+    
     echo "Sign a digest - %%H"
-    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu tmppub.bin -ipem tmppub.pem > run.out
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu tmppub.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -163,40 +199,92 @@ for %%H in (sha1 sha256) do (
        exit /B 1
     )
 
-    echo "Flush the primary signing key"
-    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    echo "Verify the signature using PEM - %%H"
+    %TPM_EXE_PATH%verifysignature -ipem tmppub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Read the public part"
+    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature using readpublic PEM - %%H"
+    %TPM_EXE_PATH%verifysignature -ipem tmppub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 )
 
-
-echo "Create primary signing key - ECC"
-%TPM_EXE_PATH%createprimary -si -opu tmppub.bin -ecc nistp256 -pwdk sig > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
-echo "Sign a digest - SHA1"
-%TPM_EXE_PATH%sign -hk 80000001 -halg sha1 -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
-echo "Flush the signing key"
+echo "Flush the primary signing key"
 %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+echo ""
+echo "Primary ECC Signing Key"
+echo ""
+
+echo "Create primary signing key - ECC"
+%TPM_EXE_PATH%createprimary -si -opu tmppub.bin -opem tmppub.pem -ecc nistp256 -pwdk sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+for %%H in (sha1 sha256 sha384) do (
+    
+    echo "Sign a digest - %%H"
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature - %%H"
+    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if policies/aaa -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature using PEM - %%H"
+    %TPM_EXE_PATH%verifysignature -ipem tmppub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Read the public part"
+    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature using readpublic PEM - %%H"
+    %TPM_EXE_PATH%verifysignature -ipem tmppub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+)
+
+echo "Flush the primary signing key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Restricted Signing Key"
+echo ""
+
 echo "Create primary signing key - restricted"
-%TPM_EXE_PATH%createprimary -sir -opu tmppub.bin -pwdk sig  > run.out
+%TPM_EXE_PATH%createprimary -sir -opu tmppub.bin -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Sign a digest - SHA256 - should fail TPM_RC_TICKET"
-%TPM_EXE_PATH%sign -hk 80000001 -halg sha256  -if policies/aaa -os sig.bin  -pwdk sig -ipu tmppub.bin -ipem signpub.pem > run.out
+%TPM_EXE_PATH%sign -hk 80000001 -halg sha256  -if policies/aaa -os sig.bin -pwdk sig -ipu tmppub.bin > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )

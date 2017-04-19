@@ -3,7 +3,7 @@
 /*			    PolicyTicket	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyticket.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: policyticket.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -51,7 +51,7 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/Unmarshal_fp.h>
 
-static void   printUsage(void);
+static void printUsage(void);
 
 int verbose = FALSE;
 
@@ -240,6 +240,10 @@ int main(int argc, char *argv[])
 	printf("Missing timeout file name parameter -to\n");
 	printUsage();
     }
+    if (ticketFilename == NULL) {
+	printf("Missing ticket file name parameter -tk\n");
+	printUsage();
+    }
     if ((authNameFilename == NULL) && (hierarchyChar == 0)) {
 	printf("Missing parameter -na or -hi\n");
 	printUsage();
@@ -344,7 +348,7 @@ static void printUsage(void)
     printf("\t-pref policyRef file (default none)\n");
     printf("\t-na authName file (not hierarchy)\n");
     printf("\t-hi hierarchy (e, o, p)(authName is hierarchy)\n");
-    printf("\t\te endorsement, o owner, p platform,\n");
+    printf("\t\te endorsement, o owner, p platform\n");
     printf("\t-tk ticket file name\n");
     exit(1);	
 }

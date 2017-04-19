@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			    EventssquenceComplete				*/
+/*			    EventSequenceComplete				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventsequencecomplete.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: eventsequencecomplete.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -266,11 +266,11 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	uint32_t c;
-	printf("eventssquencecomplete: success\n");
+	printf("eventsequencecomplete: success\n");
 	/* Table 100 - Definition of TPML_DIGEST_VALUES Structure */
 	/* Table 71 - Definition of TPMT_HA Structure <IN/OUT> digests[] */
 	/* Table 70 - Definition of TPMU_HA Union <IN/OUT, S> digests */
-	printf("eventssquencecomplete: count %u\n", out.results.count);
+	printf("eventsequencecomplete: count %u\n", out.results.count);
 
 	for (c = 0 ;  c < out.results.count ;c++) {
 	    switch (out.results.digests[c].hashAlg) {
@@ -317,7 +317,7 @@ int main(int argc, char *argv[])
 	const char *msg;
 	const char *submsg;
 	const char *num;
-	printf("eventssquencecomplete: failed, rc %08x\n", rc);
+	printf("eventsequencecomplete: failed, rc %08x\n", rc);
 	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
@@ -328,17 +328,17 @@ int main(int argc, char *argv[])
 static void printUsage(void)
 {
     printf("\n");
-    printf("eventssquencecomplete\n");
+    printf("eventsequencecomplete\n");
     printf("\n");
-    printf("Runs TPM2_EventssquenceComplete\n");
+    printf("Runs TPM2_EventSequenceComplete\n");
     printf("\n");
     printf("\t[-ha pcr handle (default NULL)]\n");
-    printf("\t-hs seqeunce handle\n");
+    printf("\t-hs sequence handle\n");
     printf("\t[-pwds password for sequence (default empty)]\n");
     printf("\t[-if input file to be added (default no data)]\n");
-    printf("\t[-of1 sha1 output digest file]\n");
-    printf("\t[-of2 sha256 output digest file]\n");
-    printf("\t[-of3 sha384 output digest file]\n");
+    printf("\t[-of1 sha1 output digest file (default do not save)]\n");
+    printf("\t[-of2 sha256 output digest file (default do not save)]\n");
+    printf("\t[-of3 sha384 output digest file (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

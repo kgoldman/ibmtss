@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testencsession.sh 948 2017-02-28 21:21:38Z kgoldman $	#
+#		$Id: testencsession.sh 978 2017-04-04 15:37:15Z kgoldman $	#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -159,7 +159,7 @@ checkSuccess $?
 for ((i = 0 ; i < 7 ; i++))
 do
 
-    echo "Signing Key Self Certify, three auth, salted paramter encryption ${THREEAUTH0[i]} ${THREEAUTH1[i]} ${THREEAUTH2[i]}"
+    echo "Signing Key Self Certify, three auth, salted parameter encryption ${THREEAUTH0[i]} ${THREEAUTH1[i]} ${THREEAUTH2[i]}"
     ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -qd policies/aaa -os sig.bin -oa tmp.bin \
 	-se0 02000000 ${THREEAUTH0[i]} -se1 02000001 ${THREEAUTH1[i]} -se2 02000002 ${THREEAUTH2[i]} > run.out
     checkSuccess $?
@@ -205,7 +205,7 @@ checkSuccess $?
 for ((i = 0 ; i < 7 ; i++))
 do
 
-    echo "Signing Key Self Certify, three auth, salted paramter encryption ${THREEAUTH0[i]} ${THREEAUTH1[i]} ${THREEAUTH2[i]}"
+    echo "Signing Key Self Certify, three auth, salted parameter encryption ${THREEAUTH0[i]} ${THREEAUTH1[i]} ${THREEAUTH2[i]}"
     ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -qd policies/aaa -os sig.bin -oa tmp.bin \
 	-se0 02000000 ${THREEAUTH0[i]} -se1 02000001 ${THREEAUTH1[i]} -se2 02000002 ${THREEAUTH2[i]} > run.out
     checkSuccess $?
@@ -265,7 +265,7 @@ do
     ${PREFIX}policycommandcode -ha 03000001 -cc 148 > run.out
     checkSuccess $?
 
-    echo "Signing Key Self Certify, three auth, salted paramter encryption ${THREEAUTH0[i]} ${THREEAUTH1[i]} ${THREEAUTH2[i]}"
+    echo "Signing Key Self Certify, three auth, salted parameter encryption ${THREEAUTH0[i]} ${THREEAUTH1[i]} ${THREEAUTH2[i]}"
     ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdo sig -pwdk sig -qd policies/aaa -os sig.bin -oa tmp.bin \
     	-se0 02000000 ${THREEAUTH0[i]} -se1 03000001 ${THREEAUTH1[i]} -se2 02000002 ${THREEAUTH2[i]} > run.out
     checkSuccess $?
@@ -319,7 +319,7 @@ do
     ${PREFIX}policycommandcode -ha 03000001 -cc 148 > run.out
     checkSuccess $?
 
-    echo "Signing Key Self Certify, three auth, salted paramter encryption ${THREEAUTH0[i]} ${THREEAUTH1[i]} ${THREEAUTH2[i]}"
+    echo "Signing Key Self Certify, three auth, salted parameter encryption ${THREEAUTH0[i]} ${THREEAUTH1[i]} ${THREEAUTH2[i]}"
     ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdo sig -pwdk xxx -qd policies/aaa -os sig.bin -oa tmp.bin \
     	-se0 02000000 ${THREEAUTH0[i]} -se1 03000001 ${THREEAUTH1[i]} -se2 02000002 ${THREEAUTH2[i]} > run.out
     checkSuccess $?

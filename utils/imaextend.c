@@ -3,7 +3,7 @@
 /*		      Extend an IMA measurement list into PCR 10		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id$		*/
+/*	      $Id: imaextend.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2014, 2017.					*/
 /*										*/
@@ -250,7 +250,7 @@ static TPM_RC pcrread(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-static void printUsage()
+static void printUsage(void)
 {
     printf("\n");
     printf("imaextend\n");

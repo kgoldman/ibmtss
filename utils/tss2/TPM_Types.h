@@ -3,7 +3,7 @@
 /*			 Headers from Part 2    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 970 2017-03-20 15:03:57Z kgoldman $		*/
+/*            $Id: TPM_Types.h 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -2554,18 +2554,19 @@ typedef struct {
 #define TPM_NT_PIN_FAIL	0x8	/* PIN Fail - contains a PIN limit and a PIN count that increments on a PIN authorization failure */
 #define TPM_NT_PIN_PASS	0x9	/* PIN Pass - contains a PIN limit and a PIN count that increments on a PIN authorization success */
 
-/* Table 195 - Definition of TPMS_NV_PIN_COUNTER_PARAMETERS Structure */
+/* Table 204 - Definition of TPMS_NV_PIN_COUNTER_PARAMETERS Structure */
 
-    
-typedef uint32_t pinCount;	/* This counter shows the current number of successful authValue
-				   authorization attempts to access a TPM_NT_PIN_PASS index or the
-				   current number of unsuccessful authValue authorization attempts
-				   to access a TPM_NT_PIN_FAIL index. */
-typedef uint32_t pinLimit;	/* This threshold is the value of pinCount at which the authValue
-				   authorization of the host TPM_NT_PIN_PASS or TPM_NT_PIN_FAIL
-				   index is locked out. */
+typedef struct {
+    uint32_t pinCount;	/* This counter shows the current number of successful authValue
+			   authorization attempts to access a TPM_NT_PIN_PASS index or the current
+			   number of unsuccessful authValue authorization attempts to access a
+			   TPM_NT_PIN_FAIL index. */
+    uint32_t pinLimit;	/* This threshold is the value of pinCount at which the authValue
+			   authorization of the host TPM_NT_PIN_PASS or TPM_NT_PIN_FAIL index is
+			   locked out. */
+} TPMS_NV_PIN_COUNTER_PARAMETERS;
 
-/* Table 196 - Definition of (UINT32) TPMA_NV Bits */
+/* Table 205 - Definition of (UINT32) TPMA_NV Bits */
 
 #if defined TPM_BITFIELD_LE
 

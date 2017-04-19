@@ -3,7 +3,7 @@
 /*			    PolicyAuthorizeNV					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyauthorizenv.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: policyauthorizenv.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -51,7 +51,7 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
 
-static void   printUsage(void);
+static void printUsage(void);
 
 int verbose = FALSE;
 

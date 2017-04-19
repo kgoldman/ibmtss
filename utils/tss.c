@@ -3,7 +3,7 @@
 /*			    TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss.c 955 2017-03-08 17:34:11Z kgoldman $			*/
+/*	      $Id: tss.c 992 2017-04-19 15:22:19Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2016.					*/
 /*										*/
@@ -534,7 +534,11 @@ static TPM_RC TSS_Sessions_GetEncryptSession(unsigned int *isEncrypt,
 #ifndef TPM_TSS_NOFILE
 static TPM_RC TSS_HashToString(char *str, uint8_t *digest);
 #endif
-
+#ifndef TPM_TSS_NOCRYPTO
+static TPM_RC TSS_RSA_Salt(TPM2B_DIGEST 		*salt,
+			   TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
+			   TPMT_PUBLIC			*publicArea);
+#endif
 extern int tssVerbose;
 extern int tssVverbose;
 extern int tssFirstCall;
@@ -588,7 +592,7 @@ static TPM_RC TSS_Context_Init(TSS_CONTEXT *tssContext)
     /* at the first call to the TSS, initialize global variables */
     if (tssFirstCall) {		/* tssFirstCall is a library global */
 #ifndef TPM_TSS_NOCRYPTO
-	/* crypto module initializations, crypto libray specific */
+	/* crypto module initializations, crypto library specific */
 	if (rc == 0) {
 	    rc = TSS_Crypto_Init();
 	}
@@ -1725,7 +1729,7 @@ static TPM_RC TSS_Name_Store(TSS_CONTEXT *tssContext,
 			}
 			else {
 			    if (tssVerbose)
-				printf("TSS_Public_Store: "
+				printf("TSS_Name_Store: "
 				       "Error, no slot available for handle %08x\n",
 				       handle);
 			}
@@ -1775,7 +1779,7 @@ static TPM_RC TSS_Name_Load(TSS_CONTEXT *tssContext,
     TPM_HT 	handleType;
     size_t	slotIndex;
 
-    string = string;	/* FIXME */
+    string = string;
     
     if (tssVverbose) printf("TSS_Name_Load: Handle %08x\n", handle);
     handleType = (TPM_HT) ((handle & HR_RANGE_MASK) >> HR_SHIFT);
@@ -1950,7 +1954,7 @@ static TPM_RC TSS_Public_Copy(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-/* TSS_Public_Store() FIXME
+/* TSS_Public_Store() stores the 'public' parameter in the TSS context. 
  */
    
 #ifdef TPM_TSS_NOFILE
@@ -2088,7 +2092,7 @@ static TPM_RC TSS_ObjectPublic_DeleteData(TSS_CONTEXT *tssContext, TPM_HANDLE ha
 	rc = TSS_ObjectPublic_GetSlotForHandle(tssContext, &slotIndex, handle);
 	if (rc != 0) {
 	    if (tssVerbose)
-		printf("TSS_ObjectPublic_GetSlotForHandle: Error, no slot found for handle %08x\n",
+		printf("TSS_ObjectPublic_DeleteData: Error, no slot found for handle %08x\n",
 		       handle);
 	}
     }    
@@ -2108,9 +2112,13 @@ static TPM_RC TSS_DeleteHandle(TSS_CONTEXT *tssContext,
 			       TPM_HANDLE handle)
 {
     TPM_RC		rc = 0;
+    TPM_HT 		handleType;
 #ifndef TPM_TSS_NOFILE
     char		filename[128];
+#endif
 
+    handleType = (TPM_HT) ((handle & HR_RANGE_MASK) >> HR_SHIFT);
+#ifndef TPM_TSS_NOFILE
     /* delete the Name */
     if (rc == 0) {
 	sprintf(filename, "%s/h%08x.bin", tssContext->tssDataDirectory, handle);
@@ -2119,18 +2127,19 @@ static TPM_RC TSS_DeleteHandle(TSS_CONTEXT *tssContext,
     }
     /* delete the public if it exists */
     if (rc == 0) {
-	sprintf(filename, "%s/hp%08x.bin", tssContext->tssDataDirectory, handle);
-	if (tssVverbose) printf("TSS_DeleteHandle: delete public file %s\n", filename);
-	TSS_File_DeleteFile(filename);
+	if ((handleType == TPM_HT_TRANSIENT) ||
+	    (handleType == TPM_HT_PERSISTENT)) {
+	    sprintf(filename, "%s/hp%08x.bin", tssContext->tssDataDirectory, handle);
+	    if (tssVverbose) printf("TSS_DeleteHandle: delete public file %s\n", filename);
+	    TSS_File_DeleteFile(filename);
+	}
     }
 #else
     /* sessions persist in the context and can be deleted */
     if (rc == 0) {
-	TPM_HT 	handleType;
-	handleType = (TPM_HT) ((handle & HR_RANGE_MASK) >> HR_SHIFT);
 	switch (handleType) {
 	  case TPM_HT_NV_INDEX:
-	    rc = -1;	/* FIXME */
+	    rc = -1;	/* FIXME not supported yet for no file variant */
 	    break;
 	  case TPM_HT_HMAC_SESSION:
 	  case TPM_HT_POLICY_SESSION:
@@ -2286,7 +2295,7 @@ static TPM_RC TSS_NVPublic_Store(TSS_CONTEXT *tssContext,
 	    }
 	    else {
 		if (tssVerbose)
-		    printf("TSS_Public_Store: Error, no slot available for handle %08x\n",
+		    printf("TSS_NVPublic_Store: Error, no slot available for handle %08x\n",
 			   nvIndex);
 	    }
 	}
@@ -2648,7 +2657,7 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
     TPM2B_NONCE	nonceTPMEncrypt;
 #endif	/* TPM_TSS_NOCRYPTO */
 
-    cpHash.hashAlg = TPM_ALG_NULL;	/* for cpHash calculation optimzation */
+    cpHash.hashAlg = TPM_ALG_NULL;	/* for cpHash calculation optimization */
 
     for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) && (sessionHandle[i] != TPM_RH_NULL) ; i++) {
 	uint8_t sessionAttr8;
@@ -2697,12 +2706,12 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
 						  cpBuffer, cpBufferSize);
 		    cpHash.hashAlg = session[i]->authHashAlg;
     
-		    // cpHash = hash(commandCode [ || authName1
-		    //                           [ || authName2
-		    //                           [ || authName 3 ]]]
-		    //                           [ || parameters])
-		    // A cpHash can contain just a commandCode only if the lone session is
-		    // an audit session.
+		    /* cpHash = hash(commandCode [ || authName1		*/
+		    /*                           [ || authName2		*/
+		    /*                           [ || authName3 ]]]	*/
+		    /*                           [ || parameters])	*/
+		    /* A cpHash can contain just a commandCode only if the lone session is */
+		    /* an audit session. */
 
 		    commandCode = TSS_GetCommandCode(tssAuthContext);
 		    commandCodeNbo = htonl(commandCode);
@@ -3537,9 +3546,9 @@ static TPM_RC TSS_Response_EncryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
 
 #endif	/* TPM_TSS_NOCRYPTO */
 
-	/*
-	  Command Change Authorization Processor
-	*/
+/*
+  Command Change Authorization Processor
+*/
 
 #ifndef TPM_TSS_NOCRYPTO
 
@@ -3569,7 +3578,7 @@ static TPM_RC TSS_Command_ChangeAuthProcessor(TSS_CONTEXT *tssContext,
        smaller if desired. */
     if ((rc == 0) && found) {
 	changeAuthFunction = tssTable[index].changeAuthFunction;
-	/* there could also be an entry that it currently NULL, nothing to do */
+	/* there could also be an entry that is currently NULL, nothing to do */
 	if (changeAuthFunction == NULL) {
 	    found = FALSE;
 	}
@@ -3774,8 +3783,8 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
     /* if the caller requests a salted session */
     if (in->tpmKey != TPM_RH_NULL) {
 #ifndef TPM_TSS_NOCRYPTO
-	TPMT_PUBLIC		*publicArea;	/* the public area  */
 	TPM2B_PUBLIC		bPublic;
+	
 	if (rc == 0) {
 	    if (extra == NULL) {
 		if (tssVerbose)
@@ -3787,72 +3796,22 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
 	if (rc == 0) {
 	    rc = TSS_Public_Load(tssContext, &bPublic, in->tpmKey, NULL);
 	}
-	/* check the public key parameters for suitability */
-	if (rc == 0) {
-	    /* bPublic = &rpOut.outPublic; */
-	    publicArea = &bPublic.publicArea;
-	    {
-		/* error conditions when true */
-		int b1 = publicArea->type != TPM_ALG_RSA;
-		int b2 = publicArea->objectAttributes.val & TPMA_OBJECT_SIGN;
-		int b3 = !(publicArea->objectAttributes.val & TPMA_OBJECT_DECRYPT);
-		int b4 = publicArea->parameters.rsaDetail.keyBits != 2048;
-		int b5 = publicArea->parameters.rsaDetail.exponent != 0;
-		/* TSS support checks */
-		if (b1 || b2 || b3 || b4 || b5) {
-		    if (tssVerbose)
-			printf("TSS_PR_StartAuthSession: public key attributes not supported\n");
-		    rc = TSS_RC_BAD_SALT_KEY;
-		}
-	    }
-	}    
-	if (rc == 0) {
-	    if (tssVverbose) TSS_PrintAll("TSS_PR_StartAuthSession: public key",
-					  publicArea->unique.rsa.t.buffer,
-					  publicArea->unique.rsa.t.size);
-	}
-	/* generate a salt */
-	if (rc == 0) {
-	    /* The size of the secret value is limited to the size of the digest produced by the
-	       nameAlg of the object that is associated with the public key used for OAEP
-	       encryption. */
-	    extra->salt.t.size = TSS_GetDigestSize(publicArea->nameAlg);
-	    if (tssVverbose) printf("TSS_PR_StartAuthSession: Hash algorithm %04x Salt size %u\n",
-				    publicArea->nameAlg, extra->salt.t.size);
-	    /* place the salt in extra so that it can be retrieved by post processor */
-	    rc = TSS_RandBytes((uint8_t *)&extra->salt.t.buffer, extra->salt.t.size);
-	}
-	/* In TPM2_StartAuthSession(), when tpmKey is an RSA key, the secret value (salt) is
-	   encrypted using OAEP as described in B.4. The string "SECRET" (see 4.5) is used as the L
-	   value and the nameAlg of the encrypting key is used for the hash algorithm. The data
-	   value in OAEP-encrypted blob (salt) is used to compute sessionKey. */
-	if (rc == 0) {
-	    if (tssVverbose) TSS_PrintAll("TSS_PR_StartAuthSession: salt",
-					  (uint8_t *)&extra->salt.t.buffer,
-					  extra->salt.t.size);
-	}
-	/* encrypt the salt */
-	if (rc == 0) {
-	    /* public exponent */
-	    unsigned char earr[3] = {0x01, 0x00, 0x01};
-	    /* encrypt the salt with the tpmKey public key */
-	    rc = TSS_RSAPublicEncrypt((uint8_t *)&in->encryptedSalt.t.secret,   /* encrypted data */
-				      MAX_RSA_KEY_BYTES,       	/* size of encrypted data buffer */
-				      (uint8_t *)&extra->salt.t.buffer, /* decrypted data */
-				      extra->salt.t.size,
-				      publicArea->unique.rsa.t.buffer,  /* public modulus */
-				      publicArea->unique.rsa.t.size,
-				      earr,           			/* public exponent */
-				      sizeof(earr),
-				      (unsigned char *)"SECRET",	/* encoding parameter */
-				      sizeof("SECRET"),
-				      publicArea->nameAlg);
-	}    
-	if (rc == 0) {
-	    in->encryptedSalt.t.size = publicArea->unique.rsa.t.size;
-	    if (tssVverbose) TSS_PrintAll("TSS_PR_StartAuthSession: encrypted salt",
-					  in->encryptedSalt.t.secret,
-					  in->encryptedSalt.t.size);
+ 	/* generate the salt and encrypted salt based on the asymmetric key type */
+	if (bPublic.publicArea.type == TPM_ALG_ECC) {
+	    rc = TSS_ECC_Salt(&extra->salt,
+			      &in->encryptedSalt,
+			      &bPublic.publicArea);
+	} 
+	else if (bPublic.publicArea.type == TPM_ALG_RSA) {
+	    rc = TSS_RSA_Salt(&extra->salt,
+			      &in->encryptedSalt,
+			      &bPublic.publicArea);
+	} 
+	else {
+	    if (tssVerbose)
+		printf("TSS_PR_StartAuthSession: public key type %04x not supported\n",
+		       bPublic.publicArea.type);
+	    rc = TSS_RC_BAD_SALT_KEY;
 	}
 #else
 	tssContext = tssContext;
@@ -3861,6 +3820,86 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
     }
     return rc;
 }
+
+#ifndef TPM_TSS_NOCRYPTO
+
+/* TSS_RSA_Salt() returns both the plaintext and excrypted salt, based on the salt key bPublic. */
+
+static TPM_RC TSS_RSA_Salt(TPM2B_DIGEST 		*salt,
+			   TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
+			   TPMT_PUBLIC			*publicArea)
+{
+    TPM_RC		rc = 0;
+
+    if (rc == 0) {
+	{
+	    /* error conditions when true */
+	    int b1 = publicArea->type != TPM_ALG_RSA;
+	    int b2 = publicArea->objectAttributes.val & TPMA_OBJECT_SIGN;
+	    int b3 = !(publicArea->objectAttributes.val & TPMA_OBJECT_DECRYPT);
+	    int b4 = publicArea->parameters.rsaDetail.keyBits != 2048;
+	    int b5 = publicArea->parameters.rsaDetail.exponent != 0;
+	    /* TSS support checks */
+	    if (b1 || b2 || b3 || b4 || b5) {
+		if (tssVerbose)
+		    printf("TSS_RSA_Salt: public key attributes not supported\n");
+		rc = TSS_RC_BAD_SALT_KEY;
+	    }
+	}
+    }    
+    if (rc == 0) {
+	if (tssVverbose) TSS_PrintAll("TSS_RSA_Salt: public key",
+				      publicArea->unique.rsa.t.buffer,
+				      publicArea->unique.rsa.t.size);
+    }
+    /* generate a salt */
+    if (rc == 0) {
+	/* The size of the secret value is limited to the size of the digest produced by the
+	   nameAlg of the object that is associated with the public key used for OAEP
+	   encryption. */
+	salt->t.size = TSS_GetDigestSize(publicArea->nameAlg);
+	if (tssVverbose) printf("TSS_RSA_Salt: "
+				"Hash algorithm %04x Salt size %u\n",
+				publicArea->nameAlg, salt->t.size);
+	/* place the salt in extra so that it can be retrieved by post processor */
+	rc = TSS_RandBytes((uint8_t *)&salt->t.buffer, salt->t.size);
+    }
+    /* In TPM2_StartAuthSession(), when tpmKey is an RSA key, the secret value (salt) is
+       encrypted using OAEP as described in B.4. The string "SECRET" (see 4.5) is used as
+       the L value and the nameAlg of the encrypting key is used for the hash algorithm. The
+       data value in OAEP-encrypted blob (salt) is used to compute sessionKey. */
+    if (rc == 0) {
+	if (tssVverbose) TSS_PrintAll("TSS_RSA_Salt: salt",
+				      (uint8_t *)&salt->t.buffer,
+				      salt->t.size);
+    }
+    /* encrypt the salt */
+    if (rc == 0) {
+	/* public exponent */
+	unsigned char earr[3] = {0x01, 0x00, 0x01};
+	/* encrypt the salt with the tpmKey public key */
+	rc = TSS_RSAPublicEncrypt((uint8_t *)&encryptedSalt->t.secret,   /* encrypted data */
+				  MAX_RSA_KEY_BYTES,   	/* size of encrypted data buffer */
+				  (uint8_t *)&salt->t.buffer, /* decrypted data */
+				  salt->t.size,
+				  publicArea->unique.rsa.t.buffer,  /* public modulus */
+				  publicArea->unique.rsa.t.size,
+				  earr, 		/* public exponent */
+				  sizeof(earr),
+				  (unsigned char *)"SECRET",	/* encoding parameter */
+				  sizeof("SECRET"),
+				  publicArea->nameAlg);
+    }    
+    if (rc == 0) {
+	encryptedSalt->t.size = publicArea->unique.rsa.t.size;
+	if (tssVverbose) TSS_PrintAll("TSS_RSA_Salt: RSA encrypted salt",
+				      encryptedSalt->t.secret,
+				      encryptedSalt->t.size);
+    }
+    return rc;
+}
+
+#endif
 
 static TPM_RC TSS_PR_NV_DefineSpace(TSS_CONTEXT *tssContext,
 				    NV_DefineSpace_In *in,
@@ -4575,9 +4614,14 @@ static TPM_RC TSS_PO_NV_UndefineSpace(TSS_CONTEXT *tssContext,
     out = out;
     extra = extra;
     if (tssVverbose) printf("TSS_PO_NV_UndefineSpace\n");
-    /* Don't check return code.  The name will only exist if NV_ReadPublic has been issued */
+#ifndef TPM_TSS_NOCRYPTO
+    /* Don't check return code. */
     TSS_DeleteHandle(tssContext, in->nvIndex);
     TSS_NVPublic_Delete(tssContext, in->nvIndex);
+#else
+    tssContext = tssContext;
+    in = in;
+#endif
     return rc;
 }
 

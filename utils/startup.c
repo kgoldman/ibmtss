@@ -3,7 +3,7 @@
 /*			    Startup		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: startup.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: startup.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -142,7 +142,7 @@ TPM_RC startupCommand(TPM_SU startupType)
     return rc;
 }
 
-TPM_RC selftestCommand()
+TPM_RC selftestCommand(void)
 {
     TPM_RC 		rc = 0;
     TSS_CONTEXT		*tssContext = NULL;
@@ -177,7 +177,7 @@ static void printUsage(void)
     printf("\n");
     printf("startup\n");
     printf("\n");
-    printf("Runs TPM_Startup\n");
+    printf("Runs TPM2_Startup\n");
     printf("\n");
     printf("\t[-c startup clear (default)]\n");
     printf("\t[-s startup state]\n");

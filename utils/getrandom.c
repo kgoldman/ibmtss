@@ -3,7 +3,7 @@
 /*			   GetRandom						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getrandom.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: getrandom.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
 	rc = TSS_Create(&tssContext);
     }
     /* This is somewhat optimized, but if a zero byte is obtained in the last pass, an extra pass is
-       needed.  The tradeoff is that, in general, asking for more random numbers than needed may slow
+       needed.  The trade-off is that, in general, asking for more random numbers than needed may slow
        down the TPM.  In any case, needing non-zero values for random auth should not happen very
        often.
      */
@@ -222,12 +222,12 @@ int main(int argc, char *argv[])
 	if (rc == 0) {
 	    if (verbose) TSS_PrintAll("randomBytes in pass",
 				      out.randomBytes.t.buffer, out.randomBytes.t.size);
-	    size_t i;
+	    size_t br;
 	    /* copy as many bytes as were received or until bytes requested */
-	    for (i = 0 ; (i < out.randomBytes.t.size) && (bytesCopied < bytesRequested) ; i++) {
+	    for (br = 0 ; (br < out.randomBytes.t.size) && (bytesCopied < bytesRequested) ; br++) {
 
-		if (!noZeros || (out.randomBytes.t.buffer[i] != 0)) {
-		    randomBuffer[bytesCopied] = out.randomBytes.t.buffer[i];
+		if (!noZeros || (out.randomBytes.t.buffer[br] != 0)) {
+		    randomBuffer[bytesCopied] = out.randomBytes.t.buffer[br];
 		    bytesCopied++;
 		}
 	    }
@@ -251,13 +251,13 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	/* machine readable format */
 	if (noSpace) {
-	    uint32_t i;
-	    for (i = 0 ; i < bytesRequested ; i++) {
-		printf("%02x", randomBuffer[i]);
+	    uint32_t bp;
+	    for (bp = 0 ; bp < bytesRequested ; bp++) {
+		printf("%02x", randomBuffer[bp]);
 	    }
 	    printf("\n");
 	}
-	/* human readble format */
+	/* human readable format */
 	else {
 	    TSS_PrintAll("randomBytes", randomBuffer, bytesRequested);
 	}
@@ -283,7 +283,7 @@ static void printUsage(void)
     printf("Runs TPM2_GetRandom\n");
     printf("\n");
     printf("\t-by bytes requested\n");
-    printf("\t[-of output file, with -nz, appends nul terminator]\n");
+    printf("\t[-of output file, with -nz, appends nul terminator (default do not save)]\n");
     printf("\t[-nz get random number with no zero bytes (for authorization value)]\n");
     printf("\t[-ns no space, no text, no newlines]\n");
     printf("\t\tjust a string of hexascii suitable for a symmetric key\n");

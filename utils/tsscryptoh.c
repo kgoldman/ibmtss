@@ -165,7 +165,6 @@ TPM_RC TSS_KDFA(uint8_t		*keyStream,    	/* OUT: key buffer */
 	    rc = TSS_RC_KDFA_FAILED;
 	}
     }
-
     /* Generate required bytes */
     for (stream = keyStream, counter = 1 ;	/* beginning of stream, KDFa counter starts at 1 */
 	 (rc == 0) && bytes > 0 ;				/* bytes left to produce */
@@ -178,7 +177,7 @@ TPM_RC TSS_KDFA(uint8_t		*keyStream,    	/* OUT: key buffer */
 	counterNbo = htonl(counter);	/* counter for this pass in BE format */
 	    
 	rc = TSS_HMAC_Generate(&hmac,				/* largest size of an HMAC */
-			       (TPM2B_KEY *)key,	/* FIXME */
+			       (const TPM2B_KEY *)key,		/* FIXME */
 			       sizeof(UINT32), &counterNbo,	/* KDFa i2 counter */
 			       strlen(label) + 1, label,	/* KDFa label, use NUL as the KDFa
 								   00 byte */
@@ -186,9 +185,76 @@ TPM_RC TSS_KDFA(uint8_t		*keyStream,    	/* OUT: key buffer */
 			       contextV->size, contextV->buffer,	/* KDFa Context */
 			       sizeof(UINT32), &sizeInBitsNbo,		/* KDFa L2 */
 			       0, NULL);
-	    
-
 	memcpy(stream, &hmac.digest.tssmax, bytesThisPass);
+    }
+    return rc;
+}
+
+/* TSS_KDFE() 11.4.9.3	Key Derivation Function for ECDH
+
+   Digest = Hash(counter || Z || Use || PartyUInfo || PartyVInfo || bits )
+
+   where
+
+   counter is initialized to 1 and incremented for each iteration
+   
+   Z is the X-coordinate of the product of a public (TPM) ECC key and 
+   a different private ECC key
+   
+   Use is a NULL-terminated string that indicates the use of the key 
+   ("DUPLICATE", "IDENTITY", "SECRET", etc)
+   
+   PartyUInfo is the X-coordinate of the public point of an ephemeral key
+   
+   PartyVInfo is the X-coordinate of the public point of the TPM key
+   
+   bits is a 32-bit value indicating the number of bits to be returned
+*/
+
+TPM_RC TSS_KDFE(uint8_t		*keyStream,    	/* OUT: key buffer */
+		TPM_ALG_ID	hashAlg,       	/* IN: hash algorithm used */
+		const TPM2B	*key,           /* IN: Z  */
+		const char	*label,		/* IN: KDFe label, NUL terminated */
+		const TPM2B	*contextU,      /* IN: context U */
+		const TPM2B	*contextV,      /* IN: context V */
+		uint32_t	sizeInBits)    	/* IN: size of generated key in bits */
+
+{
+    TPM_RC	rc = 0;
+    uint32_t 	bytes = ((sizeInBits + 7) / 8);	/* bytes left to produce */
+    uint8_t	*stream;
+    uint16_t    bytesThisPass;			/* in one Hash operation */
+    uint32_t	counter;    			/* counter value */
+    uint32_t 	counterNbo;			/* counter in big endian */
+    TPMT_HA 	digest;				/* result for this pass */
+    
+    if (rc == 0) {
+	digest.hashAlg = hashAlg;			/* for TSS_Hash_Generate() */
+	bytesThisPass = TSS_GetDigestSize(hashAlg);	/* start with hashAlg sized chunks */
+	if (bytesThisPass == 0) {
+	    if (tssVerbose) printf("TSS_KDFE: KDFe failed\n");
+	    rc = TSS_RC_KDFE_FAILED;
+	}
+    }
+    /* Generate required bytes */
+    for (stream = keyStream, counter = 1 ;	/* beginning of stream, KDFe counter starts at 1 */
+	 (rc == 0) && bytes > 0 ;				/* bytes left to produce */
+	 stream += bytesThisPass, bytes -= bytesThisPass, counter++) {
+	/* last pass, can be less than hashAlg sized chunks */
+	if (bytes < bytesThisPass) {
+	    bytesThisPass = bytes;
+	}
+	counterNbo = htonl(counter);	/* counter for this pass in BE format */
+	    
+	rc = TSS_Hash_Generate(&digest,				/* largest size of a digest */
+			       sizeof(UINT32), &counterNbo,	/* KDFe i2 counter */
+			       key->size, key->buffer,		/* FIXME */
+			       strlen(label) + 1, label,	/* KDFe label, use NUL as the KDFe
+								   00 byte */
+			       contextU->size, contextU->buffer,	/* KDFe Context */
+			       contextV->size, contextV->buffer,	/* KDFe Context */
+			       0, NULL);
+	memcpy(stream, &digest.digest.tssmax, bytesThisPass);
     }
     return rc;
 }

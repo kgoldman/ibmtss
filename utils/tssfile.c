@@ -3,7 +3,7 @@
 /*			    TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssfile.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*		$Id: tssfile.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -223,7 +223,7 @@ TPM_RC TSS_File_WriteStructure(void 			*structure,
 			       const char 		*filename)
 {
     TPM_RC 	rc = 0;
-    uint16_t	written = 0;;
+    uint16_t	written = 0;
     uint8_t	*buffer = NULL;		/* for the free */
 
     if (rc == 0) {

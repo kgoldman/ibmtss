@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.h 880 2016-12-20 20:26:50Z kgoldman $	*/
+/*	      $Id: objecttemplates.h 982 2017-04-13 13:00:10Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -52,6 +52,8 @@
 #define TYPE_DES	8
 #define TYPE_KH		9
 #define TYPE_DP		10
+#define TYPE_DAA        11
+#define TYPE_DAAR       12
 
 TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,
 			  TPMA_OBJECT objectAttributes,
@@ -80,6 +82,14 @@ TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,
 			TPMA_OBJECT objectAttributes,
 			TPMI_ALG_HASH nalg,
 			const char *policyFilename);
+TPM_RC keyECDAAPublicTemplate(TPMT_PUBLIC *publicArea,
+			      TPMA_OBJECT objectAttributes,
+			      int type,
+			      TPMI_ALG_PUBLIC algPublic,
+			      TPMI_ECC_CURVE curveID,       
+			      TPMI_ALG_HASH nalg,
+			      TPMI_ALG_HASH halg,
+			      const char *policyFilename);
 
 void printUsageTemplate(void);
 

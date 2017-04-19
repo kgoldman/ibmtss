@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.h 917 2017-01-19 22:34:24Z kgoldman $		*/
+/*	      $Id: cryptoutils.h 989 2017-04-18 20:50:04Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -124,4 +124,29 @@ TPM_RC getRsaKeyParts(const BIGNUM **n,
 		      const BIGNUM **q,
 		      const RSA *rsaKey);
 int getRsaPubkeyAlgorithm(EVP_PKEY *pkey);
+TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *public,
+			  const char *pemFilename);
+TPM_RC convertRsaPublicToEvpPubKey(EVP_PKEY **evpPubkey,
+				   const TPM2B_PUBLIC *public);
+TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,	
+				  const TPM2B_PUBLIC *public);
+TPM_RC convertEvpPubkeyToPem(EVP_PKEY *evpPubkey,
+			     const char *pemFilename);
+TPM_RC verifySignatureFromPem(unsigned char *message,
+			      unsigned int messageSize,
+			      TPMT_SIGNATURE *tSignature,
+			      TPMI_ALG_HASH halg,
+			      const char *pemFilename);
+TPM_RC verifyRSASignatureFromPem(unsigned char *message,
+				 unsigned int messageSize,
+				 TPMT_SIGNATURE *tSignature,
+				 TPMI_ALG_HASH halg,
+				 EVP_PKEY *evpPkey);
+TPM_RC verifyEcSignatureFromPem(unsigned char *message,
+				unsigned int messageSize,
+				TPMT_SIGNATURE *tSignature,
+				EVP_PKEY *evpPkey);
+uint32_t convertBin2Bn(BIGNUM **bn,
+		       const unsigned char *bin,
+		       unsigned int bytes);
 #endif

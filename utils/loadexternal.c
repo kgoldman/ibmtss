@@ -3,7 +3,7 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: loadexternal.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -142,11 +142,14 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-halg") == 0) {
 	    i++;
 	    if (i < argc) {
-		if (strcmp(argv[i],"sha256") == 0) {
+		if (strcmp(argv[i],"sha1") == 0) {
+		    halg = TPM_ALG_SHA1;
+		}
+		else if (strcmp(argv[i],"sha256") == 0) {
 		    halg = TPM_ALG_SHA256;
 		}
-		else if (strcmp(argv[i],"sha1") == 0) {
-		    halg = TPM_ALG_SHA1;
+		else if (strcmp(argv[i],"sha384") == 0) {
+		    halg = TPM_ALG_SHA384;
 		}
 		else {
 		    printf("Bad parameter for -halg\n");
@@ -551,11 +554,11 @@ static void printUsage(void)
     printf("Runs TPM2_LoadExternal\n");
     printf("\n");
     printf("\t[-hi hierarchy (e, o, p, n) (default NULL)]\n");
-    printf("\t[-nalg name hash algorithm [sha1, sha256, sha384] (default sha256)]\n");
-    printf("\t[-halg [sha256, sha1] (default sha256)]\n");
+    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t[Asymmetric Key Algorithm]\n");
     printf("\t\t[-rsa (default)]\n");
-    printf("\t\t[-ecc curve (P256)]\n");
+    printf("\t\t[-ecc curve (uses NIST P-256)]\n");
     printf("\t-ipu public key file name\n");
     printf("\t-ipem PEM format public key file name\n");
     printf("\t-ider DER format plaintext key pair file name\n");

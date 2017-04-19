@@ -61,7 +61,7 @@ extern "C" {
 
     typedef struct {
 	const char 		*bindPassword;
-	TPM2B_DIGEST 	salt;
+	TPM2B_DIGEST 		salt;
     } StartAuthSession_Extra;
 	
     typedef union {

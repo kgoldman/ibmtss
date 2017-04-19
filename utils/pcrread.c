@@ -3,7 +3,7 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: pcrread.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -151,15 +151,15 @@ int main(int argc, char *argv[])
     }
     
     if (rc == 0) {
-	uint16_t i;
+	uint16_t c;
 	/* Table 102 - Definition of TPML_PCR_SELECTION Structure */
 	/* Table 85 - Definition of TPMS_PCR_SELECTION Structure */
-	for (i = 0 ; i < in.pcrSelectionIn.count ; i++) {
-	    in.pcrSelectionIn.pcrSelections[i].sizeofSelect = 3;
-	    in.pcrSelectionIn.pcrSelections[i].pcrSelect[0] = 0;
-	    in.pcrSelectionIn.pcrSelections[i].pcrSelect[1] = 0;
-	    in.pcrSelectionIn.pcrSelections[i].pcrSelect[2] = 0;
-	    in.pcrSelectionIn.pcrSelections[i].pcrSelect[pcrHandle / 8] = 1 << (pcrHandle % 8);
+	for (c = 0 ; c < in.pcrSelectionIn.count ; c++) {
+	    in.pcrSelectionIn.pcrSelections[c].sizeofSelect = 3;
+	    in.pcrSelectionIn.pcrSelections[c].pcrSelect[0] = 0;
+	    in.pcrSelectionIn.pcrSelections[c].pcrSelect[1] = 0;
+	    in.pcrSelectionIn.pcrSelections[c].pcrSelect[2] = 0;
+	    in.pcrSelectionIn.pcrSelections[c].pcrSelect[pcrHandle / 8] = 1 << (pcrHandle % 8);
 	}
     }
     /* Start a TSS context */
@@ -190,9 +190,9 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	/* machine readable format, first hash algorithm */
 	if (noSpace) {
-	    uint32_t i;
-	    for (i = 0 ; i < out.pcrValues.digests[0].t.size ; i++) {
-		printf("%02x", out.pcrValues.digests[0].t.buffer[i]);
+	    uint32_t bp;
+	    for (bp = 0 ; bp < out.pcrValues.digests[0].t.size ; bp++) {
+		printf("%02x", out.pcrValues.digests[0].t.buffer[bp]);
 	    }
 	    printf("\n");
 	}
@@ -234,9 +234,10 @@ static void printUsage(void)
     printf("Runs TPM2_PCR_Read\n");
     printf("\n");
     printf("\t-ha pcr handle\n");
-    printf("\t-halg [sha1, sha256, sha384] (default sha256)\n");
+    printf("\t-halg (sha1, sha256, sha384) (default sha256)\n");
     printf("\t\t-halg may be specified more than once\n");
     printf("\t[-of data file for first algorithm specified, in binary]\n");
+    printf("\t\t(default do not save)\n");
     printf("\t[-ns no space, no text, no newlines, first algorithm]\n");
     printf("\t\tUsed for scripting policy construction\n");
     exit(1);	

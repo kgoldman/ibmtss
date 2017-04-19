@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 967 2017-03-17 18:58:34Z kgoldman $			#
+#	      $Id: makefile 990 2017-04-19 13:31:24Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -194,16 +194,18 @@ clockrateadjust:	tss2/tss.h clockrateadjust.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) clockrateadjust.o $(LNALIBS) -o clockrateadjust
 clockset:		tss2/tss.h clockset.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) clockset.o $(LNALIBS) -o clockset
+commit:			tss2/tss.h commit.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) commit.o $(LNALIBS) -o commit
 contextload:		tss2/tss.h contextload.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextload.o $(LNALIBS) -o contextload
 contextsave:		tss2/tss.h contextsave.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextsave.o $(LNALIBS) -o contextsave
-create:			tss2/tss.h create.o objecttemplates.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o objecttemplates.o $(LNALIBS) -o create
-createloaded:		tss2/tss.h createloaded.o objecttemplates.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) createloaded.o objecttemplates.o $(LNALIBS) -o createloaded
-createprimary:		tss2/tss.h createprimary.o objecttemplates.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o objecttemplates.o $(LNALIBS) -o createprimary
+create:			tss2/tss.h create.o objecttemplates.o cryptoutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o objecttemplates.o cryptoutils.o $(LNALIBS) -o create
+createloaded:		tss2/tss.h createloaded.o objecttemplates.o cryptoutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createloaded.o objecttemplates.o cryptoutils.o $(LNALIBS) -o createloaded
+createprimary:		tss2/tss.h createprimary.o objecttemplates.o cryptoutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o objecttemplates.o cryptoutils.o $(LNALIBS) -o createprimary
 dictionaryattacklockreset:		tss2/tss.h dictionaryattacklockreset.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) dictionaryattacklockreset.o $(LNALIBS) -o dictionaryattacklockreset
 dictionaryattackparameters:		tss2/tss.h dictionaryattackparameters.o $(LIBTSS)
@@ -212,6 +214,8 @@ duplicate:		tss2/tss.h duplicate.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) duplicate.o $(LNALIBS) -o duplicate 
 eccparameters:		tss2/tss.h eccparameters.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) eccparameters.o $(LNALIBS) -o eccparameters 
+ecephemeral:		tss2/tss.h ecephemeral.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ecephemeral.o $(LNALIBS) -o ecephemeral 
 encryptdecrypt:		tss2/tss.h encryptdecrypt.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) encryptdecrypt.o $(LNALIBS) -o encryptdecrypt	
 eventsequencecomplete:	tss2/tss.h eventsequencecomplete.o $(LIBTSS)
@@ -336,8 +340,8 @@ powerup:		tss2/tss.h powerup.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) powerup.o $(LNALIBS) -o powerup
 readclock:		tss2/tss.h readclock.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) readclock.o $(LNALIBS) -o readclock
-readpublic:		tss2/tss.h readpublic.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) readpublic.o $(LNALIBS) -o readpublic
+readpublic:		tss2/tss.h readpublic.o cryptoutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) readpublic.o cryptoutils.o $(LNALIBS) -o readpublic
 returncode:		tss2/tss.h returncode.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) returncode.o $(LNALIBS) -o returncode
 rewrap:			tss2/tss.h rewrap.o $(LIBTSS)
@@ -364,8 +368,8 @@ stirrandom:		tss2/tss.h stirrandom.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) stirrandom.o $(LNALIBS) -o stirrandom
 unseal:			tss2/tss.h unseal.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) unseal.o $(LNALIBS) -o unseal
-verifysignature:	tss2/tss.h verifysignature.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) verifysignature.o $(LNALIBS) -o verifysignature
+verifysignature:	tss2/tss.h verifysignature.o cryptoutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) verifysignature.o cryptoutils.o $(LNALIBS) -o verifysignature
 signapp:		tss2/tss.h signapp.o ekutils.o cryptoutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o ekutils.o cryptoutils.o $(LNALIBS) -o signapp
 writeapp:		tss2/tss.h writeapp.o ekutils.o cryptoutils.o $(LIBTSS)
@@ -375,12 +379,12 @@ timepacket:		tss2/tss.h timepacket.o $(LIBTSS)
 createek:		createek.o ekutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createek.o cryptoutils.o ekutils.o $(LNALIBS) -o createek
 
-ntc2getconfig:		ntc2getconfig.o ntc2lib.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2getconfig.o ntc2lib.o $(LNALIBS) -o ntc2getconfig
-ntc2preconfig:		ntc2preconfig.o ntc2lib.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2preconfig.o ntc2lib.o $(LNALIBS) -o ntc2preconfig
-ntc2lockconfig:		ntc2lockconfig.o ntc2lib.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2lockconfig.o ntc2lib.o $(LNALIBS) -o ntc2lockconfig
+ntc2getconfig:		ntc2getconfig.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2getconfig.o $(LNALIBS) -o ntc2getconfig
+ntc2preconfig:		ntc2preconfig.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2preconfig.o $(LNALIBS) -o ntc2preconfig
+ntc2lockconfig:		ntc2lockconfig.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2lockconfig.o $(LNALIBS) -o ntc2lockconfig
 
 t:		t.o
 		$(CC) $(LNFLAGS) $(LNAFLAGS) t.o $(LNALIBS) -o t

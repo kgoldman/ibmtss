@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.c 886 2016-12-21 17:22:26Z kgoldman $		*/
+/*	      $Id: tssmarshal.c 980 2017-04-04 21:11:44Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -2607,7 +2607,7 @@ TPM_RC
 TSS_INT8_Marshal(const INT8 *source, UINT16 *written, BYTE **buffer, INT32 *size)
 {
     TPM_RC rc = 0;
-    rc = TSS_UINT8_Marshal((UINT8 *)source, written, buffer, size);
+    rc = TSS_UINT8_Marshal((const UINT8 *)source, written, buffer, size);
     return rc;
 }
 
@@ -2663,7 +2663,7 @@ TPM_RC
 TSS_INT32_Marshal(const INT32 *source, UINT16 *written, BYTE **buffer, INT32 *size)
 {
     TPM_RC rc = 0;
-    rc = TSS_UINT32_Marshal((UINT32 *)source, written, buffer, size);
+    rc = TSS_UINT32_Marshal((const UINT32 *)source, written, buffer, size);
     return rc;
 }
 
@@ -5821,7 +5821,7 @@ TSS_TPM2B_CREATION_DATA_Marshal(const TPM2B_CREATION_DATA *source, UINT16 *writt
 	    rc = TSS_UINT16_Marshal(&sizeWritten, written, &sizePtr, size);
 	}
 	else {
-	    written += sizeof(UINT16);
+	    *written += sizeof(UINT16);
 	}
     }
     return rc;

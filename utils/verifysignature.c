@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: verifysignature.c 994 2017-04-19 17:27:10Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -46,7 +46,11 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <openssl/objects.h>
+#include <openssl/rsa.h>
 #include <openssl/ecdsa.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
 
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
@@ -55,6 +59,8 @@
 #include <tss2/tsscrypto.h>
 #include <tss2/tssmarshal.h>
 #include <tss2/tssresponsecode.h>
+
+#include "cryptoutils.h"
 
 static void printUsage(void);
 TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,
@@ -72,6 +78,7 @@ int main(int argc, char *argv[])
     VerifySignature_In 		in;
     VerifySignature_Out 	out;
     TPMI_DH_OBJECT		keyHandle = 0;
+    const char			*pemFilename = NULL;
     const char			*signatureFilename = NULL;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
@@ -79,13 +86,12 @@ int main(int argc, char *argv[])
     int				doHash = TRUE;
     const char			*ticketFilename = NULL;
     int				raw = FALSE;	/* default TPMT_SIGNATURE */
- 
     unsigned char 		*data = NULL;	/* message */
     size_t 			dataLength;
     uint8_t			*buffer = NULL;		/* for the free */
     uint8_t			*buffer1 = NULL;	/* for marshaling */
     size_t 			length = 0;
-    uint32_t           		sizeInBytes;	/* hash algorithm mapped to size */           		
+    uint32_t           		sizeInBytes;	/* hash algorithm mapped to size */
     TPMT_HA 			digest;		/* digest of the message */
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
@@ -100,6 +106,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("Missing parameter for -hk\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-ipem") == 0) {
+	    i++;
+	    if (i < argc) {
+		pemFilename = argv[i];
+	    }
+	    else {
+		printf("-ipem option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -187,8 +203,8 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
-    if (keyHandle == 0) {
-	printf("Missing handle parameter -ha\n");
+    if ((keyHandle == 0) && (pemFilename == NULL)) {
+	printf("Missing handle parameter -ha or PEM file name -pem\n");
 	printUsage();
     }
     if (messageFilename == NULL) {
@@ -200,7 +216,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (rc == 0) {
-       rc = TSS_File_ReadBinaryFile(&data,     /* must be freed by caller */
+       rc = TSS_File_ReadBinaryFile(&data,     /* freed @1 */
 				    &dataLength,
 				    messageFilename);
     }
@@ -231,7 +247,7 @@ int main(int argc, char *argv[])
 				  (uint8_t *)&in.digest.t.buffer, in.digest.t.size);
     }
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @2 */
 				     &length,
 				     signatureFilename);
     }
@@ -245,38 +261,45 @@ int main(int argc, char *argv[])
 	    rc = rawUnmarshal(&in.signature, algPublic, halg, buffer, length);
 	}
     }
-    free(buffer);
-    buffer = NULL;
-    if (rc == 0) {
-	/* Handle of key that will perform verifying */
-	in.keyHandle = keyHandle;
-    }
-    /* Start a TSS context */
-    if (rc == 0) {
-	rc = TSS_Create(&tssContext);
-    }
-    /* call TSS to execute the command */
-    if (rc == 0) {
-	rc = TSS_Execute(tssContext,
-			 (RESPONSE_PARAMETERS *)&out,
-			 (COMMAND_PARAMETERS *)&in,
-			 NULL,
-			 TPM_CC_VerifySignature,
-			 TPM_RH_NULL, NULL, 0);
-    }
-    {
-	TPM_RC rc1 = TSS_Delete(tssContext);
+    if (keyHandle != 0) {
 	if (rc == 0) {
-	    rc = rc1;
+	    /* Handle of key that will perform verifying */
+	    in.keyHandle = keyHandle;
+	}
+	/* Start a TSS context */
+	if (rc == 0) {
+	    rc = TSS_Create(&tssContext);
+	}
+	/* call TSS to execute the command */
+	if (rc == 0) {
+	    rc = TSS_Execute(tssContext,
+			     (RESPONSE_PARAMETERS *)&out,
+			     (COMMAND_PARAMETERS *)&in,
+			     NULL,
+			     TPM_CC_VerifySignature,
+			     TPM_RH_NULL, NULL, 0);
+	}
+	{
+	    TPM_RC rc1 = TSS_Delete(tssContext);
+	    if (rc == 0) {
+		rc = rc1;
+	    }
+	}
+	if ((rc == 0) && (ticketFilename != NULL)) {
+	    rc = TSS_File_WriteStructure(&out.validation,
+					 (MarshalFunction_t)TSS_TPMT_TK_VERIFIED_Marshal,
+					 ticketFilename);
 	}
     }
-    if ((rc == 0) && (ticketFilename != NULL)) {
-	rc = TSS_File_WriteStructure(&out.validation,
-				     (MarshalFunction_t)TSS_TPMT_TK_VERIFIED_Marshal,
-				     ticketFilename);
+    if (pemFilename != NULL) {
+	if (rc == 0) {
+	    rc = verifySignatureFromPem((uint8_t *)&in.digest.t.buffer,
+					in.digest.t.size,
+					&in.signature,
+					halg,
+					pemFilename);
+	}
     }
-    free(buffer);
-    free(data);
     if (rc == 0) {
 	if (verbose) printf("verifysignature: success\n");
     }
@@ -289,6 +312,8 @@ int main(int argc, char *argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
+    free(data);		/* @1 */
+    free(buffer);	/* @2 */
     return rc;
 }
 
@@ -371,10 +396,12 @@ static void printUsage(void)
     printf("\n");
     printf("verifysignature\n");
     printf("\n");
-    printf("Runs TPM2_VerifySignature\n");
+    printf("Runs TPM2_VerifySignature and/or verifies using the PEM public key\n");
     printf("\n");
-    printf("\t-hk key handle\n");
-    printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-hk key handle]\n");
+    printf("\t[-ipem public key PEM format file name to verify signature]\n");
+    printf("\t\tOne of -hk, -ipem must be specified\n");
+    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t[asymmetric key algorithm]\n");
     printf("\t\t[-rsa (default)]\n");
     printf("\t\t[-ecc curve (P256)]\n");
@@ -383,6 +410,6 @@ static void printUsage(void)
     printf("\t-is signature file name\n");
     printf("\t[-raw (flag) signature specified by -is is in raw format]\n");
     printf("\t\t(default TPMT_SIGNATURE)\n");
-    printf("\t[-tk ticket file name]\n");
+    printf("\t[-tk ticket file name (requires -ha)]\n");
     exit(1);	
 }

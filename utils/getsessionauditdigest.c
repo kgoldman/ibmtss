@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			    GetssssionAuditDigest				*/
+/*			    GetSessionAuditDigest				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getsessionauditdigest.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: getsessionauditdigest.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
 	int match;
 	match = TSS_TPM2B_Compare(&in.qualifyingData.b, &tpmsAttest.extraData.b);
 	if (!match) {
-	    printf("getssssionauditdigest: failed, extraData != qualifyingData\n");
+	    printf("getsessionauditdigest: failed, extraData != qualifyingData\n");
 	    rc = EXIT_FAILURE;
 	}
     }
@@ -352,13 +352,13 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	if (verbose) printSignature(&out);
-	if (verbose) printf("getssssionauditdigest: success\n");
+	if (verbose) printf("getsessionauditdigest: success\n");
     }
     else {
 	const char *msg;
 	const char *submsg;
 	const char *num;
-	printf("getssssionauditdigest: failed, rc %08x\n", rc);
+	printf("getsessionauditdigest: failed, rc %08x\n", rc);
 	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
@@ -376,19 +376,19 @@ static void printSignature(GetSessionAuditDigest_Out *out)
 static void printUsage(void)
 {
     printf("\n");
-    printf("getssssionauditdigest\n");
+    printf("getsessionauditdigest\n");
     printf("\n");
-    printf("Runs TPM2_GetssssionAuditDigest\n");
+    printf("Runs TPM2_GetSessionAuditDigest\n");
     printf("\n");
     printf("\t[-pwde endorsement hierarchy password (default empty)]\n");
     printf("\t-hk signing key handle\n");
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t-hs audit session handle\n");
-    printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t[-qd qualifying data file name]\n");
-    printf("\t[-os signature file name]\n");
-    printf("\t[-oa attestation output file name]\n");
-    printf("\t[-od session digest file name]\n");
+    printf("\t[-os signature file name (default do not save)]\n");
+    printf("\t[-oa attestation output file name (default do not save)]\n");
+    printf("\t[-od session digest file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

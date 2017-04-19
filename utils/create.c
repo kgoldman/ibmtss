@@ -3,9 +3,9 @@
 /*			    Create 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: create.c 967 2017-03-17 18:58:34Z kgoldman $			*/
+/*	      $Id: create.c 989 2017-04-18 20:50:04Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -53,6 +53,7 @@
 #include <tss2/tsscryptoh.h>
 
 #include "objecttemplates.h"
+#include "cryptoutils.h"
 
 static void printUsage(void);
 
@@ -77,6 +78,7 @@ int main(int argc, char *argv[])
     const char			*policyFilename = NULL;
     const char			*publicKeyFilename = NULL;
     const char			*privateKeyFilename = NULL;
+    const char			*pemFilename = NULL;
     const char			*ticketFilename = NULL;
     const char			*creationHashFilename = NULL;
     const char 			*dataFilename = NULL;
@@ -129,6 +131,14 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-si") == 0) {
 	    keyType = TYPE_SI;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-dau") == 0) {
+	    keyType = TYPE_DAA;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-dar") == 0) {
+	    keyType = TYPE_DAAR;
 	    keyTypeSpecified++;
 	}
 	else if (strcmp(argv[i], "-sir") == 0) {
@@ -260,6 +270,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-opr option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-opem") == 0) {
+	    i++;
+	    if (i < argc) {
+		pemFilename = argv[i];
+	    }
+	    else {
+		printf("-opem option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -406,7 +426,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (keyTypeSpecified != 1) {
-	printf("Missing key attributes\n");
+	printf("Missing or too many key attributes\n");
 	printUsage();
     }
     switch (keyType) {
@@ -416,6 +436,13 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	break;
+      case TYPE_DAA:
+      case TYPE_DAAR:
+	if (algPublic != TPM_ALG_ECC) {
+	    printf("-dau and -dar needs -ecc\n");
+ 	    printUsage();
+	}
+	/* fall through to next test is intentional */
       case TYPE_ST:
       case TYPE_DEN:
       case TYPE_DEO:
@@ -467,6 +494,8 @@ int main(int argc, char *argv[])
 				  policyFilename);
 	    break;
 	  case TYPE_ST:
+	  case TYPE_DAA:
+	  case TYPE_DAAR:
 	  case TYPE_DEN:
 	  case TYPE_DEO:
 	  case TYPE_SI:
@@ -576,6 +605,11 @@ int main(int argc, char *argv[])
 				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
 				     publicKeyFilename);
     }
+    /* save the optional PEM public key */
+    if ((rc == 0) && (pemFilename != NULL)) {
+	rc = convertPublicToPEM(&out.outPublic,
+				pemFilename);
+    }
     /* save the optional creation ticket */
     if ((rc == 0) && (ticketFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.creationTicket,
@@ -619,10 +653,11 @@ static void printUsage(void)
     printf("\n");
     printf("\t[-opu public key file name (default do not save)]\n");
     printf("\t[-opr private key file name (default do not save)]\n");
+    printf("\t[-opem public key PEM format file name (default do not save)]\n");
     printf("\t[-tk output ticket file name]\n");
     printf("\t[-ch output creation hash file name]\n");
     printf("\n");
-    printf("\t-se[0-2] session handle (default PWAP)\n");
+    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     printf("\t\t20 command decrypt\n");
     printf("\t\t40 response encrypt\n");

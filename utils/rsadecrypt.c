@@ -3,7 +3,7 @@
 /*			   RSA_Decrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsadecrypt.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: rsadecrypt.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -412,8 +412,8 @@ static void printUsage(void)
     printf("\t-hk key handle\n");
     printf("\t-pwdk password for key (default empty)\n");
     printf("\t-ie encrypt file name\n");
-    printf("\t-od decrypt file name\n");
-    printf("\t[-oid [sha1, sha256, sha384] optionally add OID and PKCS1 padding\n");
+    printf("\t-od decrypt file name (default do not save)\n");
+    printf("\t[-oid (sha1, sha256, sha384) optionally add OID and PKCS1 padding\n");
     printf("\t\tto the encrypt data (demo of signing with arbitrary OID)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

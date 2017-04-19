@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: reg.sh 967 2017-03-17 18:58:34Z kgoldman $				#
+#	$Id: reg.sh 989 2017-04-18 20:50:04Z kgoldman $				#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -102,8 +102,7 @@ printUsage ()
     echo "-27 Duplication"
     echo "-28 ECC"
     echo "-29 Credential"
-    echo "-30 Shutdown (only run for simulator)"
-    echo ""
+    echo "-35 Shutdown (only run for simulator)"
     echo "-40 Tests under development (not part of all)"
     echo ""
     echo "-50 Change seed"
@@ -151,12 +150,17 @@ cleanup()
 # general purpose keys
     rm -f storepriv.bin
     rm -f storepub.bin
+    rm -f storeeccpub.bin
+    rm -f storeeccpriv.bin
     rm -f signpriv.bin
     rm -f signpub.bin
+    rm -f signpub.pem
     rm -f signeccpriv.bin
     rm -f signeccpub.bin
+    rm -f signeccpub.pem
     rm -f signrpriv.bin
     rm -f signrpub.bin
+    rm -f signrpub.pem
     rm -f derpriv.bin
     rm -f derpub.bin
     rm -f despriv.bin
@@ -225,7 +229,7 @@ main ()
 	fi
 	# example for running scripts with encrypted sessions, see TPM_ENCRYPT_SESSIONS above
 	# getrandom must wait until after inittpm.sh (powerup and startup)
-	TPM_SESSION_ENCKEY=`./getrandom -by 16 -ns`
+	TPM_SESSION_ENCKEY=`${PREFIX}getrandom -by 16 -ns`
 	./regtests/initkeys.sh
 	RC=$?
 	if [ $RC -eq 255 ]; then
@@ -466,7 +470,7 @@ main ()
 	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-30" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-35" ]; then
 	# the MS simulator supports power cycling
 	if [ -z ${TPM_INTERFACE_TYPE} ] || [ ${TPM_INTERFACE_TYPE} == "socsim" ];  then
 	    if [ -z ${TPM_SERVER_TYPE} ] || [ ${TPM_SERVER_TYPE} == "mssim" ]; then

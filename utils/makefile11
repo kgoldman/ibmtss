@@ -183,16 +183,18 @@ clockrateadjust:	tss2/tss.h clockrateadjust.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) clockrateadjust.o $(LNALIBS) -o clockrateadjust
 clockset:		tss2/tss.h clockset.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) clockset.o $(LNALIBS) -o clockset
+commit:			tss2/tss.h commit.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) commit.o $(LNALIBS) -o commit
 contextload:		tss2/tss.h contextload.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextload.o $(LNALIBS) -o contextload
 contextsave:		tss2/tss.h contextsave.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextsave.o $(LNALIBS) -o contextsave
-create:			tss2/tss.h create.o objecttemplates.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o objecttemplates.o $(LNALIBS) -o create
-createloaded:		tss2/tss.h createloaded.o objecttemplates.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) createloaded.o objecttemplates.o $(LNALIBS) -o createloaded
-createprimary:		tss2/tss.h createprimary.o objecttemplates.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o objecttemplates.o $(LNALIBS) -o createprimary
+create:			tss2/tss.h create.o objecttemplates.o cryptoutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o objecttemplates.o cryptoutils.o $(LNALIBS) -o create
+createloaded:		tss2/tss.h createloaded.o objecttemplates.o cryptoutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createloaded.o objecttemplates.o cryptoutils.o $(LNALIBS) -o createloaded
+createprimary:		tss2/tss.h createprimary.o objecttemplates.o cryptoutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o objecttemplates.o cryptoutils.o $(LNALIBS) -o createprimary
 dictionaryattacklockreset:		tss2/tss.h dictionaryattacklockreset.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) dictionaryattacklockreset.o $(LNALIBS) -o dictionaryattacklockreset
 dictionaryattackparameters:		tss2/tss.h dictionaryattackparameters.o libtss.so
@@ -201,6 +203,8 @@ duplicate:		tss2/tss.h duplicate.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) duplicate.o $(LNALIBS) -o duplicate 
 eccparameters:		tss2/tss.h eccparameters.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) eccparameters.o $(LNALIBS) -o eccparameters 
+ecephemeral:		tss2/tss.h ecephemeral.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ecephemeral.o $(LNALIBS) -o ecephemeral 
 encryptdecrypt:		tss2/tss.h encryptdecrypt.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) encryptdecrypt.o $(LNALIBS) -o encryptdecrypt	
 eventsequencecomplete:	tss2/tss.h eventsequencecomplete.o libtss.so
@@ -323,8 +327,8 @@ powerup:		tss2/tss.h powerup.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) powerup.o $(LNALIBS) -o powerup
 readclock:		tss2/tss.h readclock.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) readclock.o $(LNALIBS) -o readclock
-readpublic:		tss2/tss.h readpublic.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) readpublic.o $(LNALIBS) -o readpublic
+readpublic:		tss2/tss.h readpublic.o cryptoutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) readpublic.o cryptoutils.o $(LNALIBS) -o readpublic
 returncode:		tss2/tss.h returncode.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) returncode.o $(LNALIBS) -o returncode
 rewrap:			tss2/tss.h rewrap.o libtss.so
@@ -351,8 +355,8 @@ stirrandom:		tss2/tss.h stirrandom.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) stirrandom.o $(LNALIBS) -o stirrandom
 unseal:			tss2/tss.h unseal.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) unseal.o $(LNALIBS) -o unseal
-verifysignature:	tss2/tss.h verifysignature.o libtss.so
-			$(CC) $(LNFLAGS) $(LNAFLAGS) verifysignature.o $(LNALIBS) -o verifysignature
+verifysignature:	tss2/tss.h verifysignature.o cryptoutils.o libtss.so
+			$(CC) $(LNFLAGS) $(LNAFLAGS) verifysignature.o cryptoutils.o $(LNALIBS) -o verifysignature
 signapp:		tss2/tss.h signapp.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o $(LNALIBS) -o signapp
 writeapp:		tss2/tss.h writeapp.o libtss.so
@@ -362,12 +366,12 @@ createek:		createek.o ekutils.o libtss.so
 pprovision:		pprovision.o ekutils.o libtss.so
 			$(CC) $(LNFLAGS) $(LNAFLAGS) pprovision.o ekutils.o $(LNALIBS) -o pprovision
 
-ntc2getconfig:		ntc2getconfig.o ntc2lib.o
-			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2getconfig.o ntc2lib.o $(LNALIBS) -o ntc2getconfig
-ntc2preconfig:		ntc2preconfig.o ntc2lib.o
-			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2preconfig.o ntc2lib.o $(LNALIBS) -o ntc2preconfig
-ntc2lockconfig:		ntc2lockconfig.o ntc2lib.o
-			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2lockconfig.o ntc2lib.o $(LNALIBS) -o ntc2lockconfig
+ntc2getconfig:		ntc2getconfig.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2getconfig.o $(LNALIBS) -o ntc2getconfig
+ntc2preconfig:		ntc2preconfig.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2preconfig.o $(LNALIBS) -o ntc2preconfig
+ntc2lockconfig:		ntc2lockconfig.o 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2lockconfig.o $(LNALIBS) -o ntc2lockconfig
 
 t:		t.o
 		$(CC) $(LNFLAGS) $(LNAFLAGS) t.o $(LNALIBS) -o t

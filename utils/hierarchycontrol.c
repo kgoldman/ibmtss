@@ -3,7 +3,7 @@
 /*			    HierarchyControl	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hierarchycontrol.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: hierarchycontrol.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -275,15 +275,15 @@ int main(int argc, char *argv[])
 static void printUsage(void)
 {
     printf("\n");
-    printf("hierarchyControl\n");
+    printf("hierarchycontrol\n");
     printf("\n");
     printf("Runs TPM2_HierarchyControl\n");
     printf("\n");
-    printf("\t-hi authhandle hierarchy e, o, p\n");
-    printf("\t-he enable hierarchy e, o, p, n\n");
+    printf("\t-hi authhandle hierarchy (e, o, p)\n");
+    printf("\t-he enable hierarchy (e, o, p, n)\n");
     printf("\t\te endorsement, o owner, p platform, n null\n");
     printf("\t-pwda authorization password (default empty)\n");
-    printf("\t-state (0 to disable, 1 to enable (default enable)\n");
+    printf("\t-state (0 to disable, 1 to enable) (default enable)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

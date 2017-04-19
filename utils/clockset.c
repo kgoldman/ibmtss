@@ -3,7 +3,7 @@
 /*			   ClockSet						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: clockset.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: clockset.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -253,7 +253,7 @@ static void printUsage(void)
     printf("Runs TPM2_ClockSet\n");
     printf("\n");
     printf("\t-time new time\n");
-    printf("\t-hi hierarchy o, p (default platform)\n");
+    printf("\t-hi hierarchy (o, p) (default platform)\n");
     printf("\t\to owner, p platform\n");
     printf("\t-pwdp password for hierarchy (default empty)\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

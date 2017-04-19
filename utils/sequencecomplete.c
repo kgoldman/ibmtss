@@ -3,7 +3,7 @@
 /*			    SequenceComplete					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sequencecomplete.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: sequencecomplete.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -320,10 +320,10 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_SequenceComplete\n");
     printf("\n");
-    printf("\t-hs seqeunce handle\n");
+    printf("\t-hs sequence handle\n");
     printf("\t-pwds password for sequence (default empty)\n");
     printf("\t-if input file to be added (default no data)\n");
-    printf("\t-of result file name (default none)\n");
+    printf("\t[-of result file name  (default do not save)]\n");
     printf("\t[-tk ticket file name]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

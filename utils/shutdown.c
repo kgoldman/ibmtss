@@ -3,7 +3,7 @@
 /*			    Shutdown		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: shutdown.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: shutdown.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -119,7 +119,7 @@ static void printUsage(void)
     printf("\n");
     printf("shutdown\n");
     printf("\n");
-    printf("Runs TPM_Shutdown\n");
+    printf("Runs TPM2_Shutdown\n");
     printf("\n");
     printf("\t-c shutdown clear (default)\n");
     printf("\t-s shutdown state\n");

@@ -3,7 +3,8 @@
 /*			     TSS Library Dependent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.c 878 2016-12-19 19:52:56Z kgoldman $		*/
+/*		ECC Salt functions written by Bill Martin			*/
+/*	      $Id: tsscrypto.c 989 2017-04-18 20:50:04Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -62,6 +63,7 @@
 #include <tss2/tssprint.h>
 #include <tss2/tsserror.h>
 
+#include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 
 extern int tssVverbose;
@@ -71,15 +73,17 @@ extern int tssVerbose;
 
 static TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
 			     TPMI_ALG_HASH hashAlg);
-
+static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData,
+						   EC_KEY *myecc);
+static TPM_RC TSS_BN_new(BIGNUM **bn);
+static TPM_RC TSS_BN_hex2bn(BIGNUM **bn, const char *str);
 static TPM_RC TSS_bin2bn(BIGNUM **bn, const unsigned char *bin, unsigned int bytes);
-
 
 /*
   Initialization
 */
 
-TPM_RC TSS_Crypto_Init()
+TPM_RC TSS_Crypto_Init(void)
 {
     TPM_RC		rc = 0;
     ERR_load_crypto_strings ();
@@ -231,8 +235,13 @@ TPM_RC TSS_Hash_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
     EVP_MD_CTX 		*mdctx;
     const EVP_MD 	*md;
 
-    mdctx = EVP_MD_CTX_create();
-        
+    if (rc == 0) {
+	mdctx = EVP_MD_CTX_create();
+        if (mdctx == NULL) {
+	    if (tssVerbose) printf("TSS_Hash_Generate: malloc EVP_MD_CTX failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
     if (rc == 0) {
 	rc = TSS_Hash_GetMd(&md, digest->hashAlg);
     }
@@ -409,6 +418,629 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
         RSA_free(rsa_pub_key);          /* @1 */
     }
     free(padded_data);                  /* @2 */
+    return rc;
+}
+
+/* TSS_GeneratePlatformEphemeralKey sets the EC parameters to NIST P256 for generating the ephemeral
+   key. Some OpenSSL versions do not come with NIST p256.  */
+
+static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KEY *myecc)
+{
+    TPM_RC      rc = 0;
+    BIGNUM 	*p = NULL;
+    BIGNUM 	*a = NULL;
+    BIGNUM 	*b = NULL;
+    BIGNUM 	*x = NULL;
+    BIGNUM 	*y = NULL;
+    BIGNUM 	*z = NULL;
+    EC_POINT    *G = NULL; 	/* generator */
+
+    /* ---------------------------------------------------------- *
+     * Set the EC parameters to NISTp256. Openssl versions might  *
+     * not have NISTP256 as a possible parameter so we make it    *
+     * possible by setting the curve ourselves.                   *
+     * ---------------------------------------------------------- */
+
+    /*  NIST P256  from FIPS 186-3 */
+    if (rc == 0) {
+	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting p\n");
+	rc = TSS_BN_hex2bn(&p,		/* freed @1 */
+			   "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF");
+    }
+    if (rc == 0) {
+	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting a\n");
+	rc = TSS_BN_hex2bn(&a,		/* freed @2 */
+			   "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFC");
+    }
+    if (rc == 0) {
+	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting b\n");
+	rc = TSS_BN_hex2bn(&b,		/* freed @3 */
+			   "5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B");
+    }
+    if (rc == 0) {
+	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: New group\n");
+	eCurveData->G = EC_GROUP_new(EC_GFp_mont_method());	/* freed @4 */
+	if (eCurveData->G == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: "
+				   "Error creating new group\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Set the curve prime\n");
+	if (EC_GROUP_set_curve_GFp(eCurveData->G, p, a, b, eCurveData->ctx) == 0) {
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: "
+				   "Error seting curve prime\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	G = EC_POINT_new(eCurveData->G);			/* freed @5 */
+	if (G == NULL ){
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: EC_POINT_new failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	rc = TSS_BN_hex2bn(&x,					/* freed @6 */
+			   "6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296");
+    }
+    if (rc == 0) {
+	rc = TSS_BN_hex2bn(&y,					/* freed @7 */
+			   "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
+    }
+    if (rc == 0) {
+	if (EC_POINT_set_affine_coordinates_GFp(eCurveData->G, G, x, y, eCurveData->ctx) == 0) {
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Error, "
+				   "Cannot create TPM public point from coordinates\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    /* sanity check to see if point is on the curve */
+    if (rc == 0) {
+	if (EC_POINT_is_on_curve(eCurveData->G, G, eCurveData->ctx) == 0) {
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Error, "
+				   "Point not on curve\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	rc = TSS_BN_hex2bn(&z,					/* freed @8 */
+			   "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
+    }
+    if (rc == 0) {
+	if (EC_GROUP_set_generator(eCurveData->G, G, z, BN_value_one()) == 0) {
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Error, "
+				   "EC_GROUP_set_generator()\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+        }
+    }
+    if (rc == 0) {
+	if (EC_GROUP_check(eCurveData->G, eCurveData->ctx) == 0) {
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Error, "
+				   "EC_GROUP_check()\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+        }
+    }
+    if (rc == 0) {
+	if (EC_KEY_set_group(myecc, eCurveData->G) == 0) {
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Error, "
+				   "EC_KEY_set_group()\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+        }
+    }
+    if (rc == 0) {
+#if 0
+	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: "
+				"Address of eCurveData->G is %p\n", eCurveData->G);
+	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: "
+				"Address of eCurveData->CTX is %p\n", eCurveData->ctx);
+#endif
+	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: "
+				"Set group for key\n");
+    }
+    /* Create the public/private EC key pair here */
+    if (rc == 0) {
+	if (EC_KEY_generate_key(myecc) == 0) 	{
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: "
+				   "Error generating the ECC key.\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	if (!EC_KEY_check_key(myecc)) {
+	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: "
+				   "Error on EC_KEY_check_key()\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (p != NULL)	BN_clear_free(p);	/* @1 */
+    if (a != NULL)	BN_clear_free(a);	/* @2 */
+    if (b != NULL) 	BN_clear_free(b);	/* @3 */
+    if (rc != 0) {
+	EC_GROUP_free(eCurveData->G);	/* @4 */	
+	EC_POINT_free(G);		/* @5  */
+    }
+    if (x != NULL)	BN_clear_free(x);	/* @6 */
+    if (y != NULL)	BN_clear_free(y);	/* @7 */
+    if (z != NULL)	BN_clear_free(z);	/* @8 */
+
+    /* don't free the key info.  This curve was constructed out of parameters, not of the openssl
+       library */
+    /* EC_KEY_free(myecc) */
+    /* EC_POINT_free(G); */
+    return rc;
+}
+
+/* TSS_ECC_Salt() returns both the plaintext and excrypted salt, based on the salt key bPublic. */
+
+TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
+		    TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
+		    TPMT_PUBLIC			*publicArea)
+{
+    TPM_RC		rc = 0;
+    EC_KEY		*myecc = NULL;		/* ephemeral key */
+    const BIGNUM	*d_caller; 		/* ephemeral private key */
+    const EC_POINT	*callerPointPub; 	/* ephemeral public key */
+    EC_POINT		*tpmPointPub = NULL;
+    BIGNUM		*p_tpmX = NULL;
+    BIGNUM		*bigY = NULL;
+    BIGNUM 		*zBn = NULL;
+    EC_POINT 		*rPoint = NULL;
+    BIGNUM 		*thepoint = NULL;
+    BIGNUM		*sharedX = NULL;
+    BIGNUM		*yBn = NULL;
+    uint32_t		sizeInBytes;
+    uint32_t		sizeInBits;
+    uint8_t             *sharedXBin = NULL;
+    unsigned int	lengthSharedXBin;
+    BIGNUM		*p_caller_Xbn = NULL;
+    BIGNUM		*p_caller_Ybn = NULL; 
+    uint8_t		*p_caller_Xbin = NULL;
+    uint8_t		*p_caller_Ybin = NULL;
+    uint8_t		*p_tpmXbin = NULL;
+    unsigned int 	length_p_caller_Xbin;
+    unsigned int 	length_p_caller_Ybin;
+    unsigned int	length_p_tpmXbin;
+    TPM2B_ECC_PARAMETER	sharedX_For_KDFE;
+    TPM2B_ECC_PARAMETER	p_caller_X_For_KDFE;
+    TPM2B_ECC_PARAMETER	p_tpmX_For_KDFE;
+    CURVE_DATA 		eCurveData;
+
+    /* only NIST P256 is currently supported */
+    if (rc == 0) {
+	if ((publicArea->parameters.eccDetail.curveID != TPM_ECC_NIST_P256)) {
+	    if (tssVerbose)
+		printf("TSS_ECC_Salt: ECC curve ID %04x not supported\n",
+		       publicArea->parameters.eccDetail.curveID);
+	    rc = TSS_RC_BAD_SALT_KEY;
+	}
+    }
+    if (rc == 0) {
+	myecc = EC_KEY_new();		/* freed @1 */
+	if (myecc == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: EC_KEY_new failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	eCurveData.ctx = BN_CTX_new();	/* freed @16 */
+	if (eCurveData.ctx == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: BN_CTX_new failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    /* Generate the TSS EC ephemeral key pair for the salt */
+    if (rc == 0) {
+	if (tssVverbose) printf("TSS_ECC_Salt: "
+				"Calling TSS_ECC_GeneratePlatformEphemeralKey\n"); 
+	rc = TSS_ECC_GeneratePlatformEphemeralKey(&eCurveData, myecc);
+    }
+    if (rc == 0) {
+	d_caller = EC_KEY_get0_private_key(myecc);		/* ephemeral private key */
+	callerPointPub = EC_KEY_get0_public_key(myecc); 	/* ephemeral public key */
+    } 
+    /* validate that the public point is on the NIST P-256 curve */
+    if (rc == 0) 		{
+	if (EC_POINT_is_on_curve(eCurveData.G, callerPointPub, eCurveData.ctx) == 0) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "Generated point not on curve\n"); 
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (rc == 0) { 
+	/* let d_caller be private scalar and P_caller be public point */
+	/* p_tpm is public point. p_tpmX is to be X-coordinate and p_tpmY the
+	   Y-coordinate */
+
+	/* Allocate the space for P_tpm */
+	tpmPointPub = EC_POINT_new(eCurveData.G); 			/* freed @2 */
+	if (tpmPointPub == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: EC_POINT_new failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	/* grab the public point using the parameters passed in */
+	if (tssVverbose) printf("TSS_ECC_Salt: "
+				"Salt key sizes are X: %d and Y: %d\n",
+				publicArea->unique.ecc.x.t.size,
+				publicArea->unique.ecc.y.t.size);
+	p_tpmX = BN_bin2bn((const unsigned char *)&publicArea->unique.ecc.x.t.buffer,
+			   publicArea->unique.ecc.x.t.size, NULL);	/* freed @3 */
+	if (p_tpmX == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: BN_bin2bn p_tpmX failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	bigY = BN_bin2bn((const unsigned char*)&publicArea->unique.ecc.y.t.buffer,
+			 publicArea->unique.ecc.y.t.size, bigY);	/* freed @15 */
+	if (bigY == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: BN_bin2bn bigY failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	if (tssVverbose) printf("TSS_ECC_Salt: "
+				"Public key X %s\n", BN_bn2hex(p_tpmX));
+	if (tssVverbose) printf("TSS_ECC_Salt: "
+				"Public key Y %s\n", BN_bn2hex(bigY));
+    }
+    /* Create the openssl form of the tpm public as EC_POINT using coordinates */
+    if (rc == 0) {
+	if (EC_POINT_set_affine_coordinates_GFp
+	    (eCurveData.G, tpmPointPub, p_tpmX, bigY, eCurveData.ctx) == 0) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "Cannot create TPM public point from coordinates\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    /* RFC 2440 Named curve prime256v1 */
+    if (rc == 0) {
+	rc = TSS_BN_hex2bn(&zBn,			/* freed @4 */
+			   "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
+    }    
+    /* add the generator z to the group we are constructing */
+    if (rc == 0) {
+	if (EC_GROUP_set_generator(eCurveData.G, tpmPointPub, zBn, BN_value_one()) == 0) { 
+	    if(tssVerbose) printf ("TSS_ECC_Salt: "
+				   "Error EC_GROUP_set_generator()\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE; 
+	}
+    } 
+    /* Check for validity of our group  */
+    if (rc == 0) { 
+	if (EC_GROUP_check(eCurveData.G, eCurveData.ctx) == 0) { 
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "ec_group_check() failed\n"); 
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    /* Check to see if what we think is the TPM point is on the curve */
+    if (rc == 0) {
+	if (EC_POINT_is_on_curve(eCurveData.G, tpmPointPub, eCurveData.ctx) == 0) { 
+	    if (tssVerbose) printf("TSS_ECC_Salt: Error, "
+				   "Point not on curve\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+	else {
+	    if (tssVverbose) printf("TSS_ECC_Salt: "
+				    "Validated that TPM EC point is on curve\n");
+	}
+    }
+    if (rc == 0) {
+	rPoint = EC_POINT_new(eCurveData.G);
+	if (rPoint == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "Cannot create rPoint\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    /* Point multiply the TPM public point by the ephemeral scalar. This will produce the
+       point from which we get the shared X coordinate, which we keep for use in KDFE. The
+       TPM will calculate the same X. */
+    if (rc == 0) {
+	if (EC_POINT_mul(eCurveData.G, rPoint, NULL, tpmPointPub,
+			 d_caller, eCurveData.ctx) == 0) { 
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "EC_POINT_mul failed\n") ;
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE; 
+	}
+	else {
+	    if (tssVverbose) printf("TSS_ECC_Salt: "
+				    "EC_POINT_mul() succeeded\n");
+	}
+    }
+    /* Check to see if calculated point is on the curve, just for extra sanity */
+    if (rc == 0) {  
+	if (EC_POINT_is_on_curve(eCurveData.G, rPoint, eCurveData.ctx) == 0) { 
+	    if (tssVerbose) printf("TSS_ECC_Salt: Error,"
+				   "Point r is not on curve\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+	else {
+	    if (tssVverbose) printf("TSS_ECC_Salt: "
+				    "Point calculated by EC_POINT_mul() is on the curve\n");
+	}
+    }
+    if (rc == 0) {
+	thepoint = EC_POINT_point2bn(eCurveData.G, rPoint, POINT_CONVERSION_UNCOMPRESSED,
+				     NULL, eCurveData.ctx);	/* freed @6 */
+	if (thepoint == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "EC_POINT_point2bn thepoint failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    /* get sharedX */
+    if (rc == 0) {
+	rc = TSS_BN_new(&sharedX);		/* freed @7 */
+    }
+    if (rc == 0) {
+	rc = TSS_BN_new(&yBn);			/* freed @8 */
+    }
+    if (rc == 0) {
+	if (EC_POINT_get_affine_coordinates_GFp(eCurveData.G, rPoint,
+						sharedX, yBn, eCurveData.ctx) == 0) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "EC_POINT_get_affine_coordinates_GFp() failed\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	sizeInBytes = TSS_GetDigestSize(publicArea->nameAlg);
+	sizeInBits =  sizeInBytes * 8;
+	sharedXBin = malloc(BN_num_bytes(sharedX));		/* freed @9 */
+	if (sharedXBin == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "malloc sharedXBin failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	lengthSharedXBin = (unsigned int)BN_bn2bin(sharedX, sharedXBin);
+	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: sharedXBin",
+				      sharedXBin,
+				      lengthSharedXBin);
+    }
+    /* encrypted salt is just the ephemeral public key */
+    if (rc == 0) {
+	rc = TSS_BN_new(&p_caller_Xbn);			/* freed 10 */
+    }
+    if (rc == 0) {
+	rc = TSS_BN_new(&p_caller_Ybn);			/* freed @11 */
+    }
+    if (rc == 0) {
+	if (tssVverbose) printf("TSS_ECC_Salt: "
+				"Allocated space for ephemeral BIGNUM X, Y\n");
+    }
+    /* Get the X-coordinate and Y-Coordinate */
+    if (rc == 0) {
+	if (EC_POINT_get_affine_coordinates_GFp(eCurveData.G, callerPointPub,
+						p_caller_Xbn, p_caller_Ybn,
+						eCurveData.ctx) == 0) { 
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "EC_POINT_get_affine_coordinates_GFp() failed\n");
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+	else {
+	    if (tssVverbose) printf("TSS_ECC_Salt: "
+				    "Retrieved X and Y coordinates from ephemeral public\n");
+	}
+    }
+    if (rc == 0) {    
+	p_caller_Xbin = malloc(BN_num_bytes(p_caller_Xbn));	/* freed @12 */
+	if (p_caller_Xbin == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "malloc p_caller_Xbin failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {    
+	p_caller_Ybin = malloc(BN_num_bytes(p_caller_Ybn));	/* freed @13 */
+	if (p_caller_Ybin == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "malloc p_caller_Ybin failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {    
+	if (tssVverbose) printf("TSS_ECC_Salt: "
+				"Allocated space for ephemeral binary X and y\n");
+    }
+    if (rc == 0) {
+	p_tpmXbin = malloc(BN_num_bytes(p_tpmX));		/* freed @14 */
+	if (p_tpmXbin == NULL) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "malloc p_tpmXbin failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	length_p_tpmXbin = (unsigned int)BN_bn2bin(p_tpmX, p_tpmXbin);
+	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: p_tpmXbin ",
+				      p_tpmXbin,
+				      length_p_tpmXbin);
+	length_p_caller_Xbin = (unsigned int)BN_bn2bin(p_caller_Xbn, p_caller_Xbin);
+	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: p_caller_Xbin",
+				      p_caller_Xbin,
+				      length_p_caller_Xbin);
+	length_p_caller_Ybin = (unsigned int)BN_bn2bin(p_caller_Ybn, p_caller_Ybin);
+	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: p_caller_Ybin",
+				      p_caller_Ybin,
+				      length_p_caller_Ybin);
+    }
+    /* in->encryptedSalt TPM2B_ENCRYPTED_SECRET is a size and TPMU_ENCRYPTED_SECRET secret.
+       TPMU_ENCRYPTED_SECRET is a TPMS_ECC_POINT
+       TPMS_ECC_POINT has two TPMB_ECC_PARAMETER, x and y
+    */
+    if (rc == 0) {
+	/* TPMS_ECC_POINT 256/8 is a hard coded value for NIST P256, the only curve
+	   currently supported */
+	uint8_t *secret = encryptedSalt->t.secret;	/* TPMU_ENCRYPTED_SECRET pointer for
+							   clarity */
+	/* TPM2B_ENCRYPTED_SECRET size */
+	encryptedSalt->t.size = sizeof(uint16_t) + (256/8) + sizeof(uint16_t) + (256/8);
+	/* leading zeros, because some points may be less than 32 bytes */
+	memset(secret, 0, sizeof(TPMU_ENCRYPTED_SECRET));
+	/* TPMB_ECC_PARAMETER X point */
+	*(uint16_t *)(secret) = htons(256/8);
+	memcpy(secret +
+	       sizeof(uint16_t) + (256/8) - length_p_caller_Xbin,
+	       p_caller_Xbin, length_p_caller_Xbin);
+	/* TPMB_ECC_PARAMETER Y point */
+	*(uint16_t *)(secret + sizeof(uint16_t) + (256/8)) = htons(256/8);
+	memcpy(secret +
+	       sizeof(uint16_t) + (256/8) +
+	       sizeof(uint16_t) + (256/8) - length_p_caller_Ybin,
+	       p_caller_Ybin, length_p_caller_Ybin);
+    }
+    if (rc == 0) {
+	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: ECC encrypted salt",
+				      encryptedSalt->t.secret,
+				      encryptedSalt->t.size);
+    }
+    /* sharedX_For_KDFE */
+    if (rc == 0) {
+	if (lengthSharedXBin > sizeof(sharedX_For_KDFE.t.buffer)) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "lengthSharedXBin %u too large\n",
+				   lengthSharedXBin);
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	sharedX_For_KDFE.t.size = 32;
+	memset(sharedX_For_KDFE.t.buffer, 0, sizeof(sharedX_For_KDFE.t.buffer));
+	memcpy(sharedX_For_KDFE.t.buffer + 32 - lengthSharedXBin,
+	       sharedXBin, lengthSharedXBin);
+	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: sharedX_For_KDFE",
+				      sharedX_For_KDFE.t.buffer,
+				      sharedX_For_KDFE.t.size);
+    }
+    /* p_caller_X_For_KDFE */
+    if (rc == 0) {
+	if (length_p_caller_Xbin > sizeof(p_caller_X_For_KDFE.t.buffer)) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "length_p_caller_Xbin %u too large\n",
+				   length_p_caller_Xbin);
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	p_caller_X_For_KDFE.t.size = 32;
+	memset(p_caller_X_For_KDFE.t.buffer, 0, sizeof(p_caller_X_For_KDFE.t.buffer));
+	memcpy(p_caller_X_For_KDFE.t.buffer + 32 - length_p_caller_Xbin,
+	       p_caller_Xbin, length_p_caller_Xbin);
+	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: p_caller_X_For_KDFE",
+				      p_caller_X_For_KDFE.t.buffer,
+				      p_caller_X_For_KDFE.t.size);
+    }
+    /* p_tpmX_For_KDFE */
+    if (rc == 0) {
+	if (length_p_tpmXbin > sizeof(p_tpmX_For_KDFE.t.buffer)) {
+	    if (tssVerbose) printf("TSS_ECC_Salt: "
+				   "length_p_tpmXbin %u too large\n",
+				   length_p_tpmXbin);
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	p_tpmX_For_KDFE .t.size = 32;
+	memset(p_tpmX_For_KDFE.t.buffer, 0, sizeof(p_tpmX_For_KDFE.t.buffer));
+	memcpy(p_tpmX_For_KDFE.t.buffer + 32 - length_p_tpmXbin,
+	       p_tpmXbin, length_p_tpmXbin);
+	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: p_tpmX_For_KDFE",
+				      p_tpmX_For_KDFE.t.buffer,
+				      p_tpmX_For_KDFE.t.size);
+    }
+    if (rc == 0) {
+	if (tssVverbose) printf("TSS_ECC_Salt: "
+				"Calling TSS_KDFE\n");
+	/* TPM2B_DIGEST salt size is the largest supported digest algorithm.
+	   This has already been validated when unmarshaling the Name hash algorithm.
+	*/
+	salt->t.size = sizeInBytes;
+	rc = TSS_KDFE((uint8_t *)&salt->t.buffer, 	/* KDFe output */
+		      publicArea->nameAlg,		/* hash algorithm */
+		      &sharedX_For_KDFE.b,		/* Z (key) */
+		      "SECRET",				/* KDFe label */
+		      &p_caller_X_For_KDFE.b,		/* context U */
+		      &p_tpmX_For_KDFE.b,		/* context V */
+		      sizeInBits);			/* required size of key in bits */
+    }
+    if (rc == 0) { 
+	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: salt",
+				      (uint8_t *)&salt->t.buffer,
+				      salt->t.size);
+    }
+    /* cleanup */
+    if (myecc != NULL) 		EC_KEY_free(myecc);		/* @1 */
+    if (tpmPointPub != NULL)    EC_POINT_free(tpmPointPub);	/* @2 */
+    if (p_tpmX != NULL)		BN_clear_free(p_tpmX);		/* @3 */
+    if (zBn != NULL)            BN_clear_free(zBn);		/* @4 */
+    if (rPoint != NULL)		EC_POINT_free(rPoint);		/* @5 */
+    if (thepoint != NULL)       BN_clear_free(thepoint);	/* @6 */
+    if (sharedX != NULL)        BN_clear_free(sharedX);		/* @7 */
+    if (yBn != NULL)		BN_clear_free(yBn);		/* @8 */
+    free(sharedXBin);						/* @9 */
+    if (p_caller_Xbn != NULL)   BN_clear_free(p_caller_Xbn);	/* @10 */
+    if (p_caller_Ybn != NULL)   BN_clear_free(p_caller_Ybn);	/* @11 */
+    free(p_caller_Xbin);					/* @12 */
+    free(p_caller_Ybin);					/* @13 */
+    free(p_tpmXbin);						/* @14 */
+    if (bigY != NULL)           BN_clear_free(bigY);		/* @15 */
+    if (eCurveData.ctx != NULL)	BN_CTX_free(eCurveData.ctx);	/* @16 */
+    return rc;
+}
+
+/* TSS_BN_new() wraps the openSSL function in a TPM error handler
+ */
+
+static TPM_RC TSS_BN_new(BIGNUM **bn)		/* freed by caller */
+{
+    TPM_RC	rc = 0;
+
+    if (rc == 0) {
+	if (*bn != NULL) {
+	    if (tssVerbose)
+		printf("TSS_BN_new: Error (fatal), *bn %p should be NULL before BN_new()\n", *bn);
+	    rc = TSS_RC_ALLOC_INPUT;
+	}	    
+    }
+    if (rc == 0) {
+	*bn = BN_new();
+	if (*bn == NULL) {
+	    if (tssVerbose) printf("TSS_BN_new: BN_new() failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    return rc;
+}
+
+/* TSS_BN_hex2bn() wraps the openSSL function in a TPM error handler
+ */
+
+static TPM_RC TSS_BN_hex2bn(BIGNUM **bn, const char *str)	/* freed by caller */
+{
+    TPM_RC	rc = 0;
+
+    if (rc == 0) {
+	if (*bn != NULL) {
+	    if (tssVerbose)
+		printf("TSS_BN_hex2bn: Error (fatal), *bn %p should be NULL before BN_new()\n", *bn);
+	    rc = TSS_RC_ALLOC_INPUT;
+	}	    
+    }
+    if (rc == 0) {
+	int irc;
+	irc = BN_hex2bn(bn, str);
+	if (irc == 0) {
+	    if (tssVerbose) printf("TSS_BN_hex2bn: BN_hex2bn() failed\n"); 
+	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
+	}
+    }    
     return rc;
 }
 

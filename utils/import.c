@@ -3,7 +3,7 @@
 /*			   Import		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: import.c 945 2017-02-27 23:24:31Z kgoldman $			*/
+/*	      $Id: import.c 985 2017-04-14 18:49:47Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -364,7 +364,7 @@ static void printUsage(void)
     printf("\t[-ik encryption key in file name]\n");
     printf("\t-ipu object public area file name\n");
     printf("\t-id duplicate file name\n");
-    printf("\t-iss symmetric seed file name file name\n");
+    printf("\t-iss symmetric seed file name\n");
     printf("\t[-salg symmetric algorithm (default none)]\n");
     printf("\n");
     printf("\t-opr private area file name\n");

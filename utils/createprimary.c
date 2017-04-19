@@ -3,9 +3,9 @@
 /*			    Create Primary	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createprimary.c 967 2017-03-17 18:58:34Z kgoldman $		*/
+/*	      $Id: createprimary.c 989 2017-04-18 20:50:04Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -53,6 +53,7 @@
 #include <tss2/tsscryptoh.h>
 
 #include "objecttemplates.h"
+#include "cryptoutils.h"
 
 static void printUsage(void);
 
@@ -78,6 +79,7 @@ int main(int argc, char *argv[])
     TPMI_ECC_CURVE		curveID = TPM_ECC_NONE;
     const char			*policyFilename = NULL;
     const char			*publicKeyFilename = NULL;
+    const char			*pemFilename = NULL;
     const char			*ticketFilename = NULL;
     const char			*creationHashFilename = NULL;
     const char 			*dataFilename = NULL;
@@ -146,6 +148,14 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-sir") == 0) {
 	    keyType = TYPE_SIR;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-dau") == 0) {
+	    keyType = TYPE_DAA;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-dar") == 0) {
+	    keyType = TYPE_DAAR;
 	    keyTypeSpecified++;
 	}
 	else if (strcmp(argv[i], "-kh") == 0) {
@@ -306,6 +316,16 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-opem") == 0) {
+	    i++;
+	    if (i < argc) {
+		pemFilename = argv[i];
+	    }
+	    else {
+		printf("-opem option needs a value\n");
+		printUsage();
+	    }
+	}
 	else if (strcmp(argv[i],"-tk") == 0) {
 	    i++;
 	    if (i < argc) {
@@ -435,6 +455,13 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	break;
+      case TYPE_DAA:
+      case TYPE_DAAR:
+	if (algPublic != TPM_ALG_ECC) {
+	    printf("-dau and -dar needs -ecc\n");
+ 	    printUsage();
+	}
+	/* fall through to next test is intentional */
       case TYPE_ST:
       case TYPE_DEN:
       case TYPE_DEO:
@@ -538,6 +565,8 @@ int main(int argc, char *argv[])
 				  policyFilename);
 	    break;
 	  case TYPE_ST:
+	  case TYPE_DAA:
+	  case TYPE_DAAR:
 	  case TYPE_DEN:
 	  case TYPE_DEO:
 	  case TYPE_SI:
@@ -657,6 +686,11 @@ int main(int argc, char *argv[])
 				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
 				     publicKeyFilename);
     }
+    /* save the optional PEM public key */
+    if ((rc == 0) && (pemFilename != NULL)) {
+	rc = convertPublicToPEM(&out.outPublic,
+				pemFilename);
+    }
     /* save the optional creation ticket */
     if ((rc == 0) && (ticketFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.creationTicket,
@@ -697,12 +731,13 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_CreatePrimary\n");
     printf("\n");
-    printf("\t[-hi hierarchy e, o, p, n (default null)]\n");
+    printf("\t[-hi hierarchy (e, o, p, n) (default null)]\n");
     printf("\t[-pwdp password for hierarchy (default empty)]\n");
     printf("\t[-pwdpi password file name for hierarchy (default empty)]\n");
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t[-iu inPublic unique field file (default none)]\n");
     printf("\t[-opu public key file name (default do not save)]\n");
+    printf("\t[oipem public key PEM format file name (default do not save)]\n");
     printf("\t[-tk output ticket file name]\n");
     printf("\t[-ch output creation hash file name]\n");
     printf("\n");

@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id$			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2016.					*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,6 +52,7 @@
 #include <tss2/tssmarshal.h>
 
 #include "objecttemplates.h"
+#include "cryptoutils.h"
 
 static void printUsage(void);
 
@@ -78,6 +79,7 @@ int main(int argc, char *argv[])
     const char			*policyFilename = NULL;
     const char			*publicKeyFilename = NULL;
     const char			*privateKeyFilename = NULL;
+    const char			*pemFilename = NULL;
     const char 			*dataFilename = NULL;
     const char			*keyPassword = NULL; 
     const char			*parentPassword = NULL; 
@@ -265,6 +267,16 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-opem") == 0) {
+	    i++;
+	    if (i < argc) {
+		pemFilename = argv[i];
+	    }
+	    else {
+		printf("-opem option needs a value\n");
+		printUsage();
+	    }
+	}
 	else if (strcmp(argv[i],"-pwdk") == 0) {
 	    i++;
 	    if (i < argc) {
@@ -384,7 +396,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (parentHandle == 0) {
-	printf("Missing handle parameter -ha\n");
+	printf("Missing handle parameter -hp\n");
 	printUsage();
     }
     if (keyTypeSpecified != 1) {
@@ -525,6 +537,11 @@ int main(int argc, char *argv[])
 				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
 				     publicKeyFilename);
     }
+    /* save the optional PEM public key */
+    if ((rc == 0) && (pemFilename != NULL)) {
+	rc = convertPublicToPEM(&out.outPublic,
+				pemFilename);
+    }
     if (rc == 0) {
 	printf("Handle %08x\n", out.objectHandle);
 	if (verbose) printf("createloaded: success\n");
@@ -562,8 +579,9 @@ static void printUsage(void)
     printf("\n");
     printf("\t[-opu public key file name (default do not save)]\n");
     printf("\t[-opr private key file name (default do not save)]\n");
+    printf("\t[-opem public key PEM format file name (default do not save)]\n");
     printf("\n");
-    printf("\t-se[0-2] session handle (default PWAP)\n");
+    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     printf("\t\t20 command decrypt\n");
     printf("\t\t40 response encrypt\n");

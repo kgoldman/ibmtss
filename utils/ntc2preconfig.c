@@ -3,7 +3,7 @@
 /*			   Nuvoton Preconfig 	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2preconfig.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: ntc2preconfig.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -559,7 +559,7 @@ static void mergeConfig(NTC2_CFG_STRUCT *preConfigOut,
     return;
 }
 
-static void printUsage()
+static void printUsage(void)
 {
     printf("\n");
     printf("ntc2preconfig\n");

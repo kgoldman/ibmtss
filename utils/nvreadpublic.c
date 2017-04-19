@@ -3,7 +3,7 @@
 /*			    NV ReadPublic					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadpublic.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: nvreadpublic.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -212,6 +212,6 @@ static void printUsage(void)
     printf("Runs TPM2_NV_ReadPublic\n");
     printf("\n");
     printf("\t-ha NV index handle\n");
-    printf("\t[-nalg expected name hash algorithm [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-nalg expected name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
     exit(1);	
 }

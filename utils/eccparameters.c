@@ -3,7 +3,7 @@
 /*			   ECC_Parameters					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eccparameters.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: eccparameters.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -167,6 +167,6 @@ static void printUsage(void)
     printf("\t\tbnp256\n");
     printf("\t\tnistp256\n");
     printf("\t\tnistp384\n");
-    printf("\t[-of data file, ECC parameters]\n");
+    printf("\t[-of data file, ECC parameters (default do not save)]\n");
     exit(1);	
 }

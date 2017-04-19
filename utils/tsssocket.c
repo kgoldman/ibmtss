@@ -3,7 +3,7 @@
 /*			   Socket Transmit and Receive Utilities		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsssocket.c 878 2016-12-19 19:52:56Z kgoldman $		*/
+/*	      $Id: tsssocket.c 981 2017-04-05 16:39:05Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -523,7 +523,7 @@ static uint32_t TSS_Socket_ReceiveBytes(TSS_SOCKET_FD sock_fd,
     while (nleft > 0) {
 #ifdef TPM_POSIX
 	nread = read(sock_fd, buffer, nleft);
-	if (nread <= 0) {       /* error */
+	if (nread < 0) {       /* error */
 	    if (tssVerbose)  printf("TSS_Socket_ReceiveBytes: read error %d\n", nread);
 	    return TSS_RC_BAD_CONNECTION;
 	}

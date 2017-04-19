@@ -3,7 +3,7 @@
 /*			    NV Define Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: nvdefinespace.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -553,7 +553,7 @@ static void printUsage(void)
     printf("\t\tp sets PPWRITE, PPREAD (platform)\n");
     printf("\t[-pwdn password for NV index (default empty)]\n");
     printf("\t\tssts AUTHWRITE (if not PIN index), AUTHREAD\n");
-    printf("\t[-nalg name algorithm [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-nalg name algorithm (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t[-sz data size (default 0)]\n");
     printf("\t\tIgnored for other than ordinary index\n");
     printf("\t[-ty index type (o, c, b, e, p, f) (default ordinary)]\n");

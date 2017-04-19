@@ -3,7 +3,7 @@
 /*			   Rewrap		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rewrap.c 945 2017-02-27 23:24:31Z kgoldman $			*/
+/*	      $Id: rewrap.c 987 2017-04-17 18:27:09Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -338,8 +338,8 @@ static void printUsage(void)
     printf("\t-in object name file name\n");
     printf("\t-iss input symmetric seed file name");
     printf("\n");
-    printf("\t[-od rewrap private area file name]\n");
-    printf("\t[-oss symmetric seed file name]\n");
+    printf("\t[-od rewrap private area file name (default do not save)]\n");
+    printf("\t[-oss symmetric seed file name (default do not save)]\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     printf("\t\t20 command decrypt\n");

@@ -8,7 +8,7 @@
 #		       IBM Thomas J. Watson Research Center			#
 #	$Id: testaes.sh 714 2016-08-11 21:46:03Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
 # All rights reserved.								#
 # 										#

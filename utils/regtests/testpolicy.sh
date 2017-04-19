@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy.sh 916 2017-01-19 22:31:42Z kgoldman $		#
+#		$Id: testpolicy.sh 990 2017-04-19 13:31:24Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -1002,7 +1002,7 @@ ${PREFIX}setprimarypolicy -hi p -pol policies/policycphash.bin -halg sha1 > run.
 checkSuccess $?
 
 echo "Clockrate adjust using wrong password - should fail"
-${PREFIX}clockrateadjust -hi p -pwdp ppp -adj 0  > run.out 
+${PREFIX}clockrateadjust -hi p -pwdp ppp -adj 0 > run.out 
 checkFailure $?
 
 echo "Start policy session"

@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: policysigned.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -65,7 +65,7 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
 
-static void   printUsage(void);
+static void printUsage(void);
 static TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
 			TPMT_HA *aHash,
 			const char *signingKeyFilename,
@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 	in.authObject = authObject;
 	in.policySession = policySession;
     }
-    /* read the optional components - nonceTPM, cpHashA, policyref */ 
+    /* read the optional components - nonceTPM, cpHashA, policyRef */ 
     if ((rc == 0) && (nonceTPMFilename != NULL)) {
 	rc = TSS_File_Read2B(&in.nonceTPM.b,
 			     sizeof(TPMU_HA),
@@ -449,7 +449,7 @@ static void printUsage(void)
     printf("\t-cp cpHash file (default none)\n");
     printf("\t-pref policyRef file (default none)\n");
     printf("\t-exp expiration in decimal (default none)\n");
-    printf("\t-halg [sha1, sha256] (default sha256)\n");
+    printf("\t-halg (sha1, sha256) (default sha256)\n");
     printf("\t-sk RSA signing key file name (PEM format)\n");
     printf("\t\tThis utility uses this signing key.\n");
     printf("\t\tA real application might use a smart card or other HSM.\n");

@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsserror.h 941 2017-02-16 18:33:03Z kgoldman $		*/
+/*	      $Id: tsserror.h 989 2017-04-18 20:50:04Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -95,11 +95,16 @@
 #define TSS_RC_RSA_PADDING		0x000b0077	/* RSA add padding failed */
 #define TSS_RC_RSA_ENCRYPT		0x000b0078	/* RSA public encrypt failed */
 #define TSS_RC_BIGNUM			0x000b0079	/* BIGNUM operation failed */
-#define TSS_RC_RSA_SIGNATURE		0x000b007a	/* RSA signature is bad */
+#define TSS_RC_RSA_SIGNATURE		0x000b007a	/* RSAsignature is bad */
+#define TSS_RC_EC_SIGNATURE		0x000b007b	/* EC signature is bad */
+#define TSS_RC_EC_KEY_CONVERT		0x000b007c	/* EC key conversion failed */
+#define TSS_RC_BAD_SIGNATURE_ALGORITHM	0x000b007d	/* Unimplemented signature algorithm */
 #define TSS_RC_COMMAND_UNIMPLEMENTED	0x000b0080	/* Unimplemented command */
 #define TSS_RC_IN_PARAMETER		0x000b0081	/* Bad in parameter to TSS_Execute */
 #define TSS_RC_OUT_PARAMETER		0x000b0082	/* Bad out parameter to TSS_Execute */
 #define TSS_RC_BAD_HANDLE_NUMBER	0x000b0083	/* Bad handle number for this command */
+#define TSS_RC_KDFE_FAILED              0x000b0084      /* KDFe function failed */
+#define TSS_RC_EC_EPHEMERAL_FAILURE     0x000b0085      /* Failed while making or using EC ephemeral key */
 #define TSS_RC_NO_SESSION_SLOT		0x000b0090	/* TSS context has no session slot for handle */
 #define TSS_RC_NO_OBJECTPUBLIC_SLOT	0x000b0091	/* TSS context has no object public slot for handle */
 #define TSS_RC_NO_NVPUBLIC_SLOT		0x000b0092	/* TSS context has no NV public slot for handle */

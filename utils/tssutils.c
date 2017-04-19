@@ -3,7 +3,7 @@
 /*			    TSS and Application Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssutils.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*		$Id: tssutils.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -251,7 +251,7 @@ TPM_RC TSS_TPM2B_CreateUint32(TPM2B *target, uint32_t source, uint16_t targetSiz
     return rc;
 }
 
-/* TSS_TPM2B_StringCopy() copies a NUL terminated string (omiting the NUL) from source to target.
+/* TSS_TPM2B_StringCopy() copies a NUL terminated string (omitting the NUL) from source to target.
    
    It checks that the string will fit in targetSize.
 

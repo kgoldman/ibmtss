@@ -3,7 +3,7 @@
 /*			    SequenceUpdate					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sequenceupdate.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: sequenceupdate.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -257,7 +257,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_SequenceUpdate\n");
     printf("\n");
-    printf("\t-hs seqeunce handle\n");
+    printf("\t-hs sequence handle\n");
     printf("\t-pwds password for sequence (default empty)\n");
     printf("\t-if input file to be HMACed\n");
     printf("\n");

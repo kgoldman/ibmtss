@@ -3,7 +3,7 @@
 /*			     IWG EK Index Parsing				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createek.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: createek.c 982 2017-04-13 13:00:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -277,7 +277,7 @@ static void printUsage(void)
     printf("-cp CreatePrimary using the EK template and EK nonce\n");
     printf("\t[-noflush Do not flush the primary key after validation\n");
     printf("[-root filename validate EK certificates against the root)]\n");
-    printf("\tfilename contexts a list of PEM certificate filenames, one per line\n");
+    printf("\tfilename contains a list of PEM certificate filenames, one per line\n");
     printf("\tthe list may contain up to %u certificates\n", MAX_ROOTS);
     printf("-alg (rsa or ec) \n");
     exit(1);	

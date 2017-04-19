@@ -3,7 +3,7 @@
 /*			    ObjectChangeAuth	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objectchangeauth.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: objectchangeauth.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -282,7 +282,7 @@ static void printUsage(void)
     printf("\t-ho object handle\n");
     printf("\t-pwdo password for object (default empty)\n");
     printf("\t-pwdn new password for object (default empty)\n");
-    printf("\t-opr private key file name\n");
+    printf("\t[-opr private key file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

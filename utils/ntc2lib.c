@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*	     	TPM2 Novoton Proprietary Command Utilities			*/
+/*	     	TPM2 Nuvoton Proprietary Command Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2lib.c 927 2017-01-26 14:42:59Z kgoldman $		*/
+/*	      $Id: ntc2lib.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/

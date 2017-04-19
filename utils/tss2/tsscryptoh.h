@@ -77,6 +77,15 @@ extern "C" {
 		    const TPM2B     *contextV,
 		    uint32_t         sizeInBits);
 
+    LIB_EXPORT
+    TPM_RC TSS_KDFE(uint8_t          *keyStream,
+		    TPM_ALG_ID       hashAlg,
+		    const TPM2B     *key,
+		    const char      *label,
+		    const TPM2B     *contextU,
+		    const TPM2B     *contextV,
+		    uint32_t         sizeInBits);
+
     uint16_t TSS_Sym_GetBlockSize(TPM_ALG_ID	symmetricAlg, 
 				  uint16_t	keySizeInBits);
 

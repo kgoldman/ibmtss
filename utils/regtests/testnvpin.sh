@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testnvpin.sh 789 2016-10-25 20:18:50Z kgoldman $		#
+#		$Id: testnvpin.sh 990 2017-04-19 13:31:24Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -81,7 +81,7 @@ ${PREFIX}nvwrite -ha 01000001 -hia p -ic 0 > run.out
 checkSuccess $?
 
 echo "NV Define Space, 01000002, ordinary index, with policysecret for pin pass fail 01000000"
-${PREFIX}nvdefinespace -ha 01000002 -hi o -pwdn pfi -ty o -hia p -sz 1 -pol policies/policysecretnvpf.bin  > run.out
+${PREFIX}nvdefinespace -ha 01000002 -hi o -pwdn pfi -ty o -hia p -sz 1 -pol policies/policysecretnvpf.bin > run.out
 checkSuccess $?
 
 echo "Platform write to set written bit"
@@ -269,7 +269,7 @@ ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
 echo "Read lock, 01000000"
-${PREFIX}nvreadlock -ha 01000000 -hia p  > run.out
+${PREFIX}nvreadlock -ha 01000000 -hia p > run.out
 checkSuccess $?
 
 echo "Platform read, locked - should fail"
@@ -365,7 +365,7 @@ ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
 checkSuccess $?
 
 echo "Index read, 01000000, bad password - should fail"
-${PREFIX}nvread -ha 01000000 -pwdn nn -sz 8  > run.out
+${PREFIX}nvread -ha 01000000 -pwdn nn -sz 8 > run.out
 checkFailure $?
 
 echo "Index read, 01000000, correct password - should fail"

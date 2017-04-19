@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 955 2017-03-08 17:34:11Z kgoldman $		#
+#	      $Id: makefile.mak 991 2017-04-19 13:57:39Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015.						#
 # 										#
@@ -170,14 +170,14 @@ clean:
 		$(LIBTSS)	\
 		$(ALL)
 
-create.exe:	create.o objecttemplates.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o $(LNLIBS) $(LIBTSS) 
+create.exe:	create.o objecttemplates.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
 
-createloaded.exe:	createloaded.o objecttemplates.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o $(LNLIBS) $(LIBTSS) 
+createloaded.exe:	createloaded.o objecttemplates.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
 
-createprimary.exe:	createprimary.o objecttemplates.o  $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o $(LNLIBS) $(LIBTSS) 
+createprimary.exe:	createprimary.o objecttemplates.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
 
 eventextend.exe:	eventextend.o eventlib.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o eventlib.o $(LNLIBS) $(LIBTSS) 
@@ -199,6 +199,12 @@ nvread.exe:	nvread.o ekutils.o cryptoutils.o $(LIBTSS)
 
 nvwrite.exe:	nvwrite.o ekutils.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
+readpublic.exe:	readpublic.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
+verifysignature.exe:	verifysignature.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
 signapp.exe:	signapp.o ekutils.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)

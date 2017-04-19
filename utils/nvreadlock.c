@@ -1,11 +1,11 @@
 /********************************************************************************/
 /*										*/
-/*			    NV ReadLock	 				*/
+/*			    NV ReadLock	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadlock.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: nvreadlock.c 978 2017-04-04 15:37:15Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

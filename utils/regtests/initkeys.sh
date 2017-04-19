@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: initkeys.sh 967 2017-03-17 18:58:34Z kgoldman $		#
+#		$Id: initkeys.sh 989 2017-04-18 20:50:04Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -59,20 +59,24 @@ echo "Create a platform primary storage key"
 ${PREFIX}createprimary -hi p -pwdk pps -tk pritk.bin -ch prich.bin > run.out
 checkSuccess $?
 
-echo "Create a storage key under the primary key"
+echo "Create an RSA storage key under the primary key"
 ${PREFIX}create -hp 80000000 -st -kt f -kt p -opr storepriv.bin -opu storepub.bin -tk stotk.bin -ch stoch.bin -pwdp pps -pwdk sto > run.out
 checkSuccess $?
 
+echo "Create an ECC storage key under the primary key"
+${PREFIX}create -hp 80000000 -ecc nistp256 -st -kt f -kt p -opr storeeccpriv.bin -opu storeeccpub.bin -pwdp pps -pwdk sto > run.out
+checkSuccess $?
+
 echo "Create an unrestricted RSA signing key under the primary key"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr signpriv.bin -opu signpub.bin -pwdp pps -pwdk sig > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr signpriv.bin -opu signpub.bin -opem signpub.pem -pwdp pps -pwdk sig > run.out
 checkSuccess $?
 
 echo "Create an unrestricted ECC signing key under the primary key"
-${PREFIX}create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signeccpriv.bin -opu signeccpub.bin -pwdp pps -pwdk sig > run.out
+${PREFIX}create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signeccpriv.bin -opu signeccpub.bin -opem signeccpub.pem -pwdp pps -pwdk sig > run.out
 checkSuccess $?
 
-echo "Create a restricted signing key under the primary key"
-${PREFIX}create -hp 80000000 -sir -kt f -kt p -opr signrpriv.bin -opu signrpub.bin -pwdp pps -pwdk sig > run.out
+echo "Create a restricted RSA signing key under the primary key"
+${PREFIX}create -hp 80000000 -sir -kt f -kt p -opr signrpriv.bin -opu signrpub.bin -opem signrpub.pem -pwdp pps -pwdk sig > run.out
 checkSuccess $?
 
 echo "Create an RSA decryption key under the primary key"

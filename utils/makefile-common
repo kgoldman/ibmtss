@@ -43,6 +43,7 @@
 
 CCFLAGS += 				\
 	-Wall -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
+	-Wformat=2 -Wold-style-definition \
 	-ggdb -O0 -c
 
 # to compile with optimizations on (warning will result)
@@ -70,6 +71,7 @@ ALL += 	$(LIBTSS)				\
 	clearcontrol$(EXE)			\
 	clockrateadjust$(EXE)			\
 	clockset$(EXE)				\
+	commit$(EXE)				\
 	contextload$(EXE)			\
 	contextsave$(EXE)			\
 	create$(EXE)				\
@@ -79,6 +81,7 @@ ALL += 	$(LIBTSS)				\
 	dictionaryattackparameters$(EXE) 	\
 	duplicate$(EXE)				\
 	eccparameters$(EXE)			\
+	ecephemeral$(EXE)			\
 	encryptdecrypt$(EXE)			\
 	evictcontrol$(EXE)			\
 	eventsequencecomplete$(EXE)		\

@@ -3,7 +3,7 @@
 /*			    Clear 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: clear.c 945 2017-02-27 23:24:31Z kgoldman $			*/
+/*	      $Id: clear.c 987 2017-04-17 18:27:09Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -228,11 +228,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Clear\n");
     printf("\n");
-    printf("\t-hi authhandle hierarchy l, p\n");
+    printf("\t-hi authhandle hierarchy (l, p)\n");
     printf("\t\tl lockout, p platform\n");
     printf("\t-pwda authorization password (default empty)\n");
     printf("\n");
-    printf("\t-se[0-2] session handle (default PWAP)\n");
+    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     printf("\t\t20 command decrypt\n");
     printf("\t\t40 response encrypt\n");

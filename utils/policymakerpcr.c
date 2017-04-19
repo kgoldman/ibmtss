@@ -3,7 +3,7 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymakerpcr.c 885 2016-12-21 17:13:46Z kgoldman $		*/
+/*	      $Id: policymakerpcr.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (pcrmask == 0xffffffff) {
-	printf("Missing or illgal pcr byte mask parameter -bm\n");
+	printf("Missing or illegal pcr byte mask parameter -bm\n");
 	printUsage();
     }
     if ((pcrmask != 0) && (inFilename == NULL)) {
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 	pcrs.count = 1;		/* hard code one hash algorithm */
 	/* Table 85 - Definition of TPMS_PCR_SELECTION Structure - pcrSelections */
 	pcrs.pcrSelections[0].hash = digest.hashAlg;
-	pcrs.pcrSelections[0].sizeofSelect= 3;	/* hard code 24 pcrs */
+	pcrs.pcrSelections[0].sizeofSelect= 3;	/* hard code 24 PCRs */
 	/* TCG always marshals lower PCR first */
 	pcrs.pcrSelections[0].pcrSelect[0] = (pcrmask >>  0) & 0xff;
 	pcrs.pcrSelections[0].pcrSelect[1] = (pcrmask >>  8) & 0xff;
@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
 	if (rc == 0) {
 	    prc = fgets(lineString, sizeof(lineString), inFile);
 	}
-	/* no more lines, pcrCount is number of pcrs processed */
+	/* no more lines, pcrCount is number of PCRs processed */
 	if (rc == 0) {
 	    if (prc == NULL) {
 		break;
@@ -275,12 +275,12 @@ int main(int argc, char *argv[])
     }
     /* serialize PCRs */
     if (rc == 0) {
-	unsigned int i;
+	unsigned int pc;
 	uint8_t *buffer = pcrBytes;
 	INT32 size = IMPLEMENTATION_PCR * MAX_DIGEST_SIZE;
 	pcrLength = 0;
-	for (i = 0 ; (rc == 0) && (i < pcrCount) ; i++) {
-	    rc = TSS_Array_Marshal((uint8_t *)&pcr[i], sizeInBytes, &pcrLength, &buffer, &size);
+	for (pc = 0 ; (rc == 0) && (pc < pcrCount) ; pc++) {
+	    rc = TSS_Array_Marshal((uint8_t *)&pcr[pc], sizeInBytes, &pcrLength, &buffer, &size);
 	}
     }
     /* hash the marshaled PCR array */
@@ -419,7 +419,7 @@ static void printUsage(void)
     printf("\n");
     printf("Assumes that the byte mask and PCR values are consistent\n");
     printf("\n");
-    printf("[-halg hash algorithm (default sha256)]\n");
+    printf("[-halg hash algorithm  (sha1 sha256 sha384) (default sha256)]\n");
     printf("-bm pcr byte mask in hex, big endian\n");
     printf("\te.g. 010000 selects PCR 16\n");
     printf("\te.g. ffffff selects all 24 PCRs\n");

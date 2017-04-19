@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 919 2017-01-20 15:11:51Z kgoldman $		#
+REM #		$Id: testdup.bat 979 2017-04-04 17:57:18Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -190,7 +190,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 for %%S in ("" "-se0 02000000 1") do (
-    for %%H in (sha1 sha256) do (
+    for %%H in (sha1 sha256 sha384) do (
 
 	echo "Import the signing key under the primary key %%H"
 	%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
@@ -233,7 +233,7 @@ echo "generate the signing key with openssl"
 openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem
 
 for %%S in ("" "-se0 02000000 1") do (
-    for %%H in (sha1 sha256) do (
+    for %%H in (sha1 sha256 sha384) do (
 
 	echo "Import the signing key under the primary key %%H"
 	%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem tmpecprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out

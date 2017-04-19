@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsalt.bat 752 2016-09-23 14:18:20Z kgoldman $		#
+REM #		$Id: testsalt.bat 984 2017-04-13 19:34:30Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -44,10 +44,12 @@ echo ""
 echo "Salt Session - Load"
 echo ""
 
-for %%H in (sha1 sha256 sha384) do (
+for %%A in ("-rsa" "-ecc nistp256") do (
 
-    	echo "Create a %%H storage key under the primary key "
-	%TPM_EXE_PATH%create -hp 80000000 -nalg %%H -halg %%H -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 222 > run.out
+    for %%H in (sha1 sha256 sha384) do (
+
+    	echo "Create a %%A %%H storage key under the primary key "
+	%TPM_EXE_PATH%create -hp 80000000 -nalg %%H -halg %%H %%~A -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 222 > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
@@ -75,7 +77,7 @@ for %%H in (sha1 sha256 sha384) do (
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
-	
+    )
 )
 
 echo ""
@@ -90,7 +92,7 @@ echo "Convert key pair to plaintext DER format"
 
 openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
 
-for %%H in (sha1 sha256) do (
+for %%H in (sha1 sha256 sha384) do (
 
     echo "Load the openssl key pair in the NULL hierarchy - %%H"
     %TPM_EXE_PATH%loadexternal -halg %%H -st -ider tmpkeypair.der > run.out
@@ -122,7 +124,7 @@ echo ""
 echo "Salt Session - CreatePrimary storage key"
 echo ""
 
-for %%H in (sha1 sha256) do (
+for %%H in (sha1 sha256 sha384) do (
     
     echo "Create a primary storage key - %%H"
     %TPM_EXE_PATH%createprimary -nalg %%H -hi p > run.out
@@ -154,7 +156,7 @@ echo ""
 echo "Salt Session - CreatePrimary RSA key"
 echo ""
 
-for %%H in (sha1 sha256) do (
+for %%H in (sha1 sha256 sha384) do (
     
     echo "Create a primary RSA key - %%H"
     %TPM_EXE_PATH%createprimary -nalg %%H -halg %%H -hi p -deo > run.out

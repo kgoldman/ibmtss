@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 957 2017-03-09 14:16:12Z kgoldman $		*/
+/*	      $Id: eventlib.c 980 2017-04-04 21:11:44Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -496,7 +496,7 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[8],
     
     /* validate PCR number */
     if (rc == 0) {
-	if (event2->pcrIndex > 8) {
+	if (event2->pcrIndex > 7) {
 	    printf("ERROR: TSS_EVENT2_PCR_Extend: PCR number %u out of range\n", event2->pcrIndex);
 	    rc = 1;
 	}

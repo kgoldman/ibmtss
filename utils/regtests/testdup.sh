@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 921 2017-01-23 15:56:08Z kgoldman $		#
+#		$Id: testdup.sh 990 2017-04-19 13:31:24Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -78,7 +78,7 @@ do
 	checkSuccess $?
 
 	echo "Sign a digest, $HALG"
-	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig  > run.out
+	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
 	checkSuccess $?
 
 	echo "Verify the signature, $HALG"
@@ -157,7 +157,7 @@ checkSuccess $?
 
 for SESS in "" "-se0 02000000 1"
 do
-    for HALG in sha1 sha256
+    for HALG in sha1 sha256 sha384
     do
 
 	echo "Import the signing key under the primary key ${HALG}"
@@ -192,7 +192,7 @@ openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout 
 
 for SESS in "" "-se0 02000000 1"
 do
-    for HALG in sha1 sha256
+    for HALG in sha1 sha256 sha384
     do
 
 	echo "Import the signing key under the primary key ${HALG}"

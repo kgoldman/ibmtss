@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (commandFilename == NULL) {
-	printf("Missing paramter -if\n");
+	printf("Missing parameter -if\n");
 	printUsage();
     }
     if (rc == 0) {

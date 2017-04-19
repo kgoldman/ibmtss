@@ -50,7 +50,7 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 
-static void   printUsage(void);
+static void printUsage(void);
 
 int verbose = FALSE;
 

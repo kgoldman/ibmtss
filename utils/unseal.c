@@ -3,7 +3,7 @@
 /*			   Unseal 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: unseal.c 945 2017-02-27 23:24:31Z kgoldman $			*/
+/*	      $Id: unseal.c 987 2017-04-17 18:27:09Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -243,8 +243,8 @@ static void printUsage(void)
     printf("Runs TPM2_Unseal\n");
     printf("\n");
     printf("\t-ha sealed data item handle\n");
-    printf("\t-pwd password sealed data item (default empty)\n");
-    printf("\t[-of output data]\n");
+    printf("\t[-pwd password sealed data item (default empty)]\n");
+    printf("\t[-of output data (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

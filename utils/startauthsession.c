@@ -3,7 +3,7 @@
 /*			    StartAuthSession	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: startauthsession.c 945 2017-02-27 23:24:31Z kgoldman $	*/
+/*	      $Id: startauthsession.c 987 2017-04-17 18:27:09Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -278,15 +278,15 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_StartAuthSession\n");
     printf("\n");
-    printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t-se\n");
     printf("\t\th HMAC session\n");
-    printf("\t\t\t-hs salt handle (default TPM_RH_NULL)\n");
-    printf("\t\t\t-bi bind handle (default TPM_RH_NULL)\n");
-    printf("\t\t\t-pwdb bind password (default empty)\n");
+    printf("\t\t\t[-hs salt handle (default TPM_RH_NULL)]\n");
+    printf("\t\t\t[-bi bind handle (default TPM_RH_NULL)]\n");
+    printf("\t\t\t[-pwdb bind password (default empty)]\n");
     printf("\t\tp Policy session\n");
     printf("\t\tt Trial policy session\n");
-    printf("\t-sym [xor, aes] symmetric parameter encryption algorithm (default xor)\n");
-    printf("\t-on nonceTPM file for policy session (default none)\n");
+    printf("\t[-sym (xor, aes) symmetric parameter encryption algorithm (default xor)]\n");
+    printf("\t[-on nonceTPM file for policy session (default do not save)]\n");
     exit(1);	
 }

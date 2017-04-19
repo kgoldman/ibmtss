@@ -3,7 +3,7 @@
 /*			   ReadPublic 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: readpublic.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: readpublic.c 990 2017-04-19 13:31:24Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -51,6 +51,8 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
 
+#include "cryptoutils.h"
+
 static void printReadPublic(ReadPublic_Out *out);
 static void printUsage(void);
 
@@ -65,6 +67,7 @@ int main(int argc, char *argv[])
     ReadPublic_Out 		out;
     TPMI_DH_PCR 		objectHandle = TPM_RH_NULL;
     const char			*publicKeyFilename = NULL;
+    const char			*pemFilename = NULL;
    
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -88,6 +91,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-opu option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-opem") == 0) {
+	    i++;
+	    if (i < argc) {
+		pemFilename = argv[i];
+	    }
+	    else {
+		printf("-opem option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -135,6 +148,11 @@ int main(int argc, char *argv[])
 				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
 				     publicKeyFilename);
     }
+    /* save the optional PEM public key */
+    if ((rc == 0) && (pemFilename != NULL)) {
+	rc = convertPublicToPEM(&out.outPublic,
+				pemFilename);
+    }
     if (rc == 0) {
 	if (verbose) printReadPublic(&out);
 	if (verbose) printf("readpublic: success\n");
@@ -170,5 +188,6 @@ static void printUsage(void)
     printf("\n");
     printf("\t-ho object handle\n");
     printf("\t[-opu public key file name (default do not save)]\n");
+    printf("\t[-opem public key PEM format file name (default do not save)]\n");
     exit(1);	
 }

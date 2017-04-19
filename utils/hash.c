@@ -3,7 +3,7 @@
 /*			    Hash						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hash.c 945 2017-02-27 23:24:31Z kgoldman $			*/
+/*	      $Id: hash.c 987 2017-04-17 18:27:09Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -286,10 +286,10 @@ static void printUsage(void)
     printf("\n");
     printf("\t-hi hierarchy (e, o, p, n) (default null)\n");
     printf("\t\te endorsement, o owner, p platform, n null\n");
-    printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t-if input file to be hashed\n");
     printf("\t-ic data string to be hashed\n");
-    printf("\t[-oh hash file name]\n");
-    printf("\t[-tk ticket file name]\n");
+    printf("\t[-oh hash file name (default do not save)]\n");
+    printf("\t[-tk ticket file name (default do not save)]\n");
     exit(1);	
 }

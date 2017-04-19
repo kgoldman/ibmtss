@@ -3,7 +3,7 @@
 /*			   RSA_Encrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsaencrypt.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: rsaencrypt.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -225,6 +225,6 @@ static void printUsage(void)
     printf("\n");
     printf("\t-hk key handle\n");
     printf("\t-id decrypt file name\n");
-    printf("\t-oe encrypt file name\n");
+    printf("\t[-oe encrypt file name (default do not save)]\n");
     exit(1);	
 }

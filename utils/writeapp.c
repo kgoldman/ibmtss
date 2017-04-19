@@ -3,7 +3,7 @@
 /*			    NV Write Application				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: writeapp.c 954 2017-03-07 20:39:39Z kgoldman $		*/
+/*	      $Id: writeapp.c 980 2017-04-04 21:11:44Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -153,11 +153,11 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (verbose) printf("INFO: Read the NV index at %08x\n", NVINDEX);
 	rc = nvReadPublic(tssContext);
-    }
-    /* on failure, define the index */
-    if (rc != 0) {
-	if (verbose) printf("INFO: Create the NV index at %08x\n", NVINDEX);
-	rc = defineSpace(tssContext, sessionHandle);
+	/* on failure, define the index */
+	if (rc != 0) {
+	    if (verbose) printf("INFO: Create the NV index at %08x\n", NVINDEX);
+	    rc = defineSpace(tssContext, sessionHandle);
+	}
     }
     /* flush the salt session */
     if (!pwSession) {

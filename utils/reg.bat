@@ -5,7 +5,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: reg.bat 875 2016-12-19 17:09:00Z kgoldman $		#
+REM #		$Id: reg.bat 991 2017-04-19 13:57:39Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -321,13 +321,18 @@ rm -f run.out
 rm -f sig.bin
 rm -f signpriv.bin
 rm -f signpub.bin
+rm -f signpub.pem
 rm -f signeccpriv.bin
 rm -f signeccpub.bin
+rm -f signeccpub.pem
 rm -f signpub.pem
 rm -f signrpriv.bin
 rm -f signrpub.bin
+rm -f signrpub.pem
 rm -f storepriv.bin
 rm -f storepub.bin
+rm -f storeeccpub.bin
+rm -f storeeccpriv.bin
 rm -f tkt.bin
 rm -f tmp.bin
 rm -f tmp1.bin

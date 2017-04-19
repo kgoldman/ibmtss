@@ -3,7 +3,7 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 945 2017-02-27 23:24:31Z kgoldman $			*/
+/*	      $Id: sign.c 989 2017-04-18 20:50:04Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -60,24 +60,6 @@
 #include <tss2/Unmarshal_fp.h>
 
 static void printUsage(void);
-static TPM_RC RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
-				     unsigned char *narr,
-				     uint32_t nbytes,
-				     unsigned char *earr,
-				     uint32_t ebytes);
-static TPM_RC RSAVerify(unsigned char *message,
-			unsigned int messageSize,
-			unsigned char *signature,
-			unsigned int signatureSize,
-			RSA *rsa_pub_key,
-			int nid);
-static TPM_RC RSAVerifyPEM(unsigned char *message,
-			   unsigned int messageSize,
-			   unsigned char *signature,
-			   unsigned int signatureSize,
-			   RSA *rsa_pub_key,
-			   int nid,
-			   const char *pemFilename);
 
 int verbose = FALSE;
 
@@ -95,7 +77,6 @@ int main(int argc, char *argv[])
     const char			*messageFilename = NULL;
     const char			*ticketFilename = NULL;
     const char			*publicKeyFilename = NULL;
-    const char			*pemFilename = NULL;
     const char			*signatureFilename = NULL;
     const char			*keyPassword = NULL; 
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
@@ -186,17 +167,7 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
-	else if (strcmp(argv[i],"-ipem") == 0) {
-	    i++;
-	    if (i < argc) {
-		pemFilename = argv[i];
-	    }
-	    else {
-		printf("-ipem option needs a value\n");
-		printUsage();
-	    }
-	}
- 	else if (strcmp(argv[i],"-tk") == 0) {
+	else if (strcmp(argv[i],"-tk") == 0) {
 	    i++;
 	    if (i < argc) {
 		ticketFilename = argv[i];
@@ -322,7 +293,7 @@ int main(int argc, char *argv[])
 	/* digest to be signed */
 	in.digest.t.size = sizeInBytes;
 	memcpy(&in.digest.t.buffer, (uint8_t *)&digest.digest, sizeInBytes);
-	/* Table 145 - Definition of TPMT_SIG_SCHEME inscheme */
+	/* Table 145 - Definition of TPMT_SIG_SCHEME inScheme */
 	in.inScheme.scheme = scheme;
 	/* Table 144 - Definition of TPMU_SIG_SCHEME details > */
 	/* Table 142 - Definition of {RSA} Types for RSA Signature Schemes */
@@ -380,16 +351,16 @@ int main(int argc, char *argv[])
        format key token */
     if (publicKeyFilename != NULL) {
 	TPM2B_PUBLIC 	public;
-	RSA         	*rsa_pub_key = NULL;
+	RSA         	*rsaPubKey = NULL;
 	if (rc == 0) {
 	    rc = TSS_File_ReadStructure(&public,
 					(UnmarshalFunction_t)TPM2B_PUBLIC_Unmarshal,
 					publicKeyFilename);
 	}
-	/* construct the OpenSSL public key object */
+	/* construct the OpenSSL RSA public key token */
 	if (rc == 0) {
 	    unsigned char earr[3] = {0x01, 0x00, 0x01};
-	    rc = RSAGeneratePublicToken(&rsa_pub_key,				/* freed @1 */
+	    rc = TSS_RSAGeneratePublicToken(&rsaPubKey,				/* freed @1 */
 					public.publicArea.unique.rsa.t.buffer, /* public modulus */
 					public.publicArea.unique.rsa.t.size,
 					earr,      				/* public exponent */
@@ -397,33 +368,21 @@ int main(int argc, char *argv[])
 	}
 	/* construct an openssl RSA public key token */
 	if (rc == 0) {
-	    /* public exponent */
-	    rc = RSAVerify((uint8_t *)&in.digest.t.buffer,
-			   in.digest.t.size,
-			   (uint8_t *)&out.signature.signature.rsassa.sig.t.buffer,
-			   out.signature.signature.rsassa.sig.t.size,
-			   rsa_pub_key,
-			   nid);
-	}
-	/* if a PEM file was also specified, use openssl to verify the signature using a PEM
-	   format key token.  This simulates remote verification where the public key is transported
-	   in PEM format. */
-	if (rc == 0) {
-	    if (pemFilename != NULL) {
-		rc = RSAVerifyPEM((uint8_t *)&in.digest.t.buffer,
-				  in.digest.t.size,
-				  (uint8_t *)&out.signature.signature.rsassa.sig.t.buffer,
-				  out.signature.signature.rsassa.sig.t.size,
-				  rsa_pub_key,
-				  nid,
-				  pemFilename);
+	    int         irc;
+	    irc = RSA_verify(nid,
+			     (uint8_t *)&in.digest.t.buffer,
+			     in.digest.t.size,
+			     (uint8_t *)&out.signature.signature.rsassa.sig.t.buffer,
+			     out.signature.signature.rsassa.sig.t.size,
+			     rsaPubKey);
+	    if (verbose) printf("RSAVerify: RSA_verify rc %d\n", irc);
+	    if (irc != 1) {
+		printf("RSAVerify: Bad signature\n");
+		rc = TSS_RC_RSA_SIGNATURE;
 	    }
 	}
-	/* the PEM call frees the RSA key token */
-	if (pemFilename == NULL) {
-	    if (rsa_pub_key != NULL) {
-		RSA_free(rsa_pub_key);          /* @1 */
-	    }
+	if (rsaPubKey != NULL) {
+	    RSA_free(rsaPubKey);          /* @1 */
 	}
     }
     free(data);
@@ -442,224 +401,6 @@ int main(int argc, char *argv[])
     return rc;
 }
     
-/* bin2bn() wraps the openSSL function in a TPM error handler
-
-   Converts a char array to bignum
-
-   bn must be freed by the caller.
-*/
-
-static TPM_RC bin2bn(BIGNUM **bn, const unsigned char *bin, unsigned int bytes)
-{
-    TPM_RC	rc = 0;
-
-    /* BIGNUM *BN_bin2bn(const unsigned char *s, int len, BIGNUM *ret);
-    
-       BN_bin2bn() converts the positive integer in big-endian form of length len at s into a BIGNUM
-       and places it in ret. If ret is NULL, a new BIGNUM is created.
-
-       BN_bin2bn() returns the BIGNUM, NULL on error.
-    */
-    if (rc == 0) {
-        *bn = BN_bin2bn(bin, bytes, *bn);
-        if (*bn == NULL) {
-            printf("bin2bn: Error in BN_bin2bn\n");
-            rc = TSS_RC_BIGNUM;
-        }
-    }
-    return rc;
-}
-
-/* TSS_RSAGeneratePublicToken() generates an RSA key token from n and e
- */
-
-static TPM_RC RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
-				     unsigned char *narr,      	/* public modulus */
-				     uint32_t nbytes,
-				     unsigned char *earr,      	/* public exponent */
-				     uint32_t ebytes)
-{
-    TPM_RC  	rc = 0;
-    BIGNUM *    n = NULL;
-    BIGNUM *    e = NULL;
-
-    /* sanity check for the free */
-    if (rc == 0) {
-	if (*rsa_pub_key != NULL) {
-            if (verbose)
-		printf("RSAGeneratePublicToken: Error (fatal), token %p should be NULL\n",
-		       *rsa_pub_key );
-            rc = TSS_RC_ALLOC_INPUT;
-	}
-    }
-    /* construct the OpenSSL RSA key object */
-    if (rc == 0) {
-        *rsa_pub_key = RSA_new();                        	/* freed by caller */
-        if (*rsa_pub_key == NULL) {
-            if (verbose) printf("RSAGeneratePublicToken: Error in RSA_new()\n");
-            rc = TSS_RC_RSA_KEY_CONVERT;
-        }
-    }
-    if (rc == 0) {
-        rc = bin2bn(&n, narr, nbytes);	/* freed by caller */
-    }
-    if (rc == 0) {
-        rc = bin2bn(&e, earr, ebytes);	/* freed by caller */
-    }
-    if (rc == 0) {
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-        (*rsa_pub_key)->n = n;
-	(*rsa_pub_key)->e = e;
-        (*rsa_pub_key)->d = NULL;
-
-#else
-	int irc = RSA_set0_key(*rsa_pub_key, n, e, NULL);
-	if (irc != 1) {
-            if (verbose) printf("RSAGeneratePublicToken: Error in RSA_set0_key()\n");
-            rc = TSS_RC_RSA_KEY_CONVERT;
-	}
-#endif
-    }
-    return rc;
-}
-
-/* RSAVerify() uses the low level openssl API to verify signaure over the message digest using
-   the supplied public key.
-*/
-
-static TPM_RC RSAVerify(unsigned char *message,
-			unsigned int messageSize,
-			unsigned char *signature,
-			unsigned int signatureSize,
-			RSA *rsa_pub_key,
-			int nid)
-{
-    TPM_RC  	rc = 0;
-    int         irc;
-    
-    if (verbose) printf("RSAVerify:\n");
-    if (rc == 0) {
-	irc = RSA_verify(nid,
-			 message, messageSize,
-			 signature, signatureSize,
-			 rsa_pub_key);
-	if (verbose) printf("RSAVerify: RSA_verify rc %d\n", irc);
-	if (irc != 1) {
-	    printf("RSAVerify: Bad signature\n");
-	    rc = TSS_RC_RSA_SIGNATURE;
-	    
-	}
-    }
-    return rc;
-}
-
-static TPM_RC RSAVerifyPEM(unsigned char *message,
-			   unsigned int messageSize,
-			   unsigned char *signature,
-			   unsigned int signatureSize,
-			   RSA *rsa_pub_key,
-			   int nid,
-			   const char *pemFilename)
-{
-    TPM_RC  	rc = 0;
-    int         irc;
-    EVP_PKEY 	*pkey = NULL;          	/* OpenSSL public key, EVP format */
-    FILE 	*pemFile = NULL;   	/* PEM file for public key */
-    
-    if (verbose) printf("RSAVerifyPEM:\n");
-    /* save the public key to PEM format.  This simulates what would normally be the transport of
-       the key to the verifier. */
-    if (rc == 0) {
-	pkey = EVP_PKEY_new();
-	if (pkey == NULL) {
-	    printf("RSAVerifyPEM: EVP_PKEY failed\n");
-	    rc = TSS_RC_RSA_KEY_CONVERT;
-	}
-    }
-    if (rc == 0) {
-	irc  = EVP_PKEY_assign_RSA(pkey, rsa_pub_key);
-	if (irc == 0) {
-	    printf("RSAVerifyPEM: EVP_PKEY_assign_RSA failed\n");
-	    rc = TSS_RC_RSA_KEY_CONVERT;
-	}
-	    
-    }
-    if (rc == 0) {
-	pemFile = fopen(pemFilename, "wb");
-	if (pemFile == NULL) {
-	    printf("RSAVerifyPEM: Unable to open PEM file %s for write\n", pemFilename);
-	    rc = TSS_RC_FILE_OPEN;
-	}
-    }
-    if (rc == 0) {
-	irc = PEM_write_PUBKEY(pemFile, pkey);
-	if (irc == 0) {
-	    printf("RSAVerifyPEM: Unable to write PEM file %s\n", pemFilename);
-	    rc = TSS_RC_FILE_WRITE;
-	}
-    }
-    if (pemFile != NULL) {
-	fclose(pemFile);
-	pemFile = NULL;
-    }
-    if (pkey != NULL) {
-	EVP_PKEY_free(pkey);
-	pkey = NULL;
-    }
-    /* since EVP_PKEY_free appears to free the RSA key token, add this so this call always frees the
-       token, even on error */
-    else {
-	if (rsa_pub_key != NULL) {
-	    RSA_free(rsa_pub_key);          /* @1 */
-	}
-    }
-    rsa_pub_key = NULL;							\
-    /* read the public key from PEM format.  This simulates what would normally be done after
-       transport to the verifier. */
-    if (rc == 0) {
-	pemFile = fopen(pemFilename, "rb");
-	if (pemFile == NULL) {
-	    printf("RSAVerifyPEM: Unable to open PEM file %s for read\n", pemFilename);
-	    rc = TSS_RC_FILE_OPEN;
-	}
-    }
-    if (rc == 0) {
-	pkey = PEM_read_PUBKEY(pemFile, NULL, NULL, NULL);
-	if (pkey == NULL) {
-	    printf("RSAVerifyPEM: Unable to read PEM file %s\n", pemFilename);
-	    rc = TSS_RC_FILE_READ;
-	}
-    }
-    if (rc == 0) {
-	rsa_pub_key = EVP_PKEY_get1_RSA(pkey);
-	if (rsa_pub_key == NULL) {
-	    printf("RSAVerifyPEM: EVP_PKEY_get1_RSA failed\n");
-	    rc = TSS_RC_RSA_KEY_CONVERT;
-	}
-    }
-    if (rc == 0) {
-	irc = RSA_verify(nid,
-			 message, messageSize,
-			 signature, signatureSize,
-			 rsa_pub_key);
-	if (verbose) printf("RSAVerifyPEM: RSA_verify rc %d\n", irc);
-	if (irc != 1) {
-	    printf("RSAVerifyPEM: Bad signature\n");
-	    rc = TSS_RC_RSA_SIGNATURE;
-	    
-	}
-    }
-    if (pemFile != NULL) {
-	fclose(pemFile);
-	pemFile = NULL;
-    }
-    if (pkey != NULL) {
-	EVP_PKEY_free(pkey);
-	pkey = NULL;
-    }
-    return rc;
-}
-
 static void printUsage(void)
 {
     printf("\n");
@@ -669,16 +410,13 @@ static void printUsage(void)
     printf("\n");
     printf("\t-hk key handle\n");
     printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t[-halg [sha1, sha256, sha384] (default sha256)]\n");
-    printf("\t[-rsa (default RSASSA scheme)]\n");
+    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-rsa (RSASSA scheme)]\n");
     printf("\t[-ecc (ECDSA scheme)]\n");
     printf("\t\tVerify only supported for RSA now\n");
     printf("\t-if input message to hash and sign\n");
     printf("\t[-ipu public key file name to verify signature (default no verify)]\n");
-    printf("\t[-ipem public key PEM format file name to verify signature (default no verify)]\n");
-    printf("\t\trequires -ipu\n");
-    printf("\t\tThis program writes the PEM file.  It is not supplied as an input\n");
-    printf("\t[-os signature file name]\n");
+    printf("\t[-os signature file name (default do not save)]\n");
     printf("\t[-tk ticket file name]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

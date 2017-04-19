@@ -3,7 +3,7 @@
 /*			   Import a PEM RSA keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: importpem.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -415,8 +415,8 @@ static void printUsage(void)
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t-opu public area file name\n");
     printf("\t-opr private area file name\n");
-    printf("\t[-nalg name hash algorithm [sha1, sha256, sha384] (default sha256)]\n");
-    printf("\t[-halg scheme hash algorithm [sha1, sha256, sha384] (default sha256)]\n");
+    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg scheme hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t[-pol policy file (default empty)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

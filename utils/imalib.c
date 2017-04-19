@@ -635,7 +635,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 		    /* bounds check the length */
 		    if (length < imaTemplateData->sigHeaderLength) {
 			printf("ERROR: IMA_TemplateData_ReadBuffer: "
-			       "buffer too small for signture header\n");
+			       "buffer too small for signature header\n");
 			rc = ERR_STRUCTURE;
 		    }
 		    else {
@@ -799,17 +799,17 @@ uint32_t IMA_Extend(TPMT_HA *imapcr,
 		    ImaEvent *imaEvent,
 		    TPMI_ALG_HASH hashAlg)
 {
-    uint32_t 	rc = 0;
-    uint16_t	digestSize;
-    uint16_t	zeroPad;
+    uint32_t 		rc = 0;
+    uint16_t		digestSize;
+    uint16_t		zeroPad;
+    int 		notAllZero;
+    unsigned char zeroDigest[SHA256_DIGEST_SIZE];
+    unsigned char oneDigest[SHA256_DIGEST_SIZE];
 
     /* FIXME sanity check TPM_IMA_PCR imaEvent->pcrIndex */
     
     /* extend based on the previous IMA PCR value */
     if (rc == 0) {
-	unsigned char zeroDigest[SHA256_DIGEST_SIZE];
-	unsigned char oneDigest[SHA256_DIGEST_SIZE];
-	int notAllZero;
 	memset(zeroDigest, 0, SHA256_DIGEST_SIZE);
 	memset(oneDigest, 0xff, SHA256_DIGEST_SIZE);
 	if (hashAlg == TPM_ALG_SHA1) {
@@ -825,6 +825,8 @@ uint32_t IMA_Extend(TPMT_HA *imapcr,
 	    printf("ERROR: IMA_Extend: Unsupported hash algorithm: %04x\n", hashAlg);
 	    rc = 1;
 	}
+    }
+    if (rc == 0) {
 	notAllZero = memcmp(imaEvent->digest, zeroDigest, digestSize);
 	imapcr->hashAlg = hashAlg;
 	if (notAllZero) {

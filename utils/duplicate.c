@@ -3,7 +3,7 @@
 /*			   Duplicate		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: duplicate.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: duplicate.c 987 2017-04-17 18:27:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -253,14 +253,6 @@ int main(int argc, char *argv[])
 	printf("Missing or bad object handle parameter -ho\n");
 	printUsage();
     }
-    if (duplicateFilename == NULL) {
-	printf("Missing or bad output duplicate parameter -od\n");
-	printUsage();
-    }
-    if (outSymSeedFilename == NULL) {
-	printf("Missing or bad output symmetric seed parameter -oss\n");
-	printUsage();
-    }
     if ((in.symmetricAlg.algorithm == TPM_ALG_NULL) &&
 	(encryptionKeyInFilename != NULL)) {
 	printf("-ik needs -salg\n");
@@ -349,9 +341,9 @@ static void printUsage(void)
     printf("\t[-ik encryption key in file name]\n");
     printf("\t[-salg symmetric algorithm (aes)(default none)]\n");
     printf("\n");
-    printf("\t[-oek encryption key out file name]\n");
-    printf("\t-od duplicate private area file name\n");
-    printf("\t-oss symmetric seed file name\n");
+    printf("\t[-oek encryption key out file name (default do not save)]\n");
+    printf("\t[-od duplicate private area file name (default do not save)]\n");
+    printf("\t[-oss symmetric seed file name (default do not save)]\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     printf("\t\t20 command decrypt\n");
