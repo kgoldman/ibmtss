@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: reg.sh 989 2017-04-18 20:50:04Z kgoldman $				#
+#	$Id: reg.sh 1019 2017-06-09 17:58:56Z kgoldman $				#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -224,7 +224,7 @@ main ()
 	    fi
 	fi
     	RC=$?
-	if [ $RC -eq 255 ]; then
+	if [ $RC -ne 0 ]; then
 	    exit 255
 	fi
 	# example for running scripts with encrypted sessions, see TPM_ENCRYPT_SESSIONS above
@@ -232,7 +232,7 @@ main ()
 	TPM_SESSION_ENCKEY=`${PREFIX}getrandom -by 16 -ns`
 	./regtests/initkeys.sh
 	RC=$?
-	if [ $RC -eq 255 ]; then
+	if [ $RC -ne 0 ]; then
 	    exit 255
 	fi
 	((WARN=$RC))
@@ -240,7 +240,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-1" ]; then
     	./regtests/testrng.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -248,7 +248,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-2" ]; then
     	./regtests/testpcr.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -256,7 +256,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-3" ]; then
     	./regtests/testprimary.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -264,7 +264,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-4" ]; then
     	./regtests/testcreateloaded.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
     	((I++))
@@ -272,7 +272,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-5" ]; then
     	./regtests/testhmacsession.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -280,7 +280,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-6" ]; then
     	./regtests/testbind.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -288,7 +288,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-7" ]; then
     	./regtests/testsalt.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -296,7 +296,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-8" ]; then
     	./regtests/testhierarchy.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -304,7 +304,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-9" ]; then
     	./regtests/teststorage.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -312,7 +312,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-10" ]; then
     	./regtests/testchangeauth.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -320,7 +320,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-11" ]; then
     	./regtests/testencsession.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -328,7 +328,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-12" ]; then
     	./regtests/testsign.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -336,7 +336,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-13" ]; then
     	./regtests/testnv.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -344,7 +344,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-14" ]; then
     	./regtests/testnvpin.sh
     	RC=$?
-	if [ $RC -eq 255 ]; then
+	if [ $RC -ne 0 ]; then
 	    exit 255
 	fi
 	((I++))
@@ -352,7 +352,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-15" ]; then
     	./regtests/testevict.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -360,7 +360,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-16" ]; then
     	./regtests/testrsa.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -368,7 +368,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-17" ]; then
     	./regtests/testaes.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -376,7 +376,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-18" ]; then
     	./regtests/testaes138.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -384,7 +384,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-19" ]; then
     	./regtests/testhmac.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -392,7 +392,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-20" ]; then
     	./regtests/testattest.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -401,7 +401,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-21" ]; then
     	./regtests/testpolicy.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -409,7 +409,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-22" ]; then
     	./regtests/testpolicy138.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -417,7 +417,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-23" ]; then
     	./regtests/testcontext.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -425,7 +425,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-24" ]; then
     	./regtests/testclocks.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -433,7 +433,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-25" ]; then
     	./regtests/testda.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -441,7 +441,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-26" ]; then
     	./regtests/testunseal.sh
     	RC=$?
-    	if [ $RC -eq 255 ]; then
+    	if [ $RC -ne 0 ]; then
     	    exit 255
     	fi
 	((I++))
@@ -449,7 +449,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-27" ]; then
     	./regtests/testdup.sh
     	RC=$?
-	if [ $RC -eq 255 ]; then
+	if [ $RC -ne 0 ]; then
 	    exit 255
 	fi
 	((I++))
@@ -457,7 +457,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-28" ]; then
     	./regtests/testecc.sh
     	RC=$?
-	if [ $RC -eq 255 ]; then
+	if [ $RC -ne 0 ]; then
 	    exit 255
 	fi
 	((I++))
@@ -465,7 +465,7 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-29" ]; then
     	./regtests/testcredential.sh
     	RC=$?
-	if [ $RC -eq 255 ]; then
+	if [ $RC -ne 0 ]; then
 	    exit 255
 	fi
 	((I++))
@@ -478,7 +478,7 @@ main ()
 	    fi
 	fi
    	RC=$?
-	if [ $RC -eq 255 ]; then
+	if [ $RC -ne 0 ]; then
 	    exit 255
 	fi
 	((I++))
@@ -486,7 +486,7 @@ main ()
     if [ "$1" == "-40" ]; then
      	./regtests/testdevel.sh
      	RC=$?
-     	if [ $RC -eq 255 ]; then
+     	if [ $RC -ne 0 ]; then
      	    exit 255
      	fi
      	((I++))
@@ -496,12 +496,12 @@ main ()
     if [ "$1" == "-a" ] || [ "$1" == "-50" ]; then
     	./regtests/testchangeseed.sh
     	RC=$?
-	if [ $RC -eq 255 ]; then
+	if [ $RC -ne 0 ]; then
 	    exit 255
 	fi
 	((I++))
     fi
-    if [ $RC -eq 255 ]; then
+    if [ $RC -ne 0 ]; then
 	echo ""
 	echo "Failed"
 	echo ""

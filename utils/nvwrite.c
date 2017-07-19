@@ -3,7 +3,7 @@
 /*			    NV Write		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvwrite.c 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*	      $Id: nvwrite.c 1040 2017-07-07 13:29:03Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -393,9 +393,9 @@ static void printUsage(void)
     printf("\t[-hia hierarchy authorization (o, p)(default index authorization)]\n");
     printf("\t-ha NV index handle\n");
     printf("\t-pwdn password for NV index (default empty)\n");
-    printf("\t-ic data string\n");
-    printf("\t-if data file\n");
-    printf("\t-id data values, pinPass and pinLimit (4 bytes each)\n");
+    printf("\t[-ic data string]\n");
+    printf("\t[-if data file]\n");
+    printf("\t[-id data values, pinPass and pinLimit (4 bytes each)]\n");
     printf("\t\tif none is specified, a 0 byte write occurs\n");
     printf("\t\t-id is normally used for pin pass or pin fail indexes\n");
     printf("\t-off offset (default 0)\n");

@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpcr.sh 979 2017-04-04 17:57:18Z kgoldman $		#
+#		$Id: testpcr.sh 1026 2017-06-19 14:45:07Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
@@ -113,7 +113,7 @@ echo "PCR Read"
 ${PREFIX}pcrread -ha 16 > run.out
 checkSuccess $?
 
-echo "PCR Extend"
+echo "PCR Event"
 ${PREFIX}pcrevent -ha 16 -if policies/aaa -of1 tmpsha1.bin -of2 tmpsha256.bin -of3 tmpsha384.bin > run.out
 checkSuccess $?
 

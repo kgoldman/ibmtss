@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 991 2017-04-19 13:57:39Z kgoldman $		#
+#	      $Id: makefile.mak 1034 2017-06-30 20:49:51Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015.						#
 # 										#
@@ -44,7 +44,7 @@ CC = "c:/program files/mingw/bin/gcc.exe"
 
 # compile - common flags for TSS library and applications
 
-CCFLAGS = 					\
+CCFLAGS += 					\
 	-DTPM_WINDOWS				\
 	-I. 					\
 	-I"c:/program files/MinGW/include"	\
@@ -52,11 +52,11 @@ CCFLAGS = 					\
 
 # compile - for TSS library
 
-CCLFLAGS = 	 -DTPM_TSS
+CCLFLAGS += 	 -DTPM_TSS
 
 # link - common flags flags TSS library and applications
 
-LNFLAGS =					\
+LNFLAGS +=					\
 	-D_MT					\
 	-DTPM_WINDOWS				\
 	-I"c:/program files/MinGW/include"	\
@@ -65,11 +65,11 @@ LNFLAGS =					\
 
 # link - for TSS library
 
-LNLFLAGS = 
+LNLFLAGS += 
 
 # link - for applications, TSS path, TSS and OpenSSl libraries
 
-LNAFLAGS = 
+LNAFLAGS += 
 
 LNLIBS = 	"c:/program files/openssl/lib/mingw/libeay32.a" \
 		"c:/program files/openssl/lib/mingw/ssleay32.a" \

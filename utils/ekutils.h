@@ -3,9 +3,9 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.h 941 2017-02-16 18:33:03Z kgoldman $		*/
+/*	      $Id: ekutils.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016.						*/
+/* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -57,90 +57,113 @@
 
 #define MAX_ROOTS		100	/* 100 should be more than enough */
 
-TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
-		       uint32_t *nvBufferMax);
-TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
-		    uint16_t *dataSize,
-		    TPMI_RH_NV_INDEX nvIndex);
-TPM_RC getIndexData(TSS_CONTEXT *tssContext,
-		    unsigned char **buffer,
-		    TPMI_RH_NV_INDEX nvIndex,
-		    uint16_t dataSize);
-TPM_RC getIndexContents(TSS_CONTEXT *tssContext,
-			unsigned char **buffer,
-			uint16_t *bufferSize,
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
+			   uint32_t *nvBufferMax);
+    TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
+			uint16_t *dataSize,
 			TPMI_RH_NV_INDEX nvIndex);
-void getRsaTemplate(TPMT_PUBLIC *tpmtPublic);
-void getEccTemplate(TPMT_PUBLIC *tpmtPublic);
-TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
-			       X509 **certificate,
-			       TPMI_RH_NV_INDEX nvIndex);
-uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
-				  X509 **x509,
-				  const char *derCertificateFileName);
-uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
-			       X509 *x509);
-TPM_RC getRootCertificateFilenames(char *rootFilename[],
-				   unsigned int *rootFileCount,
-				   const char *listFilename);
-TPM_RC getCaStore(X509_STORE **caStore,
-		  X509 *caCert[],
-		  const char *rootFilename[],
-		  unsigned int rootFileCount);
-TPM_RC processEKNonce(TSS_CONTEXT *tssContext,
-		      unsigned char **nonce,
-		      uint16_t *nonceSize,
-		      TPMI_RH_NV_INDEX ekNonceIndex,
-		      int print);
-TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
-			 TPMT_PUBLIC *tpmtPublic,
-			 TPMI_RH_NV_INDEX ekTemplateIndex,
-			 int print);
-TPM_RC processEKCertificate(TSS_CONTEXT *tssContext,
-			    X509 **ekCertificate,
-			    uint8_t **modulusBin,
-			    int *modulusBytes,
-			    TPMI_RH_NV_INDEX ekCertIndex,
-			    int print);
-TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
+    TPM_RC getIndexData(TSS_CONTEXT *tssContext,
+			unsigned char **buffer,
+			TPMI_RH_NV_INDEX nvIndex,
+			uint16_t dataSize);
+    TPM_RC getIndexContents(TSS_CONTEXT *tssContext,
+			    unsigned char **buffer,
+			    uint16_t *bufferSize,
+			    TPMI_RH_NV_INDEX nvIndex);
+    void getRsaTemplate(TPMT_PUBLIC *tpmtPublic);
+    void getEccTemplate(TPMT_PUBLIC *tpmtPublic);
+    TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
+				   X509 **certificate,
+				   TPMI_RH_NV_INDEX nvIndex);
+    uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
+				      X509 **x509,
+				      const char *derCertificateFileName);
+    uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
+				   X509 *x509);
+    TPM_RC getRootCertificateFilenames(char *rootFilename[],
+				       unsigned int *rootFileCount,
+				       const char *listFilename,
+				       int print);
+    TPM_RC getCaStore(X509_STORE **caStore,
+		      X509 *caCert[],
+		      const char *rootFilename[],
+		      unsigned int rootFileCount);
+    TPM_RC verifyCertificate(X509 *x509Certificate,
+			     const char *rootFilename[],
+			     unsigned int rootFileCount,
+			     int print);
+
+    TPM_RC processEKNonce(TSS_CONTEXT *tssContext,
+			  unsigned char **nonce,
+			  uint16_t *nonceSize,
+			  TPMI_RH_NV_INDEX ekNonceIndex,
+			  int print);
+    TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
+			     TPMT_PUBLIC *tpmtPublic,
+			     TPMI_RH_NV_INDEX ekTemplateIndex,
+			     int print);
+    TPM_RC processEKCertificate(TSS_CONTEXT *tssContext,
+				X509 **ekCertificate,
+				uint8_t **modulusBin,
 				int *modulusBytes,
-				X509 *ekCertificate,
 				TPMI_RH_NV_INDEX ekCertIndex,
 				int print);
-TPM_RC processRoot(TSS_CONTEXT *tssContext,
-		   TPMI_RH_NV_INDEX ekCertIndex,
-		   const char *rootFilename[],
-		   unsigned int rootFileCount,
-		   int print);
-TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
-			    TPM_HANDLE *keyHandle,
-			    TPMI_RH_NV_INDEX ekCertIndex,
-			    unsigned char *nonce,
-			    uint16_t nonceSize,
-			    TPMT_PUBLIC *tpmtPublicIn,
-			    TPMT_PUBLIC *tpmtPublicOut,
-			    unsigned int noFlush,
-			    int print);
-TPM_RC processValidatePrimary(uint8_t *publicKeyBin,
-			      int publicKeyBytes,
-			      TPMT_PUBLIC *tpmtPublic,
-			      TPMI_RH_NV_INDEX ekCertIndex,
-			      int print);
-TPM_RC processPrimary(TSS_CONTEXT *tssContext,
-		      TPM_HANDLE *keyHandle,
-		      TPMI_RH_NV_INDEX ekCertIndex,
-		      TPMI_RH_NV_INDEX ekNonceIndex, 
-		      TPMI_RH_NV_INDEX ekTemplateIndex,
-		      unsigned int noFlush,
-		      int print);
+    TPM_RC convertX509ToDer(uint32_t *certLength,
+			    unsigned char **certificate,
+			    X509 *x509Certificate);
+    TPM_RC convertX509ToRsa(RSA  **rsaPkey,
+			    X509 *x509);
+    TPM_RC convertX509ToEc(EC_KEY **ecKey,
+			   X509 *x509);
+    TPM_RC convertPemToX509(X509 **x509,
+			    const char *pemCertificate);
+    TPM_RC convertCertificatePubKey(uint8_t **modulusBin,
+				    int *modulusBytes,
+				    X509 *ekCertificate,
+				    TPMI_RH_NV_INDEX ekCertIndex,
+				    int print);
+    TPM_RC processRoot(TSS_CONTEXT *tssContext,
+		       TPMI_RH_NV_INDEX ekCertIndex,
+		       const char *rootFilename[],
+		       unsigned int rootFileCount,
+		       int print);
+    TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
+				TPM_HANDLE *keyHandle,
+				TPMI_RH_NV_INDEX ekCertIndex,
+				unsigned char *nonce,
+				uint16_t nonceSize,
+				TPMT_PUBLIC *tpmtPublicIn,
+				TPMT_PUBLIC *tpmtPublicOut,
+				unsigned int noFlush,
+				int print);
+    TPM_RC processValidatePrimary(uint8_t *publicKeyBin,
+				  int publicKeyBytes,
+				  TPMT_PUBLIC *tpmtPublic,
+				  TPMI_RH_NV_INDEX ekCertIndex,
+				  int print);
+    TPM_RC processPrimary(TSS_CONTEXT *tssContext,
+			  TPM_HANDLE *keyHandle,
+			  TPMI_RH_NV_INDEX ekCertIndex,
+			  TPMI_RH_NV_INDEX ekNonceIndex, 
+			  TPMI_RH_NV_INDEX ekTemplateIndex,
+			  unsigned int noFlush,
+			  int print);
 
-TPM_RC TSS_RSAGetKey(const BIGNUM **n,
-		     const BIGNUM **e,
-		     const BIGNUM **d,
-		     const BIGNUM **p,
-		     const BIGNUM **q,
-		     const RSA *rsaKey);
+    TPM_RC TSS_RSAGetKey(const BIGNUM **n,
+			 const BIGNUM **e,
+			 const BIGNUM **d,
+			 const BIGNUM **p,
+			 const BIGNUM **q,
+			 const RSA *rsaKey);
 
-int TSS_Pubkey_GetAlgorithm(EVP_PKEY *pkey);
+    int TSS_Pubkey_GetAlgorithm(EVP_PKEY *pkey);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

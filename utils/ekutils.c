@@ -3,7 +3,7 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 951 2017-03-02 22:12:05Z kgoldman $		*/
+/*	      $Id: ekutils.c 1013 2017-05-24 14:16:24Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -42,8 +42,8 @@
 
    They started as code to manipulate EKs, EK templates, and EK certificates.
 
-   Other useful crypto functions are migrating here.  Much of it is OpenSSL specific, but it also
-   provides examples of how to port from OpenSSL 1.0 to 1.1.
+   Other useful X509 certificate crypto functions are migrating here.  Much of it is OpenSSL
+   specific, but it also provides examples of how to port from OpenSSL 1.0 to 1.1.
 
 */
 
@@ -462,7 +462,8 @@ uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
 
 TPM_RC getRootCertificateFilenames(char *rootFilename[],
 				   unsigned int *rootFileCount,
-				   const char *listFilename)
+				   const char *listFilename,
+				   int print)
 {
     TPM_RC		rc = 0;
     int			done = 0;
@@ -506,6 +507,8 @@ TPM_RC getRootCertificateFilenames(char *rootFilename[],
 	}
 	if ((rc == 0) && !done) {
 	    rootFilename[*rootFileCount][rootFilenameLength-1] = '\0';	/* remove newline */
+	    if (print) printf("getRootCertificateFilenames: Root file name %u\n%s\n",
+			      *rootFileCount, rootFilename[*rootFileCount]);
 	    (*rootFileCount)++;
 	}
     }
@@ -569,6 +572,79 @@ TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
 	    fclose(caCertFile);		/* @1 */
 	    caCertFile = NULL;
 	}
+    }
+    return rc;
+}
+
+#endif
+
+#ifndef TPM_TSS_NOFILE
+
+/* verifyCertificate() verifies a certificate (typically an EK certificate against the root CA
+   certificate (typically the TPM vendor CA certificate chain)
+
+   The 'rootFileCount' root certificates are stored in the files whose paths are in the array
+   'rootFilename'
+
+*/
+
+TPM_RC verifyCertificate(X509 *x509Certificate,
+			 const char *rootFilename[],
+			 unsigned int rootFileCount,
+			 int print)
+{
+    TPM_RC			rc = 0;
+    unsigned int		i;
+    X509_STORE 			*caStore = NULL;	/* freed @1 */
+    X509 			*caCert[MAX_ROOTS];	/* freed @2 */
+    X509_STORE_CTX 		*verifyCtx = NULL;	/* freed @3 */
+
+    for (i = 0 ; i < rootFileCount ; i++) {
+	caCert[i] = NULL;    				/* for free @2 */
+    }
+    /* get the root CA certificate chain */
+    if (rc == 0) {
+	rc = getCaStore(&caStore,			/* freed @1 */
+			caCert,				/* freed @2 */
+			rootFilename,
+			rootFileCount);
+    }
+    /* create the certificate verify context */
+    if (rc == 0) {
+	verifyCtx = X509_STORE_CTX_new();		/* freed @3 */
+	if (verifyCtx == NULL) {
+	    printf("verifyCertificate: X509_STORE_CTX_new failed\n");  
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    /* add the root certificate store and EK certificate to be verified to the verify context */
+    if (rc == 0) {
+	int irc = X509_STORE_CTX_init(verifyCtx, caStore, x509Certificate, NULL);
+	if (irc != 1) {
+	    printf("verifyCertificate: "
+		   "Error in X509_STORE_CTX_init initializing verify context\n");  
+	    rc = TSS_RC_RSA_SIGNATURE;
+	}	    
+    }
+    /* walk the certificate chain */
+    if (rc == 0) {
+	int irc = X509_verify_cert(verifyCtx);
+	if (irc != 1) {
+	    printf("verifyCertificate: Error in X509_verify_cert verifying certificate\n");  
+	    rc = TSS_RC_RSA_SIGNATURE;
+	}
+	else {
+	    if (print) printf("EK certificate verified against the root\n");
+	}
+    }
+    if (caStore != NULL) {
+	X509_STORE_free(caStore);	/* @1 */
+    }
+    for (i = 0 ; i < rootFileCount ; i++) {
+	X509_free(caCert[i]);	   	/* @2 */
+    }
+    if (verifyCtx != NULL) {
+	X509_STORE_CTX_free(verifyCtx);	/* @3 */
     }
     return rc;
 }
@@ -661,6 +737,113 @@ TPM_RC processEKCertificate(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+/* convertX509ToDer() serializes the openSSL X509 structure to a DER certificate
+
+ */
+
+TPM_RC convertX509ToDer(uint32_t *certLength,
+			unsigned char **certificate,	/* output, freed by caller */
+			X509 *x509Certificate)		/* input */
+{
+    TPM_RC 		rc = 0;		/* general return code */
+    int			irc;
+
+    /* for debug */
+    if ((rc == 0) && verbose) {
+	irc = X509_print_fp(stdout, x509Certificate);
+	if (irc != 1) {
+	    printf("ERROR: convertX509ToDer: Error in certificate print X509_print_fp()\n");
+	    rc = TSS_RC_X509_ERROR;
+	}
+    }
+    /* sanity check for memory leak */
+    if (rc == 0) {
+	if (*certificate != NULL) {
+	    printf("ERROR: convertX509ToDer: Error, certificate not NULL at entry\n");
+	    rc = TSS_RC_X509_ERROR;
+	}	
+    }
+    /* convert the X509 structure to binary (internal to DER format) */
+    if (rc == 0) {
+	if (verbose) printf("convertX509ToDer: Serializing certificate\n");
+	irc = i2d_X509(x509Certificate, certificate);
+	if (irc < 0) {
+	    printf("ERROR: convertX509ToDer: Error in certificate serialization i2d_X509()\n");
+	    rc = TSS_RC_X509_ERROR;
+	}
+	else {
+	    *certLength = irc; 
+	}
+    }
+    return rc;
+}
+
+/* convertX509ToRsa extracts the public key from an X509 structure to an openssl RSA structure
+
+ */
+
+TPM_RC convertX509ToRsa(RSA  **rsaPkey,	/* freed by caller */
+			X509 *x509)
+{
+    TPM_RC rc = 0;
+
+    if (verbose) printf("convertX509ToRsa: Entry\n\n");
+    
+    EVP_PKEY *evpPkey = NULL;
+
+    if (rc == 0) {
+	evpPkey = X509_get_pubkey(x509);	/* freed @1 */
+	if (evpPkey == NULL) {
+	    printf("ERROR: convertX509ToRsa: X509_get_pubkey failed\n");  
+	    rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	*rsaPkey = EVP_PKEY_get1_RSA(evpPkey);
+	if (*rsaPkey == NULL) {
+	    printf("ERROR: convertX509ToRsa: EVP_PKEY_get1_RSA failed\n");  
+	    rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    if (evpPkey != NULL) {
+	EVP_PKEY_free(evpPkey);		/* @1 */
+    }
+    return rc;
+}
+
+/* convertX509ToEc extracts the public key from an X509 structure to an openssl RSAEC_KEY structure
+
+ */
+
+TPM_RC convertX509ToEc(EC_KEY **ecKey,	/* freed by caller */
+			 X509 *x509)
+{
+    TPM_RC rc = 0;
+
+    if (verbose) printf("convertX509ToEc: Entry\n\n");
+    
+    EVP_PKEY *evpPkey = NULL;
+
+    if (rc == 0) {
+	evpPkey = X509_get_pubkey(x509);	/* freed @1 */
+	if (evpPkey == NULL) {
+	    printf("ERROR: convertX509ToEc: X509_get_pubkey failed\n");  
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	*ecKey = EVP_PKEY_get1_EC_KEY(evpPkey);
+	if (*ecKey == NULL) {
+	    printf("ERROR: convertX509ToEc: EVP_PKEY_get1_EC_KEY failed\n");  
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (evpPkey != NULL) {
+	EVP_PKEY_free(evpPkey);		/* @1 */
+    }
+    return rc;
+}
+
 /* convertCertificatePubKey() returns the public modulus from an openssl X509 certificate
    structure.  ekCertIndex determines whether the algorithm is RSA or ECC.
 
@@ -675,8 +858,13 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
     TPM_RC			rc = 0;
     EVP_PKEY 			*pkey = NULL;
     int 			pkeyType;	/* RSA or EC */
-    const BIGNUM		*modulusBn;
     
+    /* use openssl to print the X509 certificate */
+#ifndef TPM_TSS_NOFILE
+    if (rc == 0) {
+	if (print) X509_print_fp(stdout, ekCertificate);
+    }
+#endif
     /* extract the public key */
     if (rc == 0) {
 	pkey = X509_get_pubkey(ekCertificate);		/* freed @2 */
@@ -705,33 +893,18 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 		rc = TPM_RC_INTEGRITY;
 	    }
 	}
-	/* get the OpenSSL RSA key token public modulus as a bignum */
 	if (rc == 0) {
-	    const BIGNUM *e;
-	    const BIGNUM *d;
-	    rc = getRsaKeyParts(&modulusBn, &e, &d, NULL, NULL, rsaKey);
+	    rc = convertRsaKeyToPublicKeyBin(modulusBytes,
+					     modulusBin,	/* freed by caller */
+					     rsaKey);
 	}
 	if (rc == 0) {
-	    *modulusBytes = BN_num_bytes(modulusBn);
-	    rc = TSS_Malloc(modulusBin, *modulusBytes);	/* freed by caller */
-	}
-	/* convert the public modulus bignum to binary */
-	if (rc == 0) {
-	    BN_bn2bin(modulusBn, *modulusBin);
 	    if (print) TSS_PrintAll("Certificate public key:", *modulusBin, *modulusBytes);
 	}    
-	/* use openssl to print the X509 certificate */
-#ifndef TPM_TSS_NOFILE
-	if (rc == 0) {
-	    if (print) X509_print_fp(stdout, ekCertificate);
-	}
-#endif
 	RSA_free(rsaKey);   		/* @3 */
     }
     else {	/* EC index */
 	EC_KEY *ecKey = NULL;
-	const EC_POINT *ecPoint;
-	const EC_GROUP *ecGroup;
 	/* check that the public key algorithm matches the ekCertIndex algorithm */
 	if (rc == 0) {
 	    if (pkeyType != EVP_PKEY_EC) {
@@ -748,44 +921,71 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	    }
 	}
 	if (rc == 0) {
-	    ecPoint = EC_KEY_get0_public_key(ecKey);
-	    if (ecPoint == NULL) {
-		printf("Could not extract EC point from EC public key\n");
-		rc = TPM_RC_INTEGRITY;
-	    }
-	}
-	if (rc == 0) {   
-	    ecGroup = EC_KEY_get0_group(ecKey);
-	    if (ecGroup  == NULL) {
-		printf("Could not extract EC group from EC public key\n");
-		rc = TPM_RC_INTEGRITY;
-	    }
-	}
-	if (rc == 0) {   
-	    *modulusBytes = EC_POINT_point2oct(ecGroup, ecPoint,
-					       POINT_CONVERSION_UNCOMPRESSED,
-					       NULL, 0, NULL);
-	    rc = TSS_Malloc(modulusBin, *modulusBytes);	/* freed by caller */
+	rc = convertEcKeyToPublicKeyBin(modulusBytes,
+					modulusBin,	/* freed by caller */
+					ecKey);
 	}
 	if (rc == 0) {
-	    EC_POINT_point2oct(ecGroup, ecPoint,
-			       POINT_CONVERSION_UNCOMPRESSED,
-			       *modulusBin, *modulusBytes, NULL);
 	    if (print) TSS_PrintAll("Certificate public key:", *modulusBin, *modulusBytes);
 	}
-	/* use openssl to print the X509 certificate */
-#ifndef TPM_TSS_NOFILE
-	if (rc == 0) {
-	    if (print) X509_print_fp(stdout, ekCertificate);
-	}
-#endif
 	EC_KEY_free(ecKey);   		/* @3 */
     }
     EVP_PKEY_free(pkey);   		/* @2 */
     return rc;
 }
 
-/* processRoot() validates the certificate at ekCertIndex against the root CA certificate at
+/* convertPemToX509() converts an in-memory PEM format X509 certificate to an openssl X509
+   structure.
+
+*/
+
+uint32_t convertPemToX509(X509 **x509,		/* freed by caller */
+			  const char *pemCertificate)
+{
+    uint32_t rc = 0;
+
+    if (verbose) printf("convertPemToX509: pemCertificate\n%s\n", pemCertificate);  
+
+    BIO *bio = NULL;
+    /* create a BIO that uses an in-memory buffer */
+    if (rc == 0) {
+	bio = BIO_new(BIO_s_mem());		/* freed @1 */
+	if (bio == NULL) {
+	    printf("ERROR: convertPemToX509: BIO_new failed\n");  
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    /* write the PEM from memory to BIO */
+    int pemLength;
+    int writeLen = 0;
+    if (rc == 0) {
+	pemLength = strlen(pemCertificate);
+	writeLen = BIO_write(bio, pemCertificate, pemLength);
+	if (writeLen != pemLength) {
+	    printf("ERROR: convertPemToX509: BIO_write failed\n");  
+	    rc = TPM_RC_INTEGRITY;
+	}
+    }
+    /* convert the properly formatted PEM to X509 structure */
+    if (rc == 0) {
+	*x509 = PEM_read_bio_X509(bio, NULL, NULL, NULL);
+	if (*x509 == NULL) {
+	    printf("\tERROR: convertPemToX509: PEM_read_bio_X509 failed\n");
+	    rc = TPM_RC_INTEGRITY;
+	}
+    }
+    /* for debug */
+    if (rc == 0) {
+	if (verbose) X509_print_fp(stdout, *x509);
+    }
+    if (bio != NULL) {
+	BIO_free(bio);			/* @1 */
+    }
+    return rc;
+}
+
+
+/* processRoot() validates the certificate at ekCertIndex against the root CA certificates at
    rootFilename.
  */
 
@@ -798,67 +998,22 @@ TPM_RC processRoot(TSS_CONTEXT *tssContext,
 		   int print)
 {
     TPM_RC			rc = 0;
-    unsigned int		i;
     X509 			*ekCertificate = NULL;		/* freed @1 */
-    X509_STORE 			*caStore = NULL;		/* freed @3 */
-    X509 			*caCert[MAX_ROOTS];		/* freed @4 */
-    X509_STORE_CTX 		*verifyCtx = NULL;		/* freed @5 */
 
-    /* for free */
-    for (i = 0 ; i < rootFileCount ; i++) {
-	caCert[i] = NULL;
-    }
     /* read the EK X509 certificate from NV */
     if (rc == 0) {
 	rc = getIndexX509Certificate(tssContext,
 				     &ekCertificate,	/* freed @1 */
 				     ekCertIndex);
     }
-    /* get the root CA certificate chain */
     if (rc == 0) {
-	rc = getCaStore(&caStore,			/* freed @3 */
-			caCert,				/* freed @4 */
-			rootFilename,
-			rootFileCount);
-    }
-    /* create the certificate verify context */
-    if (rc == 0) {
-	verifyCtx = X509_STORE_CTX_new();
-	if (verifyCtx == NULL) {
-	    printf("processRoot: X509_STORE_CTX_new failed\n");  
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
-    }
-    /* add the root certificate store and EK certificate to be verified to the verify context */
-    if (rc == 0) {
-	int irc = X509_STORE_CTX_init(verifyCtx, caStore, ekCertificate, NULL);
-	if (irc != 1) {
-	    printf("processRoot: Error in X509_STORE_CTX_init initializing verify context\n");  
-	    rc = TSS_RC_RSA_SIGNATURE;
-	}	    
-    }
-    /* walk the certificate chain */
-    if (rc == 0) {
-	int irc = X509_verify_cert(verifyCtx);
-	if (irc != 1) {
-	    printf("processRoot: Error in X509_verify_cert verifying certificate\n");  
-	    rc = TSS_RC_RSA_SIGNATURE;
-	}
-	else {
-	    if (print) printf("EK certificate verified against the root\n");
-	}
+	rc = verifyCertificate(ekCertificate,
+			       rootFilename,
+			       rootFileCount,
+			       print);
     }
     if (ekCertificate != NULL) {
 	X509_free(ekCertificate);   	/* @1 */
-    }
-    if (caStore != NULL) {
-	X509_STORE_free(caStore);	/* @3 */
-    }
-    for (i = 0 ; i < rootFileCount ; i++) {
-	X509_free(caCert[i]);	   	/* @4 */
-    }
-    if (verifyCtx != NULL) {
-	X509_STORE_CTX_free(verifyCtx);	/* @5 */
     }
     return rc;
 }

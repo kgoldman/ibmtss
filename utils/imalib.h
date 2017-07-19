@@ -3,7 +3,7 @@
 /*			     	IMA Routines					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: imalib.h 963 2017-03-15 20:37:25Z kgoldman $			*/
+/*            $Id: imalib.h 1020 2017-06-09 18:46:45Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -131,38 +131,46 @@ typedef struct ImaTemplateData {
     uint8_t signature[256];	/* FIXME need verification */
 } ImaTemplateData;
 
-void IMA_Event_Init(ImaEvent *imaEvent);
-void IMA_Event_Free(ImaEvent *imaEvent);
-void IMA_Event_Trace(ImaEvent *imaEvent, int traceTemplate);
-void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
-			    unsigned int nameInt);
-uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,
-			    int *endOfFile,
-			    FILE *infile,
-			    int littleEndian);
-uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,
-			      size_t *length,
-			      uint8_t **buffer,
-			      int *endOfBuffer,
-			      int littleEndian,
-			      int getTemplate);
-uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
-				     ImaEvent *imaEvent,
-				     int littleEndian);
-uint32_t IMA_Event_Write(ImaEvent *imaEvent,
-		    FILE *outFile);
-uint32_t IMA_Extend(TPMT_HA *imapcr,
-		    ImaEvent *imaEvent,
-		    TPMI_ALG_HASH hashAlg);
-uint32_t IMA_VerifyImaDigest(uint32_t *badEvent,
-			     ImaEvent *imaEvent,
-			     int eventNum);
-TPM_RC ImaEvent_Marshal(ImaEvent *source,
-			uint16_t *written, uint8_t **buffer, int32_t *size);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    void IMA_Event_Init(ImaEvent *imaEvent);
+    void IMA_Event_Free(ImaEvent *imaEvent);
+    void IMA_Event_Trace(ImaEvent *imaEvent, int traceTemplate);
+    void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
+				unsigned int nameInt);
+    uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,
+				int *endOfFile,
+				FILE *infile,
+				int littleEndian);
+    uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,
+				  size_t *length,
+				  uint8_t **buffer,
+				  int *endOfBuffer,
+				  int littleEndian,
+				  int getTemplate);
+    uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
+					 ImaEvent *imaEvent,
+					 int littleEndian);
+    uint32_t IMA_Event_Write(ImaEvent *imaEvent,
+			     FILE *outFile);
+    uint32_t IMA_Extend(TPMT_HA *imapcr,
+			ImaEvent *imaEvent,
+			TPMI_ALG_HASH hashAlg);
+    uint32_t IMA_VerifyImaDigest(uint32_t *badEvent,
+				 ImaEvent *imaEvent,
+				 int eventNum);
+    TPM_RC ImaEvent_Marshal(ImaEvent *source,
+			    uint16_t *written, uint8_t **buffer, int32_t *size);
 
 #if 0
-uint32_t IMA_Event_ToString(char **eventString,
-			    ImaEvent *imaEvent);
-
+    uint32_t IMA_Event_ToString(char **eventString,
+				ImaEvent *imaEvent);
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

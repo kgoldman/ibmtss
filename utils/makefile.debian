@@ -1,11 +1,11 @@
 ################################################################################
 #										#
-#		Linux TPM2 Utilities Makefile - for Fedora source RPM ONLY!	#
+#		Linux TPM2 Utilities Makefile - for Debian source RPM ONLY!	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.fedora 1034 2017-06-30 20:49:51Z kgoldman $		#
+#	      $Id: makefile.debian 1045 2017-07-17 19:36:32Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2014, 2017					#
+# (c) Copyright IBM Corporation 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -38,32 +38,9 @@
 #										#
 #################################################################################
 
-# The Fedora source RPM spec file uses 'makefile.fedora' to
-# accommodate Fedora-specific build requirements.  If you want to
-# build packages exactly as they are built by rpmbuild, use
-# 'makefile.fedora.'  If you are building directly from the source
-# tree, use 'makefile.'
-
-# 1) This builds a versioned shared library (libtss.so.n.n) as opposed
-# to the unversioned one (libtss.so) in 'makefile'. The versioned
-# shared lib will be available on Fedora for dynamic linking.
-
-# 2) A field called 'soname' (named: libtss.so.n) is placed/built inside
-# the libtss.so.n.n for dynamic linking.  (Done via gcc flag:
-# -Wl,-soname,libtss.so.n ). soname was made symbolic link to the
-# versioned shared lib (libtss.so.n.n)
-
-# 3) the libtss.so was made the symbolic link to the libtss.so.n, so
-# that an API can just dynamically link to the library with -ltss
-
-# Now, we build executables by linking to the unversioned shared
-# library, which is linked to libtss.so.0 that links to libtss.so.0.1.
-
-# At run-time, the dynamic linker will check for the soname
-# (libtss.so.0) field instead of the filename (libtss.so.0.1). It can
-# point to a version of the library which is different from the version
-# against which linking was performed.  It'll link against the correct
-# object.
+# The Debian source RPM spec file uses 'makefile.debian' to
+# accommodate Fedora-specific build requirements.  If you are building
+# directly from the source tree, use 'makefile.'
 
 # C compiler
 
@@ -117,7 +94,7 @@ LNFLAGS += 	-DTPM_POSIX		\
 LNLFLAGS += -shared -Wl,-z,now
 
 # This is an alternative to using the bfd linker on Ubuntu
-# LNLLIBS += -lcrypto
+LNLLIBS += -lcrypto
 
 # link - for applications, TSS path, TSS and OpenSSl libraries
 
@@ -138,7 +115,13 @@ LIBTSSSONAME=libtss.so.0
 
 # symbolic link to the versioned shared library
 # this allows linking to the shared library with '-ltss' 
-LIBTSS=libtss.so
+
+os := $(shell uname -o)
+ifeq ($(os),Cygwin)
+  LIBTSS=libtss.dll
+else
+  LIBTSS=libtss.so
+endif
 
 # executable extension
 
@@ -146,7 +129,6 @@ EXE =
 
 # 
 
-ALL= 
 TSS_HEADERS=
 
 # default TSS library

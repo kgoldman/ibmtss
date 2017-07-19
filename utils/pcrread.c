@@ -3,7 +3,7 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: pcrread.c 1043 2017-07-17 16:24:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -66,7 +66,9 @@ int main(int argc, char *argv[])
     TPMI_DH_PCR 		pcrHandle = IMPLEMENTATION_PCR;
     const char 			*datafilename = NULL;
     int				noSpace = FALSE;
-  
+    TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
+    unsigned int		sessionAttributes0 = 0;
+   
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     
@@ -128,6 +130,28 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-ns") == 0) {
 	    noSpace = TRUE;
 	}
+	else if (strcmp(argv[i],"-se0") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle0);
+	    }
+	    else {
+		printf("Missing parameter for -se0\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes0);
+		if (sessionAttributes0 > 0xff) {
+		    printf("Out of range session attributes for -se0\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se0\n");
+		printUsage();
+	    }
+	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
@@ -173,6 +197,7 @@ int main(int argc, char *argv[])
 			 (COMMAND_PARAMETERS *)&in,
 			 NULL,
 			 TPM_CC_PCR_Read,
+			 sessionHandle0, NULL, sessionAttributes0,
 			 TPM_RH_NULL, NULL, 0);
     }
     {
@@ -190,13 +215,19 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	/* machine readable format, first hash algorithm */
 	if (noSpace) {
-	    uint32_t bp;
-	    for (bp = 0 ; bp < out.pcrValues.digests[0].t.size ; bp++) {
-		printf("%02x", out.pcrValues.digests[0].t.buffer[bp]);
+	    /* TPM can return count 0 if the requested algorithm is not allocated */
+	    if (out.pcrValues.count != 0) {
+		uint32_t bp;
+		for (bp = 0 ; bp < out.pcrValues.digests[0].t.size ; bp++) {
+		    printf("%02x", out.pcrValues.digests[0].t.buffer[bp]);
+		}
+		printf("\n");
 	    }
-	    printf("\n");
+	    else {
+		printf("count %u\n", out.pcrValues.count);
+	    }
 	}
-	/* human readble format, all hash algorithms */
+	/* human readable format, all hash algorithms */
 	else {
 	    printPcrRead(&out);
 	    if (verbose) printf("pcrread: success\n");
@@ -240,5 +271,8 @@ static void printUsage(void)
     printf("\t\t(default do not save)\n");
     printf("\t[-ns no space, no text, no newlines, first algorithm]\n");
     printf("\t\tUsed for scripting policy construction\n");
+    printf("\t-se0 session handle / attributes\n");
+    printf("\t\t01 continue\n");
+    printf("\t\t80 audit\n");
     exit(1);	
 }

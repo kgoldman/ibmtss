@@ -3,7 +3,7 @@
 /*			     TPM2 Response Code Printer				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.c 989 2017-04-18 20:50:04Z kgoldman $	*/
+/*	      $Id: tssresponsecode.c 1002 2017-05-04 20:33:30Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -250,6 +250,7 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_RSA_SIGNATURE, "TSS_RC_RSA_SIGNATURE - RSA signature is bad"},
     {TSS_RC_EC_SIGNATURE, "TSS_RC_EC_SIGNATURE - EC signature is bad"},
     {TSS_RC_EC_KEY_CONVERT, "TSS_RC_EC_KEY_CONVERT - EC key conversion failed"},
+    {TSS_RC_X509_ERROR, "TSS_RC_X509_ERROR - X509 parse error"},
     {TSS_RC_BAD_SIGNATURE_ALGORITHM, "TSS_RC_BAD_SIGNATURE_ALGORITHM - Unimplemented signature algorithm"},
     {TSS_RC_COMMAND_UNIMPLEMENTED, "TSS_RC_COMMAND_UNIMPLEMENTED - Unimplemented command"},
     {TSS_RC_IN_PARAMETER, "TSS_RC_IN_PARAMETER - Bad in parameter to TSS_Execute"},

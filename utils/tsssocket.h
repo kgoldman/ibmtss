@@ -3,7 +3,7 @@
 /*		Socket Transmit and Receive Utilities  				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsssocket.h 684 2016-07-18 21:22:01Z kgoldman $		*/
+/*	      $Id: tsssocket.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -46,12 +46,20 @@
 
 #include <tss2/tss.h>
 
-TPM_RC TSS_Socket_TransmitPlatform(TSS_CONTEXT *tssContext,
-				   uint32_t command, const char *message);
-TPM_RC TSS_Socket_Transmit(TSS_CONTEXT *tssContext,
-			   uint8_t *responseBuffer, uint32_t *read,
-			   const uint8_t *commandBuffer, uint32_t written,
-			   const char *message);
-TPM_RC TSS_Socket_Close(TSS_CONTEXT *tssContext);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    TPM_RC TSS_Socket_TransmitPlatform(TSS_CONTEXT *tssContext,
+				       uint32_t command, const char *message);
+    TPM_RC TSS_Socket_Transmit(TSS_CONTEXT *tssContext,
+			       uint8_t *responseBuffer, uint32_t *read,
+			       const uint8_t *commandBuffer, uint32_t written,
+			       const char *message);
+    TPM_RC TSS_Socket_Close(TSS_CONTEXT *tssContext);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

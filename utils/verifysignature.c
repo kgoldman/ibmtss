@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 994 2017-04-19 17:27:10Z kgoldman $	*/
+/*	      $Id: verifysignature.c 1002 2017-05-04 20:33:30Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -253,11 +253,13 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	if (!raw) {
-	    int32_t ilength = length;
+	    int32_t ilength = length;	/* values that can move during the unmarshal */
 	    buffer1 = buffer;
+	    /* input is TPMT_SIGNATURE */
 	    rc = TPMT_SIGNATURE_Unmarshal(&in.signature, &buffer1, &ilength, NO);
 	}
 	else {
+	    /* input is raw bytes */
 	    rc = rawUnmarshal(&in.signature, algPublic, halg, buffer, length);
 	}
     }
@@ -322,71 +324,24 @@ int main(int argc, char *argv[])
    It handles RSA and ECC P256.
 */
 
-TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,
+TPM_RC rawUnmarshal(TPMT_SIGNATURE *tSignature,
 		    TPMI_ALG_PUBLIC algPublic,
 		    TPMI_ALG_HASH halg,
-		    uint8_t *buffer, size_t length)
+		    uint8_t *signatureBin, size_t signatureBinLen)
 {
     TPM_RC			rc = 0;
-    const BIGNUM *pr;
-    const BIGNUM *ps;
-    
     if (algPublic == TPM_ALG_RSA) {
-	target->sigAlg = TPM_ALG_RSASSA;
-	target->signature.rsassa.hash = halg;
-	target->signature.rsassa.sig.t.size = length;
-	memcpy(&target->signature.rsassa.sig.t.buffer, buffer, length);
+	rc = convertRsaBinToTSignature(tSignature,
+				       halg,
+				       signatureBin,
+				       signatureBinLen);
     }
     /* TPM_ALG_ECC, the raw signature is DER encoded R and S elements */
     else {
-	ECDSA_SIG* ecSig = NULL;
-	int rBytes;
-	int sBytes;
-	if (rc == 0) {
-	    target->sigAlg = TPM_ALG_ECDSA;
-	    target->signature.ecdsa.hash = halg;
-	}
-	if (rc == 0) {
-	    const unsigned char *tmpPtr = buffer;	/* because pointer moves */
-	    /* convert DER to ECDSA_SIG */
-	    ecSig = d2i_ECDSA_SIG(NULL, &tmpPtr, length);	/* freed @1 */
-	}
-	/* check that the signature size agrees with the currently hard coded P256 curve */
-	if (rc == 0) {
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-	    pr = ecSig->r;
-	    ps = ecSig->s;
-#else
-	    ECDSA_SIG_get0(ecSig, &pr, &ps);
-#endif
-	    rBytes = BN_num_bytes(pr);
-	    sBytes = BN_num_bytes(ps);
-	    if ((rBytes > 32) ||
-		(sBytes > 32)) {
-		printf("rawUnmarshal: signature rBytes %u or sBytes %u greater than 32\n",
-		       rBytes, sBytes);
-		rc = TPM_RC_VALUE;
-	    }
-	}
-	/* extract the raw signature bytes from the openssl structure BIGNUMs */
-	if (rc == 0) {
-	    target->signature.ecdsa.signatureR.t.size = rBytes;
-	    target->signature.ecdsa.signatureS.t.size = sBytes;
-
-	    BN_bn2bin(pr, (unsigned char *)&target->signature.ecdsa.signatureR.t.buffer);
-	    BN_bn2bin(ps, (unsigned char *)&target->signature.ecdsa.signatureS.t.buffer);
-	    if (verbose) {
-		TSS_PrintAll("rawUnmarshal: signature R",
-			     target->signature.ecdsa.signatureR.t.buffer,
-			     target->signature.ecdsa.signatureR.t.size);		
-		TSS_PrintAll("rawUnmarshal: signature S",
-			     target->signature.ecdsa.signatureS.t.buffer,
-			     target->signature.ecdsa.signatureS.t.size);		
-	    }
-	}
-	if (ecSig != NULL) {
-	    ECDSA_SIG_free(ecSig);		/* @1 */
-	}
+	rc = convertEcBinToTSignature(tSignature,
+				      halg,
+				      signatureBin,
+				      signatureBinLen);
     }
     return rc;
 }

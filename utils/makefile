@@ -3,9 +3,9 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 990 2017-04-19 13:31:24Z kgoldman $			#
+#	      $Id: makefile 1034 2017-06-30 20:49:51Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2016						#
+# (c) Copyright IBM Corporation 2014, 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -44,28 +44,36 @@ CC = /usr/bin/gcc
 
 # compile - common flags for TSS library and applications
 
-CCFLAGS = 	-DTPM_POSIX
+CCFLAGS += 	-DTPM_POSIX
 
 # example of pointing to a locally built openssl 1.1
 # CCFLAGS += 	-I/home/kgold/openssl-1.1.0c/include
 
 # compile - for TSS library
 
-CCLFLAGS = 	-I. -DTPM_TSS
+# include the hardening flag PIC needed for compiling for dynamic
+# linking
 
-# to compile out printf's.  Regression test will fail because it tries to print a structure
-# -DTPM_NO_PRINT
+CCLFLAGS += 	-I. -DTPM_TSS	\
+		-fPIC
+
+# to compile out printf's.  Regression test will fail because it tries
+# to print a structure -DTPM_NO_PRINT
 
 # example of changing the default interface type
 #	-DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
 
 # compile - for applications
 
-CCAFLAGS = 	-I.
+# include the hardening flag PIE needed for compiling for
+# static linking
+
+CCAFLAGS += 	-I.	\
+		-fPIE
 
 # link - common flags flags TSS library and applications
 
-LNFLAGS = 	-DTPM_POSIX		\
+LNFLAGS += 	-DTPM_POSIX		\
 		-L.
 
 # This seems to be required on some Ubuntu distros due to an issue with the gold linker
@@ -78,18 +86,38 @@ LNFLAGS = 	-DTPM_POSIX		\
 
 # link - for TSS library
 
-#	This is an alternative to using the bfd linker on Ubuntu
-LNLFLAGS = -lcrypto
+# hardening flags for linking shared objects
+LNLFLAGS += -shared -Wl,-z,now
+
+# This is an alternative to using the bfd linker on Ubuntu
+LNLLIBS += -lcrypto
 
 # link - for applications, TSS path, TSS and OpenSSl libraries
 
-LNAFLAGS = -Wl,-rpath,.
+# hardening flags for linking executables
+LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 
-LNALIBS =  -ltss -lcrypto
+LNALIBS +=  -ltss -lcrypto
 
 # shared library
 
-LIBTSS=libtss.so
+# versioned shared library
+LIBTSSVERSIONED=libtss.so.0.1
+
+# soname field of the shared library
+# which will be made symbolic link to the versioned shared library
+# this is used to provide version backward-compatibility information
+LIBTSSSONAME=libtss.so.0
+
+# symbolic link to the versioned shared library
+# this allows linking to the shared library with '-ltss' 
+
+os := $(shell uname -o)
+ifeq ($(os),Cygwin)
+  LIBTSS=libtss.dll
+else
+  LIBTSS=libtss.so
+endif
 
 # executable extension
 
@@ -97,8 +125,7 @@ EXE =
 
 # 
 
-ALL =
-TSS_HEADERS = tss2/tssfile.h
+TSS_HEADERS=
 
 # default TSS library
 
@@ -117,50 +144,54 @@ all:	$(ALL)
 # TSS shared library source
 
 tss.o: 		$(TSS_HEADERS) tss.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tss.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tss.c
 tssproperties.o: $(TSS_HEADERS) tssproperties.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssproperties.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssproperties.c
 tssauth.o: 	$(TSS_HEADERS) tssauth.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssauth.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth.c
 tssmarshal.o: 	$(TSS_HEADERS) tssmarshal.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssmarshal.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssmarshal.c
 tsscryptoh.o: 	$(TSS_HEADERS) tsscryptoh.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsscryptoh.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscryptoh.c
 tsscrypto.o: 	$(TSS_HEADERS) tsscrypto.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsscrypto.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsscrypto.c
 tssutils.o: 	$(TSS_HEADERS) tssutils.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssutils.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssutils.c
 tssfile.o: 	$(TSS_HEADERS) tssfile.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssfile.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssfile.c
 tsssocket.o: 	$(TSS_HEADERS) tsssocket.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsssocket.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsssocket.c
 tssdev.o: 	$(TSS_HEADERS) tssdev.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssdev.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssdev.c
 tsstransmit.o: 	$(TSS_HEADERS) tsstransmit.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tsstransmit.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tsstransmit.c
 tssresponsecode.o: $(TSS_HEADERS) tssresponsecode.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssresponsecode.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssresponsecode.c
 tssccattributes.o: $(TSS_HEADERS) tssccattributes.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssccattributes.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssccattributes.c
 fail.o: 	$(TSS_HEADERS) fail.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC fail.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) fail.c
 tssprint.o: 	$(TSS_HEADERS) tssprint.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssprint.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssprint.c
 Unmarshal.o: 	$(TSS_HEADERS) Unmarshal.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC Unmarshal.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) Unmarshal.c
 Commands.o: 	$(TSS_HEADERS) Commands.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC Commands.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) Commands.c
 CommandAttributeData.o: 	$(TSS_HEADERS) CommandAttributeData.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC CommandAttributeData.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) CommandAttributeData.c
 ntc2lib.o:	$(TSS_HEADERS) ntc2lib.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC ntc2lib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) ntc2lib.c
 tssntc.o:	$(TSS_HEADERS) tssntc.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssntc.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssntc.c
 
 # TSS shared library build
 
 $(LIBTSS): 	$(TSS_OBJS)
-		$(CC) $(LNFLAGS) $(LNLFLAGS) -shared -o $(LIBTSS) $(TSS_OBJS)
+		$(CC) $(LNFLAGS) $(LNLFLAGS) -Wl,-soname,$(LIBTSSSONAME) -o $(LIBTSSVERSIONED) $(TSS_OBJS) $(LNLLIBS)
+		rm -f $(LIBTSSSONAME)
+		ln -sf $(LIBTSSVERSIONED) $(LIBTSSSONAME)
+		rm -f $(LIBTSS)
+		ln -sf $(LIBTSSSONAME) $(LIBTSS)
 
 .PHONY:		clean
 .PRECIOUS:	%.o
@@ -168,6 +199,8 @@ $(LIBTSS): 	$(TSS_OBJS)
 clean:		
 		rm -f *.o  *~ 	\
 		h*.bin		\
+		rm -f $(LIBTSSSONAME)	\
+		rm -f $(LIBTSSVERSIONED) \
 		$(ALL)
 
 # applications
@@ -376,18 +409,14 @@ writeapp:		tss2/tss.h writeapp.o ekutils.o cryptoutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o ekutils.o cryptoutils.o $(LNALIBS) -o writeapp
 timepacket:		tss2/tss.h timepacket.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) timepacket.o $(LNALIBS) -o timepacket
-createek:		createek.o ekutils.o $(LIBTSS)
+createek:		createek.o cryptoutils.o ekutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createek.o cryptoutils.o ekutils.o $(LNALIBS) -o createek
-
 ntc2getconfig:		ntc2getconfig.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2getconfig.o $(LNALIBS) -o ntc2getconfig
 ntc2preconfig:		ntc2preconfig.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2preconfig.o $(LNALIBS) -o ntc2preconfig
 ntc2lockconfig:		ntc2lockconfig.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2lockconfig.o $(LNALIBS) -o ntc2lockconfig
-
-t:		t.o
-		$(CC) $(LNFLAGS) $(LNAFLAGS) t.o $(LNALIBS) -o t
 
 # for applications, not for TSS library
 

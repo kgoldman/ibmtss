@@ -3,7 +3,7 @@
 /*			    HierarchyChangeAuth	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hierarchychangeauth.c 987 2017-04-17 18:27:09Z kgoldman $	*/
+/*	      $Id: hierarchychangeauth.c 1026 2017-06-19 14:45:07Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -257,15 +257,10 @@ int main(int argc, char *argv[])
 					     &length,
 					     newPasswordFilename);
 	    }
+	    /* convert password file string to TPM2B */
 	    if (rc == 0) {
-		if (length > sizeof(TPMU_HA)) {
-		    printf("New password too long %u\n", (uint32_t)length);
-		    rc = TSS_RC_INSUFFICIENT_BUFFER;
-		}
-	    }
-	    if (rc == 0) {
-		in.newAuth.t.size = length;
-		memcpy(in.newAuth.t.buffer, buffer, length);
+		rc = TSS_TPM2B_StringCopy(&in.newAuth.b,
+					  (const char *)buffer, sizeof(TPMU_HA));
 	    }
 	    free(buffer);
 	    buffer = NULL;
@@ -350,7 +345,7 @@ static void printUsage(void)
     printf("Runs TPM2_HierarchyChangeAuth\n");
     printf("\n");
     printf("\t-hi hierarchy (l, e, o, p)\n");
-    printf("\t\te endorsement, o owner, p platform, n null\n");
+    printf("\t\tl lockout, e endorsement, o owner, p platform\n");
     printf("\t-pwdn new authorization password (default empty)\n");
     printf("\t-pwdni new authorization password file name (default empty)\n");
     printf("\t-pwda authorization password (default empty)\n");

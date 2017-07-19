@@ -3,9 +3,9 @@
 /*			TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssfile.h 778 2016-10-19 15:21:05Z kgoldman $		*/
+/*	      $Id: tssfile.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -58,33 +58,33 @@
 extern "C" {
 #endif
 
-LIB_EXPORT
-int TSS_File_Open(FILE **file,
-		  const char *filename,
-		  const char* mode);
-LIB_EXPORT
-TPM_RC TSS_File_ReadBinaryFile(unsigned char **data,
-			       size_t *length,
-			       const char *filename); 
-LIB_EXPORT 
-TPM_RC TSS_File_WriteBinaryFile(const unsigned char *data,
-				size_t length,
-				const char *filename); 
+    LIB_EXPORT
+    int TSS_File_Open(FILE **file,
+		      const char *filename,
+		      const char* mode);
+    LIB_EXPORT
+    TPM_RC TSS_File_ReadBinaryFile(unsigned char **data,
+				   size_t *length,
+				   const char *filename); 
+    LIB_EXPORT 
+    TPM_RC TSS_File_WriteBinaryFile(const unsigned char *data,
+				    size_t length,
+				    const char *filename); 
     
-LIB_EXPORT 
-TPM_RC TSS_File_ReadStructure(void 			*structure,
-			      UnmarshalFunction_t 	unmarshalFunction,
-			      const char 		*filename);
-LIB_EXPORT 
-TPM_RC TSS_File_WriteStructure(void 			*structure,
-			       MarshalFunction_t 	marshalFunction,
-			       const char 		*filename);
-LIB_EXPORT 
-TPM_RC TSS_File_Read2B(TPM2B 		*tpm2b,
-		       uint16_t 	targetSize,
-		       const char 	*filename);
-LIB_EXPORT 
-TPM_RC TSS_File_DeleteFile(const char *filename); 
+    LIB_EXPORT 
+    TPM_RC TSS_File_ReadStructure(void 			*structure,
+				  UnmarshalFunction_t 	unmarshalFunction,
+				  const char 		*filename);
+    LIB_EXPORT 
+    TPM_RC TSS_File_WriteStructure(void 			*structure,
+				   MarshalFunction_t 	marshalFunction,
+				   const char 		*filename);
+    LIB_EXPORT 
+    TPM_RC TSS_File_Read2B(TPM2B 		*tpm2b,
+			   uint16_t 	targetSize,
+			   const char 	*filename);
+    LIB_EXPORT 
+    TPM_RC TSS_File_DeleteFile(const char *filename); 
     
 #ifdef __cplusplus
 }

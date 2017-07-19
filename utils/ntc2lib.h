@@ -3,7 +3,7 @@
 /*	     	TPM2 Novoton Proprietary Command Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2lib.h 927 2017-01-26 14:42:59Z kgoldman $		*/
+/*	      $Id: ntc2lib.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -117,22 +117,29 @@ typedef struct {
 
 #define RC_NTC2_PreConfig_preConfig (TPM_RC_P + TPM_RC_1)
 
-TPM_RC
-NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
-TPM_RC
-TSS_NTC2_PreConfig_In_Marshal(NTC2_PreConfig_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-TPM_RC
-NTC2_GetConfig_Out_Unmarshal(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
-UINT16
-NTC2_GetConfig_Out_Marshal(NTC2_GetConfig_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+    TPM_RC
+    NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+    TPM_RC
+    TSS_NTC2_PreConfig_In_Marshal(NTC2_PreConfig_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 
-TPM_RC
-NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, INT32 *size);
-TPM_RC
-TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, UINT16 *written, BYTE **buffer, INT32 *size);
-UINT16
-NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, BYTE **buffer, INT32 *size);
+    TPM_RC
+    NTC2_GetConfig_Out_Unmarshal(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
+    UINT16
+    NTC2_GetConfig_Out_Marshal(NTC2_GetConfig_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
 
+    TPM_RC
+    NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, INT32 *size);
+    TPM_RC
+    TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, UINT16 *written, BYTE **buffer, INT32 *size);
+    UINT16
+    NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, BYTE **buffer, INT32 *size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

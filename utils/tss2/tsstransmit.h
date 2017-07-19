@@ -1,11 +1,11 @@
 /********************************************************************************/
 /*										*/
-/*			   TSS TCTI		   				*/
+/*			   TSS Transmit		   				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstransmit.h 683 2016-07-15 20:53:46Z kgoldman $		*/
+/*	      $Id: tsstransmit.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -54,16 +54,23 @@
 #define TPM_SEND_COMMAND            8
 #define TPM_SESSION_END             20
 
-LIB_EXPORT TPM_RC
-TSS_TransmitPlatform(TSS_CONTEXT *tssContext,
-		     uint32_t command, const char *message);
-LIB_EXPORT TPM_RC
-TSS_Transmit(TSS_CONTEXT *tssContext,
-	     uint8_t *responseBuffer, uint32_t *read,
-	     const uint8_t *commandBuffer, uint32_t written,
-	     const char *message);
+#ifdef __cplusplus
+extern "C" {
+#endif
+    LIB_EXPORT TPM_RC
+    TSS_TransmitPlatform(TSS_CONTEXT *tssContext,
+			 uint32_t command, const char *message);
+    LIB_EXPORT TPM_RC
+    TSS_Transmit(TSS_CONTEXT *tssContext,
+		 uint8_t *responseBuffer, uint32_t *read,
+		 const uint8_t *commandBuffer, uint32_t written,
+		 const char *message);
 
-LIB_EXPORT TPM_RC
-TSS_Close(TSS_CONTEXT *tssContext);
+    LIB_EXPORT TPM_RC
+    TSS_Close(TSS_CONTEXT *tssContext);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

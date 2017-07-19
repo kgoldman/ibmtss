@@ -3,7 +3,7 @@
 /*			     IWG EK Index Parsing				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createek.c 982 2017-04-13 13:00:10Z kgoldman $		*/
+/*	      $Id: createek.c 1005 2017-05-05 16:18:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -231,12 +231,8 @@ int main(int argc, char *argv[])
 	if (rc == 0) {
 	    rc = getRootCertificateFilenames(rootFilename,	/* freed @4 */
 					     &rootFileCount,
-					     listFilename);
-	}
-	if (rc == 0) {
-	    for (ui = 0 ; ui < rootFileCount ; ui++) {
-		if (verbose) printf("Root file name %u\n%s\n", ui , rootFilename[ui]);
-	    }
+					     listFilename,
+					     verbose);
 	}
 	if (rc == 0) {
 	    rc = processRoot(tssContext,

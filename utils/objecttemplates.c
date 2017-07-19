@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 987 2017-04-17 18:27:09Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 1044 2017-07-17 19:05:46Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -69,7 +69,9 @@
 */
 
 TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
-			  TPMA_OBJECT objectAttributes,	/* default, can be overridden here */
+			  TPMA_OBJECT addObjectAttributes,	/* add default, can be overridden
+								   here */
+			  TPMA_OBJECT deleteObjectAttributes,
 			  int keyType,			/* see above */
 			  TPMI_ALG_PUBLIC algPublic,	/* RSA or ECC */	
 			  TPMI_ECC_CURVE curveID,	/* for ECC */
@@ -80,8 +82,8 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
     TPM_RC			rc = 0;
 
     if (rc == 0) {
-	publicArea->objectAttributes = objectAttributes;
-	
+	publicArea->objectAttributes = addObjectAttributes;
+	publicArea->objectAttributes.val &= ~deleteObjectAttributes.val;
 	/* Table 185 - TPM2B_PUBLIC inPublic */
 	/* Table 184 - TPMT_PUBLIC publicArea */
 	publicArea->type = algPublic;		/* RSA or ECC */
@@ -122,6 +124,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	    publicArea->objectAttributes.val &= ~TPMA_OBJECT_RESTRICTED;
 	    break;
 	}
+	publicArea->objectAttributes.val &= ~deleteObjectAttributes.val;
     }
     if (rc == 0) {
 	/* Table 72 -  TPM2B_DIGEST authPolicy */
@@ -271,7 +274,9 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
  */
 
 TPM_RC symmetricCipherTemplate(TPMT_PUBLIC *publicArea,		/* output */
-			       TPMA_OBJECT objectAttributes,	/* default, can be overridden here */
+			       TPMA_OBJECT addObjectAttributes,	/* add default, can be overridden
+								   here */
+			       TPMA_OBJECT deleteObjectAttributes,
 			       TPMI_ALG_HASH nalg,		/* Name algorithm */
 			       int rev116,		/* TPM rev 116 compatibility, sets SIGN */
 			       const char *policyFilename)	/* binary policy, NULL means empty */
@@ -279,7 +284,7 @@ TPM_RC symmetricCipherTemplate(TPMT_PUBLIC *publicArea,		/* output */
     TPM_RC rc = 0;
     
     if (rc == 0) {
-	publicArea->objectAttributes = objectAttributes;
+	publicArea->objectAttributes = addObjectAttributes;
 
 	/* Table 185 - TPM2B_PUBLIC inPublic */
 	/* Table 184 - TPMT_PUBLIC publicArea */
@@ -296,6 +301,7 @@ TPM_RC symmetricCipherTemplate(TPMT_PUBLIC *publicArea,		/* output */
 	publicArea->objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
 	publicArea->objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
 	publicArea->objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
+	publicArea->objectAttributes.val &= ~deleteObjectAttributes.val;
 	/* Table 72 -  TPM2B_DIGEST authPolicy */
 	/* policy set separately */
 	/* Table 182 - Definition of TPMU_PUBLIC_PARMS parameters */
@@ -327,7 +333,9 @@ TPM_RC symmetricCipherTemplate(TPMT_PUBLIC *publicArea,		/* output */
 */
 
 TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
-			       TPMA_OBJECT objectAttributes,	/* default, can be overridden here */
+			       TPMA_OBJECT addObjectAttributes,	/* add default, can be overridden
+								   here */
+			       TPMA_OBJECT deleteObjectAttributes,
 			       TPMI_ALG_HASH nalg,		/* Name algorithm */
 			       TPMI_ALG_HASH halg,		/* hash algorithm */
 			       const char *policyFilename)	/* binary policy, NULL means empty */
@@ -335,7 +343,7 @@ TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
     TPM_RC			rc = 0;
 
     if (rc == 0) {
-	publicArea->objectAttributes = objectAttributes;
+	publicArea->objectAttributes = addObjectAttributes;
 
 	/* Table 185 - TPM2B_PUBLIC inPublic */
 	/* Table 184 - TPMT_PUBLIC publicArea->*/
@@ -350,6 +358,7 @@ TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
 	publicArea->objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
 	publicArea->objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
 	publicArea->objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
+	publicArea->objectAttributes.val &= ~deleteObjectAttributes.val;
 	/* Table 72 -  TPM2B_DIGEST authPolicy */
 	/* policy set separately */
 	{
@@ -379,8 +388,9 @@ TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
 */
 
 TPM_RC derivationParentPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
-				      TPMA_OBJECT objectAttributes,	/* default, can be
+				      TPMA_OBJECT addObjectAttributes,	/* add default, can be
 									   overridden here */
+				      TPMA_OBJECT deleteObjectAttributes,
 				      TPMI_ALG_HASH nalg,		/* Name algorithm */
 				      TPMI_ALG_HASH halg,		/* hash algorithm */
 				      const char *policyFilename)	/* binary policy, NULL means
@@ -389,7 +399,7 @@ TPM_RC derivationParentPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
     TPM_RC			rc = 0;
 
     if (rc == 0) {
-	publicArea->objectAttributes = objectAttributes;
+	publicArea->objectAttributes = addObjectAttributes;
 
 	/* Table 185 - TPM2B_PUBLIC inPublic */
 	/* Table 184 - TPMT_PUBLIC publicArea->*/
@@ -407,6 +417,7 @@ TPM_RC derivationParentPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
 	publicArea->objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
 	publicArea->objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
 	publicArea->objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
+	publicArea->objectAttributes.val &= ~deleteObjectAttributes.val;
 	/* Table 72 -  TPM2B_DIGEST authPolicy */
 	/* policy set separately */
 	{
@@ -436,14 +447,16 @@ TPM_RC derivationParentPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
 */
 
 TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
-			TPMA_OBJECT objectAttributes,	/* default, can be overridden here */
+			TPMA_OBJECT addObjectAttributes,	/* add default, can be overridden
+								   here */
+			TPMA_OBJECT deleteObjectAttributes,
 			TPMI_ALG_HASH nalg,		/* Name algorithm */
 			const char *policyFilename)	/* binary policy, NULL means empty */
 {
     TPM_RC			rc = 0;
 
     if (rc == 0) {
-	publicArea->objectAttributes = objectAttributes;
+	publicArea->objectAttributes = addObjectAttributes;
 
 	/* Table 185 - TPM2B_PUBLIC inPublic */
 	/* Table 184 - TPMT_PUBLIC publicArea->*/
@@ -458,6 +471,7 @@ TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	publicArea->objectAttributes.val &= ~TPMA_OBJECT_SENSITIVEDATAORIGIN;
 	publicArea->objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
 	publicArea->objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
+	publicArea->objectAttributes.val &= ~deleteObjectAttributes.val;
 	/* Table 72 -  TPM2B_DIGEST authPolicy */
 	/* policy set separately */
 	{
@@ -477,15 +491,6 @@ TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
     }
     return rc;
 }
-
-TPM_RC keyECDAAPublicTemplate(TPMT_PUBLIC *publicArea,
-			      TPMA_OBJECT objectAttributes,
-			      int type,
-			      TPMI_ALG_PUBLIC algPublic,
-			      TPMI_ECC_CURVE curveID,       
-			      TPMI_ALG_HASH nalg,
-			      TPMI_ALG_HASH halg,
-			      const char *policyFilename);
 
 TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
 		 const char *policyFilename)
@@ -533,10 +538,13 @@ void printUsageTemplate(void)
     printf("\t\t-gp general purpose, not storage\n");
     printf("\n");
     printf("\t\t[-kt (can be specified more than once)]\n"
-	   "\t\t\tf fixedTPM\n"
-	   "\t\t\tp fixedParent\n");
+	   "\t\t\tf fixedTPM (default for primary keys and derivation parents)\n"
+	   "\t\t\tp fixedParent (default for primary keys and derivation parents)\n"
+	   "\t\t\tnf no fixedTPM (default for non-primary keys)\n"
+	   "\t\t\tnp no fixedParent (default for non-primary keys)\n");
     printf("\t\t[-da object subject to DA protection) (default no)]\n");
     printf("\t[-pol policy file (default empty)]\n");
+    printf("\t[-uwa userWithAuth attribute clear (default set)]\n");
     printf("\n");
     printf("\t[-nalg name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t[-halg scheme hash algorithm (sha1, sha256, sha384) (default sha256)]\n");

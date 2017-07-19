@@ -3,9 +3,9 @@
 /*			    NV ReadPublic					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadpublic.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: nvreadpublic.c 1042 2017-07-11 14:30:56Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -73,7 +73,13 @@ int main(int argc, char *argv[])
     TPMI_RH_NV_INDEX		nvIndex = 0;
     TPMI_ALG_HASH		nalg = TPM_ALG_SHA256;
     TPMI_ALG_HASH 		nameHashAlg;
-   
+    TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
+    unsigned int		sessionAttributes0 = 0;
+    TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
+    unsigned int		sessionAttributes1 = 0;
+    TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
+    unsigned int		sessionAttributes2 = 0;
+
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
@@ -110,6 +116,72 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-se0") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle0);
+	    }
+	    else {
+		printf("Missing parameter for -se0\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes0);
+		if (sessionAttributes0 > 0xff) {
+		    printf("Out of range session attributes for -se0\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se0\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-se1") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle1);
+	    }
+	    else {
+		printf("Missing parameter for -se1\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes1);
+		if (sessionAttributes1 > 0xff) {
+		    printf("Out of range session attributes for -se1\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se1\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-se2") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle2);
+	    }
+	    else {
+		printf("Missing parameter for -se2\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes2);
+		if (sessionAttributes2 > 0xff) {
+		    printf("Out of range session attributes for -se2\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se2\n");
+		printUsage();
+	    }
+	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
@@ -140,6 +212,9 @@ int main(int argc, char *argv[])
 			 (COMMAND_PARAMETERS *)&in,
 			 NULL,
 			 TPM_CC_NV_ReadPublic,
+			 sessionHandle0, NULL, sessionAttributes0,
+			 sessionHandle1, NULL, sessionAttributes1,
+			 sessionHandle2, NULL, sessionAttributes2,
 			 TPM_RH_NULL, NULL, 0);
     }
     {
@@ -213,5 +288,11 @@ static void printUsage(void)
     printf("\n");
     printf("\t-ha NV index handle\n");
     printf("\t[-nalg expected name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\n");
+    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
+    printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
+    printf("\t\t40 response encrypt\n");
+    printf("\t\t80 audit\n");
     exit(1);	
 }

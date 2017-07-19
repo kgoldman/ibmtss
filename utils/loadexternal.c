@@ -3,9 +3,9 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: loadexternal.c 1002 2017-05-04 20:33:30Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -65,32 +65,11 @@
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/Unmarshal_fp.h>
+#include "objecttemplates.h"
 #include "cryptoutils.h"
 #include "ekutils.h"
 
 static void printUsage(void);
-TPM_RC loadExternalTPM(LoadExternal_In 	*in,
-		       const char	*publicKeyFilename);
-TPM_RC loadExternalPEMRSA(LoadExternal_In 	*in,
-			  int			keyType,
-			  TPMI_ALG_HASH 	nalg,
-			  TPMI_ALG_HASH		halg,
-			  const char		*pemKeyFilename);
-TPM_RC loadExternalPEMECC(LoadExternal_In 	*in,
-			  int			keyType,
-			  TPMI_ALG_HASH 	nalg,
-			  TPMI_ALG_HASH		halg,
-			  const char		*pemKeyFilename);
-TPM_RC loadExternalDer(LoadExternal_In 	*in,
-		       int		keyType,
-		       TPMI_ALG_HASH 	nalg,
-		       TPMI_ALG_HASH	halg,
-		       const char	*derKeyFilename);
-
-/* object type */
-
-#define TYPE_ST		2
-#define TYPE_SI		5
 
 int verbose = FALSE;
 
@@ -332,35 +311,39 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
+	in.inPrivate.t.size = 0;	/* default - mark optional inPrivate not used */
 	/* TPM format key, output from create */
 	if (publicKeyFilename != NULL) {
-	    rc = loadExternalTPM(&in,
-				 publicKeyFilename);
+	    rc = TSS_File_ReadStructure(&in.inPublic,
+					(UnmarshalFunction_t)TPM2B_PUBLIC_Unmarshal,
+					publicKeyFilename);
 	}
 	/* PEM format, output from e.g. openssl */
 	else if (pemKeyFilename != NULL) {
 	    if (algPublic == TPM_ALG_RSA) {
-		rc = loadExternalPEMRSA(&in,
-					keyType,
-					nalg,
-					halg,
-					pemKeyFilename);
+		rc = convertRsaPemToPublic(&in.inPublic,
+					   keyType,
+					   nalg,
+					   halg,
+					   pemKeyFilename);
 	    }
 	    /* TPM_ALG_ECC */
-	    else {	
-		rc = loadExternalPEMECC(&in,
-					keyType,
-					nalg,
-					halg,
-					pemKeyFilename);
+	    else {
+		rc = convertEcPemToPublic(&in.inPublic,
+					  keyType,
+					  nalg,
+					  halg,
+					  pemKeyFilename);
 	    }
 	}
 	else if (derKeyFilename != NULL) {
-	    rc = loadExternalDer(&in,
-				 keyType,
-				 nalg,
-				 halg,
-				 derKeyFilename);
+	    rc = convertRsaDerToKeyPair(&in.inPublic,
+					&in.inPrivate,
+					keyType,
+					nalg,
+					halg,
+					derKeyFilename);
+	    in.inPrivate.t.size = 1;		/* mark that private area should be loaded */
 	}
 	else {
 	    printf("Failure parsing -ipu, -ipem, -ider\n");
@@ -408,144 +391,6 @@ int main(int argc, char *argv[])
     return rc;
 }
 
-/* loadExternalTPM() loads a public key saved in TPM format
-
- */
-
-TPM_RC loadExternalTPM(LoadExternal_In 	*in,
-		       const char	*publicKeyFilename)
-{
-    TPM_RC			rc = 0;
-
-    if (rc == 0) {
-	in->inPrivate.t.size = 0;
-	rc = TSS_File_ReadStructure(&in->inPublic,
-				    (UnmarshalFunction_t)TPM2B_PUBLIC_Unmarshal,
-				    publicKeyFilename);
-    }
-    return rc;
-}
-
-/* loadExternalDer() loads an RSA signing keypair stored in plaintext DER format */
-
-TPM_RC loadExternalDer(LoadExternal_In 	*in,
-		       int		keyType,
-		       TPMI_ALG_HASH 	nalg,
-		       TPMI_ALG_HASH	halg,
-		       const char	*derKeyFilename)
-{
-    TPM_RC		rc = 0;
-    RSA 		*rsaKey = NULL;
-    unsigned char	*derBuffer = NULL;
-    size_t		derSize;
-
-    /* read the DER file */
-    if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&derBuffer,     	/* freed @1 */
-				     &derSize,
-				     derKeyFilename); 
-    }    
-    if (rc == 0) {
-	const unsigned char *tmpPtr = derBuffer;
-	d2i_RSAPrivateKey(&rsaKey, &tmpPtr, derSize);	/* freed @2 */
-    }
-    if (rc == 0) {
-	rc = convertRsaKeyToPrivate(NULL,
-				    &in->inPrivate,
-				    rsaKey,
-				    NULL);		/* Empty Auth */	
-	in->inPrivate.t.size = 1;			/* mark that private area should be used */
-    }	
-    if (rc == 0) {
-	rc = convertRsaKeyToPublic(&in->inPublic,
-				   keyType,
-				   nalg,
-				   halg,
-				   rsaKey);
-    }
-    free(derBuffer);			/* @1 */
-    if (rsaKey != NULL) {
-	RSA_free(rsaKey);		/* @2 */
-    }
-    return rc;
-}
-
-/* loadExternalPEMRSA() loads an RSA signing public key stored in PEM format */
-
-TPM_RC loadExternalPEMRSA(LoadExternal_In 	*in,
-			  int			keyType,
-			  TPMI_ALG_HASH 	nalg,
-			  TPMI_ALG_HASH		halg,
-			  const char		*pemKeyFilename)
-{
-    TPM_RC	rc = 0;
-    EVP_PKEY 	*evpPkey = NULL;
-    RSA		*rsaKey = NULL;
-
-    if (rc == 0) {
-	rc = convertPemToEvpPubKey(&evpPkey,		/* freed @1 */
-				   pemKeyFilename);
-    }
-    if (rc == 0) {
-	rc = convertEvpPkeyToRsakey(&rsaKey,		/* freed @2 */
-				    evpPkey);
-    }
-    if (rc == 0) {
-	rc = convertRsaKeyToPublic(&in->inPublic,
-				   keyType,
-				   nalg,
-				   halg,
-				   rsaKey);
-    }
-    if (rc == 0) {
-	in->inPrivate.t.size = 0;
-    }
-    if (rsaKey != NULL) {
-	RSA_free(rsaKey);		/* @2 */
-    }
-    if (evpPkey != NULL) {
-	EVP_PKEY_free(evpPkey);		/* @1 */
-    }
-    return rc;
-}
-
-/* loadExternalPEMECC() loads an ECC P256 signing public key stored in PEM format */
-
-TPM_RC loadExternalPEMECC(LoadExternal_In 	*in,
-			  int			keyType,
-			  TPMI_ALG_HASH 	nalg,
-			  TPMI_ALG_HASH		halg,
-			  const char		*pemKeyFilename)
-{
-    TPM_RC	rc = 0;
-    EVP_PKEY  	*evpPkey = NULL;
-    EC_KEY 	*ecKey = NULL;
-
-    if (rc == 0) {
-	rc = convertPemToEvpPubKey(&evpPkey,		/* freed @1 */
-				   pemKeyFilename);
-    }
-    if (rc == 0) {
-	rc = convertEvpPkeyToEckey(&ecKey,		/* freed @2 */
-				   evpPkey);
-    }
-    if (rc == 0) {
-	rc = convertEcKeyToPublic(&in->inPublic,
-				  keyType,
-				  nalg,
-				  halg,
-				  ecKey);
-    }
-    if (rc == 0) {
-	in->inPrivate.t.size = 0;
-    }
-    EC_KEY_free(ecKey);   		/* @2 */
-    if (evpPkey != NULL) {
-	EVP_PKEY_free(evpPkey);		/* @1 */
-    }
-    return rc;
-}
-
 static void printUsage(void)
 {
     printf("\n");
@@ -559,9 +404,9 @@ static void printUsage(void)
     printf("\t[Asymmetric Key Algorithm]\n");
     printf("\t\t[-rsa (default)]\n");
     printf("\t\t[-ecc curve (uses NIST P-256)]\n");
-    printf("\t-ipu public key file name\n");
+    printf("\t-ipu TPM2B_PUBLIC public key file name\n");
     printf("\t-ipem PEM format public key file name\n");
-    printf("\t-ider DER format plaintext key pair file name\n");
+    printf("\t-ider DER format RSA plaintext key pair file name\n");
     printf("\t[-si signing (default)]\n");
     printf("\t[-st storage]\n");
     exit(1);	

@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: teststorage.sh 979 2017-04-04 17:57:18Z kgoldman $			#
+#	$Id: teststorage.sh 997 2017-04-24 14:01:08Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -128,11 +128,11 @@ echo "Create a signing key under the ECC storage key 80000002"
 ${PREFIX}create -hp 80000002 -ecc nistp256 -si -opr tmppriv.bin -opu tmppub.bin > run.out
 checkSuccess $?
 
-echo "Load the ECC storage key 80000001 under the ECC storage key 80000002"
+echo "Load the ECC signing key 80000001 under the ECC storage key 80000002"
 ${PREFIX}load -hp 80000002 -ipu tmppub.bin -ipr tmppriv.bin > run.out
 checkSuccess $?
 
-echo "Sign a digest woith ECC signing key 80000001"
+echo "Sign a digest with ECC signing key 80000001"
 ${PREFIX}sign -hk 80000001 -ecc -if policies/sha256aaa.bin -os tmpsig.bin > run.out
 checkSuccess $?
 

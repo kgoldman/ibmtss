@@ -21,3 +21,9 @@
 /gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmekint05.pem
 /gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/stmtpmekroot.pem
 /gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/tpmeccroot.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/IntelEKIntermediate.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/IntelEKRootCA.pem
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/NationZEkMfrCA001.crt
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/NationZEkMfrCA002.crt
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/NationZEkMfrCA003.crt
+/gsa/yktgsa-h1/02/kgold/tpm2/utils/certificates/NationZEkRootCA.crt

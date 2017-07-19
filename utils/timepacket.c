@@ -47,6 +47,10 @@
 #include <stdint.h>
 #include <time.h>
 
+#include <unistd.h>
+
+#include <openssl/rand.h>
+
 #include <tss2/tss.h>
 #include <tss2/tsstransmit.h>
 #include <tss2/tssfile.h>
@@ -66,7 +70,7 @@ int main(int argc, char *argv[])
     unsigned char 		*commandBuffer = NULL;
     size_t 			commandStringLength;
     size_t 			commandLength;
-    unsigned int 		loops = 0;
+    unsigned int 		loops = 1;
     unsigned int 		count;
     uint8_t 			responseBuffer[MAX_RESPONSE_SIZE];;
     uint32_t 			responseLength;
@@ -110,10 +114,6 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
-    if (loops == 0) {
-	printf("Missing parameter -l\n");
-	printUsage();
-    }
     if (commandFilename == NULL) {
 	printf("Missing parameter -if\n");
 	printUsage();
@@ -138,18 +138,22 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	rc = TSS_Create(&tssContext);
     }
-    /* this uses a very unofficial function */
-    if (rc == 0) {
-	startTime = time(NULL);
-    }
+    double timeDiff = 0;
     for (count = 0 ; (rc == 0) && (count < loops) ; count++) {
+	uint32_t usec;
+	RAND_bytes((unsigned char *)&usec, sizeof(uint32_t));
+	usec %= 1000000;
+	usleep(usec);
+	startTime = time(NULL);
 	rc = TSS_Transmit(tssContext,
 			  responseBuffer, &responseLength,
 			  commandBuffer, commandLength,
 			  NULL);
-    }
-    if (rc == 0) {
 	endTime = time(NULL);
+	printf("End Pass %u\n", count +1);
+ 	timeDiff += difftime(endTime, startTime);
+   }
+    if (rc == 0) {
     }
     {
 	TPM_RC rc1 = TSS_Delete(tssContext);
@@ -158,8 +162,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	double diff = difftime(endTime, startTime);
-	printf("Loops %u time %f time per pass %f\n", loops, diff, diff/loops);
+	printf("Loops %u time %f time per pass %f\n", loops, timeDiff, timeDiff/loops);
     }
     if (rc == 0) {
 	if (verbose) printf("timepacket: success\n");
@@ -186,6 +189,6 @@ static void printUsage(void)
     printf("Times the supplied packet\n");
     printf("\n");
     printf("\t-if packet in hexascii (requires one space at end of packet)\n");
-    printf("\t-l number of loops to time\n");
+    printf("\t[-l number of loops to time (default 1)]\n");
     exit(1);	
 }

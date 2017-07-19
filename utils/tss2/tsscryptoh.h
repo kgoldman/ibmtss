@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id: tsscrypto.h 838 2016-11-22 22:44:57Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -53,6 +53,7 @@ extern "C" {
     uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg);
 
     LIB_EXPORT
+
     uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg);
 
     LIB_EXPORT

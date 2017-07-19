@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile for minimal TSS			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.min 955 2017-03-08 17:34:11Z kgoldman $		#
+#	      $Id: makefile.min 1034 2017-06-30 20:49:51Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2016, 2017					#
 # 										#
@@ -49,7 +49,7 @@ CC = /usr/bin/gcc
 
 # compile - common flags for TSS library and applications
 
-CCFLAGS  = \
+CCFLAGS  += \
 	-DTPM_POSIX			\
 	-DTPM_TSS_NOFILE			\
 	-DTPM_TSS_NOCRYPTO
@@ -58,15 +58,15 @@ CCFLAGS  = \
 
 # compile - for TSS library
 
-CCLFLAGS = 	-I. -DTPM_TSS
+CCLFLAGS += 	-I. -DTPM_TSS
 
 # compile - for applications
 
-CCAFLAGS = 	-I.
+CCAFLAGS += 	-I.
 
 # link - common flags flags TSS library and applications
 
-LNFLAGS = 	-DTPM_POSIX		\
+LNFLAGS += 	-DTPM_POSIX		\
 		-L.
 
 # link - for TSS library
@@ -76,9 +76,9 @@ LNFLAGS = 	-DTPM_POSIX		\
 
 # link - for applications, TSS path, TSS and OpenSSl libraries
 
-LNAFLAGS = -Wl,-rpath,.
+LNAFLAGS += -Wl,-rpath,.
 
-LNALIBS =  -ltssmin -lcrypto
+LNALIBS +=  -ltssmin -lcrypto
 
 # shared library
 

@@ -3,7 +3,7 @@
 /*		Linux Device Transmit and Receive Utilities  			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.h 684 2016-07-18 21:22:01Z kgoldman $			*/
+/*	      $Id: tssdev.h 1015 2017-06-07 13:16:34Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -44,11 +44,19 @@
 
 #include <stdint.h>
 
-TPM_RC TSS_Dev_Transmit(TSS_CONTEXT *tssContext,
-			uint8_t *responseBuffer, uint32_t *read,
-			const uint8_t *commandBuffer, uint32_t written,
-			const char *message);
-TPM_RC TSS_Dev_Close(TSS_CONTEXT *tssContext);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    TPM_RC TSS_Dev_Transmit(TSS_CONTEXT *tssContext,
+			    uint8_t *responseBuffer, uint32_t *read,
+			    const uint8_t *commandBuffer, uint32_t written,
+			    const char *message);
+    TPM_RC TSS_Dev_Close(TSS_CONTEXT *tssContext);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

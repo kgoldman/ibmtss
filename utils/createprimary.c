@@ -3,7 +3,7 @@
 /*			    Create Primary	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createprimary.c 989 2017-04-18 20:50:04Z kgoldman $		*/
+/*	      $Id: createprimary.c 1044 2017-07-17 19:05:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -68,7 +68,8 @@ int main(int argc, char *argv[])
     CreatePrimary_Out 		out;
     char 			hierarchyChar = 'n';
     TPMI_RH_HIERARCHY		primaryHandle = TPM_RH_NULL;
-    TPMA_OBJECT			objectAttributes;
+    TPMA_OBJECT			addObjectAttributes;
+    TPMA_OBJECT			deleteObjectAttributes;
     int				keyType = TYPE_ST;
     uint32_t 			keyTypeSpecified = 0;
     int				rev116 = FALSE;
@@ -100,16 +101,11 @@ int main(int argc, char *argv[])
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */
-    objectAttributes.val = 0;
-    objectAttributes.val |= TPMA_OBJECT_NODA;
-    objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
-    objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
-    objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
-    objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
-    objectAttributes.val |= TPMA_OBJECT_DECRYPT;
-    objectAttributes.val &= ~TPMA_OBJECT_SIGN;
-    objectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
-    objectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+    addObjectAttributes.val = 0;
+    addObjectAttributes.val |= TPMA_OBJECT_NODA;
+    addObjectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
+    addObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+    deleteObjectAttributes.val = 0;
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-hi") == 0) {
@@ -190,7 +186,7 @@ int main(int argc, char *argv[])
 		    curveID = TPM_ECC_NIST_P384;
 		}
 		else {
-		    printf("Bad parameter for -ecc\n");
+		    printf("Bad parameter %s for -ecc\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -202,15 +198,20 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i], "-kt") == 0) {
 	    i++;
 	    if (i < argc) {
-		switch (argv[i][0]) {
-		  case 'f':
-		    objectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
-		    break;
-		  case 'p':
-		    objectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
-		    break;
-		  default:
-		    printf("Bad parameter for -kt\n");
+		if (strcmp(argv[i], "f") == 0) {
+		    addObjectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
+   		}
+		else if (strcmp(argv[i], "p") == 0) {
+		    addObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+		}
+		else if (strcmp(argv[i], "nf") == 0) {
+		    deleteObjectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
+		}
+		else if (strcmp(argv[i], "np")  == 0) {
+		    deleteObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+		}
+		else {
+		    printf("Bad parameter %s for -kt\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -219,8 +220,11 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i], "-uwa") == 0) {
+	    deleteObjectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
+	}
 	else if (strcmp(argv[i], "-da") == 0) {
-	    objectAttributes.val &= ~TPMA_OBJECT_NODA;
+	    addObjectAttributes.val &= ~TPMA_OBJECT_NODA;
 	}
 	else if (strcmp(argv[i],"-halg") == 0) {
 	    i++;
@@ -560,7 +564,8 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	switch (keyType) {
 	  case TYPE_BL:
-	    rc = blPublicTemplate(&in.inPublic.publicArea, objectAttributes,
+	    rc = blPublicTemplate(&in.inPublic.publicArea,
+				  addObjectAttributes, deleteObjectAttributes,
 				  nalg,
 				  policyFilename);
 	    break;
@@ -572,22 +577,26 @@ int main(int argc, char *argv[])
 	  case TYPE_SI:
 	  case TYPE_SIR:
 	  case TYPE_GP:
-	    rc = asymPublicTemplate(&in.inPublic.publicArea, objectAttributes,
+	    rc = asymPublicTemplate(&in.inPublic.publicArea,
+				    addObjectAttributes, deleteObjectAttributes,
 				    keyType, algPublic, curveID, nalg, halg,
 				    policyFilename);
 	    break;
 	  case TYPE_DES:
-	    rc = symmetricCipherTemplate(&in.inPublic.publicArea, objectAttributes,
+	    rc = symmetricCipherTemplate(&in.inPublic.publicArea,
+					 addObjectAttributes, deleteObjectAttributes,
 					 nalg, rev116,
 					 policyFilename);
 	    break;
 	  case TYPE_KH:
-	    rc = keyedHashPublicTemplate(&in.inPublic.publicArea, objectAttributes,
+	    rc = keyedHashPublicTemplate(&in.inPublic.publicArea,
+					 addObjectAttributes, deleteObjectAttributes,
 					 nalg, halg,
 					 policyFilename);
 	    break;
 	  case TYPE_DP:
-	    rc = derivationParentPublicTemplate(&in.inPublic.publicArea, objectAttributes,
+	    rc = derivationParentPublicTemplate(&in.inPublic.publicArea,
+						addObjectAttributes, deleteObjectAttributes,
 						nalg, halg,
 						policyFilename);
 	    break;

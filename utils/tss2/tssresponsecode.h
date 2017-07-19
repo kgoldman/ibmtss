@@ -3,9 +3,9 @@
 /*			  TSS Response Code Printer  				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.h 730 2016-08-23 21:09:53Z kgoldman $	*/
+/*	      $Id: tssresponsecode.h 1015 2017-06-07 13:16:34Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -55,8 +55,8 @@
 extern "C" {
 #endif
 
-LIB_EXPORT 
-void TSS_ResponseCode_toString(const char **msg, const char **submsg,  const char **num, TPM_RC rc);
+    LIB_EXPORT 
+    void TSS_ResponseCode_toString(const char **msg, const char **submsg,  const char **num, TPM_RC rc);
 
 #ifdef __cplusplus
 }

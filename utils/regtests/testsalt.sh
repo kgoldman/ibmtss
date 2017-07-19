@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testsalt.sh 985 2017-04-14 18:49:47Z kgoldman $			#
+#	$Id: testsalt.sh 1043 2017-07-17 16:24:45Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -222,6 +222,46 @@ checkSuccess $?
 
 echo "Flush the context loaded key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo ""
+echo "Salt Audit Session - PCR Read, Read Public, NV Read Public"
+echo ""
+
+echo "Load the storage key at 80000001"
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Start a salted HMAC auth session"
+${PREFIX}startauthsession -se h -hs 80000001 > run.out
+checkSuccess $?
+
+echo "PCR read with salted audit session"
+${PREFIX}pcrread -ha 16 -se0 02000000 81 > run.out
+checkSuccess $?
+
+echo "Read public with salted audit session"
+${PREFIX}readpublic -ho 80000001 -se0 02000000 81 > run.out
+checkSuccess $?
+
+echo "NV define space"
+${PREFIX}nvdefinespace -ha 01000000 -hi p > run.out
+checkSuccess $?
+
+echo "NV Read public with salted audit session"
+${PREFIX}nvreadpublic -ha 01000000 -se0 02000000 81 > run.out
+checkSuccess $?
+
+echo "Flush the storage key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Flush the salt session"
+${PREFIX}flushcontext -ha 02000000 > run.out
+checkSuccess $?
+
+echo "NV undefine space"
+${PREFIX}nvundefinespace -ha 01000000 -hi p > run.out
 checkSuccess $?
 
 rm -f tmpkeypair.pem

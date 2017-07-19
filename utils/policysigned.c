@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: policysigned.c 1009 2017-05-13 18:56:27Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -443,7 +443,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicySigned\n");
     printf("\n");
-    printf("\t-hk authorizing key handle\n");
+    printf("\t-hk signature verification key handle\n");
     printf("\t-ha policy session handle\n");
     printf("\t-in nonceTPM file (default none)\n");
     printf("\t-cp cpHash file (default none)\n");

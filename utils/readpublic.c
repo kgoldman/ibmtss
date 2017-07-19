@@ -3,9 +3,9 @@
 /*			   ReadPublic 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: readpublic.c 990 2017-04-19 13:31:24Z kgoldman $		*/
+/*	      $Id: readpublic.c 1042 2017-07-11 14:30:56Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -68,6 +68,12 @@ int main(int argc, char *argv[])
     TPMI_DH_PCR 		objectHandle = TPM_RH_NULL;
     const char			*publicKeyFilename = NULL;
     const char			*pemFilename = NULL;
+    TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
+    unsigned int		sessionAttributes0 = 0;
+    TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
+    unsigned int		sessionAttributes1 = 0;
+    TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
+    unsigned int		sessionAttributes2 = 0;
    
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -104,6 +110,72 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-se0") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle0);
+	    }
+	    else {
+		printf("Missing parameter for -se0\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes0);
+		if (sessionAttributes0 > 0xff) {
+		    printf("Out of range session attributes for -se0\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se0\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-se1") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle1);
+	    }
+	    else {
+		printf("Missing parameter for -se1\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes1);
+		if (sessionAttributes1 > 0xff) {
+		    printf("Out of range session attributes for -se1\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se1\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-se2") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle2);
+	    }
+	    else {
+		printf("Missing parameter for -se2\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes2);
+		if (sessionAttributes2 > 0xff) {
+		    printf("Out of range session attributes for -se2\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se2\n");
+		printUsage();
+	    }
+	}
  	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
@@ -134,6 +206,9 @@ int main(int argc, char *argv[])
 			 (COMMAND_PARAMETERS *)&in,
 			 NULL,
 			 TPM_CC_ReadPublic,
+			 sessionHandle0, NULL, sessionAttributes0,
+			 sessionHandle1, NULL, sessionAttributes1,
+			 sessionHandle2, NULL, sessionAttributes2,
 			 TPM_RH_NULL, NULL, 0);
     }
     {
@@ -189,5 +264,11 @@ static void printUsage(void)
     printf("\t-ho object handle\n");
     printf("\t[-opu public key file name (default do not save)]\n");
     printf("\t[-opem public key PEM format file name (default do not save)]\n");
+    printf("\n");
+    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
+    printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
+    printf("\t\t40 response encrypt\n");
+    printf("\t\t80 audit\n");
     exit(1);	
 }

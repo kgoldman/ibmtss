@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.h 982 2017-04-13 13:00:10Z kgoldman $	*/
+/*	      $Id: objecttemplates.h 1015 2017-06-07 13:16:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -55,46 +55,51 @@
 #define TYPE_DAA        11
 #define TYPE_DAAR       12
 
-TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,
-			  TPMA_OBJECT objectAttributes,
-			  int type,
-			  TPMI_ALG_PUBLIC algPublic,
-			  TPMI_ECC_CURVE curveID,			       
-			  TPMI_ALG_HASH nalg,
-			  TPMI_ALG_HASH halg,
-			  const char *policyFilename);
-TPM_RC symmetricCipherTemplate(TPMT_PUBLIC *publicArea,
-			       TPMA_OBJECT objectAttributes,
-			       TPMI_ALG_HASH nalg,
-			       int rev116,
-			       const char *policyFilename);
-TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,
-			       TPMA_OBJECT objectAttributes,
-			       TPMI_ALG_HASH nalg,
-			       TPMI_ALG_HASH halg,
-			       const char *policyFilename);
-TPM_RC derivationParentPublicTemplate(TPMT_PUBLIC *publicArea,
-				      TPMA_OBJECT objectAttributes,
-				      TPMI_ALG_HASH nalg,
-				      TPMI_ALG_HASH halg,
-				      const char *policyFilename);
-TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,
-			TPMA_OBJECT objectAttributes,
-			TPMI_ALG_HASH nalg,
-			const char *policyFilename);
-TPM_RC keyECDAAPublicTemplate(TPMT_PUBLIC *publicArea,
-			      TPMA_OBJECT objectAttributes,
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,
+			      TPMA_OBJECT addObjectAttributes,
+			      TPMA_OBJECT deleteObjectAttributes,
 			      int type,
 			      TPMI_ALG_PUBLIC algPublic,
-			      TPMI_ECC_CURVE curveID,       
+			      TPMI_ECC_CURVE curveID,			       
 			      TPMI_ALG_HASH nalg,
 			      TPMI_ALG_HASH halg,
 			      const char *policyFilename);
+    TPM_RC symmetricCipherTemplate(TPMT_PUBLIC *publicArea,
+				   TPMA_OBJECT addObjectAttributes,
+				   TPMA_OBJECT deleteObjectAttributes,
+				   TPMI_ALG_HASH nalg,
+				   int rev116,
+				   const char *policyFilename);
+    TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,
+				   TPMA_OBJECT addObjectAttributes,
+				   TPMA_OBJECT deleteObjectAttributes,
+				   TPMI_ALG_HASH nalg,
+				   TPMI_ALG_HASH halg,
+				   const char *policyFilename);
+    TPM_RC derivationParentPublicTemplate(TPMT_PUBLIC *publicArea,
+					  TPMA_OBJECT addObjectAttributes,
+					  TPMA_OBJECT deleteObjectAttributes,
+					  TPMI_ALG_HASH nalg,
+					  TPMI_ALG_HASH halg,
+					  const char *policyFilename);
+    TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,
+			    TPMA_OBJECT addObjectAttributes,
+			    TPMA_OBJECT deleteObjectAttributes,
+			    TPMI_ALG_HASH nalg,
+			    const char *policyFilename);
 
-void printUsageTemplate(void);
+    void printUsageTemplate(void);
 
-TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
-		 const char *policyFilename);
+    TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
+		     const char *policyFilename);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

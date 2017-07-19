@@ -168,7 +168,7 @@ ALL += 	$(LIBTSS)				\
 ALL	+= 					\
 	ntc2getconfig$(EXE)			\
 	ntc2preconfig$(EXE)			\
-	ntc2lockconfig$(EXE)			\
+	ntc2lockconfig$(EXE)
 
 # TSS shared library headers 
 

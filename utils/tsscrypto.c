@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
-/*	      $Id: tsscrypto.c 989 2017-04-18 20:50:04Z kgoldman $		*/
+/*	      $Id: tsscrypto.c 1005 2017-05-05 16:18:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -630,7 +630,8 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
-    /* Generate the TSS EC ephemeral key pair for the salt */
+    /* Generate the TSS EC ephemeral key pair outside the TPM for the salt. The public part of this
+       key is actually the 'encrypted' salt. */
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_ECC_Salt: "
 				"Calling TSS_ECC_GeneratePlatformEphemeralKey\n"); 
@@ -660,8 +661,8 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
+    /* grab the public point x and y using the parameters passed in */
     if (rc == 0) {
-	/* grab the public point using the parameters passed in */
 	if (tssVverbose) printf("TSS_ECC_Salt: "
 				"Salt key sizes are X: %d and Y: %d\n",
 				publicArea->unique.ecc.x.t.size,
@@ -683,11 +684,11 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     }
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_ECC_Salt: "
-				"Public key X %s\n", BN_bn2hex(p_tpmX));
+				"Salt public key X %s\n", BN_bn2hex(p_tpmX));
 	if (tssVverbose) printf("TSS_ECC_Salt: "
-				"Public key Y %s\n", BN_bn2hex(bigY));
+				"Salt public key Y %s\n", BN_bn2hex(bigY));
     }
-    /* Create the openssl form of the tpm public as EC_POINT using coordinates */
+    /* Create the openssl form of the TPM salt public key as EC_POINT using coordinates */
     if (rc == 0) {
 	if (EC_POINT_set_affine_coordinates_GFp
 	    (eCurveData.G, tpmPointPub, p_tpmX, bigY, eCurveData.ctx) == 0) {
@@ -961,6 +962,8 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 	/* TPM2B_DIGEST salt size is the largest supported digest algorithm.
 	   This has already been validated when unmarshaling the Name hash algorithm.
 	*/
+	/* salt = KDFe(tpmKey_NameAlg, sharedX, "SECRET", P_caller, P_tpm,
+	   tpmKey_NameAlgSizeBits) */
 	salt->t.size = sizeInBytes;
 	rc = TSS_KDFE((uint8_t *)&salt->t.buffer, 	/* KDFe output */
 		      publicArea->nameAlg,		/* hash algorithm */

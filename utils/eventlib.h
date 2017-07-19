@@ -3,9 +3,9 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.h 957 2017-03-09 14:16:12Z kgoldman $		*/
+/*	      $Id: eventlib.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016.						*/
+/* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -137,33 +137,41 @@ typedef struct tdTCG_EfiSpecIdEvent {
     uint8_t 					vendorInfo[0xff]; 
 } TCG_EfiSpecIDEvent;
 
-int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
-			int *endOfFile,
-			FILE *inFile);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
+			    int *endOfFile,
+			    FILE *inFile);
 
 
-int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event2,
-			 int *endOfFile,
-			 FILE *inFile);
+    int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event2,
+			     int *endOfFile,
+			     FILE *inFile);
 
-TPM_RC TSS_EVENT2_Line_Marshal(TCG_PCR_EVENT2 *source, uint16_t *written,
-			  uint8_t **buffer, int32_t *size);
+    TPM_RC TSS_EVENT2_Line_Marshal(TCG_PCR_EVENT2 *source, uint16_t *written,
+				   uint8_t **buffer, int32_t *size);
 
-TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, INT32 *size);
+    TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, INT32 *size);
 
-TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[8],
-			TCG_PCR_EVENT2 *event2);
+    TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[8],
+				 TCG_PCR_EVENT2 *event2);
 
-void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event);
+    void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event);
 
-void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event);
+    void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event);
 
-TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
-				 uint32_t eventSize,
-				 uint8_t *event);
+    TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
+				     uint32_t eventSize,
+				     uint8_t *event);
 
-void TSS_SpecIdEvent_Trace(TCG_EfiSpecIDEvent *specIdEvent);
+    void TSS_SpecIdEvent_Trace(TCG_EfiSpecIDEvent *specIdEvent);
 
-const char *TSS_EVENT_EventTypeToString(uint32_t eventType);
+    const char *TSS_EVENT_EventTypeToString(uint32_t eventType);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

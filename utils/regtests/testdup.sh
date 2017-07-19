@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 990 2017-04-19 13:31:24Z kgoldman $		#
+#		$Id: testdup.sh 1044 2017-07-17 19:05:46Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -143,6 +143,54 @@ do
 
     done
 done
+
+echo ""
+echo "Duplicate Primary Key"
+echo ""
+
+echo "Create a platform primary signing key K2 80000001"
+${PREFIX}createprimary -hi p -si -kt nf -kt np -pol policies/policyccduplicate.bin -opu tmppub.bin > run.out
+checkSuccess $?
+
+echo "Sign a digest"
+${PREFIX}sign -hk 80000001 -if policies/aaa > run.out
+checkSuccess $?
+
+echo "Start a policy session 03000000"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo "Policy command code, duplicate"
+${PREFIX}policycommandcode -ha 03000000 -cc 14b > run.out
+checkSuccess $?
+
+echo "Duplicate K2 under storage key"
+${PREFIX}duplicate -ho 80000001 -hp 80000000 -od tmpdup.bin -oss tmpss.bin -se0 03000000 1
+checkSuccess $?
+
+echo "Import K2 under storage key"
+${PREFIX}import -hp 80000000 -pwdp pps -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin -opr tmppriv.bin > run.out
+checkSuccess $?
+
+echo "Load the duplicated signing key K2 80000002"
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Sign a digest"
+${PREFIX}sign -hk 80000002 -if policies/aaa > run.out
+checkSuccess $?
+
+echo "Flush the primary key 8000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Flush the duplicated key 80000002 "
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Flush the session 03000000 "
+${PREFIX}flushcontext -ha 03000000 > run.out
+checkSuccess $?
 
 echo ""
 echo "Import PEM RSA"

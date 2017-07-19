@@ -53,6 +53,16 @@
 
 typedef struct TSS_CONTEXT TSS_CONTEXT; 
    
+#define TPM_TRACE_LEVEL		1
+#define TPM_DATA_DIR		2
+#define TPM_COMMAND_PORT	3
+#define TPM_PLATFORM_PORT	4
+#define TPM_SERVER_NAME		5
+#define TPM_INTERFACE_TYPE	6
+#define TPM_DEVICE		7
+#define TPM_ENCRYPT_SESSIONS	8
+#define TPM_SERVER_TYPE		9
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -81,16 +91,6 @@ extern "C" {
 		       EXTRA_PARAMETERS *extra,
 		       TPM_CC commandCode,
 		       ...);
-
-#define TPM_TRACE_LEVEL		1
-#define TPM_DATA_DIR		2
-#define TPM_COMMAND_PORT	3
-#define TPM_PLATFORM_PORT	4
-#define TPM_SERVER_NAME		5
-#define TPM_INTERFACE_TYPE	6
-#define TPM_DEVICE		7
-#define TPM_ENCRYPT_SESSIONS	8
-#define TPM_SERVER_TYPE		9
 
     LIB_EXPORT
     TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,

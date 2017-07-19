@@ -3,9 +3,9 @@
 /*			     TSS Library Dependent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.h 983 2017-04-13 17:33:54Z kgoldman $		*/
+/*	      $Id: tsscrypto.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -57,8 +57,6 @@
 #endif
 
 #include <tss2/tss.h>
-
-/* FIXME move to static */
 
 /* ECC salt */
 

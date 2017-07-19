@@ -1,11 +1,11 @@
 /********************************************************************************/
 /*										*/
-/*			     				*/
+/*			     TSS Error Codes					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsserror.h 989 2017-04-18 20:50:04Z kgoldman $		*/
+/*	      $Id: tsserror.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -95,10 +95,11 @@
 #define TSS_RC_RSA_PADDING		0x000b0077	/* RSA add padding failed */
 #define TSS_RC_RSA_ENCRYPT		0x000b0078	/* RSA public encrypt failed */
 #define TSS_RC_BIGNUM			0x000b0079	/* BIGNUM operation failed */
-#define TSS_RC_RSA_SIGNATURE		0x000b007a	/* RSAsignature is bad */
+#define TSS_RC_RSA_SIGNATURE		0x000b007a	/* RSA signature is bad */
 #define TSS_RC_EC_SIGNATURE		0x000b007b	/* EC signature is bad */
 #define TSS_RC_EC_KEY_CONVERT		0x000b007c	/* EC key conversion failed */
 #define TSS_RC_BAD_SIGNATURE_ALGORITHM	0x000b007d	/* Unimplemented signature algorithm */
+#define TSS_RC_X509_ERROR		0x000b007e	/* X509 parse error */
 #define TSS_RC_COMMAND_UNIMPLEMENTED	0x000b0080	/* Unimplemented command */
 #define TSS_RC_IN_PARAMETER		0x000b0081	/* Bad in parameter to TSS_Execute */
 #define TSS_RC_OUT_PARAMETER		0x000b0082	/* Bad out parameter to TSS_Execute */

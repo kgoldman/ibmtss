@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testhmacsession.sh 979 2017-04-04 17:57:18Z kgoldman $	#
+#		$Id: testhmacsession.sh 1008 2017-05-12 16:21:24Z kgoldman $	#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -60,3 +60,31 @@ checkSuccess $?
 echo "Create a storage key under the primary key - should fail"
 ${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk sto -se0 02000000 0 > run.out
 checkFailure $?
+
+echo ""
+echo "User with Auth Clear"
+echo ""
+
+echo "Create a signing key under the primary key"
+${PREFIX}create -hp 80000000 -si -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Load the signing key under the primary key"
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Start an HMAC auth session"
+${PREFIX}startauthsession -se h > run.out
+checkSuccess $?
+
+echo "Sign a digest - should fail with HMAC session"
+${PREFIX}sign -hk 80000001 -if policies/aaa -se0 02000000 0 > run.out
+checkFailure $?
+
+echo "Flush the session, not flushed on failure"
+${PREFIX}flushcontext -ha 02000000 > run.out
+checkSuccess $?
+
+echo "Flush the signing key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?

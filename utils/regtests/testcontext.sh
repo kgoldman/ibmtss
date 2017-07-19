@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testcontext.sh 979 2017-04-04 17:57:18Z kgoldman $		#
+#		$Id: testcontext.sh 1016 2017-06-08 18:10:36Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
@@ -121,7 +121,7 @@ echo "Load the storage key at 80000001"
 ${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
 checkSuccess $?
 
-echo "Save context for the key at context 80000000"
+echo "Save context for the storage key at 80000001"
 ${PREFIX}contextsave -ha 80000001 -of tmp.bin > run.out
 checkSuccess $?
 
@@ -133,7 +133,7 @@ echo "Flush the original key at 80000001"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
-echo "Start an HMAC auth session at 02000000 using the storage key salt"
+echo "Start an HMAC auth session at 02000000 using the storage key 80000002 salt"
 ${PREFIX}startauthsession -se h -hs 80000002 > run.out
 checkSuccess $?
 
@@ -152,6 +152,32 @@ checkSuccess $?
 echo "Flush the salt key at 80000002"
 ${PREFIX}flushcontext -ha 80000002 > run.out
 checkSuccess $?
+
+echo ""
+echo "Context Primary Key"
+echo ""
+
+echo "Save context for the primary key at 80000000"
+${PREFIX}contextsave -ha 80000000 -of tmp.bin > run.out
+checkSuccess $?
+
+echo "Load context primary key at 80000001"
+${PREFIX}contextload -if tmp.bin > run.out
+checkSuccess $?
+
+echo "Load the signing key at 80000002 under the primary key at 80000001"
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Flush the signing key at 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Flush the primary key at 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+
 
 # ${PREFIX}getcapability  -cap 1 -pr 80000000
 # ${PREFIX}getcapability  -cap 1 -pr 02000000

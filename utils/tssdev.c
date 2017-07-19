@@ -3,7 +3,7 @@
 /*		Linux Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.c 978 2017-04-04 15:37:15Z kgoldman $ 		*/
+/*	      $Id: tssdev.c 1023 2017-06-14 17:14:41Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -172,9 +172,11 @@ static uint32_t TSS_Dev_ReceiveCommand(int dev_fd, uint8_t *buffer, uint32_t *le
     if (rc == 0) {
 	irc = read(dev_fd, buffer, MAX_RESPONSE_SIZE);
 	if (irc <= 0) {
-	    if (tssVerbose) printf("TSS_Dev_ReceiveCommand: read error %d %s\n",
-				   errno, strerror(errno));
 	    rc = TSS_RC_BAD_CONNECTION;
+	    if (irc < 0) {
+		if (tssVerbose) printf("TSS_Dev_ReceiveCommand: read error %d %s\n",
+				       errno, strerror(errno));
+	    }
 	}
     }
     if ((rc == 0) && tssVverbose) {
