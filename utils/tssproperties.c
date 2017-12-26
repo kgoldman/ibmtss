@@ -3,9 +3,9 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.c 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*	      $Id: tssproperties.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

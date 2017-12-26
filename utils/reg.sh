@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: reg.sh 1019 2017-06-09 17:58:56Z kgoldman $				#
+#	$Id: reg.sh 1047 2017-07-20 18:27:34Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -76,7 +76,7 @@ printUsage ()
     echo "-1 random number generator"
     echo "-2 PCR"
     echo "-3 primary keys"
-    echo "-4 createloaded - rev 138"
+    echo "-4 createloaded - rev 146"
     echo "-5 HMAC session - no bind or salt"
     echo "-6 HMAC session - bind"
     echo "-7 HMAC session - salt"

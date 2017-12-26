@@ -3,7 +3,7 @@
 #		Linux TPM2 Makefile Sample for Fedora Installed rpms		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.sample 990 2017-04-19 13:31:24Z kgoldman $		#
+#	      $Id: makefile.sample 1094 2017-11-08 21:50:29Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014						#
 # 										#
@@ -155,10 +155,14 @@ ALL = 	activatecredential			\
 	stirrandom				\
 	unseal					\
 	verifysignature				\
+	zgen2phase 				\
 						\
 	signapp					\
 	writeapp				\
-	createek	
+	createek				\
+	createekcert				\
+	tpm2pem					\
+	tpmpublic2eccpoint
 
 all:	$(ALL)
 
@@ -355,8 +359,8 @@ setprimarypolicy:	setprimarypolicy.o
 			$(CC) $(LNFLAGS) setprimarypolicy.o -o setprimarypolicy
 shutdown:		shutdown.o
 			$(CC) $(LNFLAGS) shutdown.o -o shutdown
-sign:			sign.o
-			$(CC) $(LNFLAGS) sign.o -o sign
+sign:			sign.o cryptoutils.o
+			$(CC) $(LNFLAGS) sign.o cryptoutils.o -o sign
 startauthsession:	startauthsession.o
 			$(CC) $(LNFLAGS) startauthsession.o -o startauthsession
 startup:		startup.o
@@ -373,6 +377,10 @@ writeapp:		writeapp.o
 			$(CC) $(LNFLAGS) writeapp.o -o writeapp
 createek:		createek.o ekutils.o
 			$(CC) $(LNFLAGS) createek.o ekutils.o -o createek		
+tpm2pem:		tpm2pem.o cryptoutils.o
+			$(CC) $(LNFLAGS) tpm2pem.o cryptoutils.o -o tpm2pem		
+tpmpublic2eccpoint:	tpmpublic2eccpoint.o
+			$(CC) $(LNFLAGS) tpmpublic2eccpoint.o -o tpmpublic2eccpoint
 
 # object files
 

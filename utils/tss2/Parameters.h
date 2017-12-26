@@ -3,7 +3,7 @@
 /*			  Command and Response Parameter Structures		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Parameters.h 790 2016-10-26 19:21:33Z kgoldman $		*/
+/*            $Id: Parameters.h 1055 2017-08-08 20:30:09Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -177,6 +177,7 @@
 #include "Unseal_fp.h"
 #include "VerifySignature_fp.h"
 #include "ZGen_2Phase_fp.h"
+#include "NTC_fp.h"
 
 typedef union {
     ActivateCredential_In         ActivateCredential;

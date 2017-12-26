@@ -3,9 +3,9 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 1044 2017-07-17 19:05:46Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 1079 2017-10-04 20:13:43Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016.						*/
+/* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -58,14 +58,14 @@
 
    It can create these types:
 
-   TYPE_ST:   RSA storage key
-   TYPE_DEN:  RSA decryption key (not storage key, NULL scheme)
-   TYPE_DEO:  RSA decryption key (not storage key, OAEP scheme)
-   TYPE_SI:   signing key (unrestricted)
-   TYPE_SIR:  signing key (restricted)
+   TYPE_ST:   storage key (decrypt, restricted, RSA NULL scheme, EC NULL scheme)
+   TYPE_DEN:  decryption key (not storage key, RSA NULL scheme, EC NULL scheme)
+   TYPE_DEO:  decryption key (not storage key, RSA OAEP scheme, EC NULL scheme)
+   TYPE_SI:   signing key (unrestricted, RSA NULL schemem EC NULL scheme)
+   TYPE_SIR:  signing key (restricted, RSA RSASSA scheme, EC ECDSA scheme)
    TYPE_GP:   general purpose key
-
-   If restricted, it uses the RSASSA padding scheme
+   TYPE_DAA:  signing key (unrestricted, ECDAA)
+   TYPE_DAAR: signing key (restricted, ECDAA)
 */
 
 TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
@@ -523,16 +523,16 @@ void printUsageTemplate(void)
     printf("\n");
     printf("\t\t-bl data blob for unseal (create only)\n");
     printf("\t\t\t-if data file name\n");
-    printf("\t\t-den decryption, RSA, not storage, NULL scheme\n");
-    printf("\t\t-deo decryption, RSA, not storage, OAEP scheme\n");
+    printf("\t\t-den decryption, (unrestricted, RSA and EC NULL scheme)\n");
+    printf("\t\t-deo decryption, (unrestricted, RSA OAEP, EC NULL scheme)\n");
     printf("\t\t-des encryption/decryption, AES symmetric\n");
     printf("\t\t\t[-116 for TPM rev 116 compatibility]\n");
-    printf("\t\t-st storage\n");
+    printf("\t\t-st storage (restricted)\n");
     printf("\t\t\t[default for primary keys]\n");
-    printf("\t\t-si signing\n");
-    printf("\t\t-sir restricted signing\n");
-    printf("\t\t-dau create unrestricted ECDAA key pair\n");
-    printf("\t\t-dar create restricted ECDAA key pair\n");
+    printf("\t\t-si unrestricted signing (RSA and EC NULL scheme)\n");
+    printf("\t\t-sir restricted signing (RSA RSASSA, EC ECDSA scheme)\n");
+    printf("\t\t-dau unrestricted ECDAA signing key pair\n");
+    printf("\t\t-dar restricted ECDAA signing key pair\n");
     printf("\t\t-kh keyed hash (hmac)\n");
     printf("\t\t-dp derivation parent\n");
     printf("\t\t-gp general purpose, not storage\n");
@@ -542,7 +542,7 @@ void printUsageTemplate(void)
 	   "\t\t\tp fixedParent (default for primary keys and derivation parents)\n"
 	   "\t\t\tnf no fixedTPM (default for non-primary keys)\n"
 	   "\t\t\tnp no fixedParent (default for non-primary keys)\n");
-    printf("\t\t[-da object subject to DA protection) (default no)]\n");
+    printf("\t\t[-da object subject to DA protection (default no)]\n");
     printf("\t[-pol policy file (default empty)]\n");
     printf("\t[-uwa userWithAuth attribute clear (default set)]\n");
     printf("\n");

@@ -3,9 +3,9 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 1043 2017-07-17 16:24:45Z kgoldman $		*/
+/*	      $Id: pcrread.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -250,7 +250,7 @@ static void printPcrRead(PCR_Read_Out *out)
     uint32_t	i;
     
     /* Table 99 - Definition of TPML_DIGEST Structure */
-    printf("count %u\n", out->pcrValues.count);
+    printf("count %u pcrUpdateCounter %u \n", out->pcrValues.count, out->pcrUpdateCounter);
     for (i = 0 ; i < out->pcrValues.count ; i++) {
 	TSS_PrintAll("digest", out->pcrValues.digests[i].t.buffer, out->pcrValues.digests[i].t.size);
     }
@@ -271,7 +271,7 @@ static void printUsage(void)
     printf("\t\t(default do not save)\n");
     printf("\t[-ns no space, no text, no newlines, first algorithm]\n");
     printf("\t\tUsed for scripting policy construction\n");
-    printf("\t-se0 session handle / attributes\n");
+    printf("\t-se0 session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");
     printf("\t\t80 audit\n");
     exit(1);	

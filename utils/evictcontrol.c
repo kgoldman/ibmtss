@@ -3,9 +3,9 @@
 /*			   EvictControl		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: evictcontrol.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: evictcontrol.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -265,14 +265,15 @@ static void printUsage(void)
     printf("Runs TPM2_EvictControl\n");
     printf("\n");
     printf("\t-hi authhandle hierarchy (o, p)\n");
-    printf("\t\to owner, p platform \n");
+    printf("\t\to owner, p platform\n");
     printf("\t-ho object handle\n");
+    printf("\t\tif transient: make persistent, if persistent: flush\n");
     printf("\t-hp persistent handle\n");
+    printf("\t\t owner    81000000 to 817FFFFF\n");
+    printf("\t\t platform 81800000 to 81FFFFFF\n");
     printf("\t-pwda authorization password (default empty)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
     exit(1);	
 }

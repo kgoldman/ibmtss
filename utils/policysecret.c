@@ -3,9 +3,9 @@
 /*			    PolicySecret	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysecret.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: policysecret.c 1089 2017-10-27 19:18:29Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -342,11 +342,11 @@ static void printUsage(void)
     printf("\n");
     printf("\t-ha authorizing entity handle\n");
     printf("\t-hs policy session handle\n");
-    printf("\t-in nonceTPM file (default none)\n");
-    printf("\t-cp cpHash file (default none)\n");
-    printf("\t-pref policyRef file (default none)\n");
-    printf("\t-exp expiration (default none)\n");
-    printf("\t-pwde authorizing entity password (default empty)\n");
+    printf("\t[-in nonceTPM file (default none)]\n");
+    printf("\t[-cp cpHash file (default none)]\n");
+    printf("\t[-pref policyRef file (default none)]\n");
+    printf("\t[-exp expiration (default none)]\n");
+    printf("\t[-pwde authorizing entity password (default empty)]\n");
     printf("\t[-tk ticket file name]\n");
     printf("\t[-to timeout file name]\n");
     printf("\n");

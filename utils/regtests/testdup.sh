@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 1044 2017-07-17 19:05:46Z kgoldman $		#
+#		$Id: testdup.sh 1095 2017-11-09 21:52:27Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -60,87 +60,101 @@ echo ""
 echo "Duplication"
 echo ""
 
-for ENC in "" "-salg aes -ik tmprnd.bin"
-do 
-    for HALG in sha1 sha256 sha384
-    do
+echo ""
+echo "Duplicate Child Key"
+echo ""
 
-	echo "Create a signing key K2 under the primary key, with policy"
-	${PREFIX}create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccduplicate.bin > run.out
-	checkSuccess $?
+# primary key		80000000
+# target storage key K1 80000001
+#	originally under primary key
+#	duplicate to K1
+#	import to K1
+# signing key        K2 80000002
 
-	echo "Load the storage key K1"
-	${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
-	checkSuccess $?
+for ALG in "" "ecc"
+do
+    for ENC in "" "-salg aes -ik tmprnd.bin"
+    do 
+	for HALG in sha1 sha256 sha384
+	do
 
-	echo "Load the signing key K2"
-	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
-	checkSuccess $?
+	    echo "Create a signing key K2 under the primary key, with policy"
+	    ${PREFIX}create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccduplicate.bin > run.out
+	    checkSuccess $?
 
-	echo "Sign a digest, $HALG"
-	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
-	checkSuccess $?
+	    echo "Load the ${ALG} storage key K1 80000001"
+	    ${PREFIX}load -hp 80000000 -ipr store${ALG}priv.bin -ipu store${ALG}pub.bin -pwdp pps > run.out
+	    checkSuccess $?
 
-	echo "Verify the signature, $HALG"
-	${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is tmpsig.bin > run.out
-	checkSuccess $?
+	    echo "Load the signing key K2 80000002"
+	    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+	    checkSuccess $?
 
-	echo "Start a policy session"
-	${PREFIX}startauthsession -se p > run.out
-	checkSuccess $?
+	    echo "Sign a digest, $HALG"
+	    ${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
+	    checkSuccess $?
 
-	echo "Policy command code, duplicate"
-	${PREFIX}policycommandcode -ha 03000000 -cc 14b > run.out
-	checkSuccess $?
+	    echo "Verify the signature, $HALG"
+	    ${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is tmpsig.bin > run.out
+	    checkSuccess $?
 
-	echo "Get policy digest"
-	${PREFIX}policygetdigest -ha 03000000 > run.out 
-	checkSuccess $?
+	    echo "Start a policy session"
+	    ${PREFIX}startauthsession -se p > run.out
+	    checkSuccess $?
 
-	echo "Get random AES encryption key"
-	${PREFIX}getrandom -by 16 -of tmprnd.bin > run.out 
-	checkSuccess $?
+	    echo "Policy command code, duplicate"
+	    ${PREFIX}policycommandcode -ha 03000000 -cc 14b > run.out
+	    checkSuccess $?
 
-	echo "Duplicate K2 under K1, ${ENC}"
-	${PREFIX}duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin ${ENC} -se0 03000000 1 > run.out
-	checkSuccess $?
+	    echo "Get policy digest"
+	    ${PREFIX}policygetdigest -ha 03000000 > run.out 
+	    checkSuccess $?
 
-	echo "Flush the original K2 to free object slot for import"
-	${PREFIX}flushcontext -ha 80000002 > run.out
-	checkSuccess $?
+	    echo "Get random AES encryption key"
+	    ${PREFIX}getrandom -by 16 -of tmprnd.bin > run.out 
+	    checkSuccess $?
 
-	echo "Import K2 under K1, ${ENC}"
-	${PREFIX}import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin ${ENC} -opr tmppriv.bin > run.out
-	checkSuccess $?
+	    echo "Duplicate K2 under ${ALG} K1, ${ENC}"
+	    ${PREFIX}duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin ${ENC} -se0 03000000 1 > run.out
+	    checkSuccess $?
 
-	echo "Sign under K2, $HALG - should fail"
-	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
-	checkFailure $?
+	    echo "Flush the original K2 to free object slot for import"
+	    ${PREFIX}flushcontext -ha 80000002 > run.out
+	    checkSuccess $?
 
-	echo "Load the duplicated signing key K2"
-	${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
-	checkSuccess $?
+	    echo "Import K2 under ${ALG} K1, ${ENC}"
+	    ${PREFIX}import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin ${ENC} -opr tmppriv.bin > run.out
+	    checkSuccess $?
 
-	echo "Sign using duplicated K2, $HALG"
-	${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
-	checkSuccess $?
+	    echo "Sign under K2, $HALG - should fail"
+	    ${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
+	    checkFailure $?
 
-	echo "Verify the signature, $HALG"
-	${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is tmpsig.bin > run.out
-	checkSuccess $?
+	    echo "Load the duplicated signing key K2"
+	    ${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+	    checkSuccess $?
 
-	echo "Flush the duplicated K2"
-	${PREFIX}flushcontext -ha 80000002 > run.out
-	checkSuccess $?
+	    echo "Sign using duplicated K2, $HALG"
+	    ${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os tmpsig.bin -pwdk sig > run.out
+	    checkSuccess $?
 
-	echo "Flush the parent K1"
-	${PREFIX}flushcontext -ha 80000001 > run.out
-	checkSuccess $?
+	    echo "Verify the signature, $HALG"
+	    ${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is tmpsig.bin > run.out
+	    checkSuccess $?
 
-	echo "Flush the session"
-	${PREFIX}flushcontext -ha 03000000 > run.out
-	checkSuccess $?
+	    echo "Flush the duplicated K2"
+	    ${PREFIX}flushcontext -ha 80000002 > run.out
+	    checkSuccess $?
 
+	    echo "Flush the parent K1"
+	    ${PREFIX}flushcontext -ha 80000001 > run.out
+	    checkSuccess $?
+
+	    echo "Flush the session"
+	    ${PREFIX}flushcontext -ha 03000000 > run.out
+	    checkSuccess $?
+
+	done
     done
 done
 
@@ -228,7 +242,7 @@ do
 	${PREFIX}flushcontext -ha 80000001 > run.out
 	checkSuccess $?
 
-   done
+    done
 done
 
 echo ""
@@ -263,7 +277,7 @@ do
 	${PREFIX}flushcontext -ha 80000001 > run.out
 	checkSuccess $?
 
-   done
+    done
 done
 
 echo "Flush the auth session"
@@ -279,7 +293,7 @@ echo ""
 # import O1 to K2 (knows inner wrapper)
 
 # 03000000 policy session for duplicate
-    
+
 # at TPM 1, duplicate object to K1 outer wrapper, AES wrapper
 
 echo "Create a storage key K2"
@@ -381,6 +395,154 @@ echo "Flush signing key O1 80000002"
 ${PREFIX}flushcontext -ha 80000001 > run.out 
 checkSuccess $?
 
+echo ""
+echo "Duplicate Primary Sealed AES from Source to Target EK"
+echo ""
+
+# source creates AES key, sends to target
+
+# Real code would send the target EK X509 certificate.  The target could
+# defer recreating the EK until later.
+
+# Target
+
+for ALG in "rsa" "ecc" 
+do
+
+    echo "Target: Provision a target ${ALG} EK certificate"
+    ${PREFIX}createekcert -alg ${ALG} -cakey cakey.pem -capwd rrrr > run.out
+    checkSuccess $?
+
+    echo "Target: Recreate the ${ALG} EK at 80000001"
+    ${PREFIX}createek -alg ${ALG} -cp -noflush > run.out
+    checkSuccess $?
+
+    echo "Target: Convert the EK public key to PEM format for transmission to source"
+    ${PREFIX}readpublic -ho 80000001 -opem tmpekpub.pem > run.out
+    checkSuccess $?
+
+    echo "Target: Flush the EK"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+# Here, target would send the EK PEM public key to the source
+
+# The real source would
+#
+# 1 - walk the EK X509 certificate chain.  I have to add that sample code to createEK or make a new utility.
+# 2 - use openssl to convert the X509 EK certificate the the PEM public key file
+# 
+# for now, the source trusts the target EK PEM public key
+
+# Source
+
+    echo "Source: Create an AES 256 bit key"
+    ${PREFIX}getrandom -by 32 -ns -of tmpaeskeysrc.bin > run.out
+    checkSuccess $?
+
+    echo "Source: Create primary duplicable sealed AES key 80000001"
+    ${PREFIX}createprimary -bl -kt nf -kt np -if tmpaeskeysrc.bin -pol policies/policyccduplicate.bin -opu tmpsdbpub.bin > run.out
+    checkSuccess $?
+
+    echo "Source: Load the target ${ALG} EK public key as a storage key 80000002"
+    ${PREFIX}loadexternal -${ALG} -st -ipem tmpekpub.pem > run.out
+    checkSuccess $?
+
+    echo "Source: Start a policy session, duplicate needs a policy 03000000"
+    ${PREFIX}startauthsession -se p > run.out
+    checkSuccess $?
+
+    echo "Source: Policy command code, duplicate"
+    ${PREFIX}policycommandcode -ha 03000000 -cc 14b > run.out
+    checkSuccess $?
+
+    echo "Source: Read policy digest, for debug"
+    ${PREFIX}policygetdigest -ha 03000000 > run.out
+    checkSuccess $?
+
+    echo "Source: Wrap the sealed AES key with the target EK public key"
+    ${PREFIX}duplicate -ho 80000001 -hp 80000002 -od tmpsdbdup.bin -oss tmpss.bin -se0 03000000 0 > run.out
+    checkSuccess $?
+
+    echo "Source: Flush the sealed AES key 80000001"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "Source: Flush the EK public key 80000002"
+    ${PREFIX}flushcontext -ha 80000002 > run.out
+    checkSuccess $?
+
+# Transmit the sealed AEK key wrapped with the target EK back to the target
+# tmpsdbdup.bin private part wrapped in EK public key, via symmetric seed
+# tmpsdbpub.bin public part 
+# tmpss.bin symmetric seed, encrypted with EK public key
+
+# Target
+
+# NOTE This assumes that the endorsement hierarchy password is Empty.
+# This may be a bad assumption if an attacker can get access and
+# change it.
+
+    echo "Target: Recreate the -${ALG} EK at 80000001"
+    ${PREFIX}createek -alg ${ALG} -cp -noflush > run.out
+    checkSuccess $?
+
+    echo "Target: Start a policy session, EK use needs a policy"
+    ${PREFIX}startauthsession -se p > run.out
+    checkSuccess $?
+
+    echo "Target: Policy Secret with PWAP session and (Empty) endorsement auth"
+    ${PREFIX}policysecret -ha 4000000b -hs 03000000 -pwde "" > run.out
+    checkSuccess $?
+
+    echo "Target: Read policy digest for debug"
+    ${PREFIX}policygetdigest -ha 03000000 > run.out
+    checkSuccess $?
+
+    echo "Target: Import the sealed AES key under the EK storage key"
+    ${PREFIX}import -hp 80000001 -ipu tmpsdbpub.bin -id tmpsdbdup.bin -iss tmpss.bin -opr tmpsdbpriv.bin -se0 03000000 1
+    checkSuccess $?
+
+    echo "Target: Restart the policy session"
+    ${PREFIX}policyrestart -ha 03000000
+    checkSuccess $?
+
+    echo "Target: Policy Secret with PWAP session and (Empty) endorsement auth"
+    ${PREFIX}policysecret -ha 4000000b -hs 03000000 -pwde "" > run.out
+    checkSuccess $?
+
+    echo "Target: Read policy digest for debug"
+    ${PREFIX}policygetdigest -ha 03000000 > run.out
+    checkSuccess $?
+
+    echo "Target: Load the sealed AES key under the EK storage key"
+    ${PREFIX}load -hp 80000001 -ipu tmpsdbpub.bin -ipr tmpsdbpriv.bin -se0 03000000 1 > run.out
+    checkSuccess $?
+
+    echo "Target: Unseal the AES key"
+    ${PREFIX}unseal -ha 80000002 -of tmpaeskeytgt.bin > run.out
+    checkSuccess $?
+
+# A real target would not have access to tmpaeskeysrc.bin for the compare
+
+    echo "Target: Verify the unsealed result, same at source, for debug"
+    diff tmpaeskeytgt.bin tmpaeskeysrc.bin
+    checkSuccess $?
+
+    echo "Flush the EK"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "Flush the sealed AES key"
+    ${PREFIX}flushcontext -ha 80000002 > run.out
+    checkSuccess $?
+
+    echo "Flush the policy session"
+    ${PREFIX}flushcontext -ha 03000000 > run.out
+    checkSuccess $?
+
+done
+
 rm -f tmpo1name.bin
 rm -f tmpsignpriv.bin
 rm -f tmpsignpub.bin
@@ -396,6 +558,13 @@ rm -f tmpprivkey.pem
 rm -f tmpecprivkey.pem
 rm -f tmppub.bin
 rm -f tmppriv.bin
+rm -f tmpekpub.pem
+rm -f tmpaeskeysrc.bin
+rm -f tmpsdbpub.bin
+rm -f tmpsdbdup.bin
+rm -f tmpss.bin
+rm -f tmpsdbpriv.bin
+rm -f tmpaeskeytgt.bin
 
 # ${PREFIX}flushcontext -ha 80000001
 # ${PREFIX}flushcontext -ha 80000002

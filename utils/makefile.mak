@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 1034 2017-06-30 20:49:51Z kgoldman $		#
+#	      $Id: makefile.mak 1094 2017-11-08 21:50:29Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015.						#
 # 										#
@@ -188,6 +188,9 @@ imaextend.exe:	imaextend.o imalib.o $(LIBTSS)
 createek.exe:	createek.o ekutils.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
+createekcert.exe:	createekcert.o ekutils.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
 importpem.exe:	importpem.o objecttemplates.o ekutils.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o objecttemplates.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
@@ -203,7 +206,13 @@ nvwrite.exe:	nvwrite.o ekutils.o cryptoutils.o $(LIBTSS)
 readpublic.exe:	readpublic.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
+sign.exe:	sign.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
 verifysignature.exe:	verifysignature.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
+zgen2phase.exe:	zgen2phase.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
 signapp.exe:	signapp.o ekutils.o cryptoutils.o $(LIBTSS)
@@ -211,6 +220,12 @@ signapp.exe:	signapp.o ekutils.o cryptoutils.o $(LIBTSS)
 
 writeapp.exe:	writeapp.o ekutils.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
+tpm2pem.exe:	tpm2pem.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
+tpmpublic2eccpoint.exe:	tpmpublic2eccpoint.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)
 
 pprovision.exe:	pprovision.o ekutils.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -ltss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)

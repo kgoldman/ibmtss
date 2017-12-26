@@ -3,9 +3,9 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 1009 2017-05-13 18:56:27Z kgoldman $		*/
+/*	      $Id: policysigned.c 1069 2017-08-29 17:11:32Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -90,6 +90,9 @@ int main(int argc, char *argv[])
     INT32			expiration = 0;
     const char			*signingKeyFilename = NULL;
     const char			*signingKeyPassword = NULL;
+    const char			*signatureFilename = NULL;
+    uint8_t			*signature = NULL;
+    size_t			signatureLength;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMT_HA 			aHash;
     
@@ -175,6 +178,16 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-is") == 0) {
+	    i++;
+	    if (i < argc) {
+		signatureFilename = argv[i];
+	    }
+	    else {
+		printf("-is option needs a value\n");
+		printUsage();
+	    }
+	}
 	else if (strcmp(argv[i],"-tk") == 0) {
 	    i++;
 	    if (i < argc) {
@@ -244,8 +257,12 @@ int main(int argc, char *argv[])
 	printf("Missing handle parameter -ha\n");
 	printUsage();
     }
-    if (signingKeyFilename == NULL) {
-	printf("Missing handle parameter -sk\n");
+    if ((signingKeyFilename == NULL) && (signatureFilename == NULL)) {
+	printf("Missing signing key -sk or signature -is\n");
+	printUsage();
+    }
+    if ((signingKeyFilename != NULL) && (signatureFilename != NULL)) {
+	printf("Cannot have both signing key -sk and signature -is\n");
 	printUsage();
     }
     if (rc == 0) {
@@ -273,26 +290,49 @@ int main(int argc, char *argv[])
 	in.auth.sigAlg = TPM_ALG_RSASSA;	/* sample uses RSASSA */
 	in.auth.signature.rsassa.hash = halg;
     }
-    /* calculate the digest from the 4 components according to the TPM spec Part 3. */
-    /* aHash = HauthAlg(nonceTPM || expiration || cpHashA || policyRef)	(13) */
-    if (rc == 0) {
-	INT32 expirationNbo = htonl(in.expiration);
-	aHash.hashAlg = halg;
-	/* This varargs function takes length / array pairs.  It skips pairs with a length of zero.
-	   This handles the three optional components (default length zero) with no special
-	   handling. */
-	rc = TSS_Hash_Generate(&aHash,		/* largest size of a digest */
-			       in.nonceTPM.t.size, in.nonceTPM.t.buffer,
-			       sizeof(INT32), &expirationNbo,
-			       in.cpHashA.t.size, in.cpHashA.t.buffer,
-			       in.policyRef.t.size, in.policyRef.t.buffer,
-			       0, NULL);
+    /* sample code using a PEM key to sign */
+    if (signingKeyFilename != NULL) {
+	/* calculate the digest from the 4 components according to the TPM spec Part 3. */
+	/* aHash = HauthAlg(nonceTPM || expiration || cpHashA || policyRef)	(13) */
+	if (rc == 0) {
+	    INT32 expirationNbo = htonl(in.expiration);
+	    aHash.hashAlg = halg;
+	    /* This varargs function takes length / array pairs.  It skips pairs with a length of
+	       zero.  This handles the three optional components (default length zero) with no
+	       special handling. */
+	    rc = TSS_Hash_Generate(&aHash,		/* largest size of a digest */
+				   in.nonceTPM.t.size, in.nonceTPM.t.buffer,
+				   sizeof(INT32), &expirationNbo,
+				   in.cpHashA.t.size, in.cpHashA.t.buffer,
+				   in.policyRef.t.size, in.policyRef.t.buffer,
+				   0, NULL);
+	}
+	/* sign aHash */
+	if (rc == 0) {
+	    rc = signAHash(&in.auth.signature.rsassa.sig,	/* sample uses RSASSA */
+			   &aHash,
+			   signingKeyFilename, signingKeyPassword);
+	}
     }
-    /* sign aHash */
-    if (rc == 0) {
-	rc = signAHash(&in.auth.signature.rsassa.sig,	/* sample uses RSASSA */
-		       &aHash,
-		       signingKeyFilename, signingKeyPassword);
+    /* sample code where the signature has been generated externally */
+    if (signatureFilename != NULL) {
+	if (rc == 0) {
+	    rc = TSS_File_ReadBinaryFile((unsigned char **)&signature,     /* freed @1 */
+					 &signatureLength,
+					 signatureFilename);
+	}
+	if (rc == 0) {
+	    if (signatureLength > sizeof(in.auth.signature.rsassa.sig.t.buffer)) {
+		printf("Signature length %lu is greater than buffer %lu\n",
+		       (unsigned long)signatureLength,
+		       (unsigned long)sizeof(in.auth.signature.rsassa.sig.t.buffer));
+		rc = TSS_RC_RSA_SIGNATURE;
+	    }
+	}
+	if (rc == 0) {
+	    in.auth.signature.rsassa.sig.t.size = signatureLength;
+	    memcpy(&in.auth.signature.rsassa.sig.t.buffer, signature, signatureLength); 
+	}
     }
     /* Start a TSS context */
     if (rc == 0) {
@@ -335,6 +375,7 @@ int main(int argc, char *argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
+    free(signature);	/* @1 */
     return rc;
 }
 
@@ -445,15 +486,16 @@ static void printUsage(void)
     printf("\n");
     printf("\t-hk signature verification key handle\n");
     printf("\t-ha policy session handle\n");
-    printf("\t-in nonceTPM file (default none)\n");
-    printf("\t-cp cpHash file (default none)\n");
-    printf("\t-pref policyRef file (default none)\n");
-    printf("\t-exp expiration in decimal (default none)\n");
-    printf("\t-halg (sha1, sha256) (default sha256)\n");
+    printf("\t[-in nonceTPM file (default none)]\n");
+    printf("\t[-cp cpHash file (default none)]\n");
+    printf("\t[-pref policyRef file (default none)]\n");
+    printf("\t[-exp expiration in decimal (default none)]\n");
+    printf("\t[-halg (sha1, sha256) (default sha256)]\n");
     printf("\t-sk RSA signing key file name (PEM format)\n");
-    printf("\t\tThis utility uses this signing key.\n");
-    printf("\t\tA real application might use a smart card or other HSM.\n");
-    printf("\t-pwdk signing key password (default null)\n");
+    printf("\t\tUse this signing key.\n");
+    printf("\t-is signature file name\n");
+    printf("\t\tUse this signature from e.g., a smart card or other HSM.\n");
+    printf("\t[-pwdk signing key password (default null)]\n");
     printf("\t[-tk ticket file name]\n");
     printf("\t[-to timeout file name]\n");
     exit(1);	

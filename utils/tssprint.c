@@ -3,9 +3,9 @@
 /*			     Structure Print and Scan Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 970 2017-03-20 15:03:57Z kgoldman $		*/
+/*	      $Id: tssprint.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -503,8 +503,46 @@ void TSS_TPM2B_ATTEST_Print(TPM2B_ATTEST *source, unsigned int indent)
 void TSS_TPMT_SYM_DEF_OBJECT_Print(TPMT_SYM_DEF_OBJECT *source, unsigned int indent)
 {
     TSS_TPM_ALG_ID_Print(source->algorithm, indent+2);
-    printf("%*s" "TPMU_SYM_KEY_BITS: %u\n", indent, "", source->keyBits.sym);
+    printf("%*s" "TPMU_SYM_KEY_BITS: %u\n", indent+2, "", source->keyBits.sym);
     TSS_TPM_ALG_ID_Print(source->mode.sym, indent+2);
+    return;
+}
+
+void TSS_TPMS_SCHEME_XOR_Print(TPMS_SCHEME_XOR *source, unsigned int indent)
+{
+    TSS_TPM_ALG_ID_Print(source->hashAlg, indent+2);
+    TSS_TPM_ALG_ID_Print(source->kdf, indent+2);
+    return;
+}
+
+/* Table 139 - Definition of TPMU_SCHEME_KEYEDHASH Union <IN/OUT, S> */
+
+void TSS_TPMU_SCHEME_KEYEDHASH_Print(TPMU_SCHEME_KEYEDHASH *source, TPMI_ALG_KEYEDHASH_SCHEME selector,
+				     unsigned int indent)
+{
+    switch (selector) {
+#ifdef TPM_ALG_HMAC
+      case TPM_ALG_HMAC:
+	TSS_TPM_ALG_ID_Print(source->hmac.hashAlg, indent+2);
+	break;
+#endif
+#ifdef TPM_ALG_XOR
+      case TPM_ALG_XOR:
+	TSS_TPMS_SCHEME_XOR_Print(&source->xorr, indent+2);
+	break;
+#endif
+      default:
+	printf("%*s" "TPMU_SCHEME_KEYEDHASH selection %04hx not implemented\n", indent, "", selector);
+    }
+    return;
+}
+
+/* Table 140 - Definition of TPMT_KEYEDHASH_SCHEME Structure */
+
+void TSS_TPMT_KEYEDHASH_SCHEME_Print(TPMT_KEYEDHASH_SCHEME *source, unsigned int indent)
+{
+    TSS_TPM_ALG_ID_Print(source->scheme, indent+2);
+    TSS_TPMU_SCHEME_KEYEDHASH_Print(&source->details, source->scheme, indent+2);
     return;
 }
 
@@ -624,7 +662,7 @@ void TSS_TPMU_SIGNATURE_Print(TPMU_SIGNATURE *source, TPMI_ALG_SIG_SCHEME select
 	break;
 #endif
       default:
-	printf("%*s" "TPMU_SIGNATURE selection not implemented\n", indent, "");
+	printf("%*s" "TPMU_SIGNATURE selection %04hx not implemented\n", indent, "", selector);
 	
     }
 }
@@ -664,7 +702,7 @@ void TSS_TPMI_ALG_PUBLIC_Print(TPMI_ALG_PUBLIC source, unsigned int indent)
 	break;
 #endif
       default:
-	printf("%*s" "TPMI_ALG_PUBLIC: %04hx not implemented\n", indent, "", source);
+	printf("%*s" "TPMI_ALG_PUBLIC: selection %04hx not implemented\n", indent, "", source);
     }
     return;
 }
@@ -718,7 +756,7 @@ void TSS_TPMS_RSA_PARMS_Print(TPMS_RSA_PARMS *source, unsigned int indent)
     TSS_TPMT_SYM_DEF_OBJECT_Print(&source->symmetric, indent+2);
     TSS_TPMT_RSA_SCHEME_Print(&source->scheme, indent+2);
     TSS_TPMI_RSA_KEY_BITS_Print(source->keyBits, indent+2);
-    printf("%*s" "TPMS_RSA_PARMS exponent %08x\n", indent, "", source->exponent);
+    printf("%*s" "TPMS_RSA_PARMS exponent %08x\n", indent+2, "", source->exponent);
     return;
 }
 
@@ -733,16 +771,21 @@ void TSS_TPMS_ECC_PARMS_Print(TPMS_ECC_PARMS *source, unsigned int indent)
     return;
 }
 
+void TSS_TPMS_KEYEDHASH_PARMS_Print(TPMS_KEYEDHASH_PARMS *source, unsigned int indent)
+{
+    TSS_TPMT_KEYEDHASH_SCHEME_Print(&source->scheme, indent+2);
+    return;
+}
+
+
 /* Table 182 - Definition of TPMU_PUBLIC_PARMS Union <IN/OUT, S> */
 
 void TSS_TPMU_PUBLIC_PARMS_Print(TPMU_PUBLIC_PARMS *source, uint32_t selector, unsigned int indent)
 {
     switch (selector) {
-#if 0
       case TPM_ALG_KEYEDHASH:
 	TSS_TPMS_KEYEDHASH_PARMS_Print(&source->keyedHashDetail, indent+2);
 	break;
-#endif
 #if 0
       case TPM_ALG_SYMCIPHER:
 	TSS_TPMS_SYMCIPHER_PARMS_Print(&source->symDetail, indent+2);
@@ -759,7 +802,7 @@ void TSS_TPMU_PUBLIC_PARMS_Print(TPMU_PUBLIC_PARMS *source, uint32_t selector, u
 	break;
 #endif
       default:
-	printf("%*s" "TPMU_PUBLIC_PARMS : selector %08x not implemented\n", indent, "", selector);
+	printf("%*s" "TPMU_PUBLIC_PARMS : selector %04x not implemented\n", indent, "", selector);
     }
     return;
 }
@@ -797,22 +840,17 @@ void TSS_TPMA_NV_Print(TPMA_NV source, unsigned int indent)
       case TPM_NT_COUNTER:
 	printf("%*s" "TPM_NT_COUNTER\n", indent, "");
 	break;
-	break;
       case TPM_NT_BITS:
 	printf("%*s" "TPM_NT_COUNTER\n", indent, "");
-	break;
 	break;
       case TPM_NT_EXTEND:
 	printf("%*s" "TPM_NT_EXTEND\n", indent, "");
 	break;
-	break;
       case TPM_NT_PIN_FAIL:
 	printf("%*s" "TPM_NT_PIN_FAIL\n", indent, "");
 	break;
-	break;
       case TPM_NT_PIN_PASS:
 	printf("%*s" "TPM_NT_PIN_PASS\n", indent, "");
-	break;
 	break;
       default:
 	printf("%*s %02x" "type unknown\n", indent, "", nvType);

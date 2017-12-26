@@ -3,7 +3,7 @@
 /*			    EC_Ephemeral					*/
 /*	     		Written by Bill Martin 					*/
 /*                 Green Hills Integrity Software Services 			*/
-/*	      $Id: ecephemeral.c 987 2017-04-17 18:27:09Z kgoldman $			*/
+/*	      $Id: ecephemeral.c 1064 2017-08-24 17:24:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -47,18 +47,14 @@
 #include <string.h>
 #include <stdint.h>
 
-
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include <tss2/tssmarshal.h>
 
-
 static void printUsage(void);
 
-
 int verbose = FALSE;
-
 
 int main(int argc, char *argv[])
 {
@@ -69,6 +65,7 @@ int main(int argc, char *argv[])
     EC_Ephemeral_Out            out;
     TPMI_ECC_CURVE              curveID = TPM_ECC_NONE;
     const char                  *QFilename = NULL;
+    const char                  *counterFilename = NULL;
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -105,7 +102,16 @@ int main(int argc, char *argv[])
                 printUsage();
             }
         }
-	else if (strcmp(argv[i],"-h") == 0) {
+        else if (strcmp(argv[i], "-cf")  == 0) {
+	    i++;
+	    if (i < argc) {
+		counterFilename = argv[i];
+	    } else {
+		printf("-cf option needs a value\n");
+		printUsage();
+	    }
+	}
+ 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
@@ -148,13 +154,16 @@ int main(int argc, char *argv[])
                                      (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshal,
 				     QFilename);
     }
-    if (rc == 0)
-	printf ("counter is %d\n", out.counter);
     if (rc == 0) {
-	if (verbose) {
-	    printf("counter is %d\n", out.counter);
-	    printf("ecephemeral: success\n");
+	if (verbose) printf("counter is %d\n", out.counter);
+	if (counterFilename != NULL)  {
+	    rc = TSS_File_WriteStructure(&out.counter,
+					 (MarshalFunction_t)TSS_UINT16_Marshal,
+					 counterFilename);
 	}
+    }
+    if (rc == 0) {
+	if (verbose) printf("ecephemeral: success\n");
     }
     else {
 	const char *msg;
@@ -180,6 +189,7 @@ static void printUsage(void)
     printf("\t\tbnp256\n");
     printf("\t\tnistp256\n");
     printf("\t\tnistp384\n");
-    printf("\t[-oq Q ephemeral public key file name (default do not save)]\n");
+    printf("\t[-oq output Q ephemeral public key file name (default do not save)]\n");
+    printf("\t[-cf output counter file name (default do not save)]\n");
     exit(1); 
 }

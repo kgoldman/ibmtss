@@ -3,9 +3,9 @@
 /*			    TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss.c 992 2017-04-19 15:22:19Z kgoldman $			*/
+/*	      $Id: tss.c 1099 2017-11-28 18:46:40Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2016.					*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -1526,7 +1526,7 @@ static TPM_RC TSS_Name_GetAllNames(TSS_CONTEXT *tssContext,
 	rc = TSS_GetCommandHandleCount(tssContext->tssAuthContext, &commandHandleCount);
 	if (tssVverbose) printf("TSS_Name_GetAllNames: commandHandleCount %u\n", commandHandleCount);
     }
-    for (i = 0 ; i < commandHandleCount ; i++) {
+    for (i = 0 ; (rc == 0) && (i < commandHandleCount) ; i++) {
 	/* get a handle from the command stream */
 	if (rc == 0) {
 	    rc = TSS_GetCommandHandle(tssContext->tssAuthContext,
@@ -3796,22 +3796,24 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
 	if (rc == 0) {
 	    rc = TSS_Public_Load(tssContext, &bPublic, in->tpmKey, NULL);
 	}
- 	/* generate the salt and encrypted salt based on the asymmetric key type */
-	if (bPublic.publicArea.type == TPM_ALG_ECC) {
-	    rc = TSS_ECC_Salt(&extra->salt,
-			      &in->encryptedSalt,
-			      &bPublic.publicArea);
-	} 
-	else if (bPublic.publicArea.type == TPM_ALG_RSA) {
-	    rc = TSS_RSA_Salt(&extra->salt,
-			      &in->encryptedSalt,
-			      &bPublic.publicArea);
-	} 
-	else {
-	    if (tssVerbose)
-		printf("TSS_PR_StartAuthSession: public key type %04x not supported\n",
-		       bPublic.publicArea.type);
-	    rc = TSS_RC_BAD_SALT_KEY;
+	if (rc == 0) {
+	    /* generate the salt and encrypted salt based on the asymmetric key type */
+	    if (bPublic.publicArea.type == TPM_ALG_ECC) {
+		rc = TSS_ECC_Salt(&extra->salt,
+				  &in->encryptedSalt,
+				  &bPublic.publicArea);
+	    } 
+	    else if (bPublic.publicArea.type == TPM_ALG_RSA) {
+		rc = TSS_RSA_Salt(&extra->salt,
+				  &in->encryptedSalt,
+				  &bPublic.publicArea);
+	    } 
+	    else {
+		if (tssVerbose)
+		    printf("TSS_PR_StartAuthSession: public key type %04x not supported\n",
+			   bPublic.publicArea.type);
+		rc = TSS_RC_BAD_SALT_KEY;
+	    }
 	}
 #else
 	tssContext = tssContext;
@@ -3838,7 +3840,9 @@ static TPM_RC TSS_RSA_Salt(TPM2B_DIGEST 		*salt,
 	    int b2 = publicArea->objectAttributes.val & TPMA_OBJECT_SIGN;
 	    int b3 = !(publicArea->objectAttributes.val & TPMA_OBJECT_DECRYPT);
 	    int b4 = publicArea->parameters.rsaDetail.keyBits != 2048;
-	    int b5 = publicArea->parameters.rsaDetail.exponent != 0;
+	    int b5 = (publicArea->parameters.rsaDetail.exponent != 0) &&
+		     /* some HW TPMs return 010001 for the RSA EK with the default IWG template */
+		     (publicArea->parameters.rsaDetail.exponent != 0x010001);
 	    /* TSS support checks */
 	    if (b1 || b2 || b3 || b4 || b5) {
 		if (tssVerbose)

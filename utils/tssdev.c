@@ -3,9 +3,9 @@
 /*		Linux Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.c 1023 2017-06-14 17:14:41Z kgoldman $ 		*/
+/*	      $Id: tssdev.c 1072 2017-09-11 19:55:31Z kgoldman $ 		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -45,7 +45,6 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#include <fcntl.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -112,13 +111,10 @@ static uint32_t TSS_Dev_Open(TSS_CONTEXT *tssContext)
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_Dev_Open: Opening %s\n", tssContext->tssDevice);
 	tssContext->dev_fd = open(tssContext->tssDevice, O_RDWR);
-	if (tssContext->dev_fd <= 0) {
+	if (tssContext->dev_fd < 0) {
 	    if (tssVerbose) printf("TSS_Dev_Open: Error opening %s\n", tssContext->tssDevice);
 	    rc = TSS_RC_NO_CONNECTION;
 	}
-    }
-    if (rc == 0) {
-	fcntl(tssContext->dev_fd, O_RDONLY | O_NONBLOCK);
     }
     return rc;
 }

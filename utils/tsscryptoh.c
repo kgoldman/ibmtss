@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id: tsscrypto.c 838 2016-11-22 22:44:57Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

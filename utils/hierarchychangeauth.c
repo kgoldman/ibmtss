@@ -3,9 +3,9 @@
 /*			    HierarchyChangeAuth	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hierarchychangeauth.c 1026 2017-06-19 14:45:07Z kgoldman $	*/
+/*	      $Id: hierarchychangeauth.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -354,6 +354,5 @@ static void printUsage(void)
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
     exit(1);	
 }

@@ -4,9 +4,9 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
-/*	      $Id: tsscrypto.c 1005 2017-05-05 16:18:34Z kgoldman $		*/
+/*	      $Id: tsscrypto.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -38,7 +38,7 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
-/* Interface to OpenSSL version 1.0 crypto library */
+/* Interface to OpenSSL version 1.0 or 1.1 crypto library */
 
 #include <string.h>
 #include <stdio.h>
@@ -607,7 +607,8 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     TPM2B_ECC_PARAMETER	p_tpmX_For_KDFE;
     CURVE_DATA 		eCurveData;
 
-    /* only NIST P256 is currently supported */
+    eCurveData.ctx = NULL;	/* for free */
+   /* only NIST P256 is currently supported */
     if (rc == 0) {
 	if ((publicArea->parameters.eccDetail.curveID != TPM_ECC_NIST_P256)) {
 	    if (tssVerbose)

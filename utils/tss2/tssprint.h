@@ -3,7 +3,7 @@
 /*			     Structure Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.h 967 2017-03-17 18:58:34Z kgoldman $		*/
+/*	      $Id: tssprint.h 1092 2017-11-03 14:10:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -113,6 +113,12 @@ extern "C" {
     LIB_EXPORT
     void TSS_TPMT_SYM_DEF_OBJECT_Print(TPMT_SYM_DEF_OBJECT *source, unsigned int indent);
     LIB_EXPORT
+    void TSS_TPMS_SCHEME_XOR_Print(TPMS_SCHEME_XOR *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMU_SCHEME_KEYEDHASH_Print(TPMU_SCHEME_KEYEDHASH *source, TPMI_ALG_KEYEDHASH_SCHEME selector, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMT_KEYEDHASH_SCHEME_Print(TPMT_KEYEDHASH_SCHEME  *source, unsigned int indent);
+    LIB_EXPORT
     void TSS_TPMT_KDF_SCHEME_Print(TPMT_KDF_SCHEME *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMT_RSA_SCHEME_Print(TPMT_RSA_SCHEME *source, unsigned int indent);
@@ -138,6 +144,8 @@ extern "C" {
     void TSS_TPMS_ECC_PARMS_Print(TPMS_ECC_PARMS *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMS_RSA_PARMS_Print(TPMS_RSA_PARMS *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMS_KEYEDHASH_PARMS_Print(TPMS_KEYEDHASH_PARMS *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMU_PUBLIC_PARMS_Print(TPMU_PUBLIC_PARMS *source, UINT32 selector, unsigned int indent);
     LIB_EXPORT

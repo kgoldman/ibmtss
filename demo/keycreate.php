@@ -1,4 +1,4 @@
-<!-- $Id: keycreate.php 910 2017-01-13 16:38:29Z kgoldman $ -->
+<!-- $Id: keycreate.php 1104 2017-12-06 13:58:03Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -79,7 +79,7 @@ if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
     $label= $_POST['label'];
     $msg = $_POST['msg'];
     
-    $retval == 0;
+    $retval = 0;
     if ($command == 'Create') {
 	// parameter checks
 	if ($retval == 0) {

@@ -3,9 +3,9 @@
 /*			   ReadClock						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: readclock.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: readclock.c 1115 2017-12-13 23:35:20Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -61,13 +61,35 @@ int main(int argc, char *argv[])
     int				i;    /* argc iterator */
     TSS_CONTEXT			*tssContext = NULL;
     ReadClock_Out 		out;
+    const char			*timeFilename = NULL;
+    const char			*clockFilename = NULL;
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
-	if (strcmp(argv[i],"-h") == 0) {
+	if (strcmp(argv[i],"-otime") == 0) {
+	    i++;
+	    if (i < argc) {
+		timeFilename = argv[i];
+	    }
+	    else {
+		printf("-otime option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-oclock") == 0) {
+	    i++;
+	    if (i < argc) {
+		clockFilename = argv[i];
+	    }
+	    else {
+		printf("-oclock option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
@@ -98,6 +120,17 @@ int main(int argc, char *argv[])
 	    rc = rc1;
 	}
     }
+    /* write the fields in binary host byte order */
+    if ((rc == 0) && (timeFilename != NULL)) {
+	rc = TSS_File_WriteBinaryFile((uint8_t *)&out.currentTime.time,
+				      sizeof(((TPMS_TIME_INFO *)NULL)->time),
+				      timeFilename) ;
+    }
+    if ((rc == 0) && (clockFilename != NULL)) {
+	rc = TSS_File_WriteBinaryFile((uint8_t *)&out.currentTime.clockInfo.clock,
+				      sizeof(((TPMS_TIME_INFO *)NULL)->clockInfo.clock),
+				      clockFilename);
+    }
     if (rc == 0) {
 	TSS_TPMS_TIME_INFO_Print(&out.currentTime, 0);
 	if (verbose) printf("readclock: success\n");
@@ -120,6 +153,9 @@ static void printUsage(void)
     printf("readclock\n");
     printf("\n");
     printf("Runs TPM2_ReadClock\n");
+    printf("\n");
+    printf("\t[-otime time file name (default do not save)]\n");
+    printf("\t[-oclock clock file name (default do not save)]\n");
     printf("\n");
     exit(1);	
 }

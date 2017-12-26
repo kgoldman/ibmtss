@@ -3,7 +3,7 @@
 /*			   Nuvoton Preconfig 	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2preconfig.c 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*	      $Id: ntc2preconfig.c 1055 2017-08-08 20:30:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -62,7 +62,6 @@
 
 static void printUsage(void);
 static TPM_RC fixedConfig(NTC2_CFG_STRUCT *preConfig);
-static void pRequiredConfig(NTC2_CFG_STRUCT *preConfig);
 static void mergeConfig(NTC2_CFG_STRUCT *preConfigOut,
 			const NTC2_CFG_STRUCT *preConfigIn,
 			const NTC2_CFG_STRUCT *preConfigSet);
@@ -78,7 +77,8 @@ int main(int argc, char *argv[])
     NTC2_PreConfig_In 		in;
     NTC2_CFG_STRUCT 		preConfigSet;		/* flags mark values to change */
     NTC2_CFG_STRUCT 		preConfigIn;		/* values to change */
-    int 			pRequiredVal = FALSE;	/* TRUE to set P required values */
+    int				p8 = FALSE;
+    int				p9 = FALSE;
     int 			override = FALSE;	/* TRUE to override P required values */
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
@@ -88,8 +88,11 @@ int main(int argc, char *argv[])
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	int inttmp;	/* for sccanf */
-	if (strcmp(argv[i],"-prequired") == 0) {
-	    pRequiredVal = TRUE;
+	if (strcmp(argv[i],"-p8") == 0) {
+	    p8 = TRUE;
+	}
+	else if (strcmp(argv[i],"-p9") == 0) {
+	    p9 = TRUE;
 	}
 	else if (strcmp(argv[i],"-override") == 0) {
 	    override = TRUE;
@@ -310,14 +313,18 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
-    /* can't specify both of these options */
-    if (pRequiredVal && override) {
-	printf("\nCannot have both -override and -prequired\n");
+    if (p8 && p9) {
+	printf("-p8 and -p9 cannot both be specified\n");
+	printUsage();
+    }
+     /* can't specify both hard coded and override */
+    if ((p8 || p9) && override) {
+	printf("\nCannot have both -override and -p8 or -p9\n");
 	printUsage();
     }
     /* must specify one of these options */
-    if (!pRequiredVal && !override) {
-	printf("\nNeed either -override or -prequired\n");
+    if (!(p8 || p9) && !override) {
+	printf("\nNeed either -p8, -p9, or -override\n");
 	printUsage();
     }
     /* if override, at least one of the registers must be specified */
@@ -342,8 +349,8 @@ int main(int argc, char *argv[])
 	printf("\n-override requires at least one value to set\n");
 	printUsage();
     }
-    /* if System P required values, none of the registers can be specified */
-    if (pRequiredVal && 
+    /* if hard coded values, none of the registers can be specified */
+    if ((p8 || p9) && 
 	(preConfigSet.i2cLoc1_2 	||
 	 preConfigSet.i2cLoc3_4 	||
 	 preConfigSet.AltCfg  		||
@@ -361,14 +368,14 @@ int main(int argc, char *argv[])
 	 preConfigSet.CFG_I  		||
 	 preConfigSet.CFG_J  		||
 	 preConfigSet.IsValid )) {
-	printf("\n-prequired cannot specify a value to set\n");
+	printf("\n-p8 and -p9  cannot specify a value to set\n");
 	printUsage();
     }
     /* Start a TSS context */
     if (rc == 0) {
 	rc = TSS_Create(&tssContext);
     }
-    /* if overriding System P required values, do read-modify-write */
+    /* if overriding hard coded values, do read-modify-write */
     if (override) {
 	/* call TSS NTC2_CC_GetConfig to read the current configuration parameters */
 	if (rc == 0) {
@@ -389,13 +396,13 @@ int main(int argc, char *argv[])
 	}
     }
     /* if setting System P required values */
-    if (pRequiredVal) {
+    if (p8 || p9) {
 	if (rc == 0) {
-	    pRequiredConfig(&in.preConfig);
+	    requiredConfig(&in.preConfig, p9);
 	}
     }
     /* check that Nuvoton fixed values are in the correct state.  This is a sanity check for
-       pRequiredVal, but a required test for override */
+       -p8 or -p9, but a required test for override */
     if (rc == 0) {
 	rc = fixedConfig(&in.preConfig);
     }
@@ -427,31 +434,6 @@ int main(int argc, char *argv[])
 	rc = EXIT_FAILURE;
     }
     return rc;
-}
-
-/* pRequiredConfig() fills in the structure with the System P required values */
-
-static void pRequiredConfig(NTC2_CFG_STRUCT *preConfig)
-{
-    preConfig->i2cLoc1_2 	= PREQUIRED_i2cLoc1_2;
-    preConfig->i2cLoc3_4 	= PREQUIRED_i2cLoc3_4;
-    preConfig->AltCfg 		= PREQUIRED_AltCfg;
-    preConfig->Direction 	= PREQUIRED_Direction;
-    preConfig->PullUp 		= PREQUIRED_PullUp;
-    preConfig->PushPull 	= PREQUIRED_PushPull;
-    preConfig->CFG_A 		= PREQUIRED_CFG_A;
-    preConfig->CFG_B 		= PREQUIRED_CFG_B;
-    preConfig->CFG_C 		= PREQUIRED_CFG_C;
-    preConfig->CFG_D 		= PREQUIRED_CFG_D;
-    preConfig->CFG_E 		= PREQUIRED_CFG_E;
-    preConfig->CFG_F 		= PREQUIRED_CFG_F;
-    preConfig->CFG_G 		= PREQUIRED_CFG_G;
-    preConfig->CFG_H 		= PREQUIRED_CFG_H;
-    preConfig->CFG_I 		= PREQUIRED_CFG_I;
-    preConfig->CFG_J 		= PREQUIRED_CFG_J;
-    preConfig->IsValid 		= PREQUIRED_IsValid;
-    preConfig->IsLocked 	= PREQUIRED_IsLocked;
-    return;
 }
 
 /* fixedConfig() is a sanity check that the TPM is not being configured incorrectly.  Certain values
@@ -566,7 +548,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs NTC2_PreConfig\n");
     printf("\n");
-    printf("-prequired - sets the required values for System P, write only\n");
+    printf("-p8 or -p9 Configure Nuvoton TPM for P8 or P9\n");
     printf("-override - permits individual register values, read-modify-write\n");
     printf("\n");
     printf("Values to set, each is a hex byte, (default do not change)\n");

@@ -3,7 +3,7 @@
 /*			    Hmac						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hmac.c 987 2017-04-17 18:27:09Z kgoldman $			*/
+/*	      $Id: hmac.c 1098 2017-11-27 23:07:26Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
 	}
 	if (rc == 0) {
 	    /* data to be HMACed */
-	    in.buffer.t.size = length;
+	    in.buffer.t.size = (uint16_t)length;	/* cast safe, range tested above */
 	    memcpy(in.buffer.t.buffer, buffer, length);
 	}
     }
@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
 	}
 	if (rc == 0) {
 	    /* data to be hashed */
-	    in.buffer.t.size = length;
+	    in.buffer.t.size =(uint16_t) length;	/* cast safe, range tested above */
 	    memcpy(in.buffer.t.buffer, inString, length);
 	}
     }
@@ -339,7 +339,7 @@ static void printUsage(void)
     printf("Runs TPM2_HMAC\n");
     printf("\n");
     printf("\t-hk key handle\n");
-    printf("\t-pwdk password for key (default empty)\n");
+    printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t-if input file to be HMACed\n");
     printf("\t-ic data string to be HMACed\n");
@@ -347,5 +347,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
+    printf("\t\t40 response encrypt\n");
     exit(1);	
 }

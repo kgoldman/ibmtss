@@ -3,7 +3,7 @@
 /*			    NV ReadPublic					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadpublic.c 1042 2017-07-11 14:30:56Z kgoldman $		*/
+/*	      $Id: nvreadpublic.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -289,9 +289,8 @@ static void printUsage(void)
     printf("\t-ha NV index handle\n");
     printf("\t[-nalg expected name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
     printf("\n");
-    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
+    printf("\t-se[0-2] session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
     printf("\t\t40 response encrypt\n");
     printf("\t\t80 audit\n");
     exit(1);	

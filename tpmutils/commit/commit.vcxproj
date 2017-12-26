@@ -78,6 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\utils\applink.c" />
     <ClCompile Include="..\..\utils\commit.c" />
   </ItemGroup>
   <ItemGroup>

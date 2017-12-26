@@ -3,9 +3,9 @@
 /*			    Sign Application					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: signapp.c 980 2017-04-04 21:11:44Z kgoldman $		*/
+/*	      $Id: signapp.c 1099 2017-11-28 18:46:40Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
     TPM_HANDLE 			ekKeyHandle = TPM_RH_NULL;	/* primary key handle */
     TPM2B_PRIVATE 		outPrivate;
     TPM2B_PUBLIC 		outPublic;
-    TPM_HANDLE 			keyHandle;
+    TPM_HANDLE 			keyHandle = TPM_RH_NULL;	/* signing key handle */
     TPMT_SIGNATURE		signature;
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
@@ -367,19 +367,27 @@ int main(int argc, char *argv[])
 		    &signature);
     }
     /* flush the policy session, normally fails */
-    if (verbose) printf("INFO: Flush the policy session %08x\n", policySessionHandle);
-    flush(tssContext, policySessionHandle);
+    if (policySessionHandle != TPM_RH_NULL) {
+	if (verbose) printf("INFO: Flush the policy session %08x\n", policySessionHandle);
+	flush(tssContext, policySessionHandle);
+    }
     /* flush the salt and bind session */
     if (!pwSession) {
-	if (verbose) printf("INFO: Flush the salt session %08x\n", sessionHandle);
-	flush(tssContext, sessionHandle);
+	if (sessionHandle != TPM_RH_NULL) {
+	    if (verbose) printf("INFO: Flush the salt session %08x\n", sessionHandle);
+	    flush(tssContext, sessionHandle);
+	}
     }
     /* flush the primary key */
-    if (verbose) printf("INFO: Flush the primary key %08x\n", ekKeyHandle);
-    flush(tssContext, ekKeyHandle);
+    if (ekKeyHandle != TPM_RH_NULL) {
+	if (verbose) printf("INFO: Flush the primary key %08x\n", ekKeyHandle);
+	flush(tssContext, ekKeyHandle);
+    }
     /* flush the signing key */
-    if (verbose) printf("INFO: Flush the signing key %08x\n", keyHandle);
-    flush(tssContext, keyHandle);
+    if (keyHandle != TPM_RH_NULL) {
+	if (verbose) printf("INFO: Flush the signing key %08x\n", keyHandle);
+	flush(tssContext, keyHandle);
+    }
     {  
 	TPM_RC rc1 = TSS_Delete(tssContext);
 	if (rc == 0) {

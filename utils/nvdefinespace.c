@@ -3,9 +3,9 @@
 /*			    NV Define Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: nvdefinespace.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -552,9 +552,9 @@ static void printUsage(void)
     printf("\t\to sets OWNERWRITE, OWNERREAD\n");
     printf("\t\tp sets PPWRITE, PPREAD (platform)\n");
     printf("\t[-pwdn password for NV index (default empty)]\n");
-    printf("\t\tssts AUTHWRITE (if not PIN index), AUTHREAD\n");
+    printf("\t\tsets AUTHWRITE (if not PIN index), AUTHREAD\n");
     printf("\t[-nalg name algorithm (sha1, sha256, sha384) (default sha256)]\n");
-    printf("\t[-sz data size (default 0)]\n");
+    printf("\t[-sz data size in decimal (default 0)]\n");
     printf("\t\tIgnored for other than ordinary index\n");
     printf("\t[-ty index type (o, c, b, e, p, f) (default ordinary)]\n");
     printf("\t\tordinary, counter, bits, extend, pin pass, pin fail\n");
@@ -574,7 +574,9 @@ static void printUsage(void)
     printf("\t\taw   (AUTHWRITE)\tar  (AUTHREAD)\n");
     printf("\t\tpw   (POLICYWRITE)\tpr  (POLICYREAD)\n");
     printf("\t\tda   (NO_DA) (default set)\n");
+    printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
     exit(1);	
 }

@@ -3,7 +3,7 @@
 /*			    Create Primary	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createprimary.c 1044 2017-07-17 19:05:46Z kgoldman $		*/
+/*	      $Id: createprimary.c 1079 2017-10-04 20:13:43Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -714,9 +714,19 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	printf("Handle %08x\n", out.objectHandle);
-	if (verbose) TSS_PrintAll("createprimary: public key",
-				  out.outPublic.publicArea.unique.rsa.t.buffer,
-				  out.outPublic.publicArea.unique.rsa.t.size);
+	if (algPublic == TPM_ALG_RSA) {
+	    if (verbose) TSS_PrintAll("createprimary: public modulus",
+				      out.outPublic.publicArea.unique.rsa.t.buffer,
+				      out.outPublic.publicArea.unique.rsa.t.size);
+	}
+	else if (algPublic == TPM_ALG_ECC) {
+	    if (verbose) TSS_PrintAll("createprimary: public point X",
+				      out.outPublic.publicArea.unique.ecc.x.t.buffer,
+				      out.outPublic.publicArea.unique.ecc.x.t.size);
+	    if (verbose) TSS_PrintAll("createprimary: public point Y",
+				      out.outPublic.publicArea.unique.ecc.y.t.buffer,
+				      out.outPublic.publicArea.unique.ecc.y.t.size);
+	}
 	if (verbose) printf("createprimary: success\n");
     }
     else {
@@ -746,7 +756,7 @@ static void printUsage(void)
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t[-iu inPublic unique field file (default none)]\n");
     printf("\t[-opu public key file name (default do not save)]\n");
-    printf("\t[oipem public key PEM format file name (default do not save)]\n");
+    printf("\t[-opem public key PEM format file name (default do not save)]\n");
     printf("\t[-tk output ticket file name]\n");
     printf("\t[-ch output creation hash file name]\n");
     printf("\n");

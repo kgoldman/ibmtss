@@ -3,7 +3,7 @@
 /*			    Create Loaded					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id$			*/
+/*	      $Id: createloaded.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     TPMI_DH_OBJECT		parentHandle = 0;
     TPMA_OBJECT			addObjectAttributes;
     TPMA_OBJECT			deleteObjectAttributes;
-    int 			derived = FALSE;
+    int 			derived = FALSE;	/* parent is derivation parent */
     int				keyType = 0;
     uint32_t 			keyTypeSpecified = 0;
     int				rev116 = FALSE;
@@ -501,11 +501,15 @@ int main(int argc, char *argv[])
 	uint16_t written = 0;
 	int32_t size = sizeof(in.inPublic.t.buffer);
 	uint8_t *buffer = in.inPublic.t.buffer;
-	if (!derived) {
+	if (!derived) {		/* not derivation parent */
 	    rc = TSS_TPMT_PUBLIC_Marshal(&publicArea, &written, &buffer, &size);
 	}
-	else {
-	    /* derived key has extra context parameter */
+	else {			/* derivation parent */
+	    /* The API changed from rev 142 to 146.  This is the 146 API.  It is unlikely that any
+	       138 HW TPM will implement the 142 errata, but care must be taken to use a current SW
+	       TPM. */
+	    /* derived key has TPMS_CONTEXT parameter */
+	    publicArea.unique.derive.label.t.size = 0;
 	    publicArea.unique.derive.context.t.size = 0;
 	    /* sensitiveDataOrigin has to be CLEAR in a derived object */	
 	    publicArea.objectAttributes.val &= ~TPMA_OBJECT_SENSITIVEDATAORIGIN;

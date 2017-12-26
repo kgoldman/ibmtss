@@ -1,4 +1,4 @@
-<!-- $Id: pcr.php 900 2017-01-06 19:25:47Z kgoldman $ -->
+<!-- $Id: pcr.php 1104 2017-12-06 13:58:03Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -69,7 +69,7 @@ if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
     $ha = $_POST['ha'];
     $ic = $_POST['ic'];
 
-        $retval == 0;
+    $retval = 0;
     // parameter checks
     if ($retval == 0) {
 	if (strlen($ha) == 0) {

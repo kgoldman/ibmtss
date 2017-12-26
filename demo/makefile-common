@@ -2,7 +2,7 @@
 #			   TPM2 demo common makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile-common 900 2017-01-06 19:25:47Z kgoldman $		#
+#	      $Id: makefile-common 1104 2017-12-06 13:58:03Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -73,7 +73,7 @@ all:					\
 	$(DEST)/policies/policypcr16aaasha256.bin	\
 	$(DEST)/policies/policypcr16aaasha1.bin	\
 					\
-	$(DEST)/libtss.so		\
+	$(DEST)/libtss.so.0.1		\
 					\
 	$(DEST)/clockset		\
 	$(DEST)/create			\
@@ -114,9 +114,11 @@ $(DEST)/policies/policypcr16aaasha1.bin:	$(SRCUTILS)/policies/policypcr16aaasha1
 	cp $(SRCUTILS)/policies/policypcr16aaasha1.bin $(DEST)/policies/policypcr16aaasha1.bin
 	chmod a+r				$(DEST)/policies/policypcr16aaasha1.bin
 
-$(DEST)/libtss.so: 			$(SRCUTILS)/libtss.so
-	cp $(SRCUTILS)/libtss.so 	$(DEST)/libtss.so
-	chmod 777 			$(DEST)/libtss.so
+$(DEST)/libtss.so.0.1: 			$(SRCUTILS)/libtss.so.0.1
+	cp $(SRCUTILS)/libtss.so.0.1 	$(DEST)/libtss.so.0.1
+	chmod 777 			$(DEST)/libtss.so.0.1
+	ln -s $(DEST)/libtss.so.0.1	$(DEST)/libtss.so.0
+	ln -s $(DEST)/libtss.so.0	$(DEST)/libtss.so
 
 $(DEST)/pcrread:			$(SRCUTILS)/pcrread	
 	cp $(SRCUTILS)/pcrread		$(DEST)/pcrread

@@ -3,7 +3,7 @@
 /*			    Commit						*/
 /*	     		Written by Bill Martin 					*/
 /*                 Green Hills Integrity Software Services 			*/
-/*	      $Id: commit.c 987 2017-04-17 18:27:09Z kgoldman $			*/
+/*	      $Id: commit.c 1064 2017-08-24 17:24:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
     const char       		*Kfilename = NULL;
     const char          	*Lfilename = NULL;
     const char          	*Efilename = NULL;
+    const char                  *counterFilename = NULL;
     const char          	*keyPassword = NULL;
     TPMI_SH_AUTH_SESSION        sessionHandle0 = TPM_RS_PW;
     unsigned int                sessionAttributes0 = 0;
@@ -157,6 +158,15 @@ int main(int argc, char *argv[])
 		Efilename = argv[i];
 	    } else {
 		printf("-Ef option needs a value\n");
+		printUsage();
+	    }
+	}
+        else if (strcmp(argv[i], "-cf")  == 0) {
+	    i++;
+	    if (i < argc) {
+		counterFilename = argv[i];
+	    } else {
+		printf("-cf option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -334,7 +344,14 @@ int main(int argc, char *argv[])
 
     }
     if (rc == 0) {
-	/* printf ("counter is %d\n", out.counter); */
+	if (verbose) printf("counter is %d\n", out.counter);
+        if (counterFilename != NULL)  {
+	    rc = TSS_File_WriteStructure(&out.counter,
+					 (MarshalFunction_t)TSS_UINT16_Marshal,
+					 counterFilename);
+        }
+    } 
+    if (rc == 0) {
 	if (verbose) printf("commit: success\n");
     }
     else {
@@ -358,12 +375,13 @@ static void printUsage(void)
     printf("Runs TPM2_Commit\n");
     printf("\n");
     printf("\t-hk key handle\n");
-    printf("\t[-pt point file name]\n");
-    printf("\t[-s2 s2 file name]\n");
-    printf("\t[-y2 y2 file name]\n");
-    printf("\t[-Kf data file]\n");
-    printf("\t[-Lf data file]\n");
-    printf("\t[-Ef data file]\n");
+    printf("\t[-pt point input file name (default empty)]\n");
+    printf("\t[-s2 s2 input file name (default empty)]\n");
+    printf("\t[-y2 y2 input file name (default empty)]\n");
+    printf("\t[-Kf K output data file name (default do not save)]\n");
+    printf("\t[-Lf output data file name (default do not save)]\n");
+    printf("\t[-Ef output data file name (default do not save)]\n");
+    printf("\t[-cf output counter file name (default do not save)]\n");
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

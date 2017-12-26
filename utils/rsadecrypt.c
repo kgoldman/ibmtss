@@ -3,9 +3,9 @@
 /*			   RSA_Decrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsadecrypt.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: rsadecrypt.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -243,6 +243,12 @@ int main(int argc, char *argv[])
 				     &length,
 				     encryptFilename);
     }
+    if (rc == 0) {
+	if (length > MAX_RSA_KEY_BYTES) {
+	    printf("Input data too long %u\n", (unsigned int)length);
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
     /* if an OID was requested, treat the encryptFilename as a hash to be signed */
     if ((rc == 0) && (halg != TPM_ALG_NULL)) {
 	rc = padData(&buffer,		/* realloced to fit */
@@ -257,7 +263,7 @@ int main(int argc, char *argv[])
 
 	/* Table 158 - Definition of {RSA} TPM2B_PUBLIC_KEY_RSA Structure */
 	{
-	    in.cipherText.t.size = length;
+	    in.cipherText.t.size = (uint16_t)length;	/* cast safe, range tested above */
 	    memcpy(in.cipherText.t.buffer, buffer, length);
 	}
 	/* padding scheme */
@@ -418,5 +424,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
+    printf("\t\t40 response encrypt\n");
     exit(1);	
 }

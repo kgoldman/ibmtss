@@ -3,9 +3,9 @@
 /*			   ClockSet						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: clockset.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: clockset.c 1115 2017-12-13 23:35:20Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -65,7 +65,9 @@ int main(int argc, char *argv[])
     char 			hierarchyChar = 'p';
     TPMI_RH_HIERARCHY		authHandle = TPM_RH_PLATFORM;
     const char			*parentPassword = NULL; 
-    uint64_t			newTime = 0;
+    uint64_t			newClock = 0;
+    unsigned int		addSec = 0;
+    const char			*clockFilename = NULL;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
@@ -99,13 +101,33 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
-	else if (strcmp(argv[i],"-time") == 0) {
+	else if (strcmp(argv[i],"-clock") == 0) {
 	    i++;
 	    if (i < argc) {
-		sscanf(argv[i],"%"SCNu64, &newTime);
+		sscanf(argv[i],"%"SCNu64, &newClock);
 	    }
 	    else {
-		printf("Missing parameter for -time\n");
+		printf("Missing parameter for -clock\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-addsec") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%u", &addSec);
+	    }
+	    else {
+		printf("Missing parameter for -addsec\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-iclock") == 0) {
+	    i++;
+	    if (i < argc) {
+		clockFilename = argv[i];
+	    }
+	    else {
+		printf("-iclock option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -187,15 +209,37 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
-    if (newTime == 0) {
-	printf("Missing or bad parameter -time\n");
+    if ((newClock == 0) && (clockFilename == NULL)) {
+	printf("Missing -clock or -iclock\n");
 	printUsage();
     }
-    if (rc == 0) {
-	in.newTime = newTime;
+    if ((newClock != 0) && (clockFilename != NULL)) {
+	printf("Cannot have both -clock and -iclock\n");
+	printUsage();
     }
+    if ((rc == 0) && (newClock != 0)) {
+	in.newTime = newClock;
+    }
+    if ((rc == 0) && (clockFilename != NULL)) {
+	unsigned char *data = NULL;
+	size_t length;
+	if (rc == 0) {
+	    rc = TSS_File_ReadBinaryFile(&data, &length, clockFilename);
+	}
+	if (rc == 0) {
+	    if (length != sizeof(in.newTime)) {
+		printf("Clock file %s length %lu should be %lu\n",
+		       clockFilename, (unsigned long)length, (unsigned long)sizeof(in.newTime));
+	    }
+	}
+	if (rc == 0) {
+	    memcpy((uint8_t *)&in.newTime, data, length);
+	}
+    }	
     /* Table 50 - TPMI_RH_HIERARCHY authHandle */
     if (rc == 0) {
+	in.newTime += (addSec * 1000);	/* new clock is in msec */
+	if (verbose) printf("clockset: New clock %"PRIu64"\n", in.newTime);
 	if (hierarchyChar == 'o') {
 	    authHandle = TPM_RH_OWNER;
 	}
@@ -252,7 +296,9 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_ClockSet\n");
     printf("\n");
-    printf("\t-time new time\n");
+    printf("\t-clock new clock\n");
+    printf("\t-iclock new clock file name\n");
+    printf("\t[-addsec seconds to add to new clock]\n");
     printf("\t-hi hierarchy (o, p) (default platform)\n");
     printf("\t\to owner, p platform\n");
     printf("\t-pwdp password for hierarchy (default empty)\n");

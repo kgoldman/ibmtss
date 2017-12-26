@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*            $Id: Unmarshal.c 790 2016-10-26 19:21:33Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -1287,7 +1287,88 @@ TPMI_ST_COMMAND_TAG_Unmarshal(TPMI_ST_COMMAND_TAG *target, BYTE **buffer, INT32 
     }
     return rc;
 }
- 
+
+/* Table 70 TPMI_ALG_MAC_SCHEME */
+
+TPM_RC
+TPMI_ALG_MAC_SCHEME_Unmarshal(TPMI_ALG_MAC_SCHEME *target, BYTE **buffer, INT32 *size, BOOL allowNull)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TPM_ALG_ID_Unmarshal(target, buffer, size);  
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	switch (*target) {
+#ifdef TPM_ALG_SHA1
+	  case TPM_ALG_SHA1:
+#endif
+#ifdef TPM_ALG_SHA256	
+	  case TPM_ALG_SHA256:
+#endif
+#ifdef TPM_ALG_SHA384
+	  case 	TPM_ALG_SHA384:
+#endif
+#ifdef TPM_ALG_SHA512
+	  case 	TPM_ALG_SHA512:
+#endif
+#ifdef TPM_ALG_SM3_256
+	  case TPM_ALG_SM3_256:
+#endif
+#ifdef TPM_ALG_CMAC
+	  case TPM_ALG_CMAC:
+#endif
+	    break;
+	  case TPM_ALG_NULL:
+	    if (allowNull) {
+		break;
+	    }
+	  default:
+	    rc = TPM_RC_SYMMETRIC;
+	}
+    }
+    return rc;
+}
+    
+/* Table 70 TPMI_ALG_CIPHER_MODE */
+
+TPM_RC
+TPMI_ALG_CIPHER_MODE_Unmarshal(TPMI_ALG_CIPHER_MODE*target, BYTE **buffer, INT32 *size, BOOL allowNull)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TPM_ALG_ID_Unmarshal(target, buffer, size);  
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	switch (*target) {
+#ifdef TPM_ALG_CTR	
+	  case TPM_ALG_CTR:
+#endif
+#ifdef TPM_ALG_OFB	
+	  case TPM_ALG_OFB:
+#endif
+#ifdef TPM_ALG_CBC
+	  case TPM_ALG_CBC:
+#endif
+#ifdef TPM_ALG_CFB	
+	  case TPM_ALG_CFB:
+#endif
+#ifdef TPM_ALG_ECB	
+	  case TPM_ALG_ECB:
+#endif
+	    break;
+	  case TPM_ALG_NULL:
+	    if (allowNull) {
+		break;
+	    }
+	  default:
+	    rc = TPM_RC_MODE;
+	}
+    }
+    return rc;
+}
+
 /* Table 68 - Definition of TPMS_EMPTY Structure <IN/OUT> */
 
 TPM_RC
@@ -2603,7 +2684,7 @@ TPMS_SCHEME_XOR_Unmarshal(TPMS_SCHEME_XOR *target, BYTE **buffer, INT32 *size)
     TPM_RC rc = TPM_RC_SUCCESS;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
+	rc = TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, NO);	/* as of rev 147 */
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TPMI_ALG_KDF_Unmarshal(&target->kdf, buffer, size, YES);

@@ -3,9 +3,9 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 980 2017-04-04 21:11:44Z kgoldman $		*/
+/*	      $Id: eventlib.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016.						*/
+/* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

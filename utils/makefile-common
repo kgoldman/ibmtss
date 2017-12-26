@@ -43,7 +43,7 @@
 
 CCFLAGS += 				\
 	-Wall -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
-	-Wformat=2 -Wold-style-definition \
+	-Wformat=2 -Wold-style-definition -Wno-self-assign \
 	-ggdb -O0 -c
 
 # to compile with optimizations on (warning will result)
@@ -159,11 +159,15 @@ ALL += 	$(LIBTSS)				\
 	stirrandom$(EXE)			\
 	unseal$(EXE)				\
 	verifysignature$(EXE)			\
+	zgen2phase$(EXE)			\
 						\
 	signapp$(EXE)				\
 	writeapp$(EXE)				\
 	timepacket$(EXE)			\
-	createek$(EXE)
+	createek$(EXE)				\
+	createekcert$(EXE)			\
+	tpm2pem$(EXE)				\
+	tpmpublic2eccpoint$(EXE)
 
 ALL	+= 					\
 	ntc2getconfig$(EXE)			\

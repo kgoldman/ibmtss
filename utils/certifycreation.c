@@ -3,7 +3,7 @@
 /*			    CertifyCreation					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: certifycreation.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: certifycreation.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -434,7 +434,7 @@ static void printSignature(CertifyCreation_Out *out)
 static void printUsage(void)
 {
     printf("\n");
-    printf("certify\n");
+    printf("certifycreation\n");
     printf("\n");
     printf("Runs TPM2_CertifyCreation\n");
     printf("\n");
@@ -451,5 +451,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
+    printf("\t\t40 response encrypt\n");
     exit(1);	
 }

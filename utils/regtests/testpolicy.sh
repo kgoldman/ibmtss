@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy.sh 990 2017-04-19 13:31:24Z kgoldman $		#
+#		$Id: testpolicy.sh 1085 2017-10-19 22:03:04Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -280,94 +280,128 @@ echo ""
 # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 #
 # create the policy:
-# after loadexternal, get the name from ${TPM_DATA_DIR}/h80000001.bin
-# 0004 4234 c24f c1b9 de66 93a6 2453 417d 2734 d753 8f6f
+# after loadexternal, get the name from readpublic -ho 80000001 -v
+
+# sha1
+# 00 04 42 34 c2 4f c1 b9 de 66 93 a6 24 53 41 7d 
+# 27 34 d7 53 8f 6f 
+
+# sha256
+# 00 0b 64 ac 92 1a 03 5c 72 b3 aa 55 ba 7d b8 b5 
+# 99 f1 72 6f 52 ec 2f 68 20 42 fc 0e 0d 29 fa e8 
+# 17 99 
 
 # 00000160 plus the above name as text, add a blank line for empty policyRef
-# to create policies/policysigned.txt
-#
-# > policymaker -if policies/policysigned.txt -of policies/policysigned.bin -pr
+# to create policies/policysigned$HALG.txt
 #
 # 0000016000044234c24fc1b9de6693a62453417d2734d7538f6f
+# 00000160000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+#
+# makes sha256 policy by default, policy digest algorithm is separate from Name and signature hash algorithm
+#
+# > policymaker -if policies/policysigned$HALG.txt -of policies/policysigned$HALG.bin -pr
 #
 # 9d 81 7a 4e e0 76 eb b5 cf ee c1 82 05 cc 4c 01 
 # b3 a0 5e 59 a9 b9 65 a1 59 af 1e cd 3d bf 54 fb 
+#
+# de bf 9d fa 3c 98 08 0b f1 7d d1 d0 7b 54 fd e1 
+# 07 93 7f e5 40 50 9e 70 96 aa 73 27 53 b3 83 31 
 #
 # 80000000 primary key
 # 80000001 verification public key
 # 80000002 signing key with policy
 # 03000000 policy session
 
-echo "Load external just the public part of PEM at 80000001"
-${PREFIX}loadexternal -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
-checkSuccess $?
+for HALG in sha1 sha256
+do
 
-echo "Sign a test message with openssl"
-openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
+    echo "Load external just the public part of PEM at 80000001 - $HALG"
+    ${PREFIX}loadexternal -halg $HALG -nalg $HALG -ipem policies/rsapubkey.pem > run.out
+    checkSuccess $?
 
-echo "Verify the signature with 80000001"
-${PREFIX}verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw > run.out
-checkSuccess $?
+    echo "Sign a test message with openssl - $HALG"
+    openssl dgst -$HALG -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 
-echo "Create a signing key under the primary key - policy signed"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysigned.bin > run.out
-checkSuccess $?
+    echo "Verify the signature with 80000001 - $HALG"
+    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if msg.bin -is pssig.bin -raw > run.out
+    checkSuccess $?
 
-echo "Load the signing key under the primary key, at 80000002"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
-checkSuccess $?
+    echo "Create a signing key under the primary key - policy signed - $HALG"
+    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysigned$HALG.bin > run.out
+    checkSuccess $?
 
-echo "Start a policy session"
-${PREFIX}startauthsession -se p > run.out
-checkSuccess $?
+    echo "Load the signing key under the primary key, at 80000002"
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    checkSuccess $?
 
-echo "Sign a digest - policy, should fail"
-${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
-checkFailure $?
+    echo "Start a policy session"
+    ${PREFIX}startauthsession -se p > run.out
+    checkSuccess $?
 
-echo "Policy signed"
-${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg sha1 -pwdk rrrr > run.out
-checkSuccess $?
+    echo "Sign a digest - policy, should fail"
+    ${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
+    checkFailure $?
 
-echo "Get policy digest, should be f877 ..."
-${PREFIX}policygetdigest -ha 03000000 -of tmppol.bin > run.out
-checkSuccess $?
+    echo "Policy signed, sign with PEM key - $HALG"
+    ${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg $HALG -pwdk rrrr > run.out
+    checkSuccess $?
 
-echo "Sign a digest - policy signed"
-${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
-checkSuccess $?
+    echo "Get policy digest, should be f877 ..."
+    ${PREFIX}policygetdigest -ha 03000000 -of tmppol.bin > run.out
+    checkSuccess $?
 
-echo "Start a policy session - save nonceTPM"
-${PREFIX}startauthsession -se p -on noncetpm.bin > run.out
-checkSuccess $?
+    echo "Sign a digest - policy signed"
+    ${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
+    checkSuccess $?
 
-echo "Policy signed with nonceTPM and expiration, create a ticket"
-${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg sha1 -pwdk rrrr -in noncetpm.bin -exp -200 -tk tkt.bin -to to.bin > run.out
-checkSuccess $?
+    echo "Policy restart, set back to zero"
+    ${PREFIX}policyrestart -ha 03000000 > run.out 
+    checkSuccess $?
 
-echo "Sign a digest - policy signed"
-${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
-checkSuccess $?
+    echo "Sign just expiration (uint32_t 4 zeros) with openssl - $HALG"
+    openssl dgst -$HALG -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/zero4.bin
 
-echo "Start a policy session"
-${PREFIX}startauthsession -se p > run.out
-checkSuccess $?
+    echo "Policy signed, signature generated externally - $HALG"
+    ${PREFIX}policysigned -hk 80000001 -ha 03000000 -halg $HALG -is pssig.bin > run.out
+    checkSuccess $?
 
-echo "Policy ticket"
-${PREFIX}policyticket -ha 03000000 -to to.bin -na ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin > run.out
-checkSuccess $?
+    echo "Sign a digest - policy signed"
+    ${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    checkSuccess $?
 
-echo "Sign a digest - policy ticket"
-${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
-checkSuccess $?
+    echo "Start a policy session - save nonceTPM"
+    ${PREFIX}startauthsession -se p -on noncetpm.bin > run.out
+    checkSuccess $?
 
-echo "Flush the verification public key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
+    echo "Policy signed with nonceTPM and expiration, create a ticket - $HALG"
+    ${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg $HALG -pwdk rrrr -in noncetpm.bin -exp -200 -tk tkt.bin -to to.bin > run.out
+    checkSuccess $?
 
-echo "Flush the signing key"
-${PREFIX}flushcontext -ha 80000002 > run.out
-checkSuccess $?
+    echo "Sign a digest - policy signed"
+    ${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    checkSuccess $?
+
+    echo "Start a policy session"
+    ${PREFIX}startauthsession -se p > run.out
+    checkSuccess $?
+
+    echo "Policy ticket"
+    ${PREFIX}policyticket -ha 03000000 -to to.bin -na ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin > run.out
+    checkSuccess $?
+
+    echo "Sign a digest - policy ticket"
+    ${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    checkSuccess $?
+
+    echo "Flush the verification public key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "Flush the signing key"
+    ${PREFIX}flushcontext -ha 80000002 > run.out
+    checkSuccess $?
+
+done
 
 # getcapability  -cap 1 -pr 80000000
 # getcapability  -cap 1 -pr 02000000
@@ -508,6 +542,78 @@ checkSuccess $?
 
 echo "NV Undefine Space 0100000"
 ${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
+checkSuccess $?
+
+
+echo ""
+echo "Policy Secret with Object"
+echo ""
+
+# Use a externally generated object so that the Name is known and thus
+# the policy can be precalculated
+
+# Name
+# 00 0b 64 ac 92 1a 03 5c 72 b3 aa 55 ba 7d b8 b5 
+# 99 f1 72 6f 52 ec 2f 68 20 42 fc 0e 0d 29 fa e8 
+# 17 99 
+
+# 000001151 plus the above name as text, add a blank line for empty policyRef
+# to create policies/policysecretsha256.txt
+# 00000151000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+
+# 4b 7f ca c2 b7 c3 ac a2 7c 5c da 9c 71 e6 75 28 
+# 63 d2 87 d2 33 ec 49 0e 7a be 88 f1 ef 94 5d 5c 
+
+echo "Load the RSA openssl key pair in the NULL hierarchy 80000001"
+${PREFIX}loadexternal -rsa -ider policies/rsaprivkey.der -pwdk rrrr > run.out
+checkSuccess $?
+
+echo "Create a signing key under the primary key - policy secret of object 80000001"
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -uwa -pol policies/policysecretsha256.bin > run.out
+checkSuccess $?
+
+echo "Load the signing key under the primary key 80000002"
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Sign a digest - password auth - should fail"
+${PREFIX}sign -hk 80000002 -if policies/aaa -pwdk sig > run.out
+checkFailure $?
+
+echo "Start a policy session 03000000"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo "Policy Secret with PWAP session"
+${PREFIX}policysecret -ha 80000001 -hs 03000000 -pwde rrrr > run.out
+checkSuccess $?
+
+echo "Sign a digest - policy secret"
+${PREFIX}sign -hk 80000002 -if msg.bin -se0 03000000 1 > run.out
+checkSuccess $?
+
+echo "Flush the policysecret key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Load the RSA openssl key pair in the NULL hierarchy, userWithAuth false 80000001"
+${PREFIX}loadexternal -rsa -ider policies/rsaprivkey.der -pwdk rrrr -uwa > run.out
+checkSuccess $?
+
+echo "Policy Secret with PWAP session - should fail"
+${PREFIX}policysecret -ha 80000001 -hs 03000000 -pwde rrrr > run.out
+checkFailure $?
+
+echo "Flush the policysecret key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Flush the signing key"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Flush the session"
+${PREFIX}flushcontext -ha 03000000 > run.out
 checkSuccess $?
 
 echo ""
@@ -1215,6 +1321,8 @@ ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 rm -f tmppol.bin
+rm -r tmppriv.bin
+rm -r tmppub.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 01000000

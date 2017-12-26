@@ -3,9 +3,9 @@
 /*			    NV WriteLock	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvwritelock.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: nvwritelock.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

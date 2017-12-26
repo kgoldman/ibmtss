@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testclocks.sh 979 2017-04-04 17:57:18Z kgoldman $			#
+#	$Id: testclocks.sh 1115 2017-12-13 23:35:20Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
@@ -53,20 +53,15 @@ for SESS in "" "-se0 02000000 1"
 do
 
     echo "Read Clock"
-    ${PREFIX}readclock > run.out
+    ${PREFIX}readclock -oclock tmpclk.bin > run.out
     checkSuccess $?
 
-    CLOCK=`cat run.out | grep "TPMS_CLOCK_INFO clock" | gawk '{ print $3 }'`
-
     echo "Clock set, current time ${SESS} - should fail"
-    ${PREFIX}clockset -time ${CLOCK} ${SESS} > run.out
+    ${PREFIX}clockset -iclock tmpclk.bin ${SESS} > run.out
     checkFailure $?
 
-# increment clock by 20 seconds
-    CLOCK=`expr ${CLOCK} + 200000`
-
     echo "Clock set, time plus 20 sec ${SESS}"
-    ${PREFIX}clockset -time ${CLOCK} ${SESS} > run.out
+    ${PREFIX}clockset -iclock tmpclk.bin -addsec 20 ${SESS} > run.out
     checkSuccess $?
 
     for ADJ in -3 0 3
@@ -93,3 +88,4 @@ echo "Flush the auth session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
 
+rm -f tmpclk.bin

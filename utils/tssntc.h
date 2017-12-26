@@ -3,7 +3,7 @@
 /*		     	Nuvoton Command Common Routines				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssntc.h 1015 2017-06-07 13:16:34Z kgoldman $			*/
+/*	      $Id: tssntc.h 1055 2017-08-08 20:30:09Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -49,11 +49,16 @@
 #define TPM_TSS
 #endif
 #include <tss2/TPM_Types.h>
-#include "ntc2lib.h"
+#include "Commands_fp.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+    TPM_RC
+    NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, INT32 *size);
+    TPM_RC
+    TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, UINT16 *written, BYTE **buffer, INT32 *size);
 
     TPM_RC
     NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
@@ -62,15 +67,6 @@ extern "C" {
 
     TPM_RC
     TSS_NTC2_GetConfig_Out_Unmarshal(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
-    UINT16
-    NTC2_GetConfig_Out_Marshal(NTC2_GetConfig_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
-
-    TPM_RC
-    NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, INT32 *size);
-    TPM_RC
-    TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, UINT16 *written, BYTE **buffer, INT32 *size);
-    UINT16
-    NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, BYTE **buffer, INT32 *size);
 
 #ifdef __cplusplus
 }

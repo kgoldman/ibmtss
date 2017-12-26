@@ -3,7 +3,7 @@
 /*			    NV Write		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvwrite.c 1040 2017-07-07 13:29:03Z kgoldman $		*/
+/*	      $Id: nvwrite.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -287,19 +287,25 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	rc = readNvBufferMax(tssContext,
 			     &nvBufferMax);
-    }    
+    }
     /* if there is no input data source, default to 0 byte write */
-    if (dataSource == 0) {
+    if ((rc == 0) && (dataSource == 0)) {
 	in.data.b.size = 0;
     }
     /* -if, file data can be written in chunks */
-    if (datafilename != NULL) {
+    if ((rc == 0) && (datafilename != NULL)) {
 	rc = TSS_File_ReadBinaryFile(&writeBuffer,     /* freed @1 */
 				     &writeLength,
 				     datafilename);
     }
+    if ((rc == 0) && (datafilename != NULL)) {
+	if (writeLength > 0xffff) {	/* overflow TPM2B uint16_t */
+	    printf("nvwrite: size %u greater than 0xffff\n", (unsigned int)writeLength);	
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
     /* -id, for pin pass or pin fail */
-    if (inData) {
+    if ((rc == 0) && (inData)) {
 	uint32_t tmpData;
 	in.data.b.size = sizeof(uint32_t) + sizeof(uint32_t);
 	tmpData = htonl(pinPass);
@@ -308,7 +314,7 @@ int main(int argc, char *argv[])
 	memcpy(in.data.b.buffer + sizeof(tmpData), &tmpData, sizeof(tmpData));
     }
     /* -ic, command line data must fit in one write */
-    if (commandData != NULL) {
+    if ((rc == 0) && (commandData != NULL)) {
 	rc = TSS_TPM2B_StringCopy(&in.data.b, commandData, nvBufferMax);
     }
     if (rc == 0) {
@@ -323,7 +329,7 @@ int main(int argc, char *argv[])
 	    if (datafilename != NULL) {
 		in.offset = offset + bytesWritten;
 		if ((uint32_t)(writeLength - bytesWritten) < nvBufferMax) {
-		    writeBytes = writeLength - bytesWritten;	/* last chunk */
+		    writeBytes = (uint16_t)writeLength - bytesWritten;	/* last chunk */
 		}
 		else {
 		    writeBytes = nvBufferMax;	/* next chunk */
@@ -392,7 +398,8 @@ static void printUsage(void)
     printf("\n");
     printf("\t[-hia hierarchy authorization (o, p)(default index authorization)]\n");
     printf("\t-ha NV index handle\n");
-    printf("\t-pwdn password for NV index (default empty)\n");
+    printf("\t[-pwdn authorization password (default empty)]\n");
+    printf("\t\thierarchy or NV index password\n");
     printf("\t[-ic data string]\n");
     printf("\t[-if data file]\n");
     printf("\t[-id data values, pinPass and pinLimit (4 bytes each)]\n");
@@ -401,6 +408,7 @@ static void printUsage(void)
     printf("\t-off offset (default 0)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
+    printf("\t\t20 command decrypt\n");
     printf("\t\t01 continue\n");
     exit(1);	
 }

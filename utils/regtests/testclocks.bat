@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testclocks.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testclocks.bat 1116 2017-12-14 19:13:01Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -53,14 +53,20 @@ IF !ERRORLEVEL! NEQ 0 (
 for %%S in ("" "-se0 02000000 1") do (
 
     echo "Read Clock"
-    %TPM_EXE_PATH%readclock > run.out
+    %TPM_EXE_PATH%readclock -oclock tmpclk.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 
     echo "Clock set, time 0 %%~S - should fail"
-    %TPM_EXE_PATH%clockset -time 0 %%~S > run.out
+    %TPM_EXE_PATH%clockset -iclock tmpclk.bin %%~S > run.out
     IF !ERRORLEVEL! EQU 0 (
+        exit /B 1
+    )
+
+    echo "Clock set, time plus 20 sec %%~S"
+    %TPM_EXE_PATH%clockset -iclock tmpclk.bin -addsec 20 %%~S > run.out
+    IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 

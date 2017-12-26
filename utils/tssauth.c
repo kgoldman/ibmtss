@@ -3,9 +3,9 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.c 916 2017-01-19 22:31:42Z kgoldman $		*/
+/*            $Id: tssauth.c 1099 2017-11-28 18:46:40Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -63,7 +63,6 @@
 #include <tss2/tssresponsecode.h>
 
 #ifdef TPM_NUVOTON
-#include "ntc2lib.h"
 #include "tssntc.h"
 #endif
 #include "tssauth.h"
@@ -964,16 +963,18 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	    rc = TSS_GetCpBuffer(tssAuthContext, &cpBufferSize, &cpBuffer);
 	}
 	/* new authorization area range check, will cpBuffer move overflow */
-	if (cpBuffer +
-	    cpBufferSize +
-	    sizeof (uint32_t) +		/* authorizationSize */
-	    authorizationSize		/* authorization area */
-	    > tssAuthContext->commandBuffer + MAX_COMMAND_SIZE) {
+	if (rc == 0) {
+	    if (cpBuffer +
+		cpBufferSize +
+		sizeof (uint32_t) +		/* authorizationSize */
+		authorizationSize		/* authorization area */
+		> tssAuthContext->commandBuffer + MAX_COMMAND_SIZE) {
 	
-	    if (tssVerbose)
-		printf("TSS_SetCmdAuths: Command authorizations overflow command buffer\n");
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}	
+		if (tssVerbose)
+		    printf("TSS_SetCmdAuths: Command authorizations overflow command buffer\n");
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
 	/* move the cpBuffer to make space for the authorization area and its size */
 	if (rc == 0) {
 	    memmove(cpBuffer + sizeof (uint32_t) + authorizationSize,	/* to here */
@@ -1046,7 +1047,7 @@ TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	rc = TPM_ST_Unmarshal(&tag, &buffer, &size);
     }
     /* check that the tag indicates that there are sessions */
-    if (tag == TPM_ST_SESSIONS) {
+    if ((rc == 0) && (tag == TPM_ST_SESSIONS)) {
 	/* offset the buffer past the header and handles, and get the response parameterSize */
 	if (rc == 0) {
 	    uint32_t offsetSize = sizeof(TPM_ST) +  + sizeof (uint32_t) + sizeof(TPM_RC) +

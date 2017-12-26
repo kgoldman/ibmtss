@@ -3,9 +3,9 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: initkeys.bat 991 2017-04-19 13:57:39Z kgoldman $		#
+REM		$Id: initkeys.bat 1048 2017-07-20 20:28:26Z kgoldman $		#
 REM										#
-REM (c) Copyright IBM Corporation 2015						#
+REM (c) Copyright IBM Corporation 2015, 2017					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -47,6 +47,7 @@ REM try to undefine any NV index left over from a previous test.  Do not check f
 %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 > run.out
 %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 -pwdp ppp > run.out
 %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000001 > run.out
+%TPM_EXE_PATH%nvundefinespace -hi o -ha 01000002 > run.out
 REM same for persistent objects
 %TPM_EXE_PATH%evictcontrol -ho 81800000 -hp 81800000 -hi p > run.out
 

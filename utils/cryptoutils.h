@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
+/*	      $Id: cryptoutils.h 1095 2017-11-09 21:52:27Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -64,79 +64,100 @@ extern "C" {
 					uint8_t 	**privateKeyBin,
 					const RSA	 *rsaKey);
     TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
-				      uint8_t 	**modulusBin,
+				      uint8_t 		**modulusBin,
 				      const EC_KEY 	*ecKey);
     TPM_RC convertRsaKeyToPublicKeyBin(int 		*modulusBytes,
 				       uint8_t 	**modulusBin,
 				       const RSA 	*rsaKey);
     TPM_RC convertEcPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
-					   int 		privateKeyBytes,
+					   TPM2B_SENSITIVE 	*objectSensitive,
+					   int 			privateKeyBytes,
 					   uint8_t 		*privateKeyBin,
-					   const char 	*password);
+					   const char 		*password);
     TPM_RC convertRsaPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 					    TPM2B_SENSITIVE *objectSensitive,
 					    int 		privateKeyBytes,
 					    uint8_t 	*privateKeyBin,
 					    const char 	*password);
-    TPM_RC convertEcPublicKeyBinToPublic(TPM2B_PUBLIC 	*objectPublic,
-					 int		keyType,
-					 TPMI_ALG_HASH 	nalg,
-					 TPMI_ALG_HASH	halg,
-					 int 		modulusBytes,
+    TPM_RC convertEcPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
+					 int			keyType,
+					 TPMI_ALG_SIG_SCHEME 	scheme,
+					 TPMI_ALG_HASH 		nalg,
+					 TPMI_ALG_HASH		halg,
+					 TPMI_ECC_CURVE 	curveID,
+					 int 			modulusBytes,
 					 uint8_t 		*modulusBin);
-    TPM_RC convertRsaPublicKeyBinToPublic(TPM2B_PUBLIC 	*objectPublic,
-					  int		keyType,
+    TPM_RC convertRsaPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
+					  int			keyType,
+					  TPMI_ALG_SIG_SCHEME 	scheme,
 					  TPMI_ALG_HASH 	nalg,
-					  TPMI_ALG_HASH	halg,
-					  int 		modulusBytes,
+					  TPMI_ALG_HASH		halg,
+					  int 			modulusBytes,
 					  uint8_t 		*modulusBin);
-    TPM_RC convertEcKeyToPrivate(TPM2B_PRIVATE 	*objectPrivate,
+    TPM_RC convertEcKeyToPrivate(TPM2B_PRIVATE 		*objectPrivate,
+				 TPM2B_SENSITIVE 	*objectSensitive,
 				 EC_KEY 		*ecKey,
-				 const char 	*password);
+				 const char 		*password);
     TPM_RC convertRsaKeyToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 				  TPM2B_SENSITIVE 	*objectSensitive,
-				  RSA 		*rsaKey,
-				  const char 	*password);
-    TPM_RC convertEcKeyToPublic(TPM2B_PUBLIC 	*objectPublic,
+				  RSA 			*rsaKey,
+				  const char 		*password);
+    TPM_RC convertEcKeyToPublic(TPM2B_PUBLIC 		*objectPublic,
 				int			keyType,
-				TPMI_ALG_HASH 	nalg,
-				TPMI_ALG_HASH	halg,
-				EC_KEY 		*ecKey);
-    TPM_RC convertRsaKeyToPublic(TPM2B_PUBLIC 	*objectPublic,
-				 int		keyType,
-				 TPMI_ALG_HASH 	nalg,
-				 TPMI_ALG_HASH	halg,
-				 RSA 		*rsaKey);
-    TPM_RC convertEcPemToKeyPair(TPM2B_PUBLIC 	*objectPublic,
-				 TPM2B_PRIVATE 	*objectPrivate,
-				 int		keyType,
-				 TPMI_ALG_HASH 	nalg,
-				 TPMI_ALG_HASH	halg,
-				 const char 	*pemKeyFilename,
-				 const char 	*password);
-    TPM_RC convertEcPemToPublic(TPM2B_PUBLIC 	*objectPublic,
-				int		keyType,
-				TPMI_ALG_HASH 	nalg,
-				TPMI_ALG_HASH	halg,
+				TPMI_ALG_SIG_SCHEME 	scheme,
+				TPMI_ALG_HASH 		nalg,
+				TPMI_ALG_HASH		halg,
+				EC_KEY 			*ecKey);
+    TPM_RC convertRsaKeyToPublic(TPM2B_PUBLIC 		*objectPublic,
+				 int			keyType,
+				 TPMI_ALG_SIG_SCHEME 	scheme,
+				 TPMI_ALG_HASH 		nalg,
+				 TPMI_ALG_HASH		halg,
+				 RSA 			*rsaKey);
+    TPM_RC convertEcPemToKeyPair(TPM2B_PUBLIC 		*objectPublic,
+				 TPM2B_PRIVATE 		*objectPrivate,
+				 int			keyType,
+				 TPMI_ALG_SIG_SCHEME 	scheme,
+				 TPMI_ALG_HASH 		nalg,
+				 TPMI_ALG_HASH		halg,
+				 const char 		*pemKeyFilename,
+				 const char 		*password);
+    TPM_RC convertEcPemToPublic(TPM2B_PUBLIC 		*objectPublic,
+				int			keyType,
+				TPMI_ALG_SIG_SCHEME 	scheme,
+				TPMI_ALG_HASH 		nalg,
+				TPMI_ALG_HASH		halg,
 				const char		*pemKeyFilename);
-    TPM_RC convertRsaPemToKeyPair(TPM2B_PUBLIC 	*objectPublic,
+    TPM_RC convertRsaPemToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 				  TPM2B_PRIVATE 	*objectPrivate,
-				  int		keyType,
+				  int			keyType,
+				  TPMI_ALG_SIG_SCHEME 	scheme,
 				  TPMI_ALG_HASH 	nalg,
-				  TPMI_ALG_HASH	halg,
-				  const char 	*pemKeyFilename,
-				  const char 	*password);
-    TPM_RC convertRsaDerToKeyPair(TPM2B_PUBLIC 	*objectPublic,
+				  TPMI_ALG_HASH		halg,
+				  const char 		*pemKeyFilename,
+				  const char 		*password);
+    TPM_RC convertEcDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
+				 TPM2B_SENSITIVE 	*objectSensitive,
+				 int			keyType,
+				 TPMI_ALG_SIG_SCHEME 	scheme,
+				 TPMI_ALG_HASH 		nalg,
+				 TPMI_ALG_HASH		halg,
+				 const char		*derKeyFilename,
+				 const char 		*password);
+    TPM_RC convertRsaDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 				  TPM2B_SENSITIVE 	*objectSensitive,
-				  int		keyType,
+				  int			keyType,
+				  TPMI_ALG_SIG_SCHEME 	scheme,
 				  TPMI_ALG_HASH 	nalg,
-				  TPMI_ALG_HASH	halg,
-				  const char	*derKeyFilename);
-    TPM_RC convertRsaPemToPublic(TPM2B_PUBLIC 	*objectPublic,
-				 int		keyType,
-				 TPMI_ALG_HASH 	nalg,
-				 TPMI_ALG_HASH	halg,
-				 const char 	*pemKeyFilename);
+				  TPMI_ALG_HASH		halg,
+				  const char		*derKeyFilename,
+				  const char 		*password);
+    TPM_RC convertRsaPemToPublic(TPM2B_PUBLIC 		*objectPublic,
+				 int			keyType,
+				 TPMI_ALG_SIG_SCHEME 	scheme,
+				 TPMI_ALG_HASH 		nalg,
+				 TPMI_ALG_HASH		halg,
+				 const char 		*pemKeyFilename);
     TPM_RC getRsaKeyParts(const BIGNUM **n,
 			  const BIGNUM **e,
 			  const BIGNUM **d,
@@ -162,6 +183,11 @@ extern "C" {
 					   TPMT_SIGNATURE *tSignature,
 					   TPMI_ALG_HASH halg,
 					   EVP_PKEY *evpPkey);
+    TPM_RC verifyRSASignatureFromRSA(unsigned char *message,
+				     unsigned int messageSize,
+				     TPMT_SIGNATURE *tSignature,
+				     TPMI_ALG_HASH halg,
+				     RSA *rsaPubKey);
     TPM_RC verifyEcSignatureFromEvpPubKey(unsigned char *message,
 					  unsigned int messageSize,
 					  TPMT_SIGNATURE *tSignature,
@@ -174,6 +200,8 @@ extern "C" {
 				    TPMI_ALG_HASH halg,
 				    const uint8_t *signatureBin,
 				    size_t signatureBinLen);
+    TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
+		      const EC_KEY *ecKey);
     TPM_RC convertBin2Bn(BIGNUM **bn,
 			 const unsigned char *bin,
 			 unsigned int bytes);

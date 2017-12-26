@@ -3,9 +3,9 @@
 /*			    NV_ChangeAuth	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvchangeauth.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: nvchangeauth.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -250,5 +250,6 @@ static void printUsage(void)
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
     exit(1);	
 }

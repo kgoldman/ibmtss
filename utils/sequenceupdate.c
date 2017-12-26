@@ -3,9 +3,9 @@
 /*			    SequenceUpdate					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sequenceupdate.c 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*	      $Id: sequenceupdate.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
 	in.sequenceHandle = sequenceHandle;
 
 	/* data for update */
-	in.buffer.t.size = length;
+	in.buffer.t.size = (uint16_t)length;
 	memcpy(in.buffer.t.buffer, buffer, length);
     }
     /* Start a TSS context */
@@ -263,5 +263,6 @@ static void printUsage(void)
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
     exit(1);	
 }

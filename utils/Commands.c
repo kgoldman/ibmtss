@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Commands.c 815 2016-11-16 23:16:48Z kgoldman $		*/
+/*            $Id: Commands.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,7 +55,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2015				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2016				*/
 /*										*/
 /********************************************************************************/
 

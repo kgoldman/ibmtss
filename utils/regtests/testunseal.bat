@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testunseal.bat 717 2016-08-12 18:34:15Z kgoldman $		#
+REM #		$Id: testunseal.bat 1090 2017-10-30 16:28:38Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -104,6 +104,79 @@ IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
 
+echo ""
+echo "Seal and Unseal to PolicySecret Platform Auth"
+echo ""
+
+REM # policy is policy secret pointing to platform auth
+REM # 000001514000000C plus newline for policyRef
+
+echo "Change platform hierarchy auth"
+%TPM_EXE_PATH%hierarchychangeauth -hi p -pwdn ppp > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Create a sealed data object with policysecret platform auth under primary key"
+%TPM_EXE_PATH%create -hp 80000000 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin -pol policies/policysecretp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Load the sealed data object under primary key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Start a policy session"
+%TPM_EXE_PATH%startauthsession -se p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Unseal the data blob - policy failure, policysecret not run"
+%TPM_EXE_PATH%unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "Policy Secret with PWAP session and platform auth"
+%TPM_EXE_PATH%policysecret -ha 4000000c -hs 03000000 -pwde ppp > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Unseal the data blob"
+%TPM_EXE_PATH%unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Verify the unsealed result"
+diff msg.bin tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Change platform hierarchy auth back to null"
+%TPM_EXE_PATH%hierarchychangeauth -hi p -pwda ppp > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the sealed object"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the policy session"
+%TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
 REM SHA-1
 
 REM extend of aaa + 0 pad to digest length
@@ -124,8 +197,11 @@ REM a4 24 f5 f2
 REM SHA-256
 
 REM extend of aaa + 0 pad to digest length
-REM c2 11 97 64 d1 16 13 bf 07 b7 e2 04 c3 5f 93 73 
-REM 2b 4a e3 36 b4 35 4e bc 16 e8 d0 c3 96 3e be bb 
+REM > pcrextend -ha 16 -if policies/aaa
+
+REM read the PCR 16 value back
+REM > pcrread -ha 16 -ns
+REM c2119764d11613bf07b7e204c35f93732b4ae336b4354ebc16e8d0c3963ebebb
 
 REM paste that with no white space to file policypcr16aaasha256.txt
 
@@ -232,6 +308,10 @@ for %%H in (sha1 sha256 ) do (
     )
 
 )
+
+rm tmppriv.bin
+rm tmppub.bin
+rm tmp.bin
 
 exit /B 0
 

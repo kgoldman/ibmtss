@@ -3,9 +3,9 @@
 /*	Windows 7,8,10 Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstbsi.c 907 2017-01-10 21:44:19Z kgoldman $ 		*/
+/*	      $Id: tsstbsi.c 1072 2017-09-11 19:55:31Z kgoldman $ 		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

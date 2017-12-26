@@ -3,9 +3,9 @@
 /*			     TPM2 Response Code Printer				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.c 1002 2017-05-04 20:33:30Z kgoldman $	*/
+/*	      $Id: tssresponsecode.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -233,7 +233,9 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_BAD_DECRYPT_ALGORITHM, "TSS_RC_BAD_DECRYPT_ALGORITHM - ion had an unimplemented decrypt symmetric algorithm"},
     {TSS_RC_BAD_ENCRYPT_ALGORITHM, "TSS_RC_BAD_ENCRYPT_ALGORITHM - ion had an unimplemented encrypt symmetric algorithm"},
     {TSS_RC_AES_ENCRYPT_FAILURE, "TSS_RC_AES_ENCRYPT_FAILURE - AES encryption failed"},
-    {TSS_RC_AES_DECRYPT_FAILURE, "TSS_RC_AES_DECRYPT_FAILURE - AES decryption failed"},
+    {TSS_RC_AES_DECRYPT_FAILURE, "TSS_RC_AES_DECRYPT_FAILURE - AES decryption failed\n"
+     "\tIf using command line utilities, set env variable TPM_ENCRYPT_SESSIONS to 0\n"
+     "\tor see TSS manual for more options"},
     {TSS_RC_BAD_ENCRYPT_SIZE, "TSS_RC_BAD_ENCRYPT_SIZE - Parameter encryption size mismatch"},
     {TSS_RC_AES_KEYGEN_FAILURE, "TSS_RC_AES_KEYGEN_FAILURE - AES key generation failed"},
     {TSS_RC_BAD_SALT_KEY, "TSS_RC_BAD_SALT_KEY - Key is unsuitable for salt"},

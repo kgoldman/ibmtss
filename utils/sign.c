@@ -3,9 +3,9 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 989 2017-04-18 20:50:04Z kgoldman $			*/
+/*	      $Id: sign.c 1086 2017-10-24 15:23:15Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -47,9 +47,6 @@
 #include <stdint.h>
 
 #include <openssl/rsa.h>
-#include <openssl/objects.h>
-#include <openssl/evp.h>
-#include <openssl/pem.h>
 
 #include <tss2/tss.h>
 #include <tss2/tssutils.h>
@@ -58,6 +55,8 @@
 #include <tss2/tsscryptoh.h>
 #include <tss2/tsscrypto.h>
 #include <tss2/Unmarshal_fp.h>
+
+#include "cryptoutils.h"
 
 static void printUsage(void);
 
@@ -72,9 +71,9 @@ int main(int argc, char *argv[])
     Sign_Out 			out;
     TPMI_DH_OBJECT		keyHandle = 0;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
-    int 			nid = NID_sha256;
     TPMI_ALG_SIG_SCHEME		scheme = TPM_ALG_RSASSA;
     const char			*messageFilename = NULL;
+    const char                  *counterFilename = NULL;
     const char			*ticketFilename = NULL;
     const char			*publicKeyFilename = NULL;
     const char			*signatureFilename = NULL;
@@ -121,15 +120,12 @@ int main(int argc, char *argv[])
 	    if (i < argc) {
 		if (strcmp(argv[i],"sha1") == 0) {
 		    halg = TPM_ALG_SHA1;
-		    nid = NID_sha1;
 		}
 		else if (strcmp(argv[i],"sha256") == 0) {
 		    halg = TPM_ALG_SHA256;
-		    nid = NID_sha256;
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
-		    nid = NID_sha384;
 		}
 		else {
 		    printf("Bad parameter for -halg\n");
@@ -146,6 +142,34 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-ecc") == 0) {
 	    scheme = TPM_ALG_ECDSA;
+	}
+	else if (strcmp(argv[i], "-ecdaa") == 0) {
+	    scheme = TPM_ALG_ECDAA;
+        }	
+	else if (strcmp(argv[i],"-scheme") == 0) {
+            i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"rsassa") == 0) {
+		    scheme = TPM_ALG_RSASSA;
+		}
+		else if (strcmp(argv[i],"rsapss") == 0) {
+		    scheme = TPM_ALG_RSAPSS;
+		}
+		else {
+		    printf("Bad parameter %s for -scheme\n", argv[i]);
+		    printUsage();
+		}
+	    }
+        }
+	else if (strcmp(argv[i],"-cf") == 0) {
+	    i++;
+	    if (i < argc) {
+	        counterFilename = argv[i];
+	    }
+	    else {
+		printf("-cf option needs a value\n");
+		printUsage();
+	    }
 	}
 	else if (strcmp(argv[i],"-if") == 0) {
 	    i++;
@@ -273,8 +297,12 @@ int main(int argc, char *argv[])
 	printf("Missing handle parameter -hk\n");
 	printUsage();
     }
+    if ((scheme == TPM_ALG_ECDAA) && (counterFilename == NULL)) {
+	printf("Missing counter file name -cf for ECDAA algorithm\n");
+	printUsage();
+    }
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&data,     /* must be freed by caller */
+	rc = TSS_File_ReadBinaryFile(&data,     /* freed @1 */
 				     &length,
 				     messageFilename);
     }
@@ -299,10 +327,17 @@ int main(int argc, char *argv[])
 	/* Table 142 - Definition of {RSA} Types for RSA Signature Schemes */
 	/* Table 135 - Definition of TPMS_SCHEME_HASH Structure */
 	/* Table 59 - Definition of (TPM_ALG_ID) TPMI_ALG_HASH Type  */
-	if (scheme == TPM_ALG_RSASSA) {
+	if ((scheme == TPM_ALG_RSASSA) ||
+	    (scheme == TPM_ALG_RSAPSS)) {
 	    in.inScheme.details.rsassa.hashAlg = halg;
 	}
-	else {
+	else if (scheme == TPM_ALG_ECDAA) {
+	    in.inScheme.details.ecdaa.hashAlg = halg;
+	    rc = TSS_File_ReadStructure(&in.inScheme.details.ecdaa.count, 
+					(UnmarshalFunction_t)UINT16_Unmarshal,
+					counterFilename);
+	}
+	else {	/* scheme TPM_ALG_ECDSA */
 	    in.inScheme.details.ecdsa.hashAlg = halg;
 	}
     }
@@ -360,32 +395,29 @@ int main(int argc, char *argv[])
 	/* construct the OpenSSL RSA public key token */
 	if (rc == 0) {
 	    unsigned char earr[3] = {0x01, 0x00, 0x01};
-	    rc = TSS_RSAGeneratePublicToken(&rsaPubKey,				/* freed @1 */
-					public.publicArea.unique.rsa.t.buffer, /* public modulus */
-					public.publicArea.unique.rsa.t.size,
-					earr,      				/* public exponent */
-					sizeof(earr));
+	    rc = TSS_RSAGeneratePublicToken
+		 (&rsaPubKey,					/* freed @2 */
+		  public.publicArea.unique.rsa.t.buffer, 	/* public modulus */
+		  public.publicArea.unique.rsa.t.size,
+		  earr,      					/* public exponent */
+		  sizeof(earr));
 	}
-	/* construct an openssl RSA public key token */
+	/*
+	  verify the TPM signature
+	*/
 	if (rc == 0) {
-	    int         irc;
-	    irc = RSA_verify(nid,
-			     (uint8_t *)&in.digest.t.buffer,
-			     in.digest.t.size,
-			     (uint8_t *)&out.signature.signature.rsassa.sig.t.buffer,
-			     out.signature.signature.rsassa.sig.t.size,
-			     rsaPubKey);
-	    if (verbose) printf("RSAVerify: RSA_verify rc %d\n", irc);
-	    if (irc != 1) {
-		printf("RSAVerify: Bad signature\n");
-		rc = TSS_RC_RSA_SIGNATURE;
-	    }
+	    rc = verifyRSASignatureFromRSA((uint8_t *)&in.digest.t.buffer,
+					   in.digest.t.size,
+					   &out.signature,
+					   halg,
+					   rsaPubKey);
+
 	}
 	if (rsaPubKey != NULL) {
-	    RSA_free(rsaPubKey);          /* @1 */
+	    RSA_free(rsaPubKey); 	/* @2 */
 	}
     }
-    free(data);
+    free(data);				/* @1 */
     if (rc == 0) {
 	if (verbose) printf("sign: success\n");
     }
@@ -411,15 +443,21 @@ static void printUsage(void)
     printf("\t-hk key handle\n");
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
-    printf("\t[-rsa (RSASSA scheme)]\n");
+    printf("\t[-rsa (default)]\n");
+    printf("\t\t[-scheme (default rsassa)]\n");
+    printf("\t\t\trsassa\n");
+    printf("\t\t\trsapss\n");
     printf("\t[-ecc (ECDSA scheme)]\n");
+    printf("\t[-ecdaa [ECDAA scheme)]\n");
     printf("\t\tVerify only supported for RSA now\n");
     printf("\t-if input message to hash and sign\n");
+    printf("\t[-cf input counter file (commit count required for ECDAA scheme]\n");
     printf("\t[-ipu public key file name to verify signature (default no verify)]\n");
     printf("\t[-os signature file name (default do not save)]\n");
     printf("\t[-tk ticket file name]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
     exit(1);	
 }

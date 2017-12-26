@@ -3,9 +3,9 @@
 /*			    Get Capability	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*	      $Id: getcapability.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -573,7 +573,7 @@ static void printUsage(TPM_CAP capability)
     printf("\t-pr property (defaults to 0)\n");
     printf("\t-pc propertyCount (defaults to 64)\n");
     printf("\n");
-    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
+    printf("\t-se[0-2] session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");
     printf("\t\t80 command audit\n");
     printf("\n");
@@ -617,13 +617,13 @@ static void usageHandles(void)
 {
     printf("TPM_CAP_HANDLES -pr values\n"
 	   "\n"
-	   "TPM_HT_PCR                  0x00000000\n"
-	   "TPM_HT_NV_INDEX             0x01000000\n"
-	   "TPM_HT_LOADED_SESSION       0x02000000\n"
-	   "TPM_HT_SAVED_SESSION        0x03000000\n"
-	   "TPM_HT_PERMANENT            0x40000000\n"
-	   "TPM_HT_TRANSIENT            0x80000000\n"
-	   "TPM_HT_PERSISTENT           0x81000000\n"
+	   "TPM_HT_PCR                  00000000\n"
+	   "TPM_HT_NV_INDEX             01000000\n"
+	   "TPM_HT_LOADED_SESSION       02000000\n"
+	   "TPM_HT_SAVED_SESSION        03000000\n"
+	   "TPM_HT_PERMANENT            40000000\n"
+	   "TPM_HT_TRANSIENT            80000000\n"
+	   "TPM_HT_PERSISTENT           81000000\n"
 	   );
     return;
 }

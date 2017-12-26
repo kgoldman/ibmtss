@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testcreateloaded.sh 990 2017-04-19 13:31:24Z kgoldman $		#
+#	$Id: testcreateloaded.sh 1112 2017-12-13 21:55:26Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -166,12 +166,30 @@ echo "Flush the signing key 80000002"
 ${PREFIX}flushcontext -ha 80000002 > run.out
 checkSuccess $?
 
+echo "Create another EC signing key 80000002 under the derivation parent key"
+${PREFIX}createloaded -hp 80000001 -der -si -kt f -kt p -opr tmppriv1.bin -opu tmppub1.bin -opem tmppub1.pem -pwdp dp -ecc nistp256 > run.out
+checkSuccess $?
+
+echo "Verify that the two derived keys are the same"
+diff tmppub.bin tmppub1.bin > run.out
+checkSuccess $?
+
+echo "Flush the signing key 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
 echo "Flush the derivation parent"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 rm -f tmpppriv.bin
 rm -f tmpppub.bin
+rm -f tmpppub1.bin
 rm -f tmpppub.pem
+rm -f tmppub.pem
+rm -f tmppub1.pem
+rm -f tmppriv.bin
+rm -f tmppriv1.bin
+rm -f tmppub1.bin
 rm -f tmpdppriv.bin
 rm -f tmpdppub.bin

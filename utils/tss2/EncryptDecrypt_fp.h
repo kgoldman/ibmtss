@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: EncryptDecrypt_fp.h 683 2016-07-15 20:53:46Z kgoldman $	*/
+/*            $Id: EncryptDecrypt_fp.h 1047 2017-07-20 18:27:34Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -59,17 +59,17 @@
 /*										*/
 /********************************************************************************/
 
-/* rev 119 */
+/* rev 146 */
 
 #ifndef ENCRYPTDECRYPT_FP_H
 #define ENCRYPTDECRYPT_FP_H
 
 typedef struct {
-    TPMI_DH_OBJECT	keyHandle;
-    TPMI_YES_NO		decrypt;
-    TPMI_ALG_SYM_MODE	mode;
-    TPM2B_IV		ivIn;
-    TPM2B_MAX_BUFFER	inData;
+    TPMI_DH_OBJECT		keyHandle;
+    TPMI_YES_NO			decrypt;
+    TPMI_ALG_CIPHER_MODE	mode;
+    TPM2B_IV			ivIn;
+    TPM2B_MAX_BUFFER		inData;
 } EncryptDecrypt_In;
 
 #define RC_EncryptDecrypt_keyHandle 	(TPM_RC_H + TPM_RC_1)

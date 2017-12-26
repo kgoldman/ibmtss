@@ -3,9 +3,9 @@
 /*			   EncryptDecrypt					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: encryptdecrypt.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: encryptdecrypt.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
 	    in.ivIn.t.size = MAX_SYM_BLOCK_SIZE;
 	    memset(in.ivIn.t.buffer, 0, MAX_SYM_BLOCK_SIZE);
 	    /* the data to be encrypted/decrypted */
-	    in.inData.t.size = length;
+	    in.inData.t.size = (uint16_t)length;
 	    memcpy(in.inData.t.buffer, buffer, length);
 	}
 	else {
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
 	    in2.ivIn.t.size = MAX_SYM_BLOCK_SIZE;
 	    memset(in2.ivIn.t.buffer, 0, MAX_SYM_BLOCK_SIZE);
 	    /* the data to be encrypted/decrypted */
-	    in2.inData.t.size = length;
+	    in2.inData.t.size = (uint16_t)length;
 	    memcpy(in2.inData.t.buffer, buffer, length);
 	}
     }
@@ -353,5 +353,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
+    printf("\t\t40 response encrypt\n");
     exit(1);	
 }

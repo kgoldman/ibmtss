@@ -3,9 +3,9 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymaker.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: policymaker.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015,2016					*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -45,8 +45,8 @@
    a hash algorithm
    a file with lines in hexascii, to be extended into the policy digest, big endian
 
-   NOTE: Empty lines are permitted and cause a double hash.  This is useful for
-   e.g. TPM2_PolicySigned when the policyRef is empty.
+   NOTE: Empty lines (lines with just a newline character) are permitted and cause a double hash.
+   This is useful for e.g. TPM2_PolicySigned when the policyRef is empty.
 
    Outputs are:
 
@@ -56,9 +56,6 @@
    Example input: policy command code with a command code of NV write
 
    0000016c00000137
-
-   NOTE: 
-   
 */
 
 #include <stdio.h>

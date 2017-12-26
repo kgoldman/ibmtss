@@ -1,4 +1,4 @@
-<!-- $Id: handles.php 900 2017-01-06 19:25:47Z kgoldman $ -->
+<!-- $Id: handles.php 1104 2017-12-06 13:58:03Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -65,7 +65,7 @@ require '/var/www/html/tpm2/nav.html';
 <?php
 if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
     $command = $_POST['command'];
-    $retval == 0;
+    $retval = 0;
 
     //echo "Post parameters<br>\n";
     //print_r($_POST);

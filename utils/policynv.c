@@ -3,9 +3,9 @@
 /*			    PolicyNV	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policynv.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: policynv.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -351,9 +351,9 @@ static void printUsage(void)
     printf("\t\t9	A <= B unsigned	 \n");
     printf("\t\tA	All bits SET in B are SET in A. ((A&B)=B) \n");
     printf("\t\tB	All bits SET in B are CLEAR in A. ((A&B)=0) \n");
+    printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
     exit(1);	
 }

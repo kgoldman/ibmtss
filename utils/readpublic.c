@@ -3,7 +3,7 @@
 /*			   ReadPublic 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: readpublic.c 1042 2017-07-11 14:30:56Z kgoldman $		*/
+/*	      $Id: readpublic.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -246,9 +246,7 @@ int main(int argc, char *argv[])
 
 static void printReadPublic(ReadPublic_Out *out)
 {
-    TSS_PrintAll("authPolicy",
-		out->outPublic.publicArea.authPolicy.t.buffer,
-		 out->outPublic.publicArea.authPolicy.t.size);
+    TSS_TPMT_PUBLIC_Print(&out->outPublic.publicArea, 0);
     TSS_PrintAll("name",
 		 out->name.t.name,
 		 out->name.t.size);
@@ -265,9 +263,8 @@ static void printUsage(void)
     printf("\t[-opu public key file name (default do not save)]\n");
     printf("\t[-opem public key PEM format file name (default do not save)]\n");
     printf("\n");
-    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
+    printf("\t-se[0-2] session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
     printf("\t\t40 response encrypt\n");
     printf("\t\t80 audit\n");
     exit(1);	

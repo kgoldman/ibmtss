@@ -3,9 +3,9 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.c 980 2017-04-04 21:11:44Z kgoldman $		*/
+/*	      $Id: tssmarshal.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -441,7 +441,7 @@ TSS_EncryptDecrypt_In_Marshal(const EncryptDecrypt_In *source, UINT16 *written, 
 	rc = TSS_TPMI_YES_NO_Marshal(&source->decrypt, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPMI_ALG_SYM_MODE_Marshal(&source->mode, written, buffer, size);
+	rc = TSS_TPMI_ALG_CIPHER_MODE_Marshal(&source->mode, written, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_TPM2B_IV_Marshal(&source->ivIn, written, buffer, size);
@@ -465,7 +465,7 @@ TSS_EncryptDecrypt2_In_Marshal(const EncryptDecrypt2_In *source, UINT16 *written
 	rc = TSS_TPMI_YES_NO_Marshal(&source->decrypt, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPMI_ALG_SYM_MODE_Marshal(&source->mode, written, buffer, size);
+	rc = TSS_TPMI_ALG_CIPHER_MODE_Marshal(&source->mode, written, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_TPM2B_IV_Marshal(&source->ivIn, written, buffer, size);
@@ -3297,6 +3297,30 @@ TSS_TPMI_ST_COMMAND_TAG_Marshal(const TPMI_ST_COMMAND_TAG *source, UINT16 *writt
     return rc;
 }
 
+/* Table 71 - Definition of (TPM_ALG_ID) TPMI_ALG_MAC_SCHEME Type */
+
+TPM_RC
+TSS_TPMI_ALG_MAC_SCHEME_Marshal(const TPMI_ALG_MAC_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size) 
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPM_ALG_ID_Marshal(source, written, buffer, size);
+    }
+    return rc;
+}
+
+/* Table 72 - Definition of (TPM_ALG_ID) TPMI_ALG_CIPHER_MODE Type */
+
+TPM_RC
+TSS_TPMI_ALG_CIPHER_MODE_Marshal(const TPMI_ALG_CIPHER_MODE *source, UINT16 *written, BYTE **buffer, INT32 *size) 
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPM_ALG_ID_Marshal(source, written, buffer, size);
+    }
+    return rc;
+} 
+
 /* Table 70 - Definition of TPMU_HA Union <IN/OUT, S> */
 
 TPM_RC
@@ -4340,6 +4364,21 @@ TSS_TPM2B_LABEL_Marshal(const TPM2B_LABEL *source, UINT16 *written, BYTE **buffe
     TPM_RC rc = 0;
     if (rc == 0) {
 	rc = TSS_TPM2B_Marshal(&source->b, written, buffer, size);
+    }
+    return rc;
+}
+
+/* Table 139 - Definition of TPMS_DERIVE Structure */
+
+TPM_RC
+TSS_TPMS_DERIVE_Marshal(const TPMS_DERIVE *source, UINT16 *written, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPM2B_LABEL_Marshal(&source->label, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_LABEL_Marshal(&source->context, written, buffer, size);
     }
     return rc;
 }
@@ -5499,11 +5538,23 @@ TSS_TPMT_PUBLIC_D_Marshal(const TPMT_PUBLIC *source, UINT16 *written, BYTE **buf
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_TPMT_PUBLIC_Marshal(source, written, buffer, size);
+	rc = TSS_TPMI_ALG_PUBLIC_Marshal(&source->type, written, buffer, size);
     }
-    /* if derived from a derivation parent, marshal an additional TPMS_DERIVE TPM2B_LABEL context */             
     if (rc == 0) {
-	rc = TSS_TPM2B_LABEL_Marshal(&source->unique.derive.context, written, buffer, size);
+	rc = TSS_TPMI_ALG_HASH_Marshal(&source->nameAlg, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMA_OBJECT_Marshal(&source->objectAttributes, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_DIGEST_Marshal(&source->authPolicy, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMU_PUBLIC_PARMS_Marshal(&source->parameters, written, buffer, size, source->type);
+    }
+    /* if derived from a derivation parent, marshal a TPMS_DERIVE structure */             
+    if (rc == 0) {
+	rc = TSS_TPMS_DERIVE_Marshal(&source->unique.derive, written, buffer, size);
     }    
     return rc;
 }

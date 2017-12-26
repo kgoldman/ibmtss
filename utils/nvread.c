@@ -3,9 +3,9 @@
 /*			    NV Read		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvread.c 987 2017-04-17 18:27:09Z kgoldman $			*/
+/*	      $Id: nvread.c 1103 2017-12-04 17:17:18Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -47,6 +47,7 @@
 #include <stdint.h>
 
 #include <tss2/tss.h>
+#include <tss2/tsscryptoh.h>
 #include <tss2/tssutils.h>
 #include <tss2/tssresponsecode.h>
 #include "ekutils.h"
@@ -64,6 +65,7 @@ int main(int argc, char *argv[])
     NV_Read_Out			out;
     uint16_t 			offset = 0;			/* default 0 */
     uint16_t 			readLength = 0;			/* bytes to read */
+    int				readLengthSet = FALSE;
     char 			hierarchyAuthChar = 0;
     const char 			*datafilename = NULL;
     TPMI_RH_NV_INDEX		nvIndex = 0;
@@ -137,6 +139,7 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		readLength = atoi(argv[i]);
+		readLengthSet  = TRUE;
 	    }
 	    else {
 		printf("-sz option needs a value\n");
@@ -241,6 +244,44 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
+    /* Start a TSS context */
+    if (rc == 0) {
+	rc = TSS_Create(&tssContext);
+    }
+    /* Determine the readLength from the NV index type.  This is just for the utility.  An
+       application would already know the index type. */
+    if (!readLengthSet) {	/* if caller specifies a read length, use it */
+	NV_ReadPublic_In 		in;
+	NV_ReadPublic_Out		out;
+	if (rc == 0) {
+	    in.nvIndex = nvIndex;
+	    rc = TSS_Execute(tssContext,
+			     (RESPONSE_PARAMETERS *)&out,
+			     (COMMAND_PARAMETERS *)&in,
+			     NULL,
+			     TPM_CC_NV_ReadPublic,
+			     TPM_RH_NULL, NULL, 0);
+	}
+	if (rc == 0) {
+	    TPMI_ALG_HASH nameAlg;
+	    uint32_t nvType = (out.nvPublic.nvPublic.attributes.val & TPMA_NVA_TPM_NT_MASK) >> 4;
+	    switch (nvType) {
+	      case TPM_NT_ORDINARY:
+		readLength = out.nvPublic.nvPublic.dataSize;
+		break;
+	      case TPM_NT_COUNTER:
+	      case TPM_NT_BITS:
+	      case TPM_NT_PIN_FAIL:
+	      case TPM_NT_PIN_PASS:
+		readLength = 8;
+		break;
+	      case TPM_NT_EXTEND:
+		nameAlg = out.nvPublic.nvPublic.nameAlg;
+		readLength = TSS_GetDigestSize(nameAlg);
+		break;
+	    }
+	}
+    }
     if (rc == 0) {
 	if (readLength > 0) {	
 	    readBuffer = malloc(readLength);		/* freed @1 */
@@ -252,10 +293,6 @@ int main(int argc, char *argv[])
 	else {
 	    readBuffer = NULL;
 	}
-    }
-    /* Start a TSS context */
-    if (rc == 0) {
-	rc = TSS_Create(&tssContext);
     }
     /* data may have to be read in chunks.  Read the TPM_PT_NV_BUFFER_MAX, the chunk size */
     if (rc == 0) {
@@ -336,11 +373,13 @@ static void printUsage(void)
     printf("\t[-hia hierarchy authorization (o, p)(default index authorization)]\n");
     printf("\t-ha NV index handle\n");
     printf("\t[-pwdn password for NV index (default empty)]\n");
-    printf("\t[-sz data size (default 0)]\n");
+    printf("\t[-sz data size (default to size of index)]\n");
+    printf("\t\tcounter, bits, pin read 8 bytes, extend reads based on hash algorithm\n");
     printf("\t[-off offset (default 0)]\n");
     printf("\t[-of data file (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
+    printf("\t\t40 response encrypt\n");
     exit(1);	
 }

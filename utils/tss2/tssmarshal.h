@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
+/*	      $Id: tssmarshal.h 1047 2017-07-20 18:27:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -604,6 +604,10 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TPMI_ST_COMMAND_TAG_Marshal(const TPMI_ST_COMMAND_TAG *source, UINT16 *written, BYTE **buffer, INT32 *size);
     LIB_EXPORT TPM_RC
+    TSS_TPMI_ALG_MAC_SCHEME_Marshal(const TPMI_ALG_MAC_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
+    LIB_EXPORT TPM_RC
+    TSS_TPMI_ALG_CIPHER_MODE_Marshal(const TPMI_ALG_CIPHER_MODE *source, UINT16 *written, BYTE **buffer, INT32 *size);
+    LIB_EXPORT TPM_RC
     TSS_TPMU_HA_Marshal(const TPMU_HA *source, UINT16 *written, BYTE **buffer, INT32 *size, UINT32 selector);
     LIB_EXPORT TPM_RC
     TSS_TPMT_HA_Marshal(const TPMT_HA *source, UINT16 *written, BYTE **buffer, INT32 *size);
@@ -713,6 +717,8 @@ extern "C" {
     TSS_TPM2B_SYM_KEY_Marshal(const TPM2B_SYM_KEY *source, UINT16 *written, BYTE **buffer, INT32 *size);
     LIB_EXPORT TPM_RC
     TSS_TPM2B_LABEL_Marshal(const TPM2B_LABEL *source, UINT16 *written, BYTE **buffer, INT32 *size);
+    LIB_EXPORT TPM_RC
+    TSS_TPMS_DERIVE_Marshal(const TPMS_DERIVE *source, UINT16 *written, BYTE **buffer, INT32 *size);
     LIB_EXPORT TPM_RC
     TSS_TPMS_SYMCIPHER_PARMS_Marshal(const TPMS_SYMCIPHER_PARMS *source, UINT16 *written, BYTE **buffer, INT32 *size);
     LIB_EXPORT TPM_RC

@@ -3,7 +3,7 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 1002 2017-05-04 20:33:30Z kgoldman $		*/
+/*	      $Id: loadexternal.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -43,12 +43,12 @@
   Create a key pair in PEM format
   
   > openssl genrsa -out keypair.pem -aes256 -passout pass:rrrr 2048
+  > openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem
 
   Convert to plaintext DER format
 
   > openssl rsa -inform pem -outform der -in keypair.pem -out keypair.der -passin pass:rrrr
-
-
+  > openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
 */
 
 #include <stdio.h>
@@ -83,6 +83,7 @@ int main(int argc, char *argv[])
     char 			hierarchyChar = 0;
     TPMI_RH_HIERARCHY		hierarchy = TPM_RH_NULL;
     int				keyType = TYPE_SI;
+    TPMI_ALG_SIG_SCHEME 	scheme = TPM_ALG_RSASSA;
     uint32_t 			keyTypeSpecified = 0;
     TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
@@ -90,6 +91,8 @@ int main(int argc, char *argv[])
     const char			*publicKeyFilename = NULL;
     const char			*derKeyFilename = NULL;
     const char			*pemKeyFilename = NULL;
+    const char			*keyPassword = NULL;
+    int				userWithAuth = TRUE;
     unsigned int		inputCount = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
     unsigned int		sessionAttributes0 = 0;
@@ -168,8 +171,24 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i], "-ecc") == 0) {
 	    algPublic = TPM_ALG_ECC;
 	}
+	else if (strcmp(argv[i],"-scheme") == 0) {
+            i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"rsassa") == 0) {
+		    scheme = TPM_ALG_RSASSA;
+		}
+		else if (strcmp(argv[i],"rsapss") == 0) {
+		    scheme = TPM_ALG_RSAPSS;
+		}
+		else {
+		    printf("Bad parameter %s for -scheme\n", argv[i]);
+		    printUsage();
+		}
+	    }
+        }
 	else if (strcmp(argv[i], "-st") == 0) {
 	    keyType = TYPE_ST;
+	    scheme = TPM_ALG_NULL;
 	    keyTypeSpecified++;
 	}
 	else if (strcmp(argv[i], "-si") == 0) {
@@ -208,6 +227,19 @@ int main(int argc, char *argv[])
 		printf("-ider option needs a value\n");
 		printUsage();
 	    }
+	}
+	else if (strcmp(argv[i],"-pwdk") == 0) {
+	    i++;
+	    if (i < argc) {
+		keyPassword = argv[i];
+	    }
+	    else {
+		printf("-pwdk option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i], "-uwa") == 0) {
+	    userWithAuth = FALSE;
 	}
 	else if (strcmp(argv[i],"-se0") == 0) {
 	    i++;
@@ -295,6 +327,19 @@ int main(int argc, char *argv[])
 	printf("Too many key attributes\n");
 	printUsage();
     }
+    if (derKeyFilename == NULL) {
+	if (keyPassword != NULL) {
+	    printf("Password only valid for -ider keypair\n");
+	    printUsage();
+	}
+    }
+    /* loadexternal key pair cannot be restricted (storage key) and must have NULL symmetric
+       scheme*/
+    if (derKeyFilename != NULL) {
+	if (keyType == TYPE_ST) {
+	    keyType = TYPE_DEN;
+	}
+    }
     /* Table 50 - TPMI_RH_HIERARCHY primaryHandle */
     if (rc == 0) {
 	if (hierarchyChar == 'e') {
@@ -318,11 +363,12 @@ int main(int argc, char *argv[])
 					(UnmarshalFunction_t)TPM2B_PUBLIC_Unmarshal,
 					publicKeyFilename);
 	}
-	/* PEM format, output from e.g. openssl */
+	/* PEM format, output from e.g. openssl, readpublic, createprimary, create */
 	else if (pemKeyFilename != NULL) {
 	    if (algPublic == TPM_ALG_RSA) {
 		rc = convertRsaPemToPublic(&in.inPublic,
 					   keyType,
+					   scheme,
 					   nalg,
 					   halg,
 					   pemKeyFilename);
@@ -331,18 +377,35 @@ int main(int argc, char *argv[])
 	    else {
 		rc = convertEcPemToPublic(&in.inPublic,
 					  keyType,
+					  scheme,
 					  nalg,
 					  halg,
 					  pemKeyFilename);
 	    }
 	}
+	/* DER format key pair */
 	else if (derKeyFilename != NULL) {
-	    rc = convertRsaDerToKeyPair(&in.inPublic,
-					&in.inPrivate,
-					keyType,
-					nalg,
-					halg,
-					derKeyFilename);
+	    if (algPublic == TPM_ALG_RSA) {
+		rc = convertRsaDerToKeyPair(&in.inPublic,
+					    &in.inPrivate,
+					    keyType,
+					    scheme,
+					    nalg,
+					    halg,
+					    derKeyFilename,
+					    keyPassword);
+	    }
+	    /* TPM_ALG_ECC */
+	    else {
+		rc = convertEcDerToKeyPair(&in.inPublic,
+					   &in.inPrivate,
+					   keyType,
+					   scheme,
+					   nalg,
+					   halg,
+					   derKeyFilename,
+					   keyPassword);
+	    }
 	    in.inPrivate.t.size = 1;		/* mark that private area should be loaded */
 	}
 	else {
@@ -351,6 +414,9 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
+	if (!userWithAuth) {
+	    in.inPublic.publicArea.objectAttributes.val &= ~TPMA_OBJECT_USERWITHAUTH;
+	}
 	in.hierarchy = hierarchy;
     }
     /* Start a TSS context */
@@ -402,12 +468,23 @@ static void printUsage(void)
     printf("\t[-nalg name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t[Asymmetric Key Algorithm]\n");
-    printf("\t\t[-rsa (default)]\n");
-    printf("\t\t[-ecc curve (uses NIST P-256)]\n");
+    printf("\t\t-rsa (default)\n");
+    printf("\t\t-ecc\n");
     printf("\t-ipu TPM2B_PUBLIC public key file name\n");
     printf("\t-ipem PEM format public key file name\n");
-    printf("\t-ider DER format RSA plaintext key pair file name\n");
-    printf("\t[-si signing (default)]\n");
-    printf("\t[-st storage]\n");
+    printf("\t-ider DER format plaintext key pair file name\n");
+    printf("\t\t[-pwdk password for key (default empty)]\n");
+    printf("\t\t[-uwa userWithAuth attribute clear (default set)]\n");
+    printf("\t[-si signing (default) RSA default RSASSA scheme]\n");
+    printf("\t\t[-scheme]\n");
+    printf("\t\t\trsassa\n");
+    printf("\t\t\trsapss\n");
+    printf("\t[-st storage (default NULL scheme)]\n");
+    printf("\n");
+    printf("\t-se[0-2] session handle / attributes (default NULL)\n");
+    printf("\t\t01 continue\n");
+    printf("\t\t20 command decrypt\n");
+    printf("\t\t40 response encrypt\n");
+    printf("\t\t80 audit\n");
     exit(1);	
 }

@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id: tssprint.c 703 2016-07-28 17:21:46Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

@@ -3,7 +3,7 @@
 /*			  Command and Response Marshal and Unmarshal		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Commands_fp.h 814 2016-11-16 23:10:16Z kgoldman $		*/
+/*            $Id: Commands_fp.h 1055 2017-08-08 20:30:09Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -176,6 +176,7 @@
 #include <tss2/Unseal_fp.h>
 #include <tss2/VerifySignature_fp.h>
 #include <tss2/ZGen_2Phase_fp.h>
+#include <tss2/NTC_fp.h>
 
 TPM_RC
 Startup_In_Unmarshal(Startup_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);

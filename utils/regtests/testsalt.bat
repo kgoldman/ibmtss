@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsalt.bat 984 2017-04-13 19:34:30Z kgoldman $		#
+REM #		$Id: testsalt.bat 1069 2017-08-29 17:11:32Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -48,19 +48,23 @@ for %%A in ("-rsa" "-ecc nistp256") do (
 
     for %%H in (sha1 sha256 sha384) do (
 
+	REM In general a storage key can be used.  A decryption key is
+	REM used here because the hash algorithm doesn't have to match
+	REM that of the parent.
+
     	echo "Create a %%A %%H storage key under the primary key "
 	%TPM_EXE_PATH%create -hp 80000000 -nalg %%H -halg %%H %%~A -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 222 > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
 	
-	echo "Load the storage key under the primary key"
+	echo "Load the %%A storage key 80000001 under the primary key"
 	%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
 	
-	echo "Start a salted HMAC auth session"
+	echo "Start a %%A salted HMAC auth session"
 	%TPM_EXE_PATH%startauthsession -se h -hs 80000001 > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
@@ -84,18 +88,20 @@ echo ""
 echo "Salt Session - Load External"
 echo ""
 
-echo "Create a key pair in PEM format using openssl"
+echo "Create RSA and ECC key pairs in PEM format using openssl"
   
-openssl genrsa -out tmpkeypair.pem -aes256 -passout pass:rrrr 2048 > run.out
+openssl genrsa -out tmpkeypairrsa.pem -aes256 -passout pass:rrrr 2048 > run.out
+openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out
 
 echo "Convert key pair to plaintext DER format"
 
-openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
+openssl rsa -inform pem -outform der -in tmpkeypairrsa.pem -out tmpkeypairrsa.der -passin pass:rrrr > run.out
+openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
 
 for %%H in (sha1 sha256 sha384) do (
 
-    echo "Load the openssl key pair in the NULL hierarchy - %%H"
-    %TPM_EXE_PATH%loadexternal -halg %%H -st -ider tmpkeypair.der > run.out
+    echo "Load the RSA openssl key pair in the NULL hierarchy 80000001 - %%H"
+    %TPM_EXE_PATH%loadexternal -halg %%H -st -ider tmpkeypairrsa.der > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -118,6 +124,33 @@ for %%H in (sha1 sha256 sha384) do (
        exit /B 1
     )
 
+)
+
+for %%H in (sha1 sha256 sha384) do (
+
+    echo "Load the ECC openssl key pair in the NULL hierarchy 80000001 - %%H"
+    %TPM_EXE_PATH%loadexternal -ecc -halg %%H -st -ider tmpkeypairecc.der > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Start a salted HMAC auth session"
+    %TPM_EXE_PATH%startauthsession -se h -hs 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Create a signing key using the salt"
+    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Flush the storage key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
 )
 
 echo ""
@@ -275,8 +308,68 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-rm -f tmpkeypair.pem
-rm -f tmpkeypair.der
+echo ""
+echo "Salt Audit Session - PCR Read, Read Public, NV Read Public"
+echo ""
+
+echo "Load the storage key at 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start a salted HMAC auth session"
+%TPM_EXE_PATH%startauthsession -se h -hs 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "PCR read with salted audit session"
+%TPM_EXE_PATH%pcrread -ha 16 -se0 02000000 81 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Read public with salted audit session"
+%TPM_EXE_PATH%readpublic -ho 80000001 -se0 02000000 81 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV define space"
+%TPM_EXE_PATH%nvdefinespace -ha 01000000 -hi p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV Read public with salted audit session"
+%TPM_EXE_PATH%nvreadpublic -ha 01000000 -se0 02000000 81 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the storage key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the salt session"
+%TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV undefine space"
+%TPM_EXE_PATH%nvundefinespace -ha 01000000 -hi p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+rm -f tmpkeypairrsa.pem
+rm -f tmpkeypairecc.pem
+rm -f tmpkeypairrsa.der
+rm -f tmpkeypairecc.der
 
 exit /B 0
 

@@ -3,7 +3,7 @@
 /*			   Nuvoton Lock Preconfig  				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2lockconfig.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: ntc2lockconfig.c 1072 2017-09-11 19:55:31Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015. 2017					*/
 /*										*/
@@ -38,7 +38,7 @@
 /********************************************************************************/
 
 /* 
-
+   Locks the Nuvoton preConfig registers
 */
 
 #include <stdio.h>

@@ -3,9 +3,9 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: fail.c 684 2016-07-18 21:22:01Z kgoldman $			*/
+/*            $Id: fail.c 1072 2017-09-11 19:55:31Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

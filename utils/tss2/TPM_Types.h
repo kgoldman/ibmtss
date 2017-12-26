@@ -3,7 +3,7 @@
 /*			 Headers from Part 2    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*            $Id: TPM_Types.h 1055 2017-08-08 20:30:09Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -1310,6 +1310,14 @@ typedef TPM_ALG_ID TPMI_ECC_KEY_EXCHANGE;
 /* Table 66 - Definition of (TPM_ST) TPMI_ST_COMMAND_TAG Type */
 
 typedef TPM_ST TPMI_ST_COMMAND_TAG;
+
+/* Table 71 - Definition of (TPM_ALG_ID) TPMI_ALG_MAC_SCHEME Type */
+
+typedef TPM_ALG_ID TPMI_ALG_MAC_SCHEME;
+
+/* Table 72 - Definition of (TPM_ALG_ID) TPMI_ALG_CIPHER_MODE Type */
+
+typedef TPM_ALG_ID TPMI_ALG_CIPHER_MODE;    
 
 /* Table 67 - Definition of TPMS_EMPTY Structure <IN/OUT> */
 
@@ -2756,6 +2764,28 @@ typedef struct {
     UINT16		size;	/* size of the creation data */
     TPMS_CREATION_DATA	creationData;
 } TPM2B_CREATION_DATA;
+
+typedef struct tdNTC2_CFG_STRUCT {
+    uint8_t i2cLoc1_2;
+    uint8_t i2cLoc3_4;
+    uint8_t AltCfg;
+    uint8_t Direction;
+    uint8_t PullUp;
+    uint8_t PushPull;
+    uint8_t CFG_A;
+    uint8_t CFG_B;
+    uint8_t CFG_C;
+    uint8_t CFG_D;
+    uint8_t CFG_E;
+    uint8_t CFG_F;
+    uint8_t CFG_G;
+    uint8_t CFG_H;
+    uint8_t CFG_I;
+    uint8_t CFG_J;
+    uint8_t IsValid;	/* Must be AAh */
+    uint8_t IsLocked;	/* Ignored on NTC2_PreConfig, NTC2_GetConfig returns AAh once configuration
+			   is locked. */
+} NTC2_CFG_STRUCT;
 
 #ifdef __cplusplus
 }

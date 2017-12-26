@@ -3,9 +3,9 @@
 /*			   RSA_Encrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsaencrypt.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: rsaencrypt.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 
 	/* Table 158 - Definition of {RSA} TPM2B_PUBLIC_KEY_RSA Structure */
 	{
-	    in.message.t.size = length;
+	    in.message.t.size = (uint16_t)length;	/* cast safe, range tested above */
 	    memcpy(in.message.t.buffer, buffer, length);
 	}
 	/* padding scheme */

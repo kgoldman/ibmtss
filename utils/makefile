@@ -1,9 +1,9 @@
-################################################################################
+#################################################################################
 #										#
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 1034 2017-06-30 20:49:51Z kgoldman $		#
+#	      $Id: makefile 1094 2017-11-08 21:50:29Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014, 2017					#
 # 										#
@@ -199,8 +199,8 @@ $(LIBTSS): 	$(TSS_OBJS)
 clean:		
 		rm -f *.o  *~ 	\
 		h*.bin		\
-		rm -f $(LIBTSSSONAME)	\
-		rm -f $(LIBTSSVERSIONED) \
+		$(LIBTSSSONAME)	\
+		$(LIBTSSVERSIONED) \
 		$(ALL)
 
 # applications
@@ -391,8 +391,8 @@ setprimarypolicy:	tss2/tss.h setprimarypolicy.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) setprimarypolicy.o $(LNALIBS) -o setprimarypolicy
 shutdown:		tss2/tss.h shutdown.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) shutdown.o $(LNALIBS) -o shutdown
-sign:			tss2/tss.h sign.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) sign.o $(LNALIBS) -o sign
+sign:			tss2/tss.h sign.o cryptoutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) sign.o cryptoutils.o $(LNALIBS) -o sign
 startauthsession:	tss2/tss.h startauthsession.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) startauthsession.o $(LNALIBS) -o startauthsession
 startup:		tss2/tss.h startup.o $(LIBTSS)
@@ -403,6 +403,8 @@ unseal:			tss2/tss.h unseal.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) unseal.o $(LNALIBS) -o unseal
 verifysignature:	tss2/tss.h verifysignature.o cryptoutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) verifysignature.o cryptoutils.o $(LNALIBS) -o verifysignature
+zgen2phase:		tss2/tss.h zgen2phase.o cryptoutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) zgen2phase.o cryptoutils.o $(LNALIBS) -o zgen2phase
 signapp:		tss2/tss.h signapp.o ekutils.o cryptoutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o ekutils.o cryptoutils.o $(LNALIBS) -o signapp
 writeapp:		tss2/tss.h writeapp.o ekutils.o cryptoutils.o $(LIBTSS)
@@ -411,6 +413,12 @@ timepacket:		tss2/tss.h timepacket.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) timepacket.o $(LNALIBS) -o timepacket
 createek:		createek.o cryptoutils.o ekutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createek.o cryptoutils.o ekutils.o $(LNALIBS) -o createek
+createekcert:		createekcert.o cryptoutils.o ekutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) createekcert.o cryptoutils.o ekutils.o $(LNALIBS) -o createekcert
+tpm2pem:		tpm2pem.o cryptoutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) tpm2pem.o cryptoutils.o $(LNALIBS) -o tpm2pem
+tpmpublic2eccpoint:	tpmpublic2eccpoint.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) tpmpublic2eccpoint.o $(LNALIBS) -o tpmpublic2eccpoint
 ntc2getconfig:		ntc2getconfig.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2getconfig.o $(LNALIBS) -o ntc2getconfig
 ntc2preconfig:		ntc2preconfig.o $(LIBTSS)

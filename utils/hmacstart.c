@@ -3,7 +3,7 @@
 /*			    HmacStart						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hmacstart.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: hmacstart.c 1092 2017-11-03 14:10:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -260,7 +260,7 @@ int main(int argc, char *argv[])
 static void printUsage(void)
 {
     printf("\n");
-    printf("hmac\n");
+    printf("hmacstart\n");
     printf("\n");
     printf("Runs TPM2_Hmac_Start\n");
     printf("\n");

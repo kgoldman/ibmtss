@@ -3,7 +3,7 @@
 /*			    Create 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: create.c 1044 2017-07-17 19:05:46Z kgoldman $			*/
+/*	      $Id: create.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -432,7 +432,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (parentHandle == 0) {
-	printf("Missing handle parameter -ha\n");
+	printf("Missing handle parameter -hp\n");
 	printUsage();
     }
     if (keyTypeSpecified != 1) {
@@ -669,8 +669,8 @@ static void printUsage(void)
     printf("\t[-opu public key file name (default do not save)]\n");
     printf("\t[-opr private key file name (default do not save)]\n");
     printf("\t[-opem public key PEM format file name (default do not save)]\n");
-    printf("\t[-tk output ticket file name]\n");
-    printf("\t[-ch output creation hash file name]\n");
+    printf("\t[-tk output ticket file name (default do not save)]\n");
+    printf("\t[-ch output creation hash file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

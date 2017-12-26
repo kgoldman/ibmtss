@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testsign.sh 991 2017-04-19 13:57:39Z kgoldman $		#
+#		$Id: testsign.sh 1088 2017-10-26 19:41:33Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -51,7 +51,7 @@ echo "Load the RSA signing key under the primary key"
 ${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
 checkSuccess $?
 
-echo "Create a key pair in PEM format using openssl"
+echo "Create an RSA key pair in PEM format using openssl"
   
 openssl genrsa -out tmpkeypair.pem -aes256 -passout pass:rrrr 2048 > run.out
 
@@ -62,41 +62,46 @@ openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -pas
 for HALG in sha1 sha256 sha384
 do
 
-    echo "Sign a digest - $HALG"
-    ${PREFIX}sign -hk 80000001 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig -ipu signpub.bin > run.out
-    checkSuccess $?
+    for SCHEME in rsassa rsapss
+    do
 
-    echo "Verify the signature using the TPM - $HALG"
-    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+	echo "Sign a digest - $HALG $SCHEME"
+	${PREFIX}sign -hk 80000001 -halg $HALG -scheme $SCHEME -if policies/aaa -os sig.bin -pwdk sig -ipu signpub.bin > run.out
+	checkSuccess $?
 
-    echo "Verify the signature using PEM - $HALG"
-    ${PREFIX}verifysignature -ipem signpub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+	echo "Verify the signature using the TPM - $HALG"
+	${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
 
-    echo "Read the public part"
-    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
-    checkSuccess $?
+	echo "Verify the signature using PEM - $HALG"
+	${PREFIX}verifysignature -ipem signpub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
 
-    echo "Verify the signature using readpublic PEM - $HALG"
-    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+	echo "Read the public part"
+	${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+	checkSuccess $?
 
-    echo "Load the openssl key pair in the NULL hierarchy - $HALG"
-    ${PREFIX}loadexternal -halg $HALG -ider tmpkeypair.der > run.out
-    checkSuccess $?
+	echo "Verify the signature using readpublic PEM - $HALG"
+	${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
 
-    echo "Use the TPM as a crypto coprocessor to sign - $HALG" 
-    ${PREFIX}sign -hk 80000002 -halg $HALG -if policies/aaa -os sig.bin > run.out
-    checkSuccess $?
+	echo "Load the openssl key pair in the NULL hierarchy 80000002 - $HALG $SCHEME"
+	${PREFIX}loadexternal -halg $HALG -scheme $SCHEME -ider tmpkeypair.der > run.out
+	checkSuccess $?
 
-    echo "Verify the signature - $HALG"
-    ${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+	echo "Use the TPM as a crypto coprocessor to sign - $HALG $SCHEME" 
+	${PREFIX}sign -hk 80000002 -halg $HALG -scheme $SCHEME -if policies/aaa -os sig.bin > run.out
+	checkSuccess $?
 
-    echo "Flush the openssl signing key"
-    ${PREFIX}flushcontext -ha 80000002 > run.out
-    checkSuccess $?
+	echo "Verify the signature - $HALG"
+	${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
+
+	echo "Flush the openssl signing key"
+	${PREFIX}flushcontext -ha 80000002 > run.out
+	checkSuccess $?
+    
+    done
 
 done
 
@@ -111,6 +116,14 @@ echo ""
 echo "Load the ECC signing key under the primary key"
 ${PREFIX}load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp pps > run.out
 checkSuccess $?
+
+echo "Create an ECC key pair in PEM format using openssl"
+  
+openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out
+
+echo "Convert key pair to plaintext DER format"
+
+openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
 
 for HALG in sha1 sha256 sha384
 do
@@ -135,6 +148,22 @@ do
     ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
     checkSuccess $?
 
+    echo "Load the openssl key pair in the NULL hierarchy 80000002 - $HALG"
+    ${PREFIX}loadexternal -halg $HALG -ecc -ider tmpkeypairecc.der > run.out
+    checkSuccess $?
+
+    echo "Use the TPM as a crypto coprocessor to sign - $HALG" 
+    ${PREFIX}sign -hk 80000002 -halg $HALG -ecc -if policies/aaa -os sig.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature - $HALG"
+    ${PREFIX}verifysignature -hk 80000002 -halg $HALG -ecc -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the openssl signing key"
+    ${PREFIX}flushcontext -ha 80000002 > run.out
+    checkSuccess $?
+
 done
 
 echo "Flush the ECC signing key"
@@ -145,9 +174,7 @@ echo ""
 echo "Primary RSA Signing Key"
 echo ""
 
-# primary signing key 80000001
-
-echo "Create primary signing key - RSA"
+echo "Create primary signing key - RSA 80000001"
 ${PREFIX}createprimary -si -opu tmppub.bin -opem tmppub.pem -pwdk sig > run.out
 checkSuccess $?
 
@@ -166,11 +193,19 @@ do
     ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
     checkSuccess $?
 
-    echo "Read the public part"
+    echo "Read the public part and convert to PEM"
     ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
     checkSuccess $?
 
     echo "Verify the signature using readpublic PEM - $HALG"
+    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Convert TPM public key to PEM"
+    ${PREFIX}tpm2pem -ipu tmppub.bin -opem tmppub.pem
+    checkSuccess $?
+
+    echo "Verify the signature using createprimary converted PEM - $HALG"
     ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
     checkSuccess $?
 
@@ -184,7 +219,7 @@ echo ""
 echo "Primary ECC Signing Key"
 echo ""
 
-echo "Create primary signing key - ECC"
+echo "Create primary signing key - ECC 80000001"
 ${PREFIX}createprimary -si -opu tmppub.bin -opem tmppub.pem -ecc nistp256 -pwdk sig > run.out
 checkSuccess $?
 
@@ -208,6 +243,14 @@ do
     checkSuccess $?
 
     echo "Verify the signature using readpublic PEM - $HALG"
+    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Convert TPM public key to PEM"
+    ${PREFIX}tpm2pem -ipu tmppub.bin -opem tmppub.pem
+    checkSuccess $?
+
+    echo "Verify the signature using createprimary converted PEM - $HALG"
     ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
     checkSuccess $?
 
@@ -239,6 +282,8 @@ echo ""
 
 # create rsaprivkey.pem
 # > openssl genrsa -out rsaprivkey.pem -aes256 -passout pass:rrrr 2048
+# convert to der
+# > openssl rsa -inform pem -outform der -in rsaprivkey.pem -out rsaprivkey.der -passin pass:rrrr
 # extract the public key
 # > openssl pkey -inform pem -outform pem -in rsaprivkey.pem -passin pass:rrrr -pubout -out rsapubkey.pem 
 # sign a test message msg.bin
@@ -281,6 +326,8 @@ checkSuccess $?
 
 rm -f tmpkeypair.pem
 rm -f tmpkeypair.der
+rm -f tmpkeypairecc.pem
+rm -f tmpkeypairecc.der
 rm -f signpub.pem
 rm -r pssig.bin
 rm -r tmppub.bin

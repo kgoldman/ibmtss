@@ -3,9 +3,9 @@
 /*			    TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssfile.c 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*		$Id: tssfile.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -258,9 +258,16 @@ TPM_RC TSS_File_Read2B(TPM2B 		*tpm2b,
 				     &length,
 				     filename);
     }
+    if (rc == 0) {
+	if (length > 0xffff) {	/* overflow TPM2B uint16_t */
+	    if (tssVerbose) printf("TSS_File_Read2B: size %u greater than 0xffff\n",
+				   (unsigned int)length);	
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
     /* copy it into the TPM2B */
     if (rc == 0) {
-	rc = TSS_TPM2B_Create(tpm2b, buffer, length, targetSize);
+	rc = TSS_TPM2B_Create(tpm2b, buffer, (uint16_t)length, targetSize);
     }
     free(buffer);
     return rc;

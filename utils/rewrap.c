@@ -3,9 +3,9 @@
 /*			   Rewrap		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rewrap.c 987 2017-04-17 18:27:09Z kgoldman $			*/
+/*	      $Id: rewrap.c 1098 2017-11-27 23:07:26Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -327,7 +327,7 @@ int main(int argc, char *argv[])
 static void printUsage(void)
 {
     printf("\n");
-    printf("Rewrap\n");
+    printf("rewrap\n");
     printf("\n");
     printf("Runs TPM2_Rewrap\n");
     printf("\n");
@@ -340,6 +340,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t[-od rewrap private area file name (default do not save)]\n");
     printf("\t[-oss symmetric seed file name (default do not save)]\n");
+    printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");
     printf("\t\t20 command decrypt\n");

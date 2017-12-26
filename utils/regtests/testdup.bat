@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 979 2017-04-04 17:57:18Z kgoldman $		#
+REM #		$Id: testdup.bat 1097 2017-11-10 22:25:33Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -55,125 +55,208 @@ echo ""
 echo "Duplication"
 echo ""
 
-for %%E in ("" "-salg aes -ik tmprnd.bin") do (
+echo ""
+echo "Duplicate Child Key"
+echo ""
 
-    for %%H in (sha1 sha256 sha384) do (
+REM # primary key		80000000
+REM # target storage key K1 	80000001
+REM #	originally under primary key
+REM #	duplicate to K1
+REM #	import to K1
+REM # signing key        K2	80000002
 
-	echo "Create a signing key K2 under the primary key, with policy"
-	%TPM_EXE_PATH%create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccduplicate.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
+for %%A in ("" "ecc") do (
+    
+    for %%E in ("" "-salg aes -ik tmprnd.bin") do (
+
+    	for %%H in (sha1 sha256 sha384) do (
+
+	    echo "Create a signing key K2 under the primary key, with policy"
+	    %TPM_EXE_PATH%create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccduplicate.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Load the %%~A storage key K1"
+	    %TPM_EXE_PATH%load -hp 80000000 -ipr store%%~Apriv.bin -ipu store%%~Apub.bin -pwdp pps > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Load the signing key K2"
+	    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Sign a digest, %%H"
+	    %TPM_EXE_PATH%sign -hk 80000002 -halg %%H -if policies/aaa -os sig.bin -pwdk sig  > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Verify the signature, %%H"
+	    %TPM_EXE_PATH%verifysignature -hk 80000002 -halg %%H -if policies/aaa -is sig.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Start a policy session"
+	    %TPM_EXE_PATH%startauthsession -se p > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Policy command code, duplicate"
+	    %TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 14b > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Get policy digest"
+	    %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out 
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Get random AES encryption key"
+	    %TPM_EXE_PATH%getrandom -by 16 -of tmprnd.bin > run.out 
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+	    
+	    echo "Duplicate K2 under %%~A K1, %%~E"
+	    %TPM_EXE_PATH%duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin %%~E -se0 03000000 1 > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Flush the original K2 to free object slot for import"
+	    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Import K2 under %%~A K1, %%~E"
+	    %TPM_EXE_PATH%import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin %%~E -opr tmppriv.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Sign under K2, %%H - should fail"
+	    %TPM_EXE_PATH%sign -hk 80000002 -halg %%H -if policies/aaa -os sig.bin -pwdk sig > run.out
+    	    IF !ERRORLEVEL! EQU 0 (
+       	       exit /B 1
+    	    )
+
+	    echo "Load the duplicated signing key K2"
+	    %TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Sign using duplicated K2, %%H"
+	    %TPM_EXE_PATH%sign -hk 80000002 -halg %%H -if policies/aaa -os sig.bin -pwdk sig > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Verify the signature, %%H"
+	    %TPM_EXE_PATH%verifysignature -hk 80000002 -halg %%H -if policies/aaa -is sig.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Flush the duplicated K2"
+	    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Flush the parent K1"
+	    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Flush the session"
+	    %TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
 	)
-
-	echo "Load the storage key K1"
-	%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Load the signing key K2"
-	%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Sign a digest, %%H"
-	%TPM_EXE_PATH%sign -hk 80000002 -halg %%H -if policies/aaa -os sig.bin -pwdk sig  > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Verify the signature, %%H"
-	%TPM_EXE_PATH%verifysignature -hk 80000002 -halg %%H -if policies/aaa -is sig.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Start a policy session"
-	%TPM_EXE_PATH%startauthsession -se p > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Policy command code, duplicate"
-	%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 14b > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Get policy digest"
-	%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out 
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Get random AES encryption key"
-	%TPM_EXE_PATH%getrandom -by 16 -of tmprnd.bin > run.out 
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Duplicate K2 under K1, %%~E"
-	%TPM_EXE_PATH%duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin %%~E -se0 03000000 1 > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Flush the original K2 to free object slot for import"
-	%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Import K2 under K1, %%~E"
-	%TPM_EXE_PATH%import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin %%~E -opr tmppriv.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Sign under K2, %%H - should fail"
-	%TPM_EXE_PATH%sign -hk 80000002 -halg %%H -if policies/aaa -os sig.bin -pwdk sig > run.out
-    	IF !ERRORLEVEL! EQU 0 (
-       	    exit /B 1
-    	)
-
-	echo "Load the duplicated signing key K2"
-	%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Sign using duplicated K2, %%H"
-	%TPM_EXE_PATH%sign -hk 80000002 -halg %%H -if policies/aaa -os sig.bin -pwdk sig > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Verify the signature, %%H"
-	%TPM_EXE_PATH%verifysignature -hk 80000002 -halg %%H -if policies/aaa -is sig.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Flush the duplicated K2"
-	%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Flush the parent K1"
-	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Flush the session"
-	%TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
     )
+)
+
+echo ""
+echo "Duplicate Primary Key"
+echo ""
+
+echo "Create a platform primary signing key K2 80000001"
+%TPM_EXE_PATH%createprimary -hi p -si -kt nf -kt np -pol policies/policyccduplicate.bin -opu tmppub.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Sign a digest"
+%TPM_EXE_PATH%sign -hk 80000001 -if policies/aaa > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Start a policy session 03000000"
+%TPM_EXE_PATH%startauthsession -se p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Policy command code, duplicate"
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 14b > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Duplicate K2 under storage key"
+%TPM_EXE_PATH%duplicate -ho 80000001 -hp 80000000 -od tmpdup.bin -oss tmpss.bin -se0 03000000 1
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Import K2 under storage key"
+%TPM_EXE_PATH%import -hp 80000000 -pwdp pps -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin -opr tmppriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Load the duplicated signing key K2 80000002"
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Sign a digest"
+%TPM_EXE_PATH%sign -hk 80000002 -if policies/aaa > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the primary key 8000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the duplicated key 80000002 "
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the session 03000000 "
+%TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
 )
 
 echo ""
@@ -430,6 +513,205 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+echo ""
+echo "Duplicate Primary Sealed AES from Source to Target EK"
+echo ""
+
+REM # source creates AES key, sends to target
+
+REM # Real code would send the target EK X509 certificate.  The target could
+REM # defer recreating the EK until later.
+
+REM # Target
+
+for %%A in ("rsa" "ecc") do (
+
+    echo "Target: Provision a target %%A EK certificate"
+    %TPM_EXE_PATH%createekcert -alg %%A -cakey cakey.pem -capwd rrrr > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Recreate the %%A EK at 80000001"
+    %TPM_EXE_PATH%createek -alg %%A -cp -noflush > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Convert the EK public key to PEM format for transmission to source"
+    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmpekpub.pem > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Flush the EK"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+REM # Here, target would send the EK PEM public key to the source
+
+REM # The real source would
+REM #
+REM # 1 - walk the EK X509 certificate chain.  I have to add that sample code to createEK or make a new utility.
+REM # 2 - use openssl to convert the X509 EK certificate the the PEM public key file
+REM # 
+REM # for now, the source trusts the target EK PEM public key
+
+REM # Source
+
+    echo "Source: Create an AES 256 bit key"
+    %TPM_EXE_PATH%getrandom -by 32 -ns -of tmpaeskeysrc.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Source: Create primary duplicable sealed AES key 80000001"
+    %TPM_EXE_PATH%createprimary -bl -kt nf -kt np -if tmpaeskeysrc.bin -pol policies/policyccduplicate.bin -opu tmpsdbpub.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Source: Load the target %%A EK public key as a storage key 80000002"
+    %TPM_EXE_PATH%loadexternal -%%A -st -ipem tmpekpub.pem > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Source: Start a policy session, duplicate needs a policy 03000000"
+    %TPM_EXE_PATH%startauthsession -se p > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Source: Policy command code, duplicate"
+    %TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 14b > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Source: Read policy digest, for debug"
+    %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Source: Wrap the sealed AES key with the target EK public key"
+    %TPM_EXE_PATH%duplicate -ho 80000001 -hp 80000002 -od tmpsdbdup.bin -oss tmpss.bin -se0 03000000 0 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Source: Flush the sealed AES key 80000001"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Source: Flush the EK public key 80000002"
+    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+REM # Transmit the sealed AEK key wrapped with the target EK back to the target
+REM # tmpsdbdup.bin private part wrapped in EK public key, via symmetric seed
+REM # tmpsdbpub.bin public part 
+REM # tmpss.bin symmetric seed, encrypted with EK public key
+
+REM # Target
+
+REM # NOTE This assumes that the endorsement hierarchy password is Empty.
+REM # This may be a bad assumption if an attacker can get access and
+REM # change it.
+
+    echo "Target: Recreate the -%%A EK at 80000001"
+    %TPM_EXE_PATH%createek -alg %%A -cp -noflush > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Start a policy session, EK use needs a policy"
+    %TPM_EXE_PATH%startauthsession -se p > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Policy Secret with PWAP session and (Empty) endorsement auth"
+    %TPM_EXE_PATH%policysecret -ha 4000000b -hs 03000000 -pwde "" > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Read policy digest for debug"
+    %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Import the sealed AES key under the EK storage key"
+    %TPM_EXE_PATH%import -hp 80000001 -ipu tmpsdbpub.bin -id tmpsdbdup.bin -iss tmpss.bin -opr tmpsdbpriv.bin -se0 03000000 1
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Restart the policy session"
+    %TPM_EXE_PATH%policyrestart -ha 03000000
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Policy Secret with PWAP session and (Empty) endorsement auth"
+    %TPM_EXE_PATH%policysecret -ha 4000000b -hs 03000000 -pwde "" > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Read policy digest for debug"
+    %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Load the sealed AES key under the EK storage key"
+    %TPM_EXE_PATH%load -hp 80000001 -ipu tmpsdbpub.bin -ipr tmpsdbpriv.bin -se0 03000000 1 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Target: Unseal the AES key"
+    %TPM_EXE_PATH%unseal -ha 80000002 -of tmpaeskeytgt.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+REM # A real target would not have access to tmpaeskeysrc.bin for the compare
+
+    echo "Target: Verify the unsealed result, same at source, for debug"
+    diff tmpaeskeytgt.bin tmpaeskeysrc.bin
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the EK"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the sealed AES key"
+    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the policy session"
+    %TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
+    checkSuccess $?
+
+)
+
 rm -f tmpo1name.bin
 rm -f tmpsignpriv.bin
 rm -f tmpsignpub.bin
@@ -437,7 +719,7 @@ rm -f tmprnd.bin
 rm -f tmpdup.bin
 rm -f tmpss.bin
 rm -f tmpsignpriv3.bin
-rm -f sig.bin
+rm -f tmpsig.bin
 rm -f tmpk2priv.bin
 rm -f tmpk2pub.bin
 rm -f tmposs.bin 
@@ -445,7 +727,13 @@ rm -f tmpprivkey.pem
 rm -f tmpecprivkey.pem
 rm -f tmppub.bin
 rm -f tmppriv.bin
-rm -f tmpsig.bin
+rm -f tmpekpub.pem
+rm -f tmpaeskeysrc.bin
+rm -f tmpsdbpub.bin
+rm -f tmpsdbdup.bin
+rm -f tmpss.bin
+rm -f tmpsdbpriv.bin
+rm -f tmpaeskeytgt.bin
 
 exit /B 0
 

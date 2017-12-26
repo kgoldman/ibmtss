@@ -3,9 +3,9 @@
 /*			   Import		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: import.c 985 2017-04-14 18:49:47Z kgoldman $			*/
+/*	      $Id: import.c 1092 2017-11-03 14:10:10Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -355,7 +355,7 @@ int main(int argc, char *argv[])
 static void printUsage(void)
 {
     printf("\n");
-    printf("Import\n");
+    printf("import\n");
     printf("\n");
     printf("Runs TPM2_Import\n");
     printf("\n");

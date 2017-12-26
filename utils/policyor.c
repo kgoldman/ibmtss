@@ -3,9 +3,9 @@
 /*			    PolicyOR	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyor.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: policyor.c 1092 2017-11-03 14:10:10Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -51,7 +51,7 @@
 #include <tss2/tssresponsecode.h>
 #include <tss2/Unmarshal_fp.h>
 
-static void   printUsage(void);
+static void printUsage(void);
 
 int verbose = FALSE;
 

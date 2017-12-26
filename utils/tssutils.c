@@ -3,9 +3,9 @@
 /*			    TSS and Application Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssutils.c 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*		$Id: tssutils.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -262,18 +262,27 @@ TPM_RC TSS_TPM2B_StringCopy(TPM2B *target, const char *source, uint16_t targetSi
 {
     TPM_RC rc = 0;
     size_t length;
+    uint16_t length16;
 
     if (source != NULL) {
 	if (rc == 0) {
 	    length = strlen(source);
-	    if (length > targetSize) {
-		if (tssVerbose) printf("TSS_TPM2B_StringCopy: size %u greater than target %u\n",
-				       (unsigned int)length, targetSize);	
+	    if (length > 0xffff) {	/* overflow TPM2B uint16_t */
+		if (tssVerbose) printf("TSS_TPM2B_StringCopy: size %u greater than 0xffff\n",
+				       (unsigned int)length);	
 		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
 	if (rc == 0) {
-	    target->size = length;
+	    length16 = (uint16_t )length;	/* cast safe after range test */
+	    if (length16 > targetSize) {
+		if (tssVerbose) printf("TSS_TPM2B_StringCopy: size %u greater than target %u\n",
+				       length16, targetSize);	
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+	if (rc == 0) {
+	    target->size = length16;
 	    memcpy(target->buffer, source, length);
 	}
     }

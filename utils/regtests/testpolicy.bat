@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testpolicy.bat 919 2017-01-20 15:11:51Z kgoldman $		#
+REM #		$Id: testpolicy.bat 1087 2017-10-24 18:08:49Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -367,128 +367,167 @@ REM # > openssl pkey -inform pem -outform pem -in rsaprivkey.pem -passin pass:rr
 REM # sign a test message msg.bin
 REM # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 REM #
-REM # create the policy, after loadexternal, get the name from ${TPM_DATA_DIR}/h80000001.bin
-REM # 0004 4234 c24f c1b9 de66 93a6 2453 417d 2734 d753 8f6f
-
+REM # create the policy:
+REM # after loadexternal, get the name from readpublic -ho 80000001 -v
+REM 
+REM # sha1
+REM # 00 04 42 34 c2 4f c1 b9 de 66 93 a6 24 53 41 7d 
+REM # 27 34 d7 53 8f 6f 
+REM 
+REM # sha256
+REM # 00 0b 64 ac 92 1a 03 5c 72 b3 aa 55 ba 7d b8 b5 
+REM # 99 f1 72 6f 52 ec 2f 68 20 42 fc 0e 0d 29 fa e8 
+REM # 17 99 
+REM 
 REM # 00000160 plus the above name as text, add a blank line for empty policyRef
-REM # to create policies/policysigned.txt
-REM #
-REM # > policymaker -if policysigned.txt -of policysigned.bin -pr
+REM # to create policies/policysigned%%H.txt
 REM #
 REM # 0000016000044234c24fc1b9de6693a62453417d2734d7538f6f
+REM # 00000160000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+REM #
+REM # makes sha256 policy by default, policy digest algorithm is separate from Name and signature hash algorithm
+REM #
+REM # > policymaker -if policies/policysigned%%H.txt -of policies/policysigned%%H.bin -pr
 REM #
 REM # 9d 81 7a 4e e0 76 eb b5 cf ee c1 82 05 cc 4c 01 
 REM # b3 a0 5e 59 a9 b9 65 a1 59 af 1e cd 3d bf 54 fb 
 REM #
+REM # de bf 9d fa 3c 98 08 0b f1 7d d1 d0 7b 54 fd e1 
+REM # 07 93 7f e5 40 50 9e 70 96 aa 73 27 53 b3 83 31 
 REM #
 REM # 80000000 primary key
 REM # 80000001 verification public key
 REM # 80000002 signing key with policy
 REM # 03000000 policy session
 
-echo "Load external just the public part of PEM at 80000001"
-%TPM_EXE_PATH%loadexternal -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+for %%H in (sha1 sha256) do (
 
-echo "Sign a test message with openssl"
-openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
+    echo "Load external just the public part of PEM at 80000001 - %%H"
+    %TPM_EXE_PATH%loadexternal -halg %%H -nalg %%H -ipem policies/rsapubkey.pem > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Verify the signature with 80000001"
-%TPM_EXE_PATH%verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Sign a test message with openssl - %%H"
+    openssl dgst -%%H -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 
-echo "Create a signing key under the primary key - policy signed"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysigned.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Verify the signature with 80000001 - %%H"
+    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if msg.bin -is pssig.bin -raw > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Load the signing key under the primary key at 80000002"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Create a signing key under the primary key - policy signed - %%H"
+    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysigned%%H.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Start a policy session"
-%TPM_EXE_PATH%startauthsession -se p > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Load the signing key under the primary key at 80000002"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Sign a digest - policy, should fail"
-%TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
-IF !ERRORLEVEL! EQU 0 (
-   exit /B 1
-)
+    echo "Start a policy session"
+    %TPM_EXE_PATH%startauthsession -se p > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Policy signed - callback to signer"
-%TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg sha1 -pwdk rrrr > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Sign a digest - policy, should fail"
+    %TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
+    IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+    )
 
-echo "Get policy digest, should be f877 ..."
-%TPM_EXE_PATH%policygetdigest -ha 03000000 -of tmppol.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Policy signed - sign with PEM key - %%H"
+    %TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg %%H -pwdk rrrr > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Sign a digest - policy signed"
-%TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Get policy digest, should be f877 ..."
+    %TPM_EXE_PATH%policygetdigest -ha 03000000 -of tmppol.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Start a policy session - save nonceTPM"
-%TPM_EXE_PATH%startauthsession -se p -on noncetpm.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Sign a digest - policy signed"
+    %TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Policy signed with nonceTPM and expiration, create a ticket"
-%TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg sha1 -pwdk rrrr -in noncetpm.bin -exp -200 -tk tkt.bin -to to.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+     echo "Policy restart, set back to zero"
+    %TPM_EXE_PATH%policyrestart -ha 03000000 > run.out 
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Sign a digest - policy signed"
-%TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Sign just expiration (uint32_t 4 zeros) with openssl - %%H"
+    openssl dgst -%%H -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/zero4.bin
 
-echo "Start a policy session"
-%TPM_EXE_PATH%startauthsession -se p > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Policy signed, signature generated externally - %%H"
+    %TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -halg %%H -is pssig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Policy ticket"
-%TPM_EXE_PATH%policyticket -ha 03000000 -to to.bin -na h80000001.bin -tk tkt.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Sign a digest - policy signed"
+    %TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Sign a digest - policy ticket"
-%TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Start a policy session - save nonceTPM"
+    %TPM_EXE_PATH%startauthsession -se p -on noncetpm.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Flush the verification public key"
-%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Policy signed with nonceTPM and expiration, create a ticket - %%H"
+    %TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg %%H -pwdk rrrr -in noncetpm.bin -exp -200 -tk tkt.bin -to to.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
 
-echo "Flush the signing key"
-%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
+    echo "Sign a digest - policy signed"
+    %TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Start a policy session"
+    %TPM_EXE_PATH%startauthsession -se p > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Policy ticket"
+    %TPM_EXE_PATH%policyticket -ha 03000000 -to to.bin -na h80000001.bin -tk tkt.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Sign a digest - policy ticket"
+    %TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Flush the verification public key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Flush the signing key"
+    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
 )
 
 REM # getcapability  -cap 1 -pr 80000000
@@ -684,6 +723,103 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "NV Undefine Space 0100000"
 %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Policy Secret with Object"
+echo ""
+
+REM # Use a externally generated object so that the Name is known and thus
+REM # the policy can be precalculated
+
+REM # Name
+REM # 00 0b 64 ac 92 1a 03 5c 72 b3 aa 55 ba 7d b8 b5 
+REM # 99 f1 72 6f 52 ec 2f 68 20 42 fc 0e 0d 29 fa e8 
+REM # 17 99 
+
+REM # 000001151 plus the above name as text, add a blank line for empty policyRef
+REM # to create policies/policysecretsha256.txt
+REM # 00000151000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+
+REM # 4b 7f ca c2 b7 c3 ac a2 7c 5c da 9c 71 e6 75 28 
+REM # 63 d2 87 d2 33 ec 49 0e 7a be 88 f1 ef 94 5d 5c 
+
+echo "Load the RSA openssl key pair in the NULL hierarchy 80000001"
+%TPM_EXE_PATH%loadexternal -rsa -ider policies/rsaprivkey.der -pwdk rrrr > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Create a signing key under the primary key - policy secret of object 80000001"
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -uwa -pol policies/policysecretsha256.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the signing key under the primary key 80000002"
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign a digest - password auth - should fail"
+%TPM_EXE_PATH%sign -hk 80000002 -if policies/aaa -pwdk sig > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "Start a policy session 03000000"
+%TPM_EXE_PATH%startauthsession -se p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy Secret with PWAP session"
+%TPM_EXE_PATH%policysecret -ha 80000001 -hs 03000000 -pwde rrrr > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign a digest - policy secret"
+%TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -se0 03000000 1 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the policysecret key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the RSA openssl key pair in the NULL hierarchy, userWithAuth false 80000001"
+%TPM_EXE_PATH%loadexternal -rsa -ider policies/rsaprivkey.der -pwdk rrrr -uwa > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy Secret with PWAP session - should fail"
+%TPM_EXE_PATH%policysecret -ha 80000001 -hs 03000000 -pwde rrrr > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "Flush the policysecret key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the signing key"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the session"
+%TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1662,7 +1798,8 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 rm tmppol.bin
-
+rm tmppriv.bin
+rm tmppub.bin
 exit /B 0
 
 REM # getcapability -cap 1 -pr 80000000

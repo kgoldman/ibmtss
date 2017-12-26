@@ -3,9 +3,9 @@
 /*			   Import a PEM RSA keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: importpem.c 1095 2017-11-09 21:52:27Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016.						*/
+/* (c) Copyright IBM Corporation 2016, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -40,8 +40,9 @@
 /* Use OpenSSL to create an RSA  keypair like this
 
    > openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048
+   > openssl ecparam -name prime256v1 -genkey -noout |
+	openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem
 
-   
 */
 
 #include <stdio.h>
@@ -79,6 +80,7 @@ int main(int argc, char *argv[])
     const char			*outPrivateFilename = NULL;
     const char			*policyFilename = NULL;
     int				keyType = TYPE_SI;
+    TPMI_ALG_SIG_SCHEME 	scheme = TPM_ALG_RSASSA;
     TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_HASH		nalg = TPM_ALG_SHA256;
@@ -132,6 +134,7 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-ecc") == 0) {
 	    algPublic = TPM_ALG_ECC;
+	    scheme = TPM_ALG_ECDSA;
 	}
 	else if (strcmp(argv[i],"-pwdk") == 0) {
 	    i++;
@@ -322,6 +325,7 @@ int main(int argc, char *argv[])
 	    rc = convertRsaPemToKeyPair(&in.objectPublic,
 					&in.duplicate,
 					keyType,
+					scheme,
 					nalg,
 					halg,
 					pemKeyFilename,
@@ -329,12 +333,13 @@ int main(int argc, char *argv[])
 	}
 	else if (algPublic == TPM_ALG_ECC) {
 	    rc = convertEcPemToKeyPair(&in.objectPublic,
-					&in.duplicate,
-					keyType,
-					nalg,
-					halg,
-					pemKeyFilename,
-					pemKeyPassword);
+				       &in.duplicate,
+				       keyType,
+				       scheme,
+				       nalg,
+				       halg,
+				       pemKeyFilename,
+				       pemKeyPassword);
 	}
 	else {
 	    rc = TPM_RC_ASYMMETRIC;
@@ -403,15 +408,16 @@ int main(int argc, char *argv[])
 static void printUsage(void)
 {
     printf("\n");
-    printf("Import PEM\n");
+    printf("importpem\n");
     printf("\n");
-    printf("Runs TPM2_Import for a PEM RSA key\n");
+    printf("Runs TPM2_Import for a PEM signing key\n");
     printf("\n");
     printf("\t-hp parent handle\n");
     printf("\t[-pwdp password for parent (default empty)]\n");
     printf("\t-ipem PEM format key pair\n");
-    printf("\t\t[-rsa (default)]\n");
-    printf("\t\t[-ecc (uses NIST P256)]\n");
+    printf("\t[Asymmetric Key Algorithm]\n");
+    printf("\t\t-rsa (default), RSASSA scheme\n");
+    printf("\t\t-ecc curve\n");
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t-opu public area file name\n");
     printf("\t-opr private area file name\n");

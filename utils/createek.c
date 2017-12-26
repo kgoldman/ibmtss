@@ -3,9 +3,9 @@
 /*			     IWG EK Index Parsing				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createek.c 1005 2017-05-05 16:18:34Z kgoldman $		*/
+/*	      $Id: createek.c 1095 2017-11-09 21:52:27Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -112,6 +112,7 @@ int main(int argc, char *argv[])
     uint8_t 			*modulusBin = NULL;
     int				modulusBytes;
     unsigned int 		noFlush = 0;		/* default flush after validation */
+    TPM_HANDLE 			keyHandle;		/* primary key handle */
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -157,7 +158,7 @@ int main(int argc, char *argv[])
 		    ekNonceIndex = EK_NONCE_RSA_INDEX;
 		    ekTemplateIndex = EK_TEMPLATE_RSA_INDEX;
 		}
-		else if (strcmp(argv[i],"ec") == 0) {
+		else if (strcmp(argv[i],"ecc") == 0) {
 		    algType = AlgEC;
 		    ekCertIndex = EK_CERT_EC_INDEX;
 		    ekNonceIndex = EK_NONCE_EC_INDEX;
@@ -205,20 +206,25 @@ int main(int argc, char *argv[])
 	rc = TSS_Create(&tssContext);
     }
     if (rc == 0) {
-	TPM_HANDLE keyHandle;		/* primary key handle */
 	switch (inputType) {
 	  case EKTemplateType:
 	    rc = processEKTemplate(tssContext, &tpmtPublic, ekTemplateIndex, TRUE);
+	    if (rc != 0) {
+		printf("No EK template\n");
+	    }
 	    break;
 	  case EKNonceType:
 	    rc = processEKNonce(tssContext, &nonce, &nonceSize, ekNonceIndex, TRUE);
+	    if (rc != 0) {
+		printf("No EK nonce\n");
+	    }
 	    break;
 	  case EKCertType:
 	    rc = processEKCertificate(tssContext,
 				      &ekCertificate,			/* freed @2 */
 				      &modulusBin, &modulusBytes,	/* freed @3 */
 				      ekCertIndex,
-				      TRUE);
+				      TRUE);		/* print the EK certificate */
 	    break;
 	  case CreateprimaryType:
 	    rc = processPrimary(tssContext, &keyHandle,
@@ -241,6 +247,9 @@ int main(int argc, char *argv[])
 			     rootFileCount,
 			     TRUE); 
 	}
+    }
+    if ((rc == 0) && noFlush && (inputType == CreateprimaryType)) {
+	printf("Primary key Handle %08x\n", keyHandle);
     }
     {
 	TPM_RC rc1 = TSS_Delete(tssContext);
@@ -271,10 +280,11 @@ static void printUsage(void)
     printf("-no print EK nonce \n");
     printf("-ce print EK certificate \n");
     printf("-cp CreatePrimary using the EK template and EK nonce\n");
-    printf("\t[-noflush Do not flush the primary key after validation\n");
+    printf("\tValidate the EK against the EK certificate\n");
+    printf("\t[-noflush Do not flush the primary key after validation]\n");
     printf("[-root filename validate EK certificates against the root)]\n");
     printf("\tfilename contains a list of PEM certificate filenames, one per line\n");
     printf("\tthe list may contain up to %u certificates\n", MAX_ROOTS);
-    printf("-alg (rsa or ec) \n");
+    printf("-alg (rsa or ecc) \n");
     exit(1);	
 }

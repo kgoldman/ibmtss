@@ -3,9 +3,9 @@
 /*		      Extend an EVENT measurement file into PCRs		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventextend.c 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*	      $Id: eventextend.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016.						*/
+/* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -68,6 +68,7 @@ int main(int argc, char * argv[])
     TCG_EfiSpecIDEvent 		specIdEvent;
     unsigned int 		lineNum;
     int 			endOfFile = FALSE;
+    int				nospec = FALSE;
     PCR_Extend_In 		in;
 	
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
@@ -84,6 +85,9 @@ int main(int argc, char * argv[])
 		printUsage();
 		exit(2);
 	    }
+	}
+	else if (strcmp(argv[i],"-nospec") == 0) {
+	    nospec = TRUE;
 	}
 	else if (!strcmp(argv[i], "-h")) {
 	    printUsage();
@@ -111,21 +115,21 @@ int main(int argc, char * argv[])
     }
     /* the first event is a TPM 1.2 format event */
     /* read an event line */
-    if (rc == 0) {
+    if ((rc == 0) && !nospec) {
 	rc = TSS_EVENT_Line_Read(&event, &endOfFile, infile);
     }
     /* debug tracing */
-    if (verbose && !endOfFile && (rc == 0)) {
+    if (verbose && !endOfFile && (rc == 0) && !nospec) {
 	printf("\neventextend: line 0\n");
 	TSS_EVENT_Line_Trace(&event);
     }
     /* parse the event */
-    if (verbose && !endOfFile && (rc == 0)) {
+    if (verbose && !endOfFile && (rc == 0) && !nospec) {
 	rc = TSS_SpecIdEvent_Unmarshal(&specIdEvent,
 				       event.eventDataSize, event.event);
     }
     /* trace the event */
-    if (verbose && !endOfFile && (rc == 0)) {
+    if (verbose && !endOfFile && (rc == 0) && !nospec) {
 	TSS_SpecIdEvent_Trace(&specIdEvent);
     }
     /* Start a TSS context */
@@ -222,6 +226,7 @@ static void printUsage(void)
     printf("\n");
     printf("   Where the arguments are...\n");
     printf("    -if <input file> is the file containing the data to be extended\n");
+    printf("    [-nospec file does not contain spec ID header (useful for incremental test)]\n");
     printf("\n");
     exit(-1);
 }

@@ -3,9 +3,9 @@
 /*			    PolicyAuthorize	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyauthorize.c 987 2017-04-17 18:27:09Z kgoldman $	*/
+/*	      $Id: policyauthorize.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -128,6 +128,72 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-se0") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle0);
+	    }
+	    else {
+		printf("Missing parameter for -se0\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes0);
+		if (sessionAttributes0 > 0xff) {
+		    printf("Out of range session attributes for -se0\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se0\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-se1") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle1);
+	    }
+	    else {
+		printf("Missing parameter for -se1\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes1);
+		if (sessionAttributes1 > 0xff) {
+		    printf("Out of range session attributes for -se1\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se1\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-se2") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionHandle2);
+	    }
+	    else {
+		printf("Missing parameter for -se2\n");
+		printUsage();
+	    }
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%x", &sessionAttributes2);
+		if (sessionAttributes2 > 0xff) {
+		    printf("Out of range session attributes for -se2\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("Missing parameter for -se2\n");
+		printUsage();
+	    }
+	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
@@ -234,7 +300,8 @@ static void printUsage(void)
     printf("\t-skn signing key Name file name\n");
     printf("\t-tk ticket file name\n");
     printf("\n");
-    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
+    printf("\t-se[0-2] session handle / attributes (default NULL)\n");
+    printf("\t\t20 command decrypt\n");
     printf("\t\t01 continue\n");
     exit(1);	
 }

@@ -3,9 +3,9 @@
 /*			   StirRandom						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: stirrandom.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: stirrandom.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	in.inData.t.size = length;
+	in.inData.t.size =  (uint16_t)length;	/* cast safe, range tested above */
 	memcpy(in.inData.t.buffer, buffer, length);
     }
     free(buffer);

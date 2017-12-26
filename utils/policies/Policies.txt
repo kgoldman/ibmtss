@@ -3,7 +3,7 @@
 #			TPM2 regression test Directory of files			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: Policies.txt 961 2017-03-10 21:53:29Z kgoldman $		#
+#		$Id: Policies.txt 1094 2017-11-08 21:50:29Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
@@ -61,15 +61,19 @@ policynvnv.txt				policy nv has name and args
 policyor.txt				policy command code sign | quote
 policypcr.txt				policy pcr intermediate file
 policypcr0.txt				20 zeros
-policypcraaasha1.txt			sha1 PCR extend of aaa
-policypcraaasha256.txt			sha256 PCR extend of aaa
+policypcr16aaasha1.txt			sha1 PCR 16 extend of aaa
+policypcr16aaasha256.txt		sha256 PCR 16 extend of aaa
 policysecretp.txt			policy secret using platform auth
 policysecretnv.txt			policy secret using nv index
 policysecretnvppp.txt			policy secret using NV PIN pass index
 policysecretnvppf.txt			policy secret using NV PIN fail index
-policysigned.txt			policy signed using pubkey.pem Name
+policysecretsha256.txt			policy secret using loaded object
+policysignedsha1.txt			policy signed using pubkey.pem Name
+policysignedsha256.txt			policy signed using pubkey.pem Name
 policywrittenset.txt			policy nv written with written set
 policyccundefinespacespecial-auth.bin	policy command code undefinespacespecial + policy authvalue
+
+policyiwgek.txt				standard IWG EK policy
 
 privkey.pem				private key for policy signed
 pubkey.pem				public key for policy signed
@@ -89,6 +93,7 @@ sha384extaaa.bin	sha384 extend of aaa
 sha384exthaaa.bin	sha384 extend of hash of aaa
 sha384extaaa0.bin	sha384 extend of aaa zero padded
 
+zero4.bin		4 bytes of zero (e.g., just expiration data for policysigned)
 zero8.bin		8 bytes of zero
 sha1.bin		big endian sha1 algorithm ID, for policyAuthorizeNV
 sha256.bin		big endian sha256 algorithm ID, for policyAuthorizeNV

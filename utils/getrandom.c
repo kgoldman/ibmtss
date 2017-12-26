@@ -3,9 +3,9 @@
 /*			   GetRandom						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getrandom.c 987 2017-04-17 18:27:09Z kgoldman $		*/
+/*	      $Id: getrandom.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -287,9 +287,9 @@ static void printUsage(void)
     printf("\t[-nz get random number with no zero bytes (for authorization value)]\n");
     printf("\t[-ns no space, no text, no newlines]\n");
     printf("\t\tjust a string of hexascii suitable for a symmetric key\n");
-    printf("\t-se[0-2] session handle / attributes\n");
+    printf("\n");
+    printf("\t-se[0-2] session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
     printf("\t\t40 response encrypt\n");
     exit(1);	
 }

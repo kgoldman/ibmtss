@@ -3,9 +3,9 @@
 /*			    PolicyNvWritten 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policynvwritten.c 987 2017-04-17 18:27:09Z kgoldman $	*/
+/*	      $Id: policynvwritten.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -240,9 +240,8 @@ static void printUsage(void)
     printf("\t-hs policy session handle\n");
     printf("\t-ws written set (y, n)\n");
     printf("\n");
-    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
+    printf("\t-se[0-2] session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t\t80 audit\n");
     exit(1);	
 }

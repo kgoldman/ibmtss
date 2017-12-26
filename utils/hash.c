@@ -3,9 +3,9 @@
 /*			    Hash						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hash.c 987 2017-04-17 18:27:09Z kgoldman $			*/
+/*	      $Id: hash.c 1112 2017-12-13 21:55:26Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 	}
 	if (rc == 0) {
 	    /* data to be hashed */
-	    in.data.t.size = length;
+	    in.data.t.size = (uint16_t)length;	/* cast safe, range tested above */
 	    memcpy(in.data.t.buffer, buffer, length);
 	}
     }
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
 	}
 	if (rc == 0) {
 	    /* data to be hashed */
-	    in.data.t.size = length;
+	    in.data.t.size = (uint16_t)length;	/* cast safe, range tested above */
 	    memcpy(in.data.t.buffer, inString, length);
 	}
     }
@@ -284,7 +284,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Hash\n");
     printf("\n");
-    printf("\t-hi hierarchy (e, o, p, n) (default null)\n");
+    printf("\t[-hi hierarchy (e, o, p, n) (default null)]\n");
     printf("\t\te endorsement, o owner, p platform, n null\n");
     printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
     printf("\t-if input file to be hashed\n");

@@ -5,7 +5,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: reg.bat 991 2017-04-19 13:57:39Z kgoldman $		#
+REM #		$Id: reg.bat 1048 2017-07-20 20:28:26Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#

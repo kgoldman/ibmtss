@@ -1,4 +1,4 @@
-<!-- $Id: nv.php 900 2017-01-06 19:25:47Z kgoldman $ -->
+<!-- $Id: nv.php 1104 2017-12-06 13:58:03Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -66,7 +66,7 @@ exec ("/var/www/html/tpm2/getcapability -cap 1 -pr 01000000", $capoutput, $retva
 sscanf($capoutput[0], "%d", $count);
 for ($index = 0 ; $index < $count ; $index++) {
 
-    $retval == 0;
+    $retval = 0;
     $handle = $capoutput[1 + $index];
     printf("<h3>Handle: %s</h3>", $handle);
 

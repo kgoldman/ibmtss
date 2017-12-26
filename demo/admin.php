@@ -1,4 +1,4 @@
-<!-- $Id: admin.php 900 2017-01-06 19:25:47Z kgoldman $ -->
+<!-- $Id: admin.php 1104 2017-12-06 13:58:03Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -71,7 +71,7 @@ if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
     $pwdn1 = $_POST['pwdn1'];
     $pwdn2 = $_POST['pwdn2'];
     
-    $retval == 0;
+    $retval = 0;
     // parameter checks
     if ($retval == 0) {
 	if ($command == 'Change Password') {

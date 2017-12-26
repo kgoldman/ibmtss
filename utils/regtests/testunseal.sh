@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testunseal.sh 990 2017-04-19 13:31:24Z kgoldman $			#
+#	$Id: testunseal.sh 1089 2017-10-27 19:18:29Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -85,6 +85,57 @@ echo "Flush the primary sealed object"
 ${PREFIX}flushcontext -ha 80000001
 checkSuccess $?
 
+echo ""
+echo "Seal and Unseal to PolicySecret Platform Auth"
+echo ""
+
+# policy is policy secret pointing to platform auth
+# 000001514000000C plus newline for policyRef
+
+echo "Change platform hierarchy auth"
+${PREFIX}hierarchychangeauth -hi p -pwdn ppp > run.out
+checkSuccess $?
+
+echo "Create a sealed data object with policysecret platform auth under primary key"
+${PREFIX}create -hp 80000000 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin -pol policies/policysecretp.bin > run.out
+checkSuccess $?
+
+echo "Load the sealed data object under primary key"
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "Start a policy session"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo "Unseal the data blob - policy failure, policysecret not run"
+${PREFIX}unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out
+checkFailure $?
+
+echo "Policy Secret with PWAP session and platform auth"
+${PREFIX}policysecret -ha 4000000c -hs 03000000 -pwde ppp > run.out
+checkSuccess $?
+
+echo "Unseal the data blob"
+${PREFIX}unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out
+checkSuccess $?
+
+echo "Verify the unsealed result"
+diff msg.bin tmp.bin > run.out
+checkSuccess $?
+
+echo "Change platform hierarchy auth back to null"
+${PREFIX}hierarchychangeauth -hi p -pwda ppp > run.out
+checkSuccess $?
+
+echo "Flush the sealed object"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Flush the policy session"
+${PREFIX}flushcontext -ha 03000000 > run.out
+checkSuccess $?
+
 # SHA-1
 
 # extend of aaa + 0 pad to digest length
@@ -105,8 +156,11 @@ checkSuccess $?
 # SHA-256
 
 # extend of aaa + 0 pad to digest length
-# c2 11 97 64 d1 16 13 bf 07 b7 e2 04 c3 5f 93 73 
-# 2b 4a e3 36 b4 35 4e bc 16 e8 d0 c3 96 3e be bb 
+# > pcrextend -ha 16 -if policies/aaa
+
+# read the PCR 16 value back
+# > pcrread -ha 16 -ns
+# c2119764d11613bf07b7e204c35f93732b4ae336b4354ebc16e8d0c3963ebebb
 
 # paste that with no white space to file policypcr16aaasha256.txt
 
@@ -186,5 +240,9 @@ do
     checkSuccess $?
 
 done
+
+rm -r tmppriv.bin
+rm -r tmppub.bin
+rm -r tmp.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000

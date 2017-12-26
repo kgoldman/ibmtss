@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: initkeys.sh 989 2017-04-18 20:50:04Z kgoldman $		#
+#		$Id: initkeys.sh 1047 2017-07-20 18:27:34Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -48,6 +48,7 @@ touch zero.bin
 ${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
 ${PREFIX}nvundefinespace -hi p -ha 01000000 -pwdp ppp > run.out
 ${PREFIX}nvundefinespace -hi p -ha 01000001 > run.out
+${PREFIX}nvundefinespace -hi o -ha 01000002 > run.out
 # same for persistent objects
 ${PREFIX}evictcontrol -ho 81800000 -hp 81800000 -hi p > run.out
 

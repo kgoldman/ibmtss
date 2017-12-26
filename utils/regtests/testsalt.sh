@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testsalt.sh 1043 2017-07-17 16:24:45Z kgoldman $			#
+#	$Id: testsalt.sh 1060 2017-08-15 14:47:27Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -58,11 +58,11 @@ do
 	${PREFIX}create -hp 80000000 -nalg ${HALG} -halg ${HALG} ${ASY} -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 222 > run.out
 	checkSuccess $?
 
-	echo "Load the RSA storage key under the primary key"
+	echo "Load the ${ASY} storage key 80000001 under the primary key"
 	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
 	checkSuccess $?
 
-	echo "Start a RSA salted HMAC auth session"
+	echo "Start a ${ASY} salted HMAC auth session"
 	${PREFIX}startauthsession -se h -hs 80000001 > run.out
 	checkSuccess $?
 
@@ -81,19 +81,42 @@ echo ""
 echo "Salt Session - Load External"
 echo ""
 
-echo "Create a key pair in PEM format using openssl"
+echo "Create RSA and ECC key pairs in PEM format using openssl"
   
-openssl genrsa -out tmpkeypair.pem -aes256 -passout pass:rrrr 2048 > run.out
+openssl genrsa -out tmpkeypairrsa.pem -aes256 -passout pass:rrrr 2048 > run.out
+openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out
 
 echo "Convert key pair to plaintext DER format"
 
-openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
+openssl rsa -inform pem -outform der -in tmpkeypairrsa.pem -out tmpkeypairrsa.der -passin pass:rrrr > run.out
+openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
 
 for HALG in sha1 sha256 sha384
 do
 
-    echo "Load the openssl key pair in the NULL hierarchy - $HALG"
-    ${PREFIX}loadexternal -halg $HALG -st -ider tmpkeypair.der > run.out
+    echo "Load the RSA openssl key pair in the NULL hierarchy 80000001 - ${HALG}"
+    ${PREFIX}loadexternal -rsa -halg ${HALG} -st -ider tmpkeypairrsa.der > run.out
+    checkSuccess $?
+
+    echo "Start a salted HMAC auth session"
+    ${PREFIX}startauthsession -se h -hs 80000001 > run.out
+    checkSuccess $?
+
+    echo "Create a signing key using the salt"
+    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+    checkSuccess $?
+
+    echo "Flush the storage key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+for HALG in sha1 sha256 sha384
+do
+
+    echo "Load the ECC openssl key pair in the NULL hierarchy 80000001 - ${HALG}"
+    ${PREFIX}loadexternal -ecc -halg ${HALG} -st -ider tmpkeypairecc.der > run.out
     checkSuccess $?
 
     echo "Start a salted HMAC auth session"
@@ -264,7 +287,9 @@ echo "NV undefine space"
 ${PREFIX}nvundefinespace -ha 01000000 -hi p > run.out
 checkSuccess $?
 
-rm -f tmpkeypair.pem
-rm -f tmpkeypair.der
+rm -f tmpkeypairrsa.pem
+rm -f tmpkeypairecc.pem
+rm -f tmpkeypairrsa.der
+rm -f tmpkeypairecc.der
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 

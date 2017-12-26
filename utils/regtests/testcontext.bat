@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testcontext.bat 797 2016-11-11 22:57:11Z kgoldman $		#
+REM #		$Id: testcontext.bat 1048 2017-07-20 20:28:26Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -41,7 +41,7 @@ REM ############################################################################
 setlocal enableDelayedExpansion
 
 echo ""
-echo "Context"
+echo "Basic Context"
 echo ""
 
 echo "Start an HMAC auth session"
@@ -136,6 +136,98 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "Flush the session"
 %TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo ""
+echo "Context Public Key for Salt"
+echo ""
+
+echo "Load the storage key at 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Save context for the storage key at 80000001"
+%TPM_EXE_PATH%contextsave -ha 80000001 -of tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Load context at 80000002"
+%TPM_EXE_PATH%contextload -if tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the original key at 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Start an HMAC auth session at 02000000 using the storage key 80000002 salt"
+%TPM_EXE_PATH%startauthsession -se h -hs 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Load the signing key under the primary key at 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Sign a digest"
+%TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if msg.bin -os sig.bin -pwdk sig -se0 02000000 0 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the signing key at 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the salt key at 80000002"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo ""
+echo "Context Primary Key"
+echo ""
+
+echo "Save context for the primary key at 80000000"
+%TPM_EXE_PATH%contextsave -ha 80000000 -of tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Load context primary key at 80000001"
+%TPM_EXE_PATH%contextload -if tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Load the signing key at 80000002 under the primary key at 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the signing key at 80000002"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Flush the primary key at 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )

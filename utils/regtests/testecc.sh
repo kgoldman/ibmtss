@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testecc.sh 988 2017-04-17 19:21:25Z kgoldman $			#
+#	$Id: testecc.sh 1066 2017-08-28 20:48:00Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -102,12 +102,15 @@ do
 	
     	# There is no test case for s2 and y2. To construct a y2 requires using Cipolla's algorithm.
     	# example of normal command    
-    	# ${PREFIX}commit -hk 80000001 -pt p1.bin -s2 s2.bin -y2 y2_a.bin -Kf kfile.bin -Lf lfile.bin -Ef efile.bin -pwdk siga > run.out
+    	# ${PREFIX}commit -hk 80000001 -pt p1.bin -s2 s2.bin -y2 y2_a.bin -Kf kfile.bin -Lf lfile.bin -Ef efile.bin -cf counterfile.bin -pwdk siga > run.out
     	# checkSuccess $?
 	
 	echo "Create new point E, based on point-multiply of TPM's commit random scalar and Generator point ${SESS}"
 	${PREFIX}commit -hk 80000001 -Ef efile.bin -pwdk siga ${SESS} > run.out
 	checkSuccess $?
+
+        # copy efile as new p1 - for hash operation
+        cp efile.bin p1.bin
 
         # We have a point on the curve - in efile.bin.  Use E as P1 and feed it back in
 		
@@ -115,9 +118,19 @@ do
 	# use in its TPM Join operation.
 		
 	echo "Create new point E, based on point-multiply of TPM's commit random scalar and input point ${SESS}"
-	${PREFIX}commit -hk 80000001 -pt efile.bin -Ef efile.bin -pwdk siga ${SESS} > run.out
+	${PREFIX}commit -hk 80000001 -pt p1.bin -Ef efile.bin -cf counterfile.bin -pwdk siga ${SESS} > run.out
 	checkSuccess $?
 
+        cat efile.bin p1.bin tmprpub.bin > hashinput.bin
+
+        echo "Hash the E, P1, and Q to create the ticket to use in signing"
+        ${PREFIX}hash -hi p -halg sha256 -if hashinput.bin -oh outhash.bin -tk tfile.bin > run.out
+        checkSuccess $?
+        
+        echo "Sign the hash of the points made from commit"
+        ${PREFIX}sign -hk 80000001 -pwdk siga -ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin > run.out
+        checkSuccess $?
+        
 	echo "Flush the signing key"
 	${PREFIX}flushcontext -ha 80000001 > run.out
 	checkSuccess $?
@@ -125,6 +138,8 @@ do
     done
 done
 
+# save old counterfile for off nominal error check
+cp counterfile.bin counterfileold.bin
 
 for KEYTYPE in "-dau" "-dar"
 do 
@@ -145,22 +160,39 @@ do
         
         # There is no test case for s2 and y2. To construct a y2 requires using Cipolla's algorithm.
         # example of normal command    
-        # ${PREFIX}commit -hk 80000001 -pt p1.bin -s2 s2.bin -y2 y2_a.bin -Kf kfile.bin -Lf lfile.bin -Ef efile.bin -pwdk siga > run.out
+        # ${PREFIX}commit -hk 80000001 -pt p1.bin -s2 s2.bin -y2 y2_a.bin -Kf kfile.bin -Lf lfile.bin -Ef efile.bin -cf counterfile.bin -pwdk siga > run.out
         # checkSuccess $?
         
         echo "Create new point E, based on point-multiply of TPM's commit random scalar and Generator point ${SESS}"
         ${PREFIX}commit -hk 80000001 -Ef efile.bin -pwdk siga ${SESS} > run.out
         checkSuccess $?
         
+        # copy efile as new p1 - for hash operation
+        cp efile.bin p1.bin
+       
         # We have a point on the curve - in efile.bin.  Use E as P1 and feed it back in
         
         # All this does is simulate the commit that the FIDO alliance wants to
         # use in its TPM Join operation.
         
         echo "Create new point E, based on point-multiply of TPM's commit random scalar and input point ${SESS}"
-        ${PREFIX}commit -hk 80000001 -pt efile.bin -Ef efile.bin -pwdk siga ${SESS} > run.out
+        ${PREFIX}commit -hk 80000001 -pt p1.bin -Ef efile.bin -cf counterfile.bin -pwdk siga ${SESS} > run.out
         checkSuccess $?
         
+        cat efile.bin p1.bin tmprpub.bin > hashinput.bin
+
+        echo "Hash the E, P1, and Q to create the ticket to use in signing"
+        ${PREFIX}hash -hi p -halg sha256 -if hashinput.bin -oh outhash.bin -tk tfile.bin > run.out
+        checkSuccess $?
+
+        echo "Check error case bad counter"
+        ${PREFIX}sign -hk 80000001 -pwdk siga -ecdaa -cf counterfileold.bin -if hashinput.bin -os sig.bin -tk tfile.bin  > run.out
+        checkFailure $?
+
+        echo "Sign the hash of the points made from commit"
+        ${PREFIX}sign -hk 80000001 -pwdk siga -ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin  > run.out
+        checkSuccess $?
+
         echo "Flush the signing key"
         ${PREFIX}flushcontext -ha 80000001 > run.out
         checkSuccess $?
@@ -172,9 +204,76 @@ echo "Flush the session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
 
+echo ""
+echo "ECC zgen2phase"
+echo ""
+
+echo "ECC Parameters for curve nistp256"
+${PREFIX}eccparameters -cv nistp256 > run.out
+checkSuccess $?
+
+# This is just a script for a B "remote" side to create a static key
+# pair and ephemeral for use in demonstrating (on the local side) a
+# two-phase operation involving ecephemeral and zgen2phase
+
+echo "Create decryption key for curve nistp256"
+${PREFIX}create -hp 80000000 -pwdp pps -den -ecc nistp256 -opu QsBpub.bin > run.out
+checkSuccess $?
+
+echo "EC Ephemeral for curve nistp256"
+${PREFIX}ecephemeral -ecc nistp256 -oq QeBpt.bin > run.out
+checkSuccess $?
+
+# local side
+
+# scp or cp the QsBpub.bin and QeBpt.bin from the B side over to the
+# A side. This assumes QsBpub is a TPM2B_PUBLIC from a create command
+# on B side.  QeBpt is already in TPM2B_ECC_POINT form since it was
+# created by ecephemeral on B side QsBpub.bin is presumed in a form
+# produced by a create commamnd using another TPM
+
+echo "Create decryption key for curve nistp256"
+${PREFIX}create -hp 80000000 -pwdp pps -den -ecc nistp256 -opr QsApriv.bin -opu QsApub.bin > run.out
+checkSuccess $?
+
+echo "Load the decryption key under the primary key, 80000001"
+${PREFIX}load -hp 80000000 -ipr QsApriv.bin -ipu QsApub.bin -pwdp pps > run.out
+checkSuccess $?
+
+echo "EC Ephemeral for curve nistp256"
+${PREFIX}ecephemeral -ecc nistp256 -oq QeApt.bin -cf counter.bin  > run.out
+checkSuccess $?
+
+echo "Convert public raw to TPM2B_ECC_POINT"
+${PREFIX}tpmpublic2eccpoint -ipu QsBpub.bin -pt QsBpt.bin > run.out
+checkSuccess $?
+
+echo "Execute zgen2phase for curve ${CURVE}"
+${PREFIX}zgen2phase -hk 80000001 -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin > run.out
+checkSuccess $?
+
+echo "Flush the key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
 rm -rf efile.bin
 rm -rf tmprpub.bin
 rm -rf tmprpriv.bin
+rm -rf counterfile.bin
+rm -rf counterfileold.bin
+rm -rf p1.bin
+rm -rf hashinput.bin
+rm -rf outhash.bin
+rm -rf sig.bin
+rm -rf tfile.bin
+
+rm -rf QsBpub.bin
+rm -rf QeBpt.bin
+rm -rf QsApriv.bin
+rm -rf QsApub.bin
+rm -rf QeApt.bin
+rm -rf counter.bin
+rm -rf QsBpt.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 02000000

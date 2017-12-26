@@ -59,17 +59,17 @@
 /*										*/
 /********************************************************************************/
 
-/* rev 134 */
+/* rev 146*/
 
 #ifndef ENCRYPTDECRYPT2_FP_H
 #define ENCRYPTDECRYPT2_FP_H
 
 typedef struct {
-    TPMI_DH_OBJECT	keyHandle;
-    TPM2B_MAX_BUFFER	inData;
-    TPMI_YES_NO		decrypt;
-    TPMI_ALG_SYM_MODE	mode;
-    TPM2B_IV		ivIn;
+    TPMI_DH_OBJECT		keyHandle;
+    TPM2B_MAX_BUFFER		inData;
+    TPMI_YES_NO			decrypt;
+    TPMI_ALG_CIPHER_MODE	mode;
+    TPM2B_IV			ivIn;
 } EncryptDecrypt2_In;
 
 #define RC_EncryptDecrypt2_keyHandle 	(TPM_RC_H + TPM_RC_1)

@@ -3,9 +3,9 @@
 /*			    NV Extend		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvextend.c 945 2017-02-27 23:24:31Z kgoldman $		*/
+/*	      $Id: nvextend.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -268,6 +268,7 @@ static void printUsage(void)
     printf("\t-if data file\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
+    printf("\t\t20 command decrypt\n");
     printf("\t\t01 continue\n");
     exit(1);	
 }
