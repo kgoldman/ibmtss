@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 1069 2017-08-29 17:11:32Z kgoldman $		*/
+/*	      $Id: policysigned.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
     const char			*policyRefFilename = NULL;
     const char			*ticketFilename = NULL;
     const char			*timeoutFilename = NULL;
-    INT32			expiration = 0;
+    int32_t			expiration = 0;
     const char			*signingKeyFilename = NULL;
     const char			*signingKeyPassword = NULL;
     const char			*signatureFilename = NULL;
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA1;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -295,14 +295,14 @@ int main(int argc, char *argv[])
 	/* calculate the digest from the 4 components according to the TPM spec Part 3. */
 	/* aHash = HauthAlg(nonceTPM || expiration || cpHashA || policyRef)	(13) */
 	if (rc == 0) {
-	    INT32 expirationNbo = htonl(in.expiration);
+	    int32_t expirationNbo = htonl(in.expiration);
 	    aHash.hashAlg = halg;
 	    /* This varargs function takes length / array pairs.  It skips pairs with a length of
 	       zero.  This handles the three optional components (default length zero) with no
 	       special handling. */
 	    rc = TSS_Hash_Generate(&aHash,		/* largest size of a digest */
 				   in.nonceTPM.t.size, in.nonceTPM.t.buffer,
-				   sizeof(INT32), &expirationNbo,
+				   sizeof(int32_t), &expirationNbo,
 				   in.cpHashA.t.size, in.cpHashA.t.buffer,
 				   in.policyRef.t.size, in.policyRef.t.buffer,
 				   0, NULL);

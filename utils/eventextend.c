@@ -3,7 +3,7 @@
 /*		      Extend an EVENT measurement file into PCRs		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventextend.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: eventextend.c 1145 2018-02-06 20:41:50Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -37,9 +37,9 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
-/* eventextend is test/demo code.  It parses a TPM2 event log file and extends the measurements
-   into TPM PCRs.  This simulates the actions that would be performed by BIOS / firmware in a
-   hardware platform.  */
+/* eventextend is test/demo code.  It parses a TPM2 event log file and extends the measurements into
+   TPM PCRs or simulated PCRs.  This simulates the actions that would be performed by BIOS /
+   firmware in a hardware platform.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,8 +47,11 @@
 
 #include <tss2/tss.h>
 #include <tss2/tssresponsecode.h>
+#include <tss2/tsscryptoh.h>
 
 #include "eventlib.h"
+
+#define TPM_BIOS_PCR 		8	/* BIOS PCRs are 0-7 */
 
 /* local prototypes */
 
@@ -63,13 +66,18 @@ int main(int argc, char * argv[])
     TSS_CONTEXT			*tssContext = NULL;
     const char 			*infilename = NULL;
     FILE 			*infile = NULL;
+    int				tpm = FALSE;	/* extend into TPM */
+    int				sim = FALSE;	/* extend into simulated PCRs */
+    int				nospec = FALSE;	/* event log does not start with spec file */
+    uint32_t 			bankNum = 0;	/* PCR hash bank */
+    int 			pcrNum = 0;	/* PCR number iterator */
+    TPMT_HA 			simPcrs[HASH_COUNT][TPM_BIOS_PCR];
+    TPMT_HA 			bootAggregates[HASH_COUNT];
     TCG_PCR_EVENT2 		event2;			/* TPM 2.0 event log entry */
     TCG_PCR_EVENT 		event;			/* TPM 1.2 event log entry */
     TCG_EfiSpecIDEvent 		specIdEvent;
     unsigned int 		lineNum;
     int 			endOfFile = FALSE;
-    int				nospec = FALSE;
-    PCR_Extend_In 		in;
 	
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -86,8 +94,14 @@ int main(int argc, char * argv[])
 		exit(2);
 	    }
 	}
+	else if (strcmp(argv[i],"-tpm") == 0) {
+	    tpm = TRUE;
+	}
 	else if (strcmp(argv[i],"-nospec") == 0) {
 	    nospec = TRUE;
+	}
+	else if (strcmp(argv[i],"-sim") == 0) {
+	    sim = TRUE;
 	}
 	else if (!strcmp(argv[i], "-h")) {
 	    printUsage();
@@ -105,6 +119,14 @@ int main(int argc, char * argv[])
 	printf("Missing -if argument\n");
 	printUsage();
     }
+    if (!tpm && !sim) {
+	printf("-tpm or -sim must be specified\n");
+	printUsage();
+    }
+    if (sim && nospec) {
+	printf("-sim incompatible with -nospec\n");
+	printUsage();
+    }
     /*
     ** read the event log file
     */
@@ -119,56 +141,78 @@ int main(int argc, char * argv[])
 	rc = TSS_EVENT_Line_Read(&event, &endOfFile, infile);
     }
     /* debug tracing */
-    if (verbose && !endOfFile && (rc == 0) && !nospec) {
+    if ((rc == 0) && !nospec && !endOfFile && verbose) {
 	printf("\neventextend: line 0\n");
 	TSS_EVENT_Line_Trace(&event);
     }
-    /* parse the event */
-    if (verbose && !endOfFile && (rc == 0) && !nospec) {
+    /* parse the event, populates the TCG_EfiSpecIDEvent structure */
+    if ((rc == 0) && !nospec && !endOfFile) {
 	rc = TSS_SpecIdEvent_Unmarshal(&specIdEvent,
 				       event.eventDataSize, event.event);
     }
-    /* trace the event */
-    if (verbose && !endOfFile && (rc == 0) && !nospec) {
+    /* trace the specIdEvent event */
+    if ((rc == 0) && !nospec && !endOfFile && verbose) {
 	TSS_SpecIdEvent_Trace(&specIdEvent);
     }
     /* Start a TSS context */
-    if (rc == 0) {
+    if ((rc == 0) && tpm) {
 	rc = TSS_Create(&tssContext);
     }
+    /* initialize simulated PCRs */
+    if ((rc == 0) && sim) {
+	if (specIdEvent.numberOfAlgorithms > HASH_COUNT) {
+	    printf("specIdEvent.numberOfAlgorithms %u greater than %u\n",
+		   specIdEvent.numberOfAlgorithms, HASH_COUNT);
+	    rc = ERR_STRUCTURE;
+	}
+    }
+    /* simulated BIOS PCRs start at zero at boot */
+    if ((rc == 0) && sim) {
+	for (bankNum = 0 ; bankNum < specIdEvent.numberOfAlgorithms ; bankNum++) {
+	    bootAggregates[bankNum].hashAlg = specIdEvent.digestSizes[bankNum].algorithmId;
+	    for (pcrNum = 0 ; pcrNum < TPM_BIOS_PCR ; pcrNum++) {
+		/* initialize each algorithm ID based on the specIdEvent */
+		simPcrs[bankNum][pcrNum].hashAlg = specIdEvent.digestSizes[bankNum].algorithmId;
+		memset(&simPcrs[bankNum][pcrNum].digest.tssmax, 0, sizeof(TPMU_HA));
+	    }
+	}
+    }
     /* scan each measurement 'line' in the binary */
-    for (lineNum = 1 ; !endOfFile && (rc == 0) ; lineNum++) {
+    for (lineNum = 1 ; (rc == 0) && !endOfFile ; lineNum++) {
+
 	/* read a TPM 2.0 hash agile event line */
 	if (rc == 0) {
 	    rc = TSS_EVENT2_Line_Read(&event2, &endOfFile, infile);
 	}
 	/* debug tracing */
-	if (verbose && !endOfFile && (rc == 0)) {
+	if ((rc == 0) && !endOfFile && verbose) {
 	    printf("\neventextend: line %u\n", lineNum);
 	    TSS_EVENT2_Line_Trace(&event2);
 	}
 	/* don't extend no action events */
-	if (!endOfFile && (rc == 0)) {
+	if ((rc == 0) && !endOfFile) {
 	    if (event2.eventType == EV_NO_ACTION) {
 		continue;
 	    }
 	}
-	if (!endOfFile && (rc == 0)) {
-	    in.pcrHandle = event2.pcrIndex;
-	    in.digests = event2.digests;
-	    rc = TSS_Execute(tssContext,
-			     NULL, 
-			     (COMMAND_PARAMETERS *)&in,
-			     NULL,
-			     TPM_CC_PCR_Extend,
-			     TPM_RS_PW, NULL, 0,
-			     TPM_RH_NULL, NULL, 0);
-	}
-	/* for debug, read back and trace the PCR value after the extend */
-	if (verbose) {
+	if ((rc == 0) && !endOfFile && tpm) {	/* extend TPM */
+	    PCR_Extend_In 		in;
 	    PCR_Read_In 		pcrReadIn;
 	    PCR_Read_Out 		pcrReadOut;
-	    if (!endOfFile && (rc == 0)) {
+
+	    if (rc == 0) {
+		in.pcrHandle = event2.pcrIndex;
+		in.digests = event2.digests;
+		rc = TSS_Execute(tssContext,
+				 NULL, 
+				 (COMMAND_PARAMETERS *)&in,
+				 NULL,
+				 TPM_CC_PCR_Extend,
+				 TPM_RS_PW, NULL, 0,
+				 TPM_RH_NULL, NULL, 0);
+	    }
+	    /* for debug, read back and trace the PCR value after the extend */
+	    if ((rc == 0) && verbose) {
 		pcrReadIn.pcrSelectionIn.count = 1;
 		pcrReadIn.pcrSelectionIn.pcrSelections[0].hash =
 		    event2.digests.digests[0].hashAlg;
@@ -178,26 +222,70 @@ int main(int argc, char * argv[])
 		pcrReadIn.pcrSelectionIn.pcrSelections[0].pcrSelect[2] = 0;
 		pcrReadIn.pcrSelectionIn.pcrSelections[0].pcrSelect[event2.pcrIndex / 8] =
 		    1 << (event2.pcrIndex % 8);
-	    }
-	    if (!endOfFile && (rc == 0)) {
+
 		rc = TSS_Execute(tssContext,
 				 (RESPONSE_PARAMETERS *)&pcrReadOut,
 				 (COMMAND_PARAMETERS *)&pcrReadIn,
 				 NULL,
 				 TPM_CC_PCR_Read,
 				 TPM_RH_NULL, NULL, 0);
- 	    }
-	    if (!endOfFile && (rc == 0)) {
+	    }
+	    if ((rc == 0) && verbose) {
 		TSS_PrintAll("PCR digest",
 			     pcrReadOut.pcrValues.digests[0].t.buffer,
 			     pcrReadOut.pcrValues.digests[0].t.size);
 	    }
 	}
-    }	
+	if ((rc == 0) && !endOfFile && sim) {	/* extend simulated PCRs */
+	    rc = TSS_EVENT2_PCR_Extend(simPcrs, &event2);
+	}
+    }
     {
-	TPM_RC rc1 = TSS_Delete(tssContext);
-	if (rc == 0) {
-	    rc = rc1;
+	if (tpm) {
+	    TPM_RC rc1 = TSS_Delete(tssContext);
+	    if (rc == 0) {
+		rc = rc1;
+	    }
+	}
+    }
+    if ((rc == 0) && sim) {
+	for (bankNum = 0 ; (rc == 0) && (bankNum < specIdEvent.numberOfAlgorithms) ; bankNum++) {
+	    /* trace the virtual PCRs */
+	    if (rc == 0) {
+		printf("\n");
+		TSS_TPM_ALG_ID_Print(specIdEvent.digestSizes[bankNum].algorithmId, 0);
+		for (pcrNum = 0 ; pcrNum < TPM_BIOS_PCR ; pcrNum++) {
+		    printf("PCR %02u\n", pcrNum);
+		    TSS_PrintAll("", simPcrs[bankNum][pcrNum].digest.tssmax,
+				 specIdEvent.digestSizes[bankNum].digestSize);
+		}
+	    }
+	    /* calculate the boot aggregate, hash of PCR 0-7 */
+	    if (rc == 0) {
+		rc = TSS_Hash_Generate(&bootAggregates[bankNum],
+				       specIdEvent.digestSizes[bankNum].digestSize,
+				       &simPcrs[bankNum][0].digest.tssmax,
+				       specIdEvent.digestSizes[bankNum].digestSize,
+				       &simPcrs[bankNum][1].digest.tssmax,
+				       specIdEvent.digestSizes[bankNum].digestSize,
+				       &simPcrs[bankNum][2].digest.tssmax,
+				       specIdEvent.digestSizes[bankNum].digestSize,
+				       &simPcrs[bankNum][3].digest.tssmax,
+				       specIdEvent.digestSizes[bankNum].digestSize,
+				       &simPcrs[bankNum][4].digest.tssmax,
+				       specIdEvent.digestSizes[bankNum].digestSize,
+				       &simPcrs[bankNum][5].digest.tssmax,
+				       specIdEvent.digestSizes[bankNum].digestSize,
+				       &simPcrs[bankNum][6].digest.tssmax,
+				       specIdEvent.digestSizes[bankNum].digestSize,
+				       &simPcrs[bankNum][7].digest.tssmax,
+				       0, NULL);
+	    }
+	    /* trace the boot aggregate */
+	    if (rc == 0) {
+		TSS_PrintAll("\nboot aggregate", bootAggregates[bankNum].digest.tssmax,
+			     specIdEvent.digestSizes[bankNum].digestSize);
+	    }
 	}
     }
     if (rc == 0) {
@@ -222,12 +310,13 @@ static void printUsage(void)
 {
     printf("Usage: eventextend -if <measurement file> [-v]\n");
     printf("\n");
-    printf("Extends a measurement file (binary) into TPM PCRs\n");
+    printf("Extends a measurement file (binary) into a TPM or simulated PCRs\n");
     printf("\n");
-    printf("   Where the arguments are...\n");
-    printf("    -if <input file> is the file containing the data to be extended\n");
-    printf("    [-nospec file does not contain spec ID header (useful for incremental test)]\n");
+    printf("\t-if <input file> is the file containing the data to be extended\n");
+    printf("\t[-tpm extend TPM PCRs]\n");
+    printf("\t\t[-nospec file does not contain spec ID header (useful for incremental test)]\n");
+    printf("\t[-sim calculate simulated PCRs and boot aggregate]\n");
     printf("\n");
-    exit(-1);
+   exit(-1);
 }
 

@@ -3,7 +3,7 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymaker.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: policymaker.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
     const char 		*outFilename = NULL;
     int			pr = FALSE;
     int			nz = FALSE;
+    int			noSpace = FALSE;
     TPMT_HA 		digest;
     uint32_t           	sizeInBytes;		/* hash algorithm mapped to size */
     uint32_t           	startSizeInBytes;	/* starting buffer for extend */
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
 		    digest.hashAlg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -151,6 +152,9 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i],"-nz") == 0) {
 	    nz = TRUE;
+	}
+	else if (strcmp(argv[i],"-ns") == 0) {
+	    noSpace = TRUE;
 	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
@@ -189,8 +193,8 @@ int main(int argc, char *argv[])
     }
     /* iterate through each line */
     do {
-	char 		lineString[256];		/* returned line in hex ascii */
-	unsigned char 	lineBinary[128];		/* returned line in binary */
+	char 		lineString[10240];		/* returned line in hex ascii */
+	unsigned char 	lineBinary[5120];		/* returned line in binary */
 	size_t		lineLength;			
 
 	if (rc == 0) {
@@ -218,6 +222,14 @@ int main(int argc, char *argv[])
 
     if ((rc == 0) && pr) {
 	TSS_PrintAll("policy digest", (uint8_t *)&digest.digest, sizeInBytes);
+    }
+    if ((rc == 0) && noSpace) {
+	printf("policy digest:\n");
+	unsigned int b;
+	for (b = 0 ; b < sizeInBytes ; b++) {
+	    printf("%02x", *(((uint8_t *)&digest.digest) + b));
+	}
+	printf("\n");
     }
     /* open the output file */
     if ((rc == 0) && (outFilename != NULL)) {
@@ -288,7 +300,7 @@ static int Format_ByteFromHexascii(unsigned char *byte,
 	}
 	else {
 	    printf("Format_ByteFromHexascii: "
-		   "Error: Line has non hex ascii character: %c\n", c);
+		   "Error: Line has non hex ascii character: %02x %c\n", c, c);
 	    rc = EXIT_FAILURE;
 	}
     }
@@ -305,6 +317,8 @@ static void printUsage(void)
     printf("-if input policy statements in hex ascii\n");
     printf("[-of] output file - policy hash in binary\n");
     printf("[-pr] stdout - policy hash in hex ascii\n");
+    printf("\t[-ns additionally print policy hash in hex ascii on one line]\n");
+    printf("\t\tUseful to paste into policy OR\n");
     printf("\n");
     exit(1);	
 }

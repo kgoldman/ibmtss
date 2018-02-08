@@ -3,7 +3,7 @@
 /*			    Quote						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: quote.c 1098 2017-11-27 23:07:26Z kgoldman $			*/
+/*	      $Id: quote.c 1140 2018-01-22 15:13:31Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
 		    palg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -palg\n");
+		    printf("Bad parameter %s for -palg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
 		    useRsa = 0;
 		}
 		else {
-		    printf("Bad parameter for -salg\n");
+		    printf("Bad parameter %s for -salg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -361,8 +361,8 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	BYTE *tmpBuffer = out.quoted.t.attestationData;
-	INT32 tmpSize = out.quoted.t.size;
+	uint8_t *tmpBuffer = out.quoted.t.attestationData;
+	uint32_t tmpSize = out.quoted.t.size;
 	rc = TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
 	if (verbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
     }

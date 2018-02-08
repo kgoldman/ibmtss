@@ -95,8 +95,8 @@ int getEncryptSize(COMMAND_INDEX    commandIndex)
 }
 
 AUTH_ROLE getCommandAuthRole(
-			     COMMAND_INDEX    commandIndex,  // IN: command index
-			     UINT32           handleIndex    // IN: handle index (zero based)
+			     COMMAND_INDEX    	commandIndex,  // IN: command index
+			     size_t		handleIndex    // IN: handle index (zero based)
 			     )
 {
     if(0 == handleIndex )

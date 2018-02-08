@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
+/*	      $Id: verifysignature.c 1145 2018-02-06 20:41:50Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	if (!raw) {
-	    int32_t ilength = length;	/* values that can move during the unmarshal */
+	    uint32_t ilength = length;	/* values that can move during the unmarshal */
 	    buffer1 = buffer;
 	    /* input is TPMT_SIGNATURE */
 	    rc = TPMT_SIGNATURE_Unmarshal(&in.signature, &buffer1, &ilength, NO);
@@ -440,7 +440,7 @@ static void printUsage(void)
     printf("\t-is signature file name\n");
     printf("\t[-raw (flag) signature specified by -is is in raw format]\n");
     printf("\t\t(default TPMT_SIGNATURE)\n");
-    printf("\t[-tk ticket file name (requires -ha)]\n");
+    printf("\t[-tk ticket file name (requires -hk)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");

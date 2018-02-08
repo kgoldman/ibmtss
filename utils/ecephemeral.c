@@ -3,7 +3,7 @@
 /*			    EC_Ephemeral					*/
 /*	     		Written by Bill Martin 					*/
 /*                 Green Hills Integrity Software Services 			*/
-/*	      $Id: ecephemeral.c 1064 2017-08-24 17:24:41Z kgoldman $		*/
+/*	      $Id: ecephemeral.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 		    curveID = TPM_ECC_NIST_P384;
 		}
 		else {
-		    printf("Bad parameter for -ecc\n");
+		    printf("Bad parameter %s for -ecc\n", argv[i]);
 		    printUsage();
 		}
 	    }

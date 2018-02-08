@@ -178,12 +178,12 @@ TPM_RC TSS_KDFA(uint8_t		*keyStream,    	/* OUT: key buffer */
 	    
 	rc = TSS_HMAC_Generate(&hmac,				/* largest size of an HMAC */
 			       (const TPM2B_KEY *)key,		/* FIXME */
-			       sizeof(UINT32), &counterNbo,	/* KDFa i2 counter */
+			       sizeof(uint32_t), &counterNbo,	/* KDFa i2 counter */
 			       strlen(label) + 1, label,	/* KDFa label, use NUL as the KDFa
 								   00 byte */
 			       contextU->size, contextU->buffer,	/* KDFa Context */
 			       contextV->size, contextV->buffer,	/* KDFa Context */
-			       sizeof(UINT32), &sizeInBitsNbo,		/* KDFa L2 */
+			       sizeof(uint32_t), &sizeInBitsNbo,	/* KDFa L2 */
 			       0, NULL);
 	memcpy(stream, &hmac.digest.tssmax, bytesThisPass);
     }
@@ -247,7 +247,7 @@ TPM_RC TSS_KDFE(uint8_t		*keyStream,    	/* OUT: key buffer */
 	counterNbo = htonl(counter);	/* counter for this pass in BE format */
 	    
 	rc = TSS_Hash_Generate(&digest,				/* largest size of a digest */
-			       sizeof(UINT32), &counterNbo,	/* KDFe i2 counter */
+			       sizeof(uint32_t), &counterNbo,	/* KDFe i2 counter */
 			       key->size, key->buffer,		/* FIXME */
 			       strlen(label) + 1, label,	/* KDFe label, use NUL as the KDFe
 								   00 byte */

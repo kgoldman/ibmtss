@@ -3,7 +3,7 @@
 /*			    Hash						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hash.c 1112 2017-12-13 21:55:26Z kgoldman $			*/
+/*	      $Id: hash.c 1140 2018-01-22 15:13:31Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }

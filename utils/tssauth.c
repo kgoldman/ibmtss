@@ -3,7 +3,7 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.c 1099 2017-11-28 18:46:40Z kgoldman $		*/
+/*            $Id: tssauth.c 1138 2018-01-16 19:53:47Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -62,9 +62,7 @@
 #include "tssproperties.h"
 #include <tss2/tssresponsecode.h>
 
-#ifdef TPM_NUVOTON
 #include "tssntc.h"
-#endif
 #include "tssauth.h"
 
 extern int tssVerbose;
@@ -73,11 +71,11 @@ extern int tssVverbose;
 /* Generic functions to marshal and unmarshal Part 3 ordinal command and response parameters */
 
 typedef TPM_RC (*MarshalInFunction_t)(COMMAND_PARAMETERS *source,
-				      UINT16 *written, BYTE **buffer, INT32 *size);
+				      uint16_t *written, BYTE **buffer, uint32_t *size);
 typedef TPM_RC (*UnmarshalOutFunction_t)(RESPONSE_PARAMETERS *target,
-					 TPM_ST tag, BYTE **buffer, INT32 *size);
+					 TPM_ST tag, BYTE **buffer, uint32_t *size);
 typedef TPM_RC (*UnmarshalInFunction_t)(COMMAND_PARAMETERS *target,
-					BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+					BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 
 typedef struct MARSHAL_TABLE {
     TPM_CC 			commandCode;
@@ -633,10 +631,7 @@ static const MARSHAL_TABLE marshalTable [] = {
     {TPM_CC_NV_Certify, "TPM2_NV_Certify",
      (MarshalInFunction_t)TSS_NV_Certify_In_Marshal,
      (UnmarshalOutFunction_t)TSS_NV_Certify_Out_Unmarshal,
-     (UnmarshalInFunction_t)NV_Certify_In_Unmarshal}
-
-#ifdef TPM_NUVOTON
-    ,
+     (UnmarshalInFunction_t)NV_Certify_In_Unmarshal},
 
     {NTC2_CC_PreConfig,"NTC2_CC_PreConfig",
      (MarshalInFunction_t)TSS_NTC2_PreConfig_In_Marshal,
@@ -652,8 +647,6 @@ static const MARSHAL_TABLE marshalTable [] = {
      NULL,
      (UnmarshalOutFunction_t)TSS_NTC2_GetConfig_Out_Unmarshal,
      NULL}
-
-#endif
 };
 
 /* The context for the entire command processor.  Update TSS_InitAuthContext() when changing
@@ -666,7 +659,7 @@ struct TSS_AUTH_CONTEXT {
     COMMAND_INDEX    	tpmCommandIndex;	/* index into attributes table */
     TPM_CC 		commandCode;
     TPM_RC 		responseCode;
-    uint32_t 		commandHandleCount;
+    size_t		commandHandleCount;
     uint32_t 		responseHandleCount;
     uint16_t		authCount;		/* authorizations in command */
     uint16_t 		commandSize;
@@ -760,7 +753,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     TPMI_ST_COMMAND_TAG tag = TPM_ST_NO_SESSIONS;	/* default until sessions are added */
     uint8_t 		*buffer;			/* for marshaling */
     uint8_t 		*bufferu;			/* for test unmarshaling */
-    INT32 		size;
+    uint32_t 		size;
     
     TSS_InitAuthContext(tssAuthContext);
     /* index from command code to table and save items for this command */
@@ -808,7 +801,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
 	    /* if there is a structure to marshal */
 	    if (in != NULL) {
 		rc = tssAuthContext->marshalInFunction(in, &tssAuthContext->commandSize,
-						     &buffer, &size);
+						       &buffer, &size);
 	    }
 	    /* caller error, no structure supplied to marshal */
 	    else {
@@ -875,7 +868,7 @@ TPM_RC TSS_Unmarshal(TSS_AUTH_CONTEXT *tssAuthContext,
     TPM_RC 	rc = 0;
     TPM_ST 	tag;
     uint8_t 	*buffer;    
-    INT32 	size;
+    uint32_t 	size;
 
     /* if there is an unmarshal function */
     if (tssAuthContext->unmarshalOutFunction != NULL) {
@@ -1033,7 +1026,7 @@ TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
     TPM_RC 	rc = 0;
     va_list	ap;
     TPMS_AUTH_RESPONSE 	*authResponse = NULL;
-    INT32 	size;
+    uint32_t 	size;
     uint8_t 	*buffer;
     TPM_ST 	tag;
     int 	done;
@@ -1055,6 +1048,13 @@ TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	    buffer = tssAuthContext->responseBuffer + offsetSize;
 	    size = tssAuthContext->responseSize - offsetSize;
 	    rc = UINT32_Unmarshal(&parameterSize, &buffer, &size);
+	}
+	if (rc == 0) {
+	    if (parameterSize > (uint32_t)size) {
+		if (tssVerbose)	printf("TSS_GetRspAuths: Invalid response parameterSize %u\n",
+				       parameterSize);
+		rc = TSS_RC_MALFORMED_RESPONSE;
+	    }
 	}
 	if (rc == 0) {
 	    /* index past the response parameters to the authorization area */
@@ -1167,7 +1167,7 @@ TPM_RC TSS_SetCommandDecryptParam(TSS_AUTH_CONTEXT *tssAuthContext,
 /* TSS_GetCommandHandleCount() returns the number of handles in the command area */
 
 TPM_RC TSS_GetCommandHandleCount(TSS_AUTH_CONTEXT *tssAuthContext,
-				 uint32_t *commandHandleCount)
+				 size_t *commandHandleCount)
 {
     *commandHandleCount = tssAuthContext->commandHandleCount;
     return 0;
@@ -1177,7 +1177,7 @@ TPM_RC TSS_GetCommandHandleCount(TSS_AUTH_CONTEXT *tssAuthContext,
    handle. */
 
 AUTH_ROLE TSS_GetAuthRole(TSS_AUTH_CONTEXT *tssAuthContext,
-			  uint32_t handleIndex)
+			  size_t handleIndex)
 {
     AUTH_ROLE authRole;
     authRole = getCommandAuthRole(tssAuthContext->tpmCommandIndex, handleIndex);
@@ -1192,16 +1192,17 @@ AUTH_ROLE TSS_GetAuthRole(TSS_AUTH_CONTEXT *tssAuthContext,
 
 TPM_RC TSS_GetCommandHandle(TSS_AUTH_CONTEXT *tssAuthContext,
 			    TPM_HANDLE *commandHandle,
-			    uint32_t index)
+			    size_t index)
 {
     TPM_RC 	rc = 0;
     uint8_t 	*buffer;
-    INT32 	size;
+    uint32_t 	size;
    
     
     if (rc == 0) {
 	if (index >= tssAuthContext->commandHandleCount) {
-	    if (tssVerbose) printf("TSS_GetCommandHandle: index %u too large for command\n", index);
+	    if (tssVerbose) printf("TSS_GetCommandHandle: index %u too large for command\n",
+				   (unsigned int)index);
 	    rc = TSS_RC_BAD_HANDLE_NUMBER;
 	}
     }
@@ -1230,7 +1231,7 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
     TPM_RC 	rc = 0;
     TPM_ST 	tag;			/* response tag */
     uint32_t 	offsetSize;		/* to beginning of parameter area */
-    INT32 	size;			/* tmp for unmarshal */
+    uint32_t 	size;			/* tmp for unmarshal */
     uint8_t 	*buffer;		/* tmp for unmarshal */
     uint32_t 	parameterSize;		/* response parameter (if sessions) */
      

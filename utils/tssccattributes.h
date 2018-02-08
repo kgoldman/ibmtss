@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id: tssprint.c 703 2016-07-28 17:21:46Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -40,6 +40,8 @@
 #ifndef TSSCCATTRIBUTES_H
 #define TSSCCATTRIBUTES_H
 
+#include <stdio.h>
+
 #include <tss2/TPM_Types.h>
 #include "CommandAttributes.h"
 
@@ -59,7 +61,7 @@ uint32_t getCommandHandleCount(COMMAND_INDEX index);
 uint32_t getresponseHandleCount(COMMAND_INDEX index);
 int getDecryptSize(COMMAND_INDEX    commandIndex);
 int getEncryptSize(COMMAND_INDEX    commandIndex);
-AUTH_ROLE getCommandAuthRole(COMMAND_INDEX    commandIndex,
-			     UINT32           handleIndex);
+AUTH_ROLE getCommandAuthRole(COMMAND_INDEX    	commandIndex,
+			     size_t		handleIndex);
 
 #endif

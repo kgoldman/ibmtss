@@ -3,7 +3,7 @@
 /*			    PolicySecret	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysecret.c 1089 2017-10-27 19:18:29Z kgoldman $		*/
+/*	      $Id: policysecret.c 1124 2018-01-05 21:32:55Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     const char 			*nonceTPMFilename = NULL;
     const char 			*cpHashAFilename = NULL;
     const char			*policyRefFilename = NULL;
-    INT32			expiration = 0;
+    int32_t			expiration = 0;
     const char			*ticketFilename = NULL;
     const char			*timeoutFilename = NULL;
     const char			*entityPassword = NULL;

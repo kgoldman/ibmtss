@@ -3,7 +3,7 @@
 /*		TPM 2.0 Attestation - Client EK and EK certificate  		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: createekcert.c 1117 2017-12-18 21:23:21Z kgoldman $		*/
+/*            $Id: createekcert.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 		    ekCertIndex = EK_CERT_EC_INDEX;
 		}
 		else {
-		    printf("Bad parameter for -alg\n");
+		    printf("Bad parameter %s for -alg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 		    issuerEntriesSize = sizeof(rootIssuerEntriesEc)/sizeof(char *);
 		}
 		else {
-		    printf("Bad parameter for -caalg\n");
+		    printf("Bad parameter %s for -caalg\n", argv[i]);
 		    printUsage();
 		}
 	    }

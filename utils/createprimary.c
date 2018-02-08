@@ -3,7 +3,7 @@
 /*			    Create Primary	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createprimary.c 1079 2017-10-04 20:13:43Z kgoldman $		*/
+/*	      $Id: createprimary.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 		    nalg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -nalg\n");
+		    printf("Bad parameter %s for -nalg\n", argv[i]);
 		    printUsage();
 		}
 	    }

@@ -1,4 +1,4 @@
-<!-- $Id: admin.php 1104 2017-12-06 13:58:03Z kgoldman $ -->
+<!-- $Id: admin.php 1120 2018-01-02 14:32:44Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016.						*/
@@ -110,7 +110,7 @@ if ( $_SERVER['REQUEST_METHOD'] == 'POST' ) {
 	    $commandStr = "/var/www/html/tpm2/clockset";
             $commandStr .= " -hi " . $hic;
 	    $currenttime = time();				// php time in sec
-	    $commandStr .= " -time " . ($currenttime * 1000);	// TPM command in msec
+	    $commandStr .= " -clock " . ($currenttime * 1000);	// TPM command in msec
 	    break;
 
 	  case 'SH disable':

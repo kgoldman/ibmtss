@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
+/*	      $Id: eventlib.h 1145 2018-02-06 20:41:50Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -151,11 +151,11 @@ extern "C" {
 			     FILE *inFile);
 
     TPM_RC TSS_EVENT2_Line_Marshal(TCG_PCR_EVENT2 *source, uint16_t *written,
-				   uint8_t **buffer, int32_t *size);
+				   uint8_t **buffer, uint32_t *size);
 
-    TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, INT32 *size);
+    TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t *size);
 
-    TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[8],
+    TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][8],
 				 TCG_PCR_EVENT2 *event2);
 
     void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event);

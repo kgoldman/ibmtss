@@ -3,7 +3,7 @@
 /*			 Headers from Part 2    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 1055 2017-08-08 20:30:09Z kgoldman $		*/
+/*            $Id: TPM_Types.h 1145 2018-02-06 20:41:50Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -445,15 +445,16 @@ typedef UINT32 TPM_CAP;
 
 #define TPM_CAP_FIRST		0x00000000	/* 		*/
 #define TPM_CAP_ALGS		0x00000000	/* TPM_ALG_ID(1)	TPML_ALG_PROPERTY	*/
-#define TPM_CAP_HANDLES		0x00000001	/* TPM_HANDLE		TPML_HANDLE	*/
-#define TPM_CAP_COMMANDS	0x00000002	/* TPM_CC		TPML_CCA	*/
-#define TPM_CAP_PP_COMMANDS	0x00000003	/* TPM_CC		TPML_CC 	*/
-#define TPM_CAP_AUDIT_COMMANDS	0x00000004	/* TPM_CC		TPML_CC	*/
+#define TPM_CAP_HANDLES		0x00000001	/* TPM_HANDLE		TPML_HANDLE		*/
+#define TPM_CAP_COMMANDS	0x00000002	/* TPM_CC		TPML_CCA		*/
+#define TPM_CAP_PP_COMMANDS	0x00000003	/* TPM_CC		TPML_CC 		*/
+#define TPM_CAP_AUDIT_COMMANDS	0x00000004	/* TPM_CC		TPML_CC			*/
 #define TPM_CAP_PCRS		0x00000005	/* reserved		TPML_PCR_SELECTION	*/
 #define TPM_CAP_TPM_PROPERTIES	0x00000006	/* TPM_PT		TPML_TAGGED_TPM_PROPERTY	*/
 #define TPM_CAP_PCR_PROPERTIES	0x00000007	/* TPM_PT_PCR		TPML_TAGGED_PCR_PROPERTY	*/
-#define TPM_CAP_ECC_CURVES	0x00000008	/* TPM_ECC_CURVE(1)	TPML_ECC_CURVE	*/
-#define TPM_CAP_LAST		0x00000008	/* */		
+#define TPM_CAP_ECC_CURVES	0x00000008	/* TPM_ECC_CURVE(1)	TPML_ECC_CURVE		*/
+#define TPM_CAP_AUTH_POLICIES	0x00000009	/* 			TPML_TAGGED_POLICY 	*/
+#define TPM_CAP_LAST		0x00000009	/* */		
 #define TPM_CAP_VENDOR_PROPERTY	0x00000100	/* manufacturer specific	manufacturer-specific values */
 
 /* Table 23 - Definition of (UINT32) TPM_PT Constants <IN/OUT, S> */

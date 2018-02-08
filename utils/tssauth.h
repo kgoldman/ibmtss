@@ -3,9 +3,9 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.h 730 2016-08-23 21:09:53Z kgoldman $		*/
+/*            $Id: tssauth.h 1124 2018-01-05 21:32:55Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -80,14 +80,14 @@ TPM_RC TSS_SetCommandDecryptParam(TSS_AUTH_CONTEXT *tssAuthContext,
 				  uint8_t *encryptParamBuffer);
 
 TPM_RC TSS_GetCommandHandleCount(TSS_AUTH_CONTEXT *tssAuthContext,
-				 uint32_t *commandHandleCount);
+				 size_t *commandHandleCount);
 
 AUTH_ROLE TSS_GetAuthRole(TSS_AUTH_CONTEXT *tssAuthContext,
-			  UINT32 handleIndex);
+			  size_t handleIndex);
 
 TPM_RC TSS_GetCommandHandle(TSS_AUTH_CONTEXT *tssAuthContext,
 			    TPM_HANDLE *commandHandle,
-			    uint32_t index);
+			    size_t index);
 
 TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
 		       uint32_t *rpBufferSize,

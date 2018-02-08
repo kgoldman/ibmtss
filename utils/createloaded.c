@@ -3,7 +3,7 @@
 /*			    Create Loaded					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createloaded.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: createloaded.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 		    curveID = TPM_ECC_NIST_P384;
 		}
 		else {
-		    printf("Bad parameter for -ecc\n");
+		    printf("Bad parameter %s for -ecc\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
 		    addObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
 		    break;
 		  default:
-		    printf("Bad parameter for -kt\n");
+		    printf("Bad parameter %c for -kt\n", argv[i][0]);
 		    printUsage();
 		}
 	    }
@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 		    nalg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -nalg\n");
+		    printf("Bad parameter %s for -nalg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -499,7 +499,7 @@ int main(int argc, char *argv[])
     /* marshal the TPMT_PUBLIC into the TPM2B_TEMPLATE */
     if (rc == 0) {
 	uint16_t written = 0;
-	int32_t size = sizeof(in.inPublic.t.buffer);
+	uint32_t size = sizeof(in.inPublic.t.buffer);
 	uint8_t *buffer = in.inPublic.t.buffer;
 	if (!derived) {		/* not derivation parent */
 	    rc = TSS_TPMT_PUBLIC_Marshal(&publicArea, &written, &buffer, &size);

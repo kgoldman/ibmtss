@@ -3,7 +3,7 @@
 /*			  Command and Response Marshal and Unmarshal		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Commands_fp.h 1055 2017-08-08 20:30:09Z kgoldman $		*/
+/*            $Id: Commands_fp.h 1124 2018-01-05 21:32:55Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,7 +55,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2015				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2017				*/
 /*										*/
 /********************************************************************************/
 
@@ -179,322 +179,322 @@
 #include <tss2/NTC_fp.h>
 
 TPM_RC
-Startup_In_Unmarshal(Startup_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Startup_In_Unmarshal(Startup_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-Shutdown_In_Unmarshal(Shutdown_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Shutdown_In_Unmarshal(Shutdown_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-SelfTest_In_Unmarshal(SelfTest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+SelfTest_In_Unmarshal(SelfTest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-IncrementalSelfTest_In_Unmarshal(IncrementalSelfTest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+IncrementalSelfTest_In_Unmarshal(IncrementalSelfTest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-IncrementalSelfTest_Out_Marshal(IncrementalSelfTest_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+IncrementalSelfTest_Out_Marshal(IncrementalSelfTest_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 UINT16
-GetTestResult_Out_Marshal(GetTestResult_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+GetTestResult_Out_Marshal(GetTestResult_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-StartAuthSession_In_Unmarshal(StartAuthSession_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+StartAuthSession_In_Unmarshal(StartAuthSession_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-StartAuthSession_Out_Marshal(StartAuthSession_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+StartAuthSession_Out_Marshal(StartAuthSession_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-PolicyRestart_In_Unmarshal(PolicyRestart_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyRestart_In_Unmarshal(PolicyRestart_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-Create_In_Unmarshal(Create_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Create_In_Unmarshal(Create_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Create_Out_Marshal(Create_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Create_Out_Marshal(Create_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-Load_In_Unmarshal(Load_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Load_In_Unmarshal(Load_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Load_Out_Marshal(Load_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Load_Out_Marshal(Load_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-LoadExternal_In_Unmarshal(LoadExternal_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+LoadExternal_In_Unmarshal(LoadExternal_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-LoadExternal_Out_Marshal(LoadExternal_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+LoadExternal_Out_Marshal(LoadExternal_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-ReadPublic_In_Unmarshal(ReadPublic_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ReadPublic_In_Unmarshal(ReadPublic_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ReadPublic_Out_Marshal(ReadPublic_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ReadPublic_Out_Marshal(ReadPublic_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-ActivateCredential_In_Unmarshal(ActivateCredential_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ActivateCredential_In_Unmarshal(ActivateCredential_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ActivateCredential_Out_Marshal(ActivateCredential_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ActivateCredential_Out_Marshal(ActivateCredential_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-MakeCredential_In_Unmarshal(MakeCredential_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+MakeCredential_In_Unmarshal(MakeCredential_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-MakeCredential_Out_Marshal(MakeCredential_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+MakeCredential_Out_Marshal(MakeCredential_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-Unseal_In_Unmarshal(Unseal_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Unseal_In_Unmarshal(Unseal_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Unseal_Out_Marshal(Unseal_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Unseal_Out_Marshal(Unseal_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-ObjectChangeAuth_In_Unmarshal(ObjectChangeAuth_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ObjectChangeAuth_In_Unmarshal(ObjectChangeAuth_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ObjectChangeAuth_Out_Marshal(ObjectChangeAuth_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ObjectChangeAuth_Out_Marshal(ObjectChangeAuth_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-CreateLoaded_In_Unmarshal(CreateLoaded_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+CreateLoaded_In_Unmarshal(CreateLoaded_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-Duplicate_In_Unmarshal(Duplicate_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Duplicate_In_Unmarshal(Duplicate_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Duplicate_Out_Marshal(Duplicate_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Duplicate_Out_Marshal(Duplicate_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-Rewrap_In_Unmarshal(Rewrap_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Rewrap_In_Unmarshal(Rewrap_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Rewrap_Out_Marshal(Rewrap_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Rewrap_Out_Marshal(Rewrap_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-Import_In_Unmarshal(Import_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Import_In_Unmarshal(Import_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Import_Out_Marshal(Import_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Import_Out_Marshal(Import_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-RSA_Encrypt_In_Unmarshal(RSA_Encrypt_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+RSA_Encrypt_In_Unmarshal(RSA_Encrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-RSA_Encrypt_Out_Marshal(RSA_Encrypt_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+RSA_Encrypt_Out_Marshal(RSA_Encrypt_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-RSA_Decrypt_In_Unmarshal(RSA_Decrypt_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+RSA_Decrypt_In_Unmarshal(RSA_Decrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-RSA_Decrypt_Out_Marshal(RSA_Decrypt_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+RSA_Decrypt_Out_Marshal(RSA_Decrypt_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-ECDH_KeyGen_In_Unmarshal(ECDH_KeyGen_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ECDH_KeyGen_In_Unmarshal(ECDH_KeyGen_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ECDH_KeyGen_Out_Marshal(ECDH_KeyGen_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ECDH_KeyGen_Out_Marshal(ECDH_KeyGen_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-ECDH_ZGen_In_Unmarshal(ECDH_ZGen_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ECDH_ZGen_In_Unmarshal(ECDH_ZGen_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ECDH_ZGen_Out_Marshal(ECDH_ZGen_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ECDH_ZGen_Out_Marshal(ECDH_ZGen_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-ECC_Parameters_In_Unmarshal(ECC_Parameters_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ECC_Parameters_In_Unmarshal(ECC_Parameters_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ECC_Parameters_Out_Marshal(ECC_Parameters_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ECC_Parameters_Out_Marshal(ECC_Parameters_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-ZGen_2Phase_In_Unmarshal(ZGen_2Phase_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ZGen_2Phase_In_Unmarshal(ZGen_2Phase_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ZGen_2Phase_Out_Marshal(ZGen_2Phase_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ZGen_2Phase_Out_Marshal(ZGen_2Phase_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-EncryptDecrypt_In_Unmarshal(EncryptDecrypt_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+EncryptDecrypt_In_Unmarshal(EncryptDecrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-EncryptDecrypt_Out_Marshal(EncryptDecrypt_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+EncryptDecrypt_Out_Marshal(EncryptDecrypt_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-EncryptDecrypt2_In_Unmarshal(EncryptDecrypt2_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+EncryptDecrypt2_In_Unmarshal(EncryptDecrypt2_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-Hash_In_Unmarshal(Hash_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Hash_In_Unmarshal(Hash_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Hash_Out_Marshal(Hash_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Hash_Out_Marshal(Hash_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-HMAC_In_Unmarshal(HMAC_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+HMAC_In_Unmarshal(HMAC_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-HMAC_Out_Marshal(HMAC_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+HMAC_Out_Marshal(HMAC_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-GetRandom_In_Unmarshal(GetRandom_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+GetRandom_In_Unmarshal(GetRandom_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-GetRandom_Out_Marshal(GetRandom_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+GetRandom_Out_Marshal(GetRandom_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-StirRandom_In_Unmarshal(StirRandom_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+StirRandom_In_Unmarshal(StirRandom_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-HMAC_Start_In_Unmarshal(HMAC_Start_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+HMAC_Start_In_Unmarshal(HMAC_Start_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-HMAC_Start_Out_Marshal(HMAC_Start_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+HMAC_Start_Out_Marshal(HMAC_Start_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-HashSequenceStart_In_Unmarshal(HashSequenceStart_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+HashSequenceStart_In_Unmarshal(HashSequenceStart_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-HashSequenceStart_Out_Marshal(HashSequenceStart_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+HashSequenceStart_Out_Marshal(HashSequenceStart_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-SequenceUpdate_In_Unmarshal(SequenceUpdate_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+SequenceUpdate_In_Unmarshal(SequenceUpdate_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-SequenceComplete_In_Unmarshal(SequenceComplete_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+SequenceComplete_In_Unmarshal(SequenceComplete_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-SequenceComplete_Out_Marshal(SequenceComplete_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+SequenceComplete_Out_Marshal(SequenceComplete_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-EventSequenceComplete_In_Unmarshal(EventSequenceComplete_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+EventSequenceComplete_In_Unmarshal(EventSequenceComplete_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-EventSequenceComplete_Out_Marshal(EventSequenceComplete_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+EventSequenceComplete_Out_Marshal(EventSequenceComplete_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-Certify_In_Unmarshal(Certify_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Certify_In_Unmarshal(Certify_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Certify_Out_Marshal(Certify_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Certify_Out_Marshal(Certify_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-CertifyCreation_In_Unmarshal(CertifyCreation_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+CertifyCreation_In_Unmarshal(CertifyCreation_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-CertifyCreation_Out_Marshal(CertifyCreation_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+CertifyCreation_Out_Marshal(CertifyCreation_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-Quote_In_Unmarshal(Quote_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Quote_In_Unmarshal(Quote_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Quote_Out_Marshal(Quote_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Quote_Out_Marshal(Quote_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-GetSessionAuditDigest_In_Unmarshal(GetSessionAuditDigest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+GetSessionAuditDigest_In_Unmarshal(GetSessionAuditDigest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-GetSessionAuditDigest_Out_Marshal(GetSessionAuditDigest_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+GetSessionAuditDigest_Out_Marshal(GetSessionAuditDigest_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-GetCommandAuditDigest_In_Unmarshal(GetCommandAuditDigest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+GetCommandAuditDigest_In_Unmarshal(GetCommandAuditDigest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-GetCommandAuditDigest_Out_Marshal(GetCommandAuditDigest_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+GetCommandAuditDigest_Out_Marshal(GetCommandAuditDigest_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-GetTime_In_Unmarshal(GetTime_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+GetTime_In_Unmarshal(GetTime_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-GetTime_Out_Marshal(GetTime_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+GetTime_Out_Marshal(GetTime_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-Commit_In_Unmarshal(Commit_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Commit_In_Unmarshal(Commit_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Commit_Out_Marshal(Commit_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Commit_Out_Marshal(Commit_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-EC_Ephemeral_In_Unmarshal(EC_Ephemeral_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+EC_Ephemeral_In_Unmarshal(EC_Ephemeral_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-EC_Ephemeral_Out_Marshal(EC_Ephemeral_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+EC_Ephemeral_Out_Marshal(EC_Ephemeral_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-VerifySignature_In_Unmarshal(VerifySignature_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+VerifySignature_In_Unmarshal(VerifySignature_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-VerifySignature_Out_Marshal(VerifySignature_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+VerifySignature_Out_Marshal(VerifySignature_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-Sign_In_Unmarshal(Sign_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Sign_In_Unmarshal(Sign_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-Sign_Out_Marshal(Sign_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+Sign_Out_Marshal(Sign_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-SetCommandCodeAuditStatus_In_Unmarshal(SetCommandCodeAuditStatus_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+SetCommandCodeAuditStatus_In_Unmarshal(SetCommandCodeAuditStatus_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PCR_Extend_In_Unmarshal(PCR_Extend_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PCR_Extend_In_Unmarshal(PCR_Extend_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PCR_Event_In_Unmarshal(PCR_Event_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PCR_Event_In_Unmarshal(PCR_Event_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-PCR_Event_Out_Marshal(PCR_Event_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+PCR_Event_Out_Marshal(PCR_Event_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-PCR_Read_In_Unmarshal(PCR_Read_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PCR_Read_In_Unmarshal(PCR_Read_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-PCR_Read_Out_Marshal(PCR_Read_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+PCR_Read_Out_Marshal(PCR_Read_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-PCR_Allocate_In_Unmarshal(PCR_Allocate_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PCR_Allocate_In_Unmarshal(PCR_Allocate_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-PCR_Allocate_Out_Marshal(PCR_Allocate_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+PCR_Allocate_Out_Marshal(PCR_Allocate_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-PCR_SetAuthPolicy_In_Unmarshal(PCR_SetAuthPolicy_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PCR_SetAuthPolicy_In_Unmarshal(PCR_SetAuthPolicy_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PCR_SetAuthValue_In_Unmarshal(PCR_SetAuthValue_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PCR_SetAuthValue_In_Unmarshal(PCR_SetAuthValue_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PCR_Reset_In_Unmarshal(PCR_Reset_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PCR_Reset_In_Unmarshal(PCR_Reset_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicySigned_In_Unmarshal(PolicySigned_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicySigned_In_Unmarshal(PolicySigned_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-PolicySigned_Out_Marshal(PolicySigned_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+PolicySigned_Out_Marshal(PolicySigned_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-PolicySecret_In_Unmarshal(PolicySecret_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicySecret_In_Unmarshal(PolicySecret_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-PolicySecret_Out_Marshal(PolicySecret_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+PolicySecret_Out_Marshal(PolicySecret_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-PolicyTicket_In_Unmarshal(PolicyTicket_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyTicket_In_Unmarshal(PolicyTicket_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyOR_In_Unmarshal(PolicyOR_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyOR_In_Unmarshal(PolicyOR_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyPCR_In_Unmarshal(PolicyPCR_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyPCR_In_Unmarshal(PolicyPCR_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyLocality_In_Unmarshal(PolicyLocality_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyLocality_In_Unmarshal(PolicyLocality_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyNV_In_Unmarshal(PolicyNV_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyNV_In_Unmarshal(PolicyNV_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyAuthorizeNV_In_Unmarshal(PolicyAuthorizeNV_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyAuthorizeNV_In_Unmarshal(PolicyAuthorizeNV_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyCounterTimer_In_Unmarshal(PolicyCounterTimer_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyCounterTimer_In_Unmarshal(PolicyCounterTimer_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyCommandCode_In_Unmarshal(PolicyCommandCode_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyCommandCode_In_Unmarshal(PolicyCommandCode_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyPhysicalPresence_In_Unmarshal(PolicyPhysicalPresence_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyPhysicalPresence_In_Unmarshal(PolicyPhysicalPresence_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyCpHash_In_Unmarshal(PolicyCpHash_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyCpHash_In_Unmarshal(PolicyCpHash_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyNameHash_In_Unmarshal(PolicyNameHash_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyNameHash_In_Unmarshal(PolicyNameHash_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyDuplicationSelect_In_Unmarshal(PolicyDuplicationSelect_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyDuplicationSelect_In_Unmarshal(PolicyDuplicationSelect_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyAuthorize_In_Unmarshal(PolicyAuthorize_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyAuthorize_In_Unmarshal(PolicyAuthorize_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyAuthValue_In_Unmarshal(PolicyAuthValue_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyAuthValue_In_Unmarshal(PolicyAuthValue_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyPassword_In_Unmarshal(PolicyPassword_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyPassword_In_Unmarshal(PolicyPassword_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyGetDigest_In_Unmarshal(PolicyGetDigest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyGetDigest_In_Unmarshal(PolicyGetDigest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-PolicyGetDigest_Out_Marshal(PolicyGetDigest_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+PolicyGetDigest_Out_Marshal(PolicyGetDigest_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-PolicyNvWritten_In_Unmarshal(PolicyNvWritten_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyNvWritten_In_Unmarshal(PolicyNvWritten_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PolicyTemplate_In_Unmarshal(PolicyTemplate_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PolicyTemplate_In_Unmarshal(PolicyTemplate_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-CreatePrimary_In_Unmarshal(CreatePrimary_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+CreatePrimary_In_Unmarshal(CreatePrimary_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-CreatePrimary_Out_Marshal(CreatePrimary_Out *source, TPMI_ST_COMMAND_TAG  tag, BYTE **buffer, INT32 *size);
+CreatePrimary_Out_Marshal(CreatePrimary_Out *source, TPMI_ST_COMMAND_TAG  tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-HierarchyControl_In_Unmarshal(HierarchyControl_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+HierarchyControl_In_Unmarshal(HierarchyControl_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-SetPrimaryPolicy_In_Unmarshal(SetPrimaryPolicy_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+SetPrimaryPolicy_In_Unmarshal(SetPrimaryPolicy_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-ChangePPS_In_Unmarshal(ChangePPS_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ChangePPS_In_Unmarshal(ChangePPS_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-ChangeEPS_In_Unmarshal(ChangeEPS_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ChangeEPS_In_Unmarshal(ChangeEPS_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-Clear_In_Unmarshal(Clear_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+Clear_In_Unmarshal(Clear_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-ClearControl_In_Unmarshal(ClearControl_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ClearControl_In_Unmarshal(ClearControl_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-HierarchyChangeAuth_In_Unmarshal(HierarchyChangeAuth_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+HierarchyChangeAuth_In_Unmarshal(HierarchyChangeAuth_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-DictionaryAttackLockReset_In_Unmarshal(DictionaryAttackLockReset_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+DictionaryAttackLockReset_In_Unmarshal(DictionaryAttackLockReset_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-DictionaryAttackParameters_In_Unmarshal(DictionaryAttackParameters_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+DictionaryAttackParameters_In_Unmarshal(DictionaryAttackParameters_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-PP_Commands_In_Unmarshal(PP_Commands_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+PP_Commands_In_Unmarshal(PP_Commands_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-SetAlgorithmSet_In_Unmarshal(SetAlgorithmSet_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+SetAlgorithmSet_In_Unmarshal(SetAlgorithmSet_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-ContextSave_In_Unmarshal(ContextSave_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ContextSave_In_Unmarshal(ContextSave_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ContextSave_Out_Marshal(ContextSave_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ContextSave_Out_Marshal(ContextSave_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-ContextLoad_In_Unmarshal(ContextLoad_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ContextLoad_In_Unmarshal(ContextLoad_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ContextLoad_Out_Marshal(ContextLoad_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ContextLoad_Out_Marshal(ContextLoad_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-FlushContext_In_Unmarshal(FlushContext_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+FlushContext_In_Unmarshal(FlushContext_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-EvictControl_In_Unmarshal(EvictControl_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+EvictControl_In_Unmarshal(EvictControl_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-ReadClock_Out_Marshal(ReadClock_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+ReadClock_Out_Marshal(ReadClock_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-ClockSet_In_Unmarshal(ClockSet_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ClockSet_In_Unmarshal(ClockSet_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-ClockRateAdjust_In_Unmarshal(ClockRateAdjust_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+ClockRateAdjust_In_Unmarshal(ClockRateAdjust_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-GetCapability_In_Unmarshal(GetCapability_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+GetCapability_In_Unmarshal(GetCapability_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-GetCapability_Out_Marshal(GetCapability_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+GetCapability_Out_Marshal(GetCapability_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-TestParms_In_Unmarshal(TestParms_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+TestParms_In_Unmarshal(TestParms_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_DefineSpace_In_Unmarshal(NV_DefineSpace_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_DefineSpace_In_Unmarshal(NV_DefineSpace_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_UndefineSpace_In_Unmarshal(NV_UndefineSpace_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_UndefineSpace_In_Unmarshal(NV_UndefineSpace_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_UndefineSpaceSpecial_In_Unmarshal(NV_UndefineSpaceSpecial_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_UndefineSpaceSpecial_In_Unmarshal(NV_UndefineSpaceSpecial_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_ReadPublic_In_Unmarshal(NV_ReadPublic_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_ReadPublic_In_Unmarshal(NV_ReadPublic_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-NV_ReadPublic_Out_Marshal(NV_ReadPublic_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+NV_ReadPublic_Out_Marshal(NV_ReadPublic_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-NV_Write_In_Unmarshal(NV_Write_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_Write_In_Unmarshal(NV_Write_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_Increment_In_Unmarshal(NV_Increment_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_Increment_In_Unmarshal(NV_Increment_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_Extend_In_Unmarshal(NV_Extend_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_Extend_In_Unmarshal(NV_Extend_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_SetBits_In_Unmarshal(NV_SetBits_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_SetBits_In_Unmarshal(NV_SetBits_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_WriteLock_In_Unmarshal(NV_WriteLock_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_WriteLock_In_Unmarshal(NV_WriteLock_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_GlobalWriteLock_In_Unmarshal(NV_GlobalWriteLock_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_GlobalWriteLock_In_Unmarshal(NV_GlobalWriteLock_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_Read_In_Unmarshal(NV_Read_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_Read_In_Unmarshal(NV_Read_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-NV_Read_Out_Marshal(NV_Read_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+NV_Read_Out_Marshal(NV_Read_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
-NV_ReadLock_In_Unmarshal(NV_ReadLock_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_ReadLock_In_Unmarshal(NV_ReadLock_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_ChangeAuth_In_Unmarshal(NV_ChangeAuth_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_ChangeAuth_In_Unmarshal(NV_ChangeAuth_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
-NV_Certify_In_Unmarshal(NV_Certify_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+NV_Certify_In_Unmarshal(NV_Certify_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
-NV_Certify_Out_Marshal(NV_Certify_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, INT32 *size);
+NV_Certify_Out_Marshal(NV_Certify_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 
 #endif

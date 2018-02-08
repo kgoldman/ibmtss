@@ -3,7 +3,7 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymakerpcr.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: policymakerpcr.c 1140 2018-01-22 15:13:31Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 		    digest.hashAlg = TPM_ALG_SHA1;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	unsigned int pc;
 	uint8_t *buffer = pcrBytes;
-	INT32 size = IMPLEMENTATION_PCR * MAX_DIGEST_SIZE;
+	uint32_t size = IMPLEMENTATION_PCR * MAX_DIGEST_SIZE;
 	pcrLength = 0;
 	for (pc = 0 ; (rc == 0) && (pc < pcrCount) ; pc++) {
 	    rc = TSS_Array_Marshal((uint8_t *)&pcr[pc], sizeInBytes, &pcrLength, &buffer, &size);

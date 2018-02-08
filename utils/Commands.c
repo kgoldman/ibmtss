@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Commands.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*            $Id: Commands.c 1124 2018-01-05 21:32:55Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,7 +55,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2016				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2017				*/
 /*										*/
 /********************************************************************************/
 
@@ -74,7 +74,7 @@ RESPONSE_PARAMETERS out;
 */
 
 TPM_RC
-Startup_In_Unmarshal(Startup_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Startup_In_Unmarshal(Startup_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -88,7 +88,7 @@ Startup_In_Unmarshal(Startup_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE 
     return rc;
 }
 TPM_RC
-Shutdown_In_Unmarshal(Shutdown_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Shutdown_In_Unmarshal(Shutdown_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -102,7 +102,7 @@ Shutdown_In_Unmarshal(Shutdown_In *target, BYTE **buffer, INT32 *size, TPM_HANDL
     return rc;
 }
 TPM_RC
-SelfTest_In_Unmarshal(SelfTest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+SelfTest_In_Unmarshal(SelfTest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -116,7 +116,7 @@ SelfTest_In_Unmarshal(SelfTest_In *target, BYTE **buffer, INT32 *size, TPM_HANDL
     return rc;
 }
 TPM_RC
-IncrementalSelfTest_In_Unmarshal(IncrementalSelfTest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+IncrementalSelfTest_In_Unmarshal(IncrementalSelfTest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -130,7 +130,7 @@ IncrementalSelfTest_In_Unmarshal(IncrementalSelfTest_In *target, BYTE **buffer, 
     return rc;
 }
 TPM_RC
-StartAuthSession_In_Unmarshal(StartAuthSession_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+StartAuthSession_In_Unmarshal(StartAuthSession_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -171,7 +171,7 @@ StartAuthSession_In_Unmarshal(StartAuthSession_In *target, BYTE **buffer, INT32 
     return rc;
 }
 TPM_RC
-PolicyRestart_In_Unmarshal(PolicyRestart_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyRestart_In_Unmarshal(PolicyRestart_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -183,7 +183,7 @@ PolicyRestart_In_Unmarshal(PolicyRestart_In *target, BYTE **buffer, INT32 *size,
     return rc;
 }
 TPM_RC
-Create_In_Unmarshal(Create_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Create_In_Unmarshal(Create_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -217,7 +217,7 @@ Create_In_Unmarshal(Create_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE ha
     return rc;
 }
 TPM_RC
-Load_In_Unmarshal(Load_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Load_In_Unmarshal(Load_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -239,7 +239,7 @@ Load_In_Unmarshal(Load_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handle
     return rc;
 }
 TPM_RC
-LoadExternal_In_Unmarshal(LoadExternal_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+LoadExternal_In_Unmarshal(LoadExternal_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -266,7 +266,7 @@ LoadExternal_In_Unmarshal(LoadExternal_In *target, BYTE **buffer, INT32 *size, T
 }
 
 TPM_RC
-ReadPublic_In_Unmarshal(ReadPublic_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ReadPublic_In_Unmarshal(ReadPublic_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -278,7 +278,7 @@ ReadPublic_In_Unmarshal(ReadPublic_In *target, BYTE **buffer, INT32 *size, TPM_H
     return rc;
 }
 TPM_RC
-ActivateCredential_In_Unmarshal(ActivateCredential_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ActivateCredential_In_Unmarshal(ActivateCredential_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -301,7 +301,7 @@ ActivateCredential_In_Unmarshal(ActivateCredential_In *target, BYTE **buffer, IN
     return rc;
 }
 TPM_RC
-MakeCredential_In_Unmarshal(MakeCredential_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+MakeCredential_In_Unmarshal(MakeCredential_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -323,7 +323,7 @@ MakeCredential_In_Unmarshal(MakeCredential_In *target, BYTE **buffer, INT32 *siz
     return rc;
 }
 TPM_RC
-Unseal_In_Unmarshal(Unseal_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Unseal_In_Unmarshal(Unseal_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -335,7 +335,7 @@ Unseal_In_Unmarshal(Unseal_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE ha
     return rc;
 }
 TPM_RC
-ObjectChangeAuth_In_Unmarshal(ObjectChangeAuth_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ObjectChangeAuth_In_Unmarshal(ObjectChangeAuth_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -349,7 +349,7 @@ ObjectChangeAuth_In_Unmarshal(ObjectChangeAuth_In *target, BYTE **buffer, INT32 
     return rc;
 }
 TPM_RC
-CreateLoaded_In_Unmarshal(CreateLoaded_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+CreateLoaded_In_Unmarshal(CreateLoaded_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -371,7 +371,7 @@ CreateLoaded_In_Unmarshal(CreateLoaded_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-Duplicate_In_Unmarshal(Duplicate_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Duplicate_In_Unmarshal(Duplicate_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -394,7 +394,7 @@ Duplicate_In_Unmarshal(Duplicate_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-Rewrap_In_Unmarshal(Rewrap_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Rewrap_In_Unmarshal(Rewrap_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -423,7 +423,7 @@ Rewrap_In_Unmarshal(Rewrap_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE ha
     return rc;
 }
 TPM_RC
-Import_In_Unmarshal(Import_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Import_In_Unmarshal(Import_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -460,7 +460,7 @@ Import_In_Unmarshal(Import_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE ha
     return rc;
 }
 TPM_RC
-RSA_Encrypt_In_Unmarshal(RSA_Encrypt_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+RSA_Encrypt_In_Unmarshal(RSA_Encrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -488,7 +488,7 @@ RSA_Encrypt_In_Unmarshal(RSA_Encrypt_In *target, BYTE **buffer, INT32 *size, TPM
     return rc;
 }
 TPM_RC
-RSA_Decrypt_In_Unmarshal(RSA_Decrypt_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+RSA_Decrypt_In_Unmarshal(RSA_Decrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -516,7 +516,7 @@ RSA_Decrypt_In_Unmarshal(RSA_Decrypt_In *target, BYTE **buffer, INT32 *size, TPM
     return rc;
 }
 TPM_RC
-ECDH_KeyGen_In_Unmarshal(ECDH_KeyGen_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ECDH_KeyGen_In_Unmarshal(ECDH_KeyGen_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -528,7 +528,7 @@ ECDH_KeyGen_In_Unmarshal(ECDH_KeyGen_In *target, BYTE **buffer, INT32 *size, TPM
     return rc;
 }
 TPM_RC
-ECDH_ZGen_In_Unmarshal(ECDH_ZGen_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ECDH_ZGen_In_Unmarshal(ECDH_ZGen_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -544,7 +544,7 @@ ECDH_ZGen_In_Unmarshal(ECDH_ZGen_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-ECC_Parameters_In_Unmarshal(ECC_Parameters_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ECC_Parameters_In_Unmarshal(ECC_Parameters_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -558,7 +558,7 @@ ECC_Parameters_In_Unmarshal(ECC_Parameters_In *target, BYTE **buffer, INT32 *siz
     return rc;
 }
 TPM_RC
-ZGen_2Phase_In_Unmarshal(ZGen_2Phase_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ZGen_2Phase_In_Unmarshal(ZGen_2Phase_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -592,7 +592,7 @@ ZGen_2Phase_In_Unmarshal(ZGen_2Phase_In *target, BYTE **buffer, INT32 *size, TPM
     return rc;
 }
 TPM_RC
-EncryptDecrypt_In_Unmarshal(EncryptDecrypt_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+EncryptDecrypt_In_Unmarshal(EncryptDecrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -626,7 +626,7 @@ EncryptDecrypt_In_Unmarshal(EncryptDecrypt_In *target, BYTE **buffer, INT32 *siz
     return rc;
 }
 TPM_RC
-EncryptDecrypt2_In_Unmarshal(EncryptDecrypt2_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+EncryptDecrypt2_In_Unmarshal(EncryptDecrypt2_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -660,7 +660,7 @@ EncryptDecrypt2_In_Unmarshal(EncryptDecrypt2_In *target, BYTE **buffer, INT32 *s
     return rc;
 }
 TPM_RC
-Hash_In_Unmarshal(Hash_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Hash_In_Unmarshal(Hash_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -686,7 +686,7 @@ Hash_In_Unmarshal(Hash_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handle
     return rc;
 }
 TPM_RC
-HMAC_In_Unmarshal(HMAC_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+HMAC_In_Unmarshal(HMAC_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -708,7 +708,7 @@ HMAC_In_Unmarshal(HMAC_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handle
     return rc;
 }
 TPM_RC
-GetRandom_In_Unmarshal(GetRandom_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+GetRandom_In_Unmarshal(GetRandom_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -722,7 +722,7 @@ GetRandom_In_Unmarshal(GetRandom_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-StirRandom_In_Unmarshal(StirRandom_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+StirRandom_In_Unmarshal(StirRandom_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -736,7 +736,7 @@ StirRandom_In_Unmarshal(StirRandom_In *target, BYTE **buffer, INT32 *size, TPM_H
     return rc;
 }
 TPM_RC
-HMAC_Start_In_Unmarshal(HMAC_Start_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+HMAC_Start_In_Unmarshal(HMAC_Start_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -758,7 +758,7 @@ HMAC_Start_In_Unmarshal(HMAC_Start_In *target, BYTE **buffer, INT32 *size, TPM_H
     return rc;
 }
 TPM_RC
-HashSequenceStart_In_Unmarshal(HashSequenceStart_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+HashSequenceStart_In_Unmarshal(HashSequenceStart_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -778,7 +778,7 @@ HashSequenceStart_In_Unmarshal(HashSequenceStart_In *target, BYTE **buffer, INT3
     return rc;
 }
 TPM_RC
-SequenceUpdate_In_Unmarshal(SequenceUpdate_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+SequenceUpdate_In_Unmarshal(SequenceUpdate_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -796,7 +796,7 @@ SequenceUpdate_In_Unmarshal(SequenceUpdate_In *target, BYTE **buffer, INT32 *siz
     return rc;
 }
 TPM_RC
-SequenceComplete_In_Unmarshal(SequenceComplete_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+SequenceComplete_In_Unmarshal(SequenceComplete_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -818,7 +818,7 @@ SequenceComplete_In_Unmarshal(SequenceComplete_In *target, BYTE **buffer, INT32 
     return rc;
 }
 TPM_RC
-EventSequenceComplete_In_Unmarshal(EventSequenceComplete_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+EventSequenceComplete_In_Unmarshal(EventSequenceComplete_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -835,7 +835,7 @@ EventSequenceComplete_In_Unmarshal(EventSequenceComplete_In *target, BYTE **buff
     return rc;
 }
 TPM_RC
-Certify_In_Unmarshal(Certify_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Certify_In_Unmarshal(Certify_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -858,7 +858,7 @@ Certify_In_Unmarshal(Certify_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE 
     return rc;
 }
 TPM_RC
-CertifyCreation_In_Unmarshal(CertifyCreation_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+CertifyCreation_In_Unmarshal(CertifyCreation_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -893,7 +893,7 @@ CertifyCreation_In_Unmarshal(CertifyCreation_In *target, BYTE **buffer, INT32 *s
     return rc;
 }
 TPM_RC
-Quote_In_Unmarshal(Quote_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Quote_In_Unmarshal(Quote_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -921,7 +921,7 @@ Quote_In_Unmarshal(Quote_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE hand
     return rc;
 }
 TPM_RC
-GetSessionAuditDigest_In_Unmarshal(GetSessionAuditDigest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+GetSessionAuditDigest_In_Unmarshal(GetSessionAuditDigest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -945,7 +945,7 @@ GetSessionAuditDigest_In_Unmarshal(GetSessionAuditDigest_In *target, BYTE **buff
     return rc;
 }
 TPM_RC
-GetCommandAuditDigest_In_Unmarshal(GetCommandAuditDigest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+GetCommandAuditDigest_In_Unmarshal(GetCommandAuditDigest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -968,7 +968,7 @@ GetCommandAuditDigest_In_Unmarshal(GetCommandAuditDigest_In *target, BYTE **buff
     return rc;
 }
 TPM_RC
-GetTime_In_Unmarshal(GetTime_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+GetTime_In_Unmarshal(GetTime_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -991,7 +991,7 @@ GetTime_In_Unmarshal(GetTime_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE 
     return rc;
 }
 TPM_RC
-Commit_In_Unmarshal(Commit_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Commit_In_Unmarshal(Commit_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1019,7 +1019,7 @@ Commit_In_Unmarshal(Commit_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE ha
     return rc;
 }
 TPM_RC
-EC_Ephemeral_In_Unmarshal(EC_Ephemeral_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+EC_Ephemeral_In_Unmarshal(EC_Ephemeral_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -1033,7 +1033,7 @@ EC_Ephemeral_In_Unmarshal(EC_Ephemeral_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-VerifySignature_In_Unmarshal(VerifySignature_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+VerifySignature_In_Unmarshal(VerifySignature_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1055,7 +1055,7 @@ VerifySignature_In_Unmarshal(VerifySignature_In *target, BYTE **buffer, INT32 *s
     return rc;
 }
 TPM_RC
-Sign_In_Unmarshal(Sign_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Sign_In_Unmarshal(Sign_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1083,7 +1083,7 @@ Sign_In_Unmarshal(Sign_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handle
     return rc;
 }
 TPM_RC
-SetCommandCodeAuditStatus_In_Unmarshal(SetCommandCodeAuditStatus_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+SetCommandCodeAuditStatus_In_Unmarshal(SetCommandCodeAuditStatus_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1111,7 +1111,7 @@ SetCommandCodeAuditStatus_In_Unmarshal(SetCommandCodeAuditStatus_In *target, BYT
     return rc;
 }
 TPM_RC
-PCR_Extend_In_Unmarshal(PCR_Extend_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PCR_Extend_In_Unmarshal(PCR_Extend_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1127,7 +1127,7 @@ PCR_Extend_In_Unmarshal(PCR_Extend_In *target, BYTE **buffer, INT32 *size, TPM_H
     return rc;
 }
 TPM_RC
-PCR_Event_In_Unmarshal(PCR_Event_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PCR_Event_In_Unmarshal(PCR_Event_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1143,7 +1143,7 @@ PCR_Event_In_Unmarshal(PCR_Event_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-PCR_Read_In_Unmarshal(PCR_Read_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PCR_Read_In_Unmarshal(PCR_Read_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -1157,7 +1157,7 @@ PCR_Read_In_Unmarshal(PCR_Read_In *target, BYTE **buffer, INT32 *size, TPM_HANDL
     return rc;
 }
 TPM_RC
-PCR_Allocate_In_Unmarshal(PCR_Allocate_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PCR_Allocate_In_Unmarshal(PCR_Allocate_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1173,7 +1173,7 @@ PCR_Allocate_In_Unmarshal(PCR_Allocate_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-PCR_SetAuthPolicy_In_Unmarshal(PCR_SetAuthPolicy_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PCR_SetAuthPolicy_In_Unmarshal(PCR_SetAuthPolicy_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1201,7 +1201,7 @@ PCR_SetAuthPolicy_In_Unmarshal(PCR_SetAuthPolicy_In *target, BYTE **buffer, INT3
     return rc;
 }
 TPM_RC
-PCR_SetAuthValue_In_Unmarshal(PCR_SetAuthValue_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PCR_SetAuthValue_In_Unmarshal(PCR_SetAuthValue_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1217,7 +1217,7 @@ PCR_SetAuthValue_In_Unmarshal(PCR_SetAuthValue_In *target, BYTE **buffer, INT32 
     return rc;
 }
 TPM_RC
-PCR_Reset_In_Unmarshal(PCR_Reset_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PCR_Reset_In_Unmarshal(PCR_Reset_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1229,7 +1229,7 @@ PCR_Reset_In_Unmarshal(PCR_Reset_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-PolicySigned_In_Unmarshal(PolicySigned_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicySigned_In_Unmarshal(PolicySigned_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1270,7 +1270,7 @@ PolicySigned_In_Unmarshal(PolicySigned_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-PolicySecret_In_Unmarshal(PolicySecret_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicySecret_In_Unmarshal(PolicySecret_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1305,7 +1305,7 @@ PolicySecret_In_Unmarshal(PolicySecret_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-PolicyTicket_In_Unmarshal(PolicyTicket_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyTicket_In_Unmarshal(PolicyTicket_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1345,7 +1345,7 @@ PolicyTicket_In_Unmarshal(PolicyTicket_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-PolicyOR_In_Unmarshal(PolicyOR_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyOR_In_Unmarshal(PolicyOR_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1362,7 +1362,7 @@ PolicyOR_In_Unmarshal(PolicyOR_In *target, BYTE **buffer, INT32 *size, TPM_HANDL
     return rc;
 }
 TPM_RC
-PolicyPCR_In_Unmarshal(PolicyPCR_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyPCR_In_Unmarshal(PolicyPCR_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1384,7 +1384,7 @@ PolicyPCR_In_Unmarshal(PolicyPCR_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-PolicyLocality_In_Unmarshal(PolicyLocality_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyLocality_In_Unmarshal(PolicyLocality_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1400,7 +1400,7 @@ PolicyLocality_In_Unmarshal(PolicyLocality_In *target, BYTE **buffer, INT32 *siz
     return rc;
 }
 TPM_RC
-PolicyNV_In_Unmarshal(PolicyNV_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyNV_In_Unmarshal(PolicyNV_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1430,7 +1430,7 @@ PolicyNV_In_Unmarshal(PolicyNV_In *target, BYTE **buffer, INT32 *size, TPM_HANDL
     return rc;
 }
 TPM_RC
-PolicyAuthorizeNV_In_Unmarshal(PolicyAuthorizeNV_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyAuthorizeNV_In_Unmarshal(PolicyAuthorizeNV_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1444,7 +1444,7 @@ PolicyAuthorizeNV_In_Unmarshal(PolicyAuthorizeNV_In *target, BYTE **buffer, INT3
     return rc;
 }
 TPM_RC
-PolicyCounterTimer_In_Unmarshal(PolicyCounterTimer_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyCounterTimer_In_Unmarshal(PolicyCounterTimer_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1472,7 +1472,7 @@ PolicyCounterTimer_In_Unmarshal(PolicyCounterTimer_In *target, BYTE **buffer, IN
     return rc;
 }
 TPM_RC
-PolicyCommandCode_In_Unmarshal(PolicyCommandCode_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyCommandCode_In_Unmarshal(PolicyCommandCode_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1488,7 +1488,7 @@ PolicyCommandCode_In_Unmarshal(PolicyCommandCode_In *target, BYTE **buffer, INT3
     return rc;
 }
 TPM_RC
-PolicyPhysicalPresence_In_Unmarshal(PolicyPhysicalPresence_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyPhysicalPresence_In_Unmarshal(PolicyPhysicalPresence_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1500,7 +1500,7 @@ PolicyPhysicalPresence_In_Unmarshal(PolicyPhysicalPresence_In *target, BYTE **bu
     return rc;
 }
 TPM_RC
-PolicyCpHash_In_Unmarshal(PolicyCpHash_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyCpHash_In_Unmarshal(PolicyCpHash_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1516,7 +1516,7 @@ PolicyCpHash_In_Unmarshal(PolicyCpHash_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-PolicyNameHash_In_Unmarshal(PolicyNameHash_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyNameHash_In_Unmarshal(PolicyNameHash_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1532,7 +1532,7 @@ PolicyNameHash_In_Unmarshal(PolicyNameHash_In *target, BYTE **buffer, INT32 *siz
     return rc;
 }
 TPM_RC
-PolicyDuplicationSelect_In_Unmarshal(PolicyDuplicationSelect_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyDuplicationSelect_In_Unmarshal(PolicyDuplicationSelect_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1560,7 +1560,7 @@ PolicyDuplicationSelect_In_Unmarshal(PolicyDuplicationSelect_In *target, BYTE **
     return rc;
 }
 TPM_RC
-PolicyAuthorize_In_Unmarshal(PolicyAuthorize_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyAuthorize_In_Unmarshal(PolicyAuthorize_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1594,7 +1594,7 @@ PolicyAuthorize_In_Unmarshal(PolicyAuthorize_In *target, BYTE **buffer, INT32 *s
     return rc;
 }
 TPM_RC
-PolicyAuthValue_In_Unmarshal(PolicyAuthValue_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyAuthValue_In_Unmarshal(PolicyAuthValue_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1606,7 +1606,7 @@ PolicyAuthValue_In_Unmarshal(PolicyAuthValue_In *target, BYTE **buffer, INT32 *s
     return rc;
 }
 TPM_RC
-PolicyPassword_In_Unmarshal(PolicyPassword_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyPassword_In_Unmarshal(PolicyPassword_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1618,7 +1618,7 @@ PolicyPassword_In_Unmarshal(PolicyPassword_In *target, BYTE **buffer, INT32 *siz
     return rc;
 }
 TPM_RC
-PolicyGetDigest_In_Unmarshal(PolicyGetDigest_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyGetDigest_In_Unmarshal(PolicyGetDigest_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1630,7 +1630,7 @@ PolicyGetDigest_In_Unmarshal(PolicyGetDigest_In *target, BYTE **buffer, INT32 *s
     return rc;
 }
 TPM_RC
-PolicyNvWritten_In_Unmarshal(PolicyNvWritten_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyNvWritten_In_Unmarshal(PolicyNvWritten_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1646,7 +1646,7 @@ PolicyNvWritten_In_Unmarshal(PolicyNvWritten_In *target, BYTE **buffer, INT32 *s
     return rc;
 }
 TPM_RC
-PolicyTemplate_In_Unmarshal(PolicyTemplate_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PolicyTemplate_In_Unmarshal(PolicyTemplate_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1664,7 +1664,7 @@ PolicyTemplate_In_Unmarshal(PolicyTemplate_In *target, BYTE **buffer, INT32 *siz
     return rc;
 }
 TPM_RC
-CreatePrimary_In_Unmarshal(CreatePrimary_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+CreatePrimary_In_Unmarshal(CreatePrimary_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1698,7 +1698,7 @@ CreatePrimary_In_Unmarshal(CreatePrimary_In *target, BYTE **buffer, INT32 *size,
     return rc;
 }
 TPM_RC
-HierarchyControl_In_Unmarshal(HierarchyControl_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+HierarchyControl_In_Unmarshal(HierarchyControl_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1720,7 +1720,7 @@ HierarchyControl_In_Unmarshal(HierarchyControl_In *target, BYTE **buffer, INT32 
     return rc;
 }
 TPM_RC
-SetPrimaryPolicy_In_Unmarshal(SetPrimaryPolicy_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+SetPrimaryPolicy_In_Unmarshal(SetPrimaryPolicy_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1742,7 +1742,7 @@ SetPrimaryPolicy_In_Unmarshal(SetPrimaryPolicy_In *target, BYTE **buffer, INT32 
     return rc;
 }
 TPM_RC
-ChangePPS_In_Unmarshal(ChangePPS_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ChangePPS_In_Unmarshal(ChangePPS_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1754,7 +1754,7 @@ ChangePPS_In_Unmarshal(ChangePPS_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-ChangeEPS_In_Unmarshal(ChangeEPS_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ChangeEPS_In_Unmarshal(ChangeEPS_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1766,7 +1766,7 @@ ChangeEPS_In_Unmarshal(ChangeEPS_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-Clear_In_Unmarshal(Clear_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+Clear_In_Unmarshal(Clear_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1778,7 +1778,7 @@ Clear_In_Unmarshal(Clear_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE hand
     return rc;
 }
 TPM_RC
-ClearControl_In_Unmarshal(ClearControl_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ClearControl_In_Unmarshal(ClearControl_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1794,7 +1794,7 @@ ClearControl_In_Unmarshal(ClearControl_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-HierarchyChangeAuth_In_Unmarshal(HierarchyChangeAuth_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+HierarchyChangeAuth_In_Unmarshal(HierarchyChangeAuth_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1810,7 +1810,7 @@ HierarchyChangeAuth_In_Unmarshal(HierarchyChangeAuth_In *target, BYTE **buffer, 
     return rc;
 }
 TPM_RC
-DictionaryAttackLockReset_In_Unmarshal(DictionaryAttackLockReset_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+DictionaryAttackLockReset_In_Unmarshal(DictionaryAttackLockReset_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1822,7 +1822,7 @@ DictionaryAttackLockReset_In_Unmarshal(DictionaryAttackLockReset_In *target, BYT
     return rc;
 }
 TPM_RC
-DictionaryAttackParameters_In_Unmarshal(DictionaryAttackParameters_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+DictionaryAttackParameters_In_Unmarshal(DictionaryAttackParameters_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1850,7 +1850,7 @@ DictionaryAttackParameters_In_Unmarshal(DictionaryAttackParameters_In *target, B
     return rc;
 }
 TPM_RC
-PP_Commands_In_Unmarshal(PP_Commands_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+PP_Commands_In_Unmarshal(PP_Commands_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1872,7 +1872,7 @@ PP_Commands_In_Unmarshal(PP_Commands_In *target, BYTE **buffer, INT32 *size, TPM
     return rc;
 }
 TPM_RC
-SetAlgorithmSet_In_Unmarshal(SetAlgorithmSet_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+SetAlgorithmSet_In_Unmarshal(SetAlgorithmSet_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1888,7 +1888,7 @@ SetAlgorithmSet_In_Unmarshal(SetAlgorithmSet_In *target, BYTE **buffer, INT32 *s
     return rc;
 }
 TPM_RC
-ContextSave_In_Unmarshal(ContextSave_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ContextSave_In_Unmarshal(ContextSave_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -1900,7 +1900,7 @@ ContextSave_In_Unmarshal(ContextSave_In *target, BYTE **buffer, INT32 *size, TPM
     return rc;
 }
 TPM_RC
-ContextLoad_In_Unmarshal(ContextLoad_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ContextLoad_In_Unmarshal(ContextLoad_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -1914,7 +1914,7 @@ ContextLoad_In_Unmarshal(ContextLoad_In *target, BYTE **buffer, INT32 *size, TPM
     return rc;
 }
 TPM_RC
-FlushContext_In_Unmarshal(FlushContext_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+FlushContext_In_Unmarshal(FlushContext_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -1928,7 +1928,7 @@ FlushContext_In_Unmarshal(FlushContext_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-EvictControl_In_Unmarshal(EvictControl_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+EvictControl_In_Unmarshal(EvictControl_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1945,7 +1945,7 @@ EvictControl_In_Unmarshal(EvictControl_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-ClockSet_In_Unmarshal(ClockSet_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ClockSet_In_Unmarshal(ClockSet_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1961,7 +1961,7 @@ ClockSet_In_Unmarshal(ClockSet_In *target, BYTE **buffer, INT32 *size, TPM_HANDL
     return rc;
 }
 TPM_RC
-ClockRateAdjust_In_Unmarshal(ClockRateAdjust_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+ClockRateAdjust_In_Unmarshal(ClockRateAdjust_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -1977,7 +1977,7 @@ ClockRateAdjust_In_Unmarshal(ClockRateAdjust_In *target, BYTE **buffer, INT32 *s
     return rc;
 }
 TPM_RC
-GetCapability_In_Unmarshal(GetCapability_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+GetCapability_In_Unmarshal(GetCapability_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -2003,7 +2003,7 @@ GetCapability_In_Unmarshal(GetCapability_In *target, BYTE **buffer, INT32 *size,
     return rc;
 }
 TPM_RC
-TestParms_In_Unmarshal(TestParms_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+TestParms_In_Unmarshal(TestParms_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -2017,7 +2017,7 @@ TestParms_In_Unmarshal(TestParms_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-NV_DefineSpace_In_Unmarshal(NV_DefineSpace_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_DefineSpace_In_Unmarshal(NV_DefineSpace_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -2039,7 +2039,7 @@ NV_DefineSpace_In_Unmarshal(NV_DefineSpace_In *target, BYTE **buffer, INT32 *siz
     return rc;
 }
 TPM_RC
-NV_UndefineSpace_In_Unmarshal(NV_UndefineSpace_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_UndefineSpace_In_Unmarshal(NV_UndefineSpace_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -2052,7 +2052,7 @@ NV_UndefineSpace_In_Unmarshal(NV_UndefineSpace_In *target, BYTE **buffer, INT32 
     return rc;
 }
 TPM_RC
-NV_UndefineSpaceSpecial_In_Unmarshal(NV_UndefineSpaceSpecial_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_UndefineSpaceSpecial_In_Unmarshal(NV_UndefineSpaceSpecial_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -2065,7 +2065,7 @@ NV_UndefineSpaceSpecial_In_Unmarshal(NV_UndefineSpaceSpecial_In *target, BYTE **
     return rc;
 }
 TPM_RC
-NV_ReadPublic_In_Unmarshal(NV_ReadPublic_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_ReadPublic_In_Unmarshal(NV_ReadPublic_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -2077,7 +2077,7 @@ NV_ReadPublic_In_Unmarshal(NV_ReadPublic_In *target, BYTE **buffer, INT32 *size,
     return rc;
 }
 TPM_RC
-NV_Write_In_Unmarshal(NV_Write_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_Write_In_Unmarshal(NV_Write_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -2100,7 +2100,7 @@ NV_Write_In_Unmarshal(NV_Write_In *target, BYTE **buffer, INT32 *size, TPM_HANDL
     return rc;
 }
 TPM_RC
-NV_Increment_In_Unmarshal(NV_Increment_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_Increment_In_Unmarshal(NV_Increment_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -2113,7 +2113,7 @@ NV_Increment_In_Unmarshal(NV_Increment_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-NV_Extend_In_Unmarshal(NV_Extend_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_Extend_In_Unmarshal(NV_Extend_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -2130,7 +2130,7 @@ NV_Extend_In_Unmarshal(NV_Extend_In *target, BYTE **buffer, INT32 *size, TPM_HAN
     return rc;
 }
 TPM_RC
-NV_SetBits_In_Unmarshal(NV_SetBits_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_SetBits_In_Unmarshal(NV_SetBits_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -2147,7 +2147,7 @@ NV_SetBits_In_Unmarshal(NV_SetBits_In *target, BYTE **buffer, INT32 *size, TPM_H
     return rc;
 }
 TPM_RC
-NV_WriteLock_In_Unmarshal(NV_WriteLock_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_WriteLock_In_Unmarshal(NV_WriteLock_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -2160,7 +2160,7 @@ NV_WriteLock_In_Unmarshal(NV_WriteLock_In *target, BYTE **buffer, INT32 *size, T
     return rc;
 }
 TPM_RC
-NV_GlobalWriteLock_In_Unmarshal(NV_GlobalWriteLock_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_GlobalWriteLock_In_Unmarshal(NV_GlobalWriteLock_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -2172,7 +2172,7 @@ NV_GlobalWriteLock_In_Unmarshal(NV_GlobalWriteLock_In *target, BYTE **buffer, IN
     return rc;
 }
 TPM_RC
-NV_Read_In_Unmarshal(NV_Read_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_Read_In_Unmarshal(NV_Read_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -2195,7 +2195,7 @@ NV_Read_In_Unmarshal(NV_Read_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE 
     return rc;
 }
 TPM_RC
-NV_ReadLock_In_Unmarshal(NV_ReadLock_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_ReadLock_In_Unmarshal(NV_ReadLock_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     buffer = buffer;
@@ -2208,7 +2208,7 @@ NV_ReadLock_In_Unmarshal(NV_ReadLock_In *target, BYTE **buffer, INT32 *size, TPM
     return rc;
 }
 TPM_RC
-NV_ChangeAuth_In_Unmarshal(NV_ChangeAuth_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_ChangeAuth_In_Unmarshal(NV_ChangeAuth_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -2224,7 +2224,7 @@ NV_ChangeAuth_In_Unmarshal(NV_ChangeAuth_In *target, BYTE **buffer, INT32 *size,
     return rc;
 }
 TPM_RC
-NV_Certify_In_Unmarshal(NV_Certify_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NV_Certify_In_Unmarshal(NV_Certify_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 

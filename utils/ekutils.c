@@ -3,7 +3,7 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 1118 2017-12-18 21:35:07Z kgoldman $		*/
+/*	      $Id: ekutils.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -751,7 +751,7 @@ TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
     TPM_RC			rc = 0;
     uint16_t 			dataSize;
     unsigned char 		*data = NULL; 		/* freed @1 */
-    INT32 			tmpDataSize;
+    uint32_t 			tmpDataSize;
     unsigned char 		*tmpData = NULL; 
 
     if (rc == 0) {
@@ -1362,7 +1362,7 @@ TPM_RC createCertificate(char **x509CertString,		/* freed by caller */
 	    rc = TSS_RC_BAD_SIGNATURE_ALGORITHM;
 	}
     }    
-    /* fill in basic X509 information - version, serial, validity issuer, subject */
+    /* fill in basic X509 information - version, serial, validity, issuer, subject */
     if (rc == 0) {
 	rc = startCertificate(x509Certificate,
 			      publicKeyLength, publicKey,
@@ -1782,7 +1782,7 @@ TPM_RC processRoot(TSS_CONTEXT *tssContext,
 				     &ekCertificate,	/* freed @1 */
 				     ekCertIndex);
 	if (rc != 0) {
-	    printf("processRoot: NO EK certificate\n");  
+	    printf("processRoot: No EK certificate\n");  
 	}
     }
     if (rc == 0) {
@@ -1828,6 +1828,21 @@ TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
     CreatePrimary_In 		inCreatePrimary;
     CreatePrimary_Out 		outCreatePrimary;
 
+    /* sanity check nonce size (should never happen on HW TPM) */
+    if ((rc == 0) && (nonce != NULL)) {
+	if (ekCertIndex == EK_CERT_RSA_INDEX) {			/* RSA primary key */
+	    if (nonceSize > 256) {
+		printf("processCreatePrimary: RSA NV nonce size %u > 256\n", nonceSize);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+	else {							/* EC primary key */
+	    if (nonceSize > 32) {
+		printf("processCreatePrimary: EC NV nonce size %u > 32\n", nonceSize);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+    }    
     /* set up the createprimary in parameters */
     if (rc == 0) {
 	inCreatePrimary.primaryHandle = TPM_RH_ENDORSEMENT;

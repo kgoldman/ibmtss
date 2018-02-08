@@ -958,10 +958,10 @@ static uint32_t IMA_Strn2cpy(char *dest, const uint8_t *src,
     return rc;
 }
 
-/* ImaEvent_Marshal() marshals an ImaEvent structure */
+/* IMA_Event_Marshal() marshals an ImaEvent structure */
 
-TPM_RC ImaEvent_Marshal(ImaEvent *source,
-			uint16_t *written, uint8_t **buffer, int32_t *size)
+TPM_RC IMA_Event_Marshal(ImaEvent *source,
+			 uint16_t *written, uint8_t **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
 

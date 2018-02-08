@@ -3,7 +3,7 @@
 /*			   Import a PEM RSA keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 1095 2017-11-09 21:52:27Z kgoldman $		*/
+/*	      $Id: importpem.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017					*/
 /*										*/
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
 		    nalg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -nalg\n");
+		    printf("Bad parameter %s for -nalg\n", argv[i]);
 		    printUsage();
 		}
 	    }

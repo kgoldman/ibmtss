@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
+/*	      $Id: cryptoutils.c 1124 2018-01-05 21:32:55Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -338,7 +338,7 @@ TPM_RC convertEcPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
     /* marshal the TPMT_SENSITIVE into a TPM2B_SENSITIVE */	
     if (rc == 0) {
 	if (objectPrivate != NULL) {
-	    int32_t size = sizeof(bSensitive.t.sensitiveArea);	/* max size */
+	    uint32_t size = sizeof(bSensitive.t.sensitiveArea);	/* max size */
 	    uint8_t *buffer = bSensitive.b.buffer;		/* pointer that can move */
 	    bSensitive.t.size = 0;				/* required before marshaling */
 	    rc = TSS_TPMT_SENSITIVE_Marshal(&tSensitive,
@@ -353,7 +353,7 @@ TPM_RC convertEcPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
     /* marshal the TPM2B_SENSITIVE (as a TPM2B_PRIVATE, see above) into a TPM2B_PRIVATE */
     if (rc == 0) {
 	if (objectPrivate != NULL) {
-	    int32_t size = sizeof(objectPrivate->t.buffer);	/* max size */
+	    uint32_t size = sizeof(objectPrivate->t.buffer);	/* max size */
 	    uint8_t *buffer = objectPrivate->t.buffer;		/* pointer that can move */
 	    objectPrivate->t.size = 0;				/* required before marshaling */
 	    rc = TSS_TPM2B_PRIVATE_Marshal((TPM2B_PRIVATE *)&bSensitive,
@@ -418,7 +418,7 @@ TPM_RC convertRsaPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
     /* marshal the TPMT_SENSITIVE into a TPM2B_SENSITIVE */	
     if (rc == 0) {
 	if (objectPrivate != NULL) {
-	    int32_t size = sizeof(bSensitive.t.sensitiveArea);	/* max size */
+	    uint32_t size = sizeof(bSensitive.t.sensitiveArea);	/* max size */
 	    uint8_t *buffer = bSensitive.b.buffer;		/* pointer that can move */
 	    bSensitive.t.size = 0;				/* required before marshaling */
 	    rc = TSS_TPMT_SENSITIVE_Marshal(&tSensitive,
@@ -433,7 +433,7 @@ TPM_RC convertRsaPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
     /* marshal the TPM2B_SENSITIVE (as a TPM2B_PRIVATE, see above) into a TPM2B_PRIVATE */
     if (rc == 0) {
 	if (objectPrivate != NULL) {
-	    int32_t size = sizeof(objectPrivate->t.buffer);	/* max size */
+	    uint32_t size = sizeof(objectPrivate->t.buffer);	/* max size */
 	    uint8_t *buffer = objectPrivate->t.buffer;		/* pointer that can move */
 	    objectPrivate->t.size = 0;				/* required before marshaling */
 	    rc = TSS_TPM2B_PRIVATE_Marshal((TPM2B_PRIVATE *)&bSensitive,

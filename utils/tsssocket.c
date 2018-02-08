@@ -3,7 +3,7 @@
 /*			   Socket Transmit and Receive Utilities		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsssocket.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: tsssocket.c 1126 2018-01-08 20:46:17Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -42,6 +42,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include <errno.h>
+
+#ifdef TPM_POSIX
+#ifndef TPM_NOSOCKET
 
 /* TSS_SOCKET_FD encapsulates the differences between the Posix and Windows socket type */
 
@@ -404,7 +407,7 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
     uint32_t 	responseLength = 0;
     uint8_t 	*bufferPtr = buffer;	/* the moving buffer */
     TPM_RC 	responseCode;
-    INT32 	size;		/* dummy for unmarshal call */
+    uint32_t 	size;		/* dummy for unmarshal call */
     int 	mssim;		/* boolean, true for MS simulator packet format, false for raw
 				   packet format */
     
@@ -590,3 +593,5 @@ TPM_RC TSS_Socket_Close(TSS_CONTEXT *tssContext)
 #endif
     return rc;
 }
+#endif 	/* TPM_NOSOCKET */
+#endif

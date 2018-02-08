@@ -3,7 +3,7 @@
 /*			   Time a TPM Command					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrextend.c 851 2016-12-02 19:46:05Z kgoldman $		*/
+/*	      $Id: timepacket.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/

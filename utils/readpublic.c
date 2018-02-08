@@ -3,7 +3,7 @@
 /*			   ReadPublic 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: readpublic.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
+/*	      $Id: readpublic.c 1145 2018-02-06 20:41:50Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
     TPMI_DH_PCR 		objectHandle = TPM_RH_NULL;
     const char			*publicKeyFilename = NULL;
     const char			*pemFilename = NULL;
+    int				noSpace = FALSE;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
     unsigned int		sessionAttributes0 = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
@@ -109,6 +110,9 @@ int main(int argc, char *argv[])
 		printf("-opem option needs a value\n");
 		printUsage();
 	    }
+	}
+	else if (strcmp(argv[i],"-ns") == 0) {
+	    noSpace = TRUE;
 	}
 	else if (strcmp(argv[i],"-se0") == 0) {
 	    i++;
@@ -230,6 +234,13 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	if (verbose) printReadPublic(&out);
+	if (noSpace) {
+	    unsigned int b;
+	    for (b = 0 ; b < out.name.t.size ; b++) {
+		printf("%02x", out.name.t.name[b]);
+	    }
+	    printf("\n");
+	}
 	if (verbose) printf("readpublic: success\n");
     }
     else {
@@ -262,6 +273,8 @@ static void printUsage(void)
     printf("\t-ho object handle\n");
     printf("\t[-opu public key file name (default do not save)]\n");
     printf("\t[-opem public key PEM format file name (default do not save)]\n");
+    printf("\t[-ns additionally print Name in hex ascii on one line]\n");
+    printf("\t\tUseful to paste into policy\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");

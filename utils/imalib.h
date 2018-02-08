@@ -3,9 +3,9 @@
 /*			     	IMA Routines					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: imalib.h 1020 2017-06-09 18:46:45Z kgoldman $			*/
+/*            $Id: imalib.h 1020 2017-06-09 18:46:45Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016.						*/
+/* (c) Copyright IBM Corporation 2016, 2017					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -161,8 +161,8 @@ extern "C" {
     uint32_t IMA_VerifyImaDigest(uint32_t *badEvent,
 				 ImaEvent *imaEvent,
 				 int eventNum);
-    TPM_RC ImaEvent_Marshal(ImaEvent *source,
-			    uint16_t *written, uint8_t **buffer, int32_t *size);
+    TPM_RC IMA_Event_Marshal(ImaEvent *source,
+			     uint16_t *written, uint8_t **buffer, uint32_t *size);
 
 #if 0
     uint32_t IMA_Event_ToString(char **eventString,

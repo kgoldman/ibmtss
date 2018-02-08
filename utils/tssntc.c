@@ -3,7 +3,7 @@
 /*		     	TPM2 Nuvoton Proprietary Commands			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssntc.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: tssntc.c 1124 2018-01-05 21:32:55Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -49,7 +49,7 @@
 /* Marshal and Unmarshal Functions */
 
 TPM_RC
-NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, INT32 *size)
+NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
@@ -62,7 +62,7 @@ NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, INT32 *size)
 }
     
 TPM_RC
-TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, UINT16 *written, BYTE **buffer, INT32 *size)
+TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, uint16_t *written, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
@@ -72,7 +72,7 @@ TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, UINT16 *written, BYTE **buf
 }
 
 TPM_RC
-NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
@@ -87,7 +87,7 @@ NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, INT32 *siz
 }
 
 TPM_RC
-TSS_NTC2_PreConfig_In_Marshal(NTC2_PreConfig_In *source, UINT16 *written, BYTE **buffer, INT32 *size)
+TSS_NTC2_PreConfig_In_Marshal(NTC2_PreConfig_In *source, uint16_t *written, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
@@ -97,7 +97,7 @@ TSS_NTC2_PreConfig_In_Marshal(NTC2_PreConfig_In *source, UINT16 *written, BYTE *
 }
 
 TPM_RC
-TSS_NTC2_GetConfig_Out_Unmarshal(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size)
+TSS_NTC2_GetConfig_Out_Unmarshal(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     tag = tag;

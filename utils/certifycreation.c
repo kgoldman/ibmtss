@@ -3,7 +3,7 @@
 /*			    CertifyCreation					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: certifycreation.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
+/*	      $Id: certifycreation.c 1140 2018-01-22 15:13:31Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 		    useRsa = 0;
 		}
 		else {
-		    printf("Bad parameter for -salg\n");
+		    printf("Bad parameter %s for -salg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -375,7 +375,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	uint8_t *tmpBuffer = out.certifyInfo.t.attestationData;
-	int32_t tmpSize = out.certifyInfo.t.size;
+	uint32_t tmpSize = out.certifyInfo.t.size;
 	rc = TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
     }
     if (rc == 0) {

@@ -3,7 +3,7 @@
 /*			    PolicyPCR	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policypcr.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: policypcr.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA1;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }

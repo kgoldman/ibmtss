@@ -3,7 +3,7 @@
 /*			    SetPrimaryPolicy 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: setprimarypolicy.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
+/*	      $Id: setprimarypolicy.c 1140 2018-01-22 15:13:31Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 		    in.hashAlg = TPM_ALG_SHA1;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }

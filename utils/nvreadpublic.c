@@ -3,7 +3,7 @@
 /*			    NV ReadPublic					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadpublic.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
+/*	      $Id: nvreadpublic.c 1145 2018-02-06 20:41:50Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -71,8 +71,9 @@ int main(int argc, char *argv[])
     NV_ReadPublic_In 		in;
     NV_ReadPublic_Out		out;
     TPMI_RH_NV_INDEX		nvIndex = 0;
-    TPMI_ALG_HASH		nalg = TPM_ALG_SHA256;
+    TPMI_ALG_HASH		nalg = TPM_ALG_NULL;
     TPMI_ALG_HASH 		nameHashAlg;
+    int				noSpace = FALSE;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
     unsigned int		sessionAttributes0 = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
@@ -107,7 +108,7 @@ int main(int argc, char *argv[])
 		    nalg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -nalg\n");
+		    printf("Bad parameter %s for -nalg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -115,6 +116,9 @@ int main(int argc, char *argv[])
 		printf("-nalg option needs a value\n");
 		printUsage();
 	    }
+	}
+	else if (strcmp(argv[i],"-ns") == 0) {
+	    noSpace = TRUE;
 	}
 	else if (strcmp(argv[i],"-se0") == 0) {
 	    i++;
@@ -232,7 +236,7 @@ int main(int argc, char *argv[])
 
     /* TPMS_NV_PUBLIC hash alg vs expected */
     if (rc == 0) {
-	if (out.nvPublic.nvPublic.nameAlg != nalg) {
+	if ((nalg != TPM_ALG_NULL) && (out.nvPublic.nvPublic.nameAlg != nalg)) {
 	    printf("nvreadpublic: TPM2B_NV_PUBLIC hash algorithm does not match expected\n");
 	    rc = TSS_RC_MALFORMED_NV_PUBLIC;
 	}
@@ -243,7 +247,7 @@ int main(int argc, char *argv[])
 	memcpy(&tmp16, out.nvName.t.name, sizeof(uint16_t));
 	/* nameHashAlg = ntohs(*(TPMI_ALG_HASH *)(out.nvName.t.name)); */
 	nameHashAlg = ntohs(tmp16);
-	if (nameHashAlg != nalg) {
+	if ((nalg != TPM_ALG_NULL) && (nameHashAlg != nalg)) {
 	    printf("nvreadpublic: TPM2B_NAME hash algorithm does not match expected\n");
 	    rc = TSS_RC_MALFORMED_NV_PUBLIC;
 	}
@@ -265,6 +269,13 @@ int main(int argc, char *argv[])
 		     out.nvPublic.nvPublic.authPolicy.t.size);
 	TSS_PrintAll("nvreadpublic: name",
 		     out.nvName.t.name, out.nvName.t.size);
+	if (noSpace) {
+	    unsigned int b;
+	    for (b = 0 ; b < out.nvName.t.size ; b++) {
+		printf("%02x", out.nvName.t.name[b]);
+	    }
+	    printf("\n");
+	}
 	if (verbose) printf("nvreadpublic: success\n");
     }
     else {
@@ -287,7 +298,9 @@ static void printUsage(void)
     printf("Runs TPM2_NV_ReadPublic\n");
     printf("\n");
     printf("\t-ha NV index handle\n");
-    printf("\t[-nalg expected name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-nalg expected name hash algorithm (sha1, sha256, sha384) (default no check)]\n");
+    printf("\t[-ns additionally print Name in hex ascii on one line]\n");
+    printf("\t\tUseful to paste into policy\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");

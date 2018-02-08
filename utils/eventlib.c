@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: eventlib.c 1145 2018-02-06 20:41:50Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -51,13 +51,13 @@
 
 static uint16_t Uint16_Convert(uint16_t in);
 static uint32_t Uint32_Convert(uint32_t in);
-static TPM_RC UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, int32_t *size);
-static TPM_RC UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, int32_t *size);
+static TPM_RC UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size);
+static TPM_RC UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size);
 
 static void TSS_EVENT_EventType_Trace(uint32_t eventType);
 static TPM_RC TSS_SpecIdEventAlgorithmSize_Unmarshal(TCG_EfiSpecIdEventAlgorithmSize *algSize,
 						     uint8_t **buffer,
-						     int32_t *size);
+						     uint32_t *size);
 static void TSS_SpecIdEventAlgorithmSize_Trace(TCG_EfiSpecIdEventAlgorithmSize *algSize);
 
 /* TSS_EVENT_Line_Read() reads a TPM 1.2 SHA-1 event line from a binary file inFile.
@@ -168,11 +168,11 @@ void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event)
 */
 
 TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
-				  uint32_t eventSize,
-				  uint8_t *event)
+				 uint32_t eventSize,
+				 uint8_t *event)
 {
     TPM_RC	rc = 0;
-    int32_t	size = eventSize;	/* copy, because size and buffer are not moved */
+    uint32_t	size = eventSize;	/* copy, because size and buffer are not moved */
     uint8_t	*buffer = event;
     uint32_t 	i;
 
@@ -217,7 +217,7 @@ TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
 
 static TPM_RC TSS_SpecIdEventAlgorithmSize_Unmarshal(TCG_EfiSpecIdEventAlgorithmSize *algSize,
 						     uint8_t **buffer,
-						     int32_t *size)
+						     uint32_t *size)
 {
     TPM_RC	rc = 0;
 
@@ -434,7 +434,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 /* TSS_EVENT2_Line_Marshal() marshals a TCG_PCR_EVENT2 structure */
 
 TPM_RC TSS_EVENT2_Line_Marshal(TCG_PCR_EVENT2 *source,
-			       uint16_t *written, uint8_t **buffer, int32_t *size)
+			       uint16_t *written, uint8_t **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
 
@@ -459,7 +459,7 @@ TPM_RC TSS_EVENT2_Line_Marshal(TCG_PCR_EVENT2 *source,
 /* TSS_EVENT2_Line_Unmarshal() unmarshals a TCG_PCR_EVENT2 structure */
 
 
-TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, INT32 *size)
+TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
 
@@ -481,18 +481,16 @@ TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, INT32 *s
     return rc;
 }
 
-/* TSS_EVENT2_PCR_Extend() extends a PCR digest with the digest from the TCG_PCR_EVENT2 event log
+/* TSS_EVENT2_PCR_Extend() extends PCR digests with the digest from the TCG_PCR_EVENT2 event log
    entry.
-
-   FIXME - currently handles only PCR 0-7 and SHA-256.
 */
 
-TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[8],
+TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][8],
 			     TCG_PCR_EVENT2 *event2)
 {
-    TPM_RC rc = 0;
-    uint32_t i;				/* iterator though hash algorithms */
-    int foundSha256 = FALSE;
+    TPM_RC 		rc = 0;
+    uint32_t 		i;		/* iterator though hash algorithms */
+    uint32_t 		bankNum = 0;	/* iterator though PCR hash banks */
     
     /* validate PCR number */
     if (rc == 0) {
@@ -510,22 +508,31 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[8],
 	    rc = 1;
 	}	    
     }
-    /* search for the SHA-256 digest entry */
-    for (i = 0; (rc == 0) && (i < event2->digests.count) && !foundSha256 ; i++) {
-	if (event2->digests.digests[i].hashAlg == TPM_ALG_SHA256) {
-	    rc = TSS_Hash_Generate(&pcrs[event2->pcrIndex],
-				   SHA256_DIGEST_SIZE,
-				   (uint8_t *)&pcrs[event2->pcrIndex].digest,
-				   SHA256_DIGEST_SIZE,
-				   &event2->digests.digests[i].digest,
-				   0, NULL);
-	    foundSha256 = TRUE;
+    /* process each event hash algorithm */
+    for (i = 0; (rc == 0) && (i < event2->digests.count) ; i++) {
+	/* find the matching PCR bank */
+	for (bankNum = 0 ; (rc == 0) && (bankNum < event2->digests.count) ; bankNum++) {
+	    if (pcrs[bankNum][0].hashAlg == event2->digests.digests[i].hashAlg) {
+
+		uint16_t digestSize;
+		if (rc == 0) {
+		    digestSize = TSS_GetDigestSize(event2->digests.digests[i].hashAlg);
+		    if (digestSize == 0) {
+			printf("ERROR: TSS_EVENT2_PCR_Extend: hash algorithm %04hx unlnown\n",
+			       event2->digests.digests[i].hashAlg);
+			rc = 1;
+		    }
+		}
+		if (rc == 0) {
+		    rc = TSS_Hash_Generate(&pcrs[bankNum][event2->pcrIndex],
+					   digestSize,
+					   (uint8_t *)&pcrs[bankNum][event2->pcrIndex].digest,
+					   digestSize,
+					   &event2->digests.digests[i].digest,
+					   0, NULL);
+		}
+	    }
 	}
-    }
-    if ((rc == 0) && !foundSha256) {
-	printf("ERROR: TSS_EVENT2_PCR_Extend: no SHA-256 entry in event record, PCR %u\n",
-	       event2->pcrIndex);
-	rc = 1;
     }
     return rc;
 }
@@ -563,9 +570,9 @@ static uint32_t Uint32_Convert(uint32_t in)
 /* UINT16LE_Unmarshal() unmarshals a little endian 4-byte array from buffer into a HBO uint16_t */
 
 static TPM_RC
-UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, int32_t *size)
+UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size)
 {
-    if ((uint16_t)*size < sizeof(uint16_t)) {
+    if (*size < sizeof(uint16_t)) {
 	return TPM_RC_INSUFFICIENT;
     }
     *target = ((uint16_t)((*buffer)[0]) <<  0) |
@@ -578,9 +585,9 @@ UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, int32_t *size)
 /* uint32LE_Unmarshal() unmarshals a little endian 4-byte array from buffer into a HBO uint32_t */
 
 static TPM_RC
-UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, int32_t *size)
+UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size)
 {
-    if ((uint32_t)*size < sizeof(uint32_t)) {
+    if (*size < sizeof(uint32_t)) {
 	return TPM_RC_INSUFFICIENT;
     }
     *target = ((uint32_t)((*buffer)[0]) <<  0) |

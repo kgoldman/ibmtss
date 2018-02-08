@@ -3,7 +3,7 @@
 /*			   ECC_Parameters					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eccparameters.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: eccparameters.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 		    in.curveID = TPM_ECC_NIST_P384;
 		}
 		else {
-		    printf("Bad parameter for -cv\n");
+		    printf("Bad parameter %s for -cv\n", argv[i]);
 		    printUsage();
 		}
 	    }

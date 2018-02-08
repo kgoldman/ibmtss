@@ -3,7 +3,7 @@
 /*			    NV Define Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
+/*	      $Id: nvdefinespace.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 		    hashSize = SHA384_DIGEST_SIZE;
 		}
 		else {
-		    printf("Bad parameter for -nalg\n");
+		    printf("Bad parameter %s for -nalg\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
 		    setAttributes.val |= TPMA_NVA_WRITEALL;
 		}
 		else {
-		    printf("Bad parameter for +at\n");
+		    printf("Bad parameter %s for +at\n", argv[i]);
 		    printUsage();
 		}
 	    }
@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
 		    clearAttributes.val |= TPMA_NVA_POLICYREAD;
 		}
 		else {
-		    printf("Bad parameter for -at\n");
+		    printf("Bad parameter %s for -at\n", argv[i]);
 		    printUsage();
 		}
 	    }

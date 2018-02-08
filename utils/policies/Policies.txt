@@ -3,7 +3,7 @@
 #			TPM2 regression test Directory of files			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: Policies.txt 1094 2017-11-08 21:50:29Z kgoldman $		#
+#		$Id: Policies.txt 1145 2018-02-06 20:41:50Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
@@ -61,6 +61,7 @@ policynvnv.txt				policy nv has name and args
 policyor.txt				policy command code sign | quote
 policypcr.txt				policy pcr intermediate file
 policypcr0.txt				20 zeros
+policypcr0sha256.txt			32 zeros
 policypcr16aaasha1.txt			sha1 PCR 16 extend of aaa
 policypcr16aaasha256.txt		sha256 PCR 16 extend of aaa
 policysecretp.txt			policy secret using platform auth
@@ -71,6 +72,9 @@ policysecretsha256.txt			policy secret using loaded object
 policysignedsha1.txt			policy signed using pubkey.pem Name
 policysignedsha256.txt			policy signed using pubkey.pem Name
 policywrittenset.txt			policy nv written with written set
+policywrittenclrsigned.txt		policy nv written with written clear + policy signed
+policywrittensetsigned.txt		policy nv written with written set + policy signed
+policyorwrittensigned.txt		policy OR of the above two policies
 policyccundefinespacespecial-auth.bin	policy command code undefinespacespecial + policy authvalue
 
 policyiwgek.txt				standard IWG EK policy

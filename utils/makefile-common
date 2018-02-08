@@ -51,8 +51,6 @@ CCFLAGS += 				\
 # to compile with plaintext session state (see documentation)
 #	-DTPM_ENCRYPT_SESSIONS_DEFAULT="\"0\""
 
-CCFLAGS += -DTPM_NUVOTON
-
 # link - common flags for Posix and Windows, for TSS library and applications
 
 #LNFLAGS += 	-ggdb

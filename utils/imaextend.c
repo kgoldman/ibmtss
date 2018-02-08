@@ -3,7 +3,7 @@
 /*		      Extend an IMA measurement list into PCR 10		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: imaextend.c 978 2017-04-04 15:37:15Z kgoldman $		*/
+/*	      $Id: imaextend.c 1136 2018-01-16 17:21:50Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2014, 2017.					*/
 /*										*/
@@ -39,11 +39,22 @@
 
 /* imaextend is test/demo code.  It parses a TPM2 event log file and extends the measurements
    into TPM PCRs.  This simulates the actions that would be performed by BIOS / firmware in a
-   hardware platform.  */
+   hardware platform.
+
+   To test incremental attestations, the caller can optionally specify a beginning event number and
+   ending event number.
+
+   To test a platform without a TPM or TPM device driver, but where IMA is creating an event log,
+   the caller can optionally specify a sleep time.  The program will then incrementally extend after
+   each sleep.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <unistd.h>
+
 #include <openssl/err.h>
 
 #include <tss2/tss.h>
@@ -53,6 +64,8 @@
 
 /* local prototypes */
 
+static TPM_RC copyDigest(PCR_Extend_In 	*in,
+			 ImaEvent 	*imaEvent);
 static TPM_RC pcrread(TSS_CONTEXT *tssContext,
 		      TPMI_DH_PCR pcrHandle);
 static void printUsage(void);
@@ -69,7 +82,10 @@ int main(int argc, char * argv[])
     const char 		*infilename = NULL;
     FILE 		*infile = NULL;
     int 		littleEndian = FALSE;
-	
+    unsigned long	beginEvent = 0;			/* default beginning of log */
+    unsigned long	endEvent = 0xffffffff;		/* default end of log */
+    unsigned int	loopTime = 0;			/* default no loop */
+    
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 	
@@ -88,6 +104,36 @@ int main(int argc, char * argv[])
 	else if (strcmp(argv[i],"-le") == 0) {
 	    littleEndian = TRUE; 
 	}
+	else if (strcmp(argv[i],"-b") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%lu", &beginEvent);
+	    }
+	    else {
+		printf("Missing parameter for -b\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-e") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%lu", &endEvent);
+	    }
+	    else {
+		printf("Missing parameter for -e\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-l") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%u", &loopTime);
+	    }
+	    else {
+		printf("Missing parameter for -e\n");
+		printUsage();
+	    }
+	}
 	else if (!strcmp(argv[i], "-h")) {
 	    printUsage();
 	}
@@ -105,24 +151,12 @@ int main(int argc, char * argv[])
 	printf("Missing -if argument\n");
 	printUsage();
     }
-    /*
-    ** read the IMA event log file
-    */
-    infile = fopen(infilename,"rb");
-    if (infile == NULL) {
-	printf("Unable to open input file '%s'\n", infilename);
-	exit(-4);
-    }
-    /* Start a TSS context */
+     /* Start a TSS context */
     if (rc == 0) {
 	rc = TSS_Create(&tssContext);
     }
-    unsigned char zeroDigest[SHA1_DIGEST_SIZE];
-    unsigned char oneDigest[SHA1_DIGEST_SIZE];
     if (rc == 0) {
 	uint32_t algs;				/* hash algorithm iterator */
-	memset(zeroDigest, 0, SHA1_DIGEST_SIZE);
-	memset(oneDigest, 0xff, SHA1_DIGEST_SIZE);
 	in.digests.count = 2;			/* extend SHA-1 and SHA-256 banks */
 	in.digests.digests[0].hashAlg = TPM_ALG_SHA1;
 	in.digests.digests[1].hashAlg = TPM_ALG_SHA256;
@@ -137,51 +171,63 @@ int main(int argc, char * argv[])
     }
     ImaEvent imaEvent;
     unsigned int lineNum;
-    int endOfFile = FALSE;
-    /* scan each measurement 'line' in the binary */
-    for (lineNum = 0 ; !endOfFile && (rc == 0) ; lineNum++) {
-	/* read an IMA event line */
-	IMA_Event_Init(&imaEvent);
+    /*
+      scan each measurement 'line' in the binary
+    */
+    do {
+	/* read the IMA event log file */
+	int endOfFile = FALSE;
 	if (rc == 0) {
-	    rc = IMA_Event_ReadFile(&imaEvent, &endOfFile, infile,
-				    littleEndian);
-	}
-	if (rc == 0) {
-	    in.pcrHandle = imaEvent.pcrIndex;		/* normally PCR 10 */
-	}
-	/* debug tracing */
-	if (verbose && !endOfFile && (rc == 0)) {
-	    printf("\nimaextend: line %u\n", lineNum);
-	    IMA_Event_Trace(&imaEvent, FALSE);
-	}
-	/* copy the SHA-1 digest to be extended */
-	if ((rc == 0) && !endOfFile) {
-	    int notAllZero = memcmp(imaEvent.digest, zeroDigest, SHA1_DIGEST_SIZE);
-	    /* IMA has a quirk where some measurements store a zero digest in the event log, but
-	       extend ones into PCR 10 */
-	    if (notAllZero) {
-		memcpy((uint8_t *)&in.digests.digests[0].digest, imaEvent.digest, SHA1_DIGEST_SIZE);
-		memcpy((uint8_t *)&in.digests.digests[1].digest, imaEvent.digest, SHA1_DIGEST_SIZE);
+	    infile = fopen(infilename,"rb");
+	    if (infile == NULL) {
+		printf("Unable to open input file '%s'\n", infilename);
+		rc = TSS_RC_FILE_OPEN;
 	    }
-	    else {
-		memset((uint8_t *)&in.digests.digests[0].digest, 0xff, SHA1_DIGEST_SIZE);
-		memset((uint8_t *)&in.digests.digests[1].digest, 0xff, SHA1_DIGEST_SIZE);
+	}
+	for (lineNum = 0 ; (rc == 0) && !endOfFile ; lineNum++) {
+	    /* read an IMA event line */
+	    IMA_Event_Init(&imaEvent);
+	    if (rc == 0) {
+		rc = IMA_Event_ReadFile(&imaEvent, &endOfFile, infile,
+					littleEndian);
 	    }
-	}	
-	if ((rc == 0) && !endOfFile) {
-	    rc = TSS_Execute(tssContext,
-			     NULL, 
-			     (COMMAND_PARAMETERS *)&in,
-			     NULL,
-			     TPM_CC_PCR_Extend,
-			     TPM_RS_PW, NULL, 0,
-			     TPM_RH_NULL, NULL, 0);
+	    /*
+	      if the event line is in range
+	    */
+	    if ((rc == 0) && (lineNum >= beginEvent) && (lineNum <= endEvent) && !endOfFile) {
+		if (rc == 0) {
+		    in.pcrHandle = imaEvent.pcrIndex;		/* normally PCR 10 */
+		    /* debug tracing */
+		    if (verbose) printf("\n");
+		    printf("imaextend: line %u\n", lineNum);
+		    if (verbose) IMA_Event_Trace(&imaEvent, FALSE);
+		}
+		/* copy the SHA-1 digest to be extended */
+		if (rc == 0) {
+		    rc = copyDigest(&in, &imaEvent);
+		}	
+		if (rc == 0) {
+		    rc = TSS_Execute(tssContext,
+				     NULL, 
+				     (COMMAND_PARAMETERS *)&in,
+				     NULL,
+				     TPM_CC_PCR_Extend,
+				     TPM_RS_PW, NULL, 0,
+				     TPM_RH_NULL, NULL, 0);
+		}
+		if (rc == 0 && verbose) {
+		    rc = pcrread(tssContext, imaEvent.pcrIndex);
+		}
+	    }	/* for each IMA event in range */
+	    IMA_Event_Free(&imaEvent);
+	}	/* for each IMA event line */
+	if (verbose && (loopTime != 0)) printf("set beginEvent to %u\n", lineNum-1);
+	beginEvent = lineNum-1;		/* remove the last increment at EOF */
+	if (infile != NULL) {
+	    fclose(infile);
 	}
-	if ((rc == 0) && !endOfFile && verbose) {
-	    rc = pcrread(tssContext, imaEvent.pcrIndex);
-	}
-	IMA_Event_Free(&imaEvent);
-    }
+	sleep(loopTime);
+    } while ((rc == 0) && (loopTime != 0)); 		/* sleep loop */
     {
 	TPM_RC rc1 = TSS_Delete(tssContext);
 	if (rc == 0) {
@@ -200,11 +246,31 @@ int main(int argc, char * argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
-    if (infile != NULL) {
-	fclose(infile);
-    }
     return rc;
 }
+
+static TPM_RC copyDigest(PCR_Extend_In 	*in,
+			 ImaEvent 	*imaEvent)
+{
+    TPM_RC 		rc = 0;
+    unsigned char 	zeroDigest[SHA1_DIGEST_SIZE];
+
+    if (rc == 0) {
+	memset(zeroDigest, 0, SHA1_DIGEST_SIZE);
+	int notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
+	/* IMA has a quirk where some measurements store a zero digest in the event log, but
+	   extend ones into PCR 10 */
+	if (notAllZero) {
+	    memcpy((uint8_t *)&in->digests.digests[0].digest, imaEvent->digest, SHA1_DIGEST_SIZE);
+	    memcpy((uint8_t *)&in->digests.digests[1].digest, imaEvent->digest, SHA1_DIGEST_SIZE);
+	}
+	else {
+	    memset((uint8_t *)&in->digests.digests[0].digest, 0xff, SHA1_DIGEST_SIZE);
+	    memset((uint8_t *)&in->digests.digests[1].digest, 0xff, SHA1_DIGEST_SIZE);
+	}
+    }
+    return rc;
+}	
 
 static TPM_RC pcrread(TSS_CONTEXT *tssContext,
 		      TPMI_DH_PCR pcrHandle)
@@ -261,7 +327,14 @@ static void printUsage(void)
     printf("This handles the case where a zero measurement extends ones into the IMA PCR\n");
     printf("\n");
     printf("\t-if IMA event log file name\n");
-    printf("\t[-le input file is little endian (default big endian)\n]");
+    printf("\t[-le input file is little endian (default big endian)]\n");
+    printf("\t[-b beginning entry (default 0, beginning of log)]\n");
+    printf("\t\tA beginning entry after the end of the log becomes a noop\n");
+    printf("\t[-e ending entry (default end of log)]\n");
+    printf("\t\tE.g., -b 0 -e 0 sends one entry\n");
+    printf("\t[-l time - run in a continuous loop, with a sleep of 'time' seconds betwteen loops]\n");
+    printf("\t\tThe intent is that this be run without specifying -b and -e\n");
+    printf("\t\tAfer each pass, the next beginning entry is set to the last entry +1\n");
     printf("\n");
     exit(1);
 }

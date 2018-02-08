@@ -3,7 +3,7 @@
 /*			   PCR_Extend 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrextend.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: pcrextend.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 		    in.digests.digests[in.digests.count-1].hashAlg = TPM_ALG_SHA384;
 		}
 		else {
-		    printf("Bad parameter for -halg\n");
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }

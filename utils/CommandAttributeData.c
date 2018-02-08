@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: CommandAttributeData.c 1072 2017-09-11 19:55:31Z kgoldman $	*/
+/*            $Id: CommandAttributeData.c 1138 2018-01-16 19:53:47Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -449,8 +449,6 @@ const TPMA_CC_TSS    s_ccAttr [] = {
     {{0x0000, 0, 0, 0, 0, 0, 0, 1, 0}},     // TPM_CC_Vendor_TCG_Test
 #endif
 
-#ifdef TPM_NUVOTON
-    
 #if (PAD_LIST || CC_NTC2_PreConfig)
 #ifndef TPM_TSS
     {{0x0211, 0, 1, 0, 0, 0, 0, 1, 0}},     // TPM_CC_NTC2_PreConfig
@@ -475,7 +473,6 @@ const TPMA_CC_TSS    s_ccAttr [] = {
 #endif
 #endif
 
-#endif
 
     {{0x0000, 0, 0, 0, 0, 0, 0, 0, 0}},     // kg - terminator?
 };

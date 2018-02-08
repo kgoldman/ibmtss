@@ -3,7 +3,7 @@
 /*			   Duplicate		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: duplicate.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
+/*	      $Id: duplicate.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 		    in.symmetricAlg.mode.aes = TPM_ALG_CFB;
 		}
 		else {
-		    printf("Bad parameter for -salg\n");
+		    printf("Bad parameter %s for -salg\n", argv[i]);
 		    printUsage();
 		}
 	    }

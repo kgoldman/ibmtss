@@ -3,7 +3,7 @@
 /*			     Structure Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.h 1092 2017-11-03 14:10:10Z kgoldman $		*/
+/*	      $Id: tssprint.h 1147 2018-02-08 23:28:29Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -79,13 +79,57 @@ extern "C" {
     LIB_EXPORT
     void TSS_TPM_ALG_ID_Print(TPM_ALG_ID source, unsigned int indent);
     LIB_EXPORT
+    void TSS_TPM_ECC_CURVE_Print(TPM_ECC_CURVE source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM_CC_Print(TPM_CC source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM_TPMA_ALGORITHM_Print(TPMA_ALGORITHM source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM_CLOCK_ADJUST_Print(TPM_CLOCK_ADJUST source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM_EO_Print(TPM_EO source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM_ST_Print(TPM_ST source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM_SU_Print(TPM_SU source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM_SE_Print(TPM_SE source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM_CAP_Print(TPM_CAP source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM_HANDLE_Print(TPM_HANDLE source, unsigned int indent);
+    LIB_EXPORT
     void TSS_TPM_TPMA_ALGORITHM_Print(TPMA_ALGORITHM source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMA_OBJECT_Print(TPMA_OBJECT source, unsigned int indent);
     LIB_EXPORT
+    void TSS_TPMA_LOCALITY_Print(TPMA_LOCALITY source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMA_SESSION_Print(TPMA_SESSION source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMA_PERMANENT_Print(TPMA_PERMANENT source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMA_STARTUP_CLEAR_Print(TPMA_STARTUP_CLEAR source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMA_MEMORY_Print(TPMA_MEMORY source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMU_HA_Print(TPMU_HA *source, uint32_t selector, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMT_HA_Print(TPMT_HA *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMS_PCR_SELECT_Print(TPMS_PCR_SELECT *source, unsigned int indent);
+    LIB_EXPORT
     void TSS_TPMS_PCR_SELECTION_Print(TPMS_PCR_SELECTION *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPML_PCR_SELECTION_Print(TPML_PCR_SELECTION *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMT_TK_CREATION_Print(TPMT_TK_CREATION *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMT_TK_VERIFIED_Print(TPMT_TK_VERIFIED *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMT_TK_AUTH_Print(TPMT_TK_AUTH *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMT_TK_HASHCHECK_Print(TPMT_TK_AUTH *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMS_CLOCK_INFO_Print(TPMS_CLOCK_INFO *source, unsigned int indent);
     LIB_EXPORT
@@ -96,6 +140,8 @@ extern "C" {
     void TSS_TPMS_CERTIFY_INFO_Print(TPMS_CERTIFY_INFO *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMS_QUOTE_INFO_Print(TPMS_QUOTE_INFO *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMS_COMMAND_AUDIT_INFO_Print(TPMS_COMMAND_AUDIT_INFO *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMS_SESSION_AUDIT_INFO_Print(TPMS_SESSION_AUDIT_INFO *source, unsigned int indent);
     LIB_EXPORT
@@ -111,7 +157,19 @@ extern "C" {
     LIB_EXPORT
     void TSS_TPM2B_ATTEST_Print(TPM2B_ATTEST *source, unsigned int indent);
     LIB_EXPORT
+    void TSS_TPMS_AUTH_COMMAND_Print(TPMS_AUTH_COMMAND *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMS_AUTH_RESPONSE_Print(TPMS_AUTH_RESPONSE *source, unsigned int indent);
+    LIB_EXPORT
     void TSS_TPMT_SYM_DEF_OBJECT_Print(TPMT_SYM_DEF_OBJECT *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMS_DERIVE_Print(TPMS_DERIVE *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMS_SENSITIVE_CREATE_Print(TPMS_SENSITIVE_CREATE *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPM2B_SENSITIVE_CREATE_Print(TPM2B_SENSITIVE_CREATE *source, unsigned int indent);    
+    LIB_EXPORT
+    void TSS_TPMS_SCHEME_ECDAA_Print(TPMS_SCHEME_ECDAA *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMS_SCHEME_XOR_Print(TPMS_SCHEME_XOR *source, unsigned int indent);
     LIB_EXPORT
@@ -119,7 +177,15 @@ extern "C" {
     LIB_EXPORT
     void TSS_TPMT_KEYEDHASH_SCHEME_Print(TPMT_KEYEDHASH_SCHEME  *source, unsigned int indent);
     LIB_EXPORT
+    void TSS_TPMU_SIG_SCHEME_Print(TPMU_SIG_SCHEME *source, TPMI_ALG_SIG_SCHEME selector, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMT_SIG_SCHEME_Print(TPMT_SIG_SCHEME *source, unsigned int indent);
+    LIB_EXPORT
     void TSS_TPMT_KDF_SCHEME_Print(TPMT_KDF_SCHEME *source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMU_ASYM_SCHEME_Print(TPMU_ASYM_SCHEME *source, TPMI_ALG_ASYM_SCHEME selector, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMT_ASYM_SCHEME_Print(TPMT_ASYM_SCHEME *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMT_RSA_SCHEME_Print(TPMT_RSA_SCHEME *source, unsigned int indent);
     LIB_EXPORT

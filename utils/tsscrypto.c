@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
-/*	      $Id: tsscrypto.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
+/*	      $Id: tsscrypto.c 1124 2018-01-05 21:32:55Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -1309,7 +1309,7 @@ TPM_RC TSS_AES_EncryptCFB(uint8_t	*dOut,		/* OUT: the encrypted */
     }
     if (rc == 0) {
 	/* Encrypt the current IV into the new IV, XOR in the data, and copy to output */
-	for(dSize = (INT32)dInSize ; dSize > 0 ; dSize -= 16, dOut += 16, dIn += 16) {
+	for(dSize = (int32_t)dInSize ; dSize > 0 ; dSize -= 16, dOut += 16, dIn += 16) {
 	    /* Encrypt the current value of the IV to the intermediate value.  Store in old iv,
 	       since it's not needed anymore. */
 	    AES_encrypt(iv, iv, &aeskey);
@@ -1345,7 +1345,7 @@ TPM_RC TSS_AES_DecryptCFB(uint8_t *dOut,          	/* OUT: the decrypted data */
 	}
     }
     if (rc == 0) {
-	for (dSize = (INT32)dInSize ; dSize > 0; dSize -= 16, dOut += 16, dIn += 16) {
+	for (dSize = (int32_t)dInSize ; dSize > 0; dSize -= 16, dOut += 16, dIn += 16) {
 	    /* Encrypt the IV into the temp buffer */
 	    AES_encrypt(iv, tmp, &aesKey);
 	    blockSize = (dSize < 16) ? dSize : 16;	/* last block can be < 16 */	

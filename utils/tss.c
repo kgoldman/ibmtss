@@ -3,7 +3,7 @@
 /*			    TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss.c 1099 2017-11-28 18:46:40Z kgoldman $			*/
+/*	      $Id: tss.c 1124 2018-01-05 21:32:55Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -424,9 +424,9 @@ static TPM_RC TSS_HmacSession_GetSlotForHandle(TSS_CONTEXT *tssContext,
 					       TPMI_SH_AUTH_SESSION sessionHandle);
 #endif
 static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
-					uint16_t *written, uint8_t **buffer, int32_t *size);
+					uint16_t *written, uint8_t **buffer, uint32_t *size);
 static TPM_RC TSS_HmacSession_Unmarshal(struct TSS_HMAC_CONTEXT *target,
-					uint8_t **buffer, int32_t *size);
+					uint8_t **buffer, uint32_t *size);
 
 static TPM_RC TSS_Name_GetAllNames(TSS_CONTEXT *tssContext,
 				   TPM2B_NAME **names);
@@ -748,7 +748,7 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
     TPM_RC		rc = 0;
     int 		done;
     int 		haveNames = FALSE;	/* names are common to all HMAC sessions */
-    unsigned int	i = 0;
+    size_t		i = 0;
 
     /* the vararg parameters */
     TPMI_SH_AUTH_SESSION sessionHandle[MAX_SESSION_NUM];
@@ -799,9 +799,9 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 
 	if (sessionHandle[i] != TPM_RH_NULL) {			/* varargs termination value */ 
 
-	    if (tssVverbose) printf("TSS_Execute_valist: Step 2: authorization %u\n", i);
+	    if (tssVverbose) printf("TSS_Execute_valist: Step 2: authorization %u\n", (unsigned int)i);
 	    if (tssVverbose) printf("TSS_Execute_valist: session %u handle %08x\n",
-				    i, sessionHandle[i]);
+				    (unsigned int)i, sessionHandle[i]);
 	    /* make used, non-NULL for command and response varargs */
 	    authC[i] = &authCommand[i];
 	    authR[i] = &authResponse[i];
@@ -851,7 +851,7 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
     for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) && (sessionHandle[i] != TPM_RH_NULL) ; i++) {
 	if (sessionHandle[i] != TPM_RS_PW) {		/* no HMAC key for password sessions */
 	    if (tssVverbose) printf("TSS_Execute_valist: Step 4: Session %u HMAC key for %08x\n",
-				    i, sessionHandle[i]);
+				    (unsigned int)i, sessionHandle[i]);
 	    rc = TSS_HmacSession_SetHmacKey(tssContext, session[i], i, password[i]);
 	}
     }
@@ -1278,7 +1278,7 @@ static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
     }
 #endif
     if (rc == 0) {
-	int32_t ilength = inLength;
+	uint32_t ilength = inLength;
 	buffer1 = inData;
 	rc = TSS_HmacSession_Unmarshal(session, &buffer1, &ilength);
     }
@@ -1401,7 +1401,7 @@ static TPM_RC TSS_HmacSession_GetSlotForHandle(TSS_CONTEXT *tssContext,
 static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
 					uint16_t *written,
 					uint8_t **buffer,
-					int32_t *size)
+					uint32_t *size)
 {
     TPM_RC rc = 0;
 
@@ -1456,7 +1456,7 @@ static uint16_t TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
 }
 
 static TPM_RC TSS_HmacSession_Unmarshal(struct TSS_HMAC_CONTEXT *target,
-					uint8_t **buffer, int32_t *size)
+					uint8_t **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
 
@@ -1517,14 +1517,14 @@ static TPM_RC TSS_Name_GetAllNames(TSS_CONTEXT *tssContext,
 				   TPM2B_NAME **names)
 {
     TPM_RC	rc = 0;
-    uint32_t 	i;
-    uint32_t 	commandHandleCount;	/* number of handles in the command stream */
+    size_t	i;
+    size_t	commandHandleCount;	/* number of handles in the command stream */
     TPM_HANDLE  commandHandle;
 
     /* get the number of handles in the command stream */
     if (rc == 0) {
 	rc = TSS_GetCommandHandleCount(tssContext->tssAuthContext, &commandHandleCount);
-	if (tssVverbose) printf("TSS_Name_GetAllNames: commandHandleCount %u\n", commandHandleCount);
+	if (tssVverbose) printf("TSS_Name_GetAllNames: commandHandleCount %u\n", (unsigned int)commandHandleCount);
     }
     for (i = 0 ; (rc == 0) && (i < commandHandleCount) ; i++) {
 	/* get a handle from the command stream */
@@ -1536,7 +1536,7 @@ static TPM_RC TSS_Name_GetAllNames(TSS_CONTEXT *tssContext,
 	/* get the Name corresponding to the handle */
 	if (rc == 0) {
 	    if (tssVverbose) printf("TSS_Name_GetAllNames: commandHandle %u %08x\n",
-				    i, commandHandle);
+				    (unsigned int)i, commandHandle);
 	    rc = TSS_Name_GetName(tssContext, names[i], commandHandle);
 	}
     }
@@ -2173,8 +2173,8 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 
     /* marshal the TPMT_PUBLIC */
     if (rc == 0) {
-	INT32 size = MAX_RESPONSE_SIZE;
-	uint8_t *buffer1 = buffer;
+	uint32_t 	size = MAX_RESPONSE_SIZE;
+	uint8_t 	*buffer1 = buffer;
 	rc = TSS_TPMT_PUBLIC_Marshal(tpmtPublic, &written, &buffer1, &size);
     }
     /* hash the public area */
@@ -2407,8 +2407,8 @@ static TPM_RC TSS_NVPublic_GetName(TPM2B_NAME *name,
 
     /* marshal the TPMS_NV_PUBLIC */
     if (rc == 0) {
-	INT32 size = MAX_RESPONSE_SIZE;
-	uint8_t *buffer1 = buffer;
+	uint32_t 	size = MAX_RESPONSE_SIZE;
+	uint8_t 	*buffer1 = buffer;
 	rc = TSS_TPMS_NV_PUBLIC_Marshal(nvPublic, &written, &buffer1, &size);
     }
     /* hash the public area */

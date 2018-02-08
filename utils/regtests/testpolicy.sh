@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy.sh 1085 2017-10-19 22:03:04Z kgoldman $		#
+#		$Id: testpolicy.sh 1145 2018-02-06 20:41:50Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -280,7 +280,7 @@ echo ""
 # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 #
 # create the policy:
-# after loadexternal, get the name from readpublic -ho 80000001 -v
+# after loadexternal, get the name from readpublic -ho 80000001 -ns
 
 # sha1
 # 00 04 42 34 c2 4f c1 b9 de 66 93 a6 24 53 41 7d 
