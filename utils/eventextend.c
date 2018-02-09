@@ -252,11 +252,13 @@ int main(int argc, char * argv[])
 	for (bankNum = 0 ; (rc == 0) && (bankNum < specIdEvent.numberOfAlgorithms) ; bankNum++) {
 	    /* trace the virtual PCRs */
 	    if (rc == 0) {
+	        char pcrString[9];	/* PCR number */
+
 		printf("\n");
 		TSS_TPM_ALG_ID_Print(specIdEvent.digestSizes[bankNum].algorithmId, 0);
 		for (pcrNum = 0 ; pcrNum < TPM_BIOS_PCR ; pcrNum++) {
-		    printf("PCR %02u\n", pcrNum);
-		    TSS_PrintAll("", simPcrs[bankNum][pcrNum].digest.tssmax,
+		    sprintf(pcrString, "PCR %02u:", pcrNum);
+		    TSS_PrintAll(pcrString, simPcrs[bankNum][pcrNum].digest.tssmax,
 				 specIdEvent.digestSizes[bankNum].digestSize);
 		}
 	    }
