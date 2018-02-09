@@ -114,13 +114,33 @@ void TSS_PrintAll(const char *string, const unsigned char* buff, uint32_t length
 
 void TSS_PrintAlli(const char *string, unsigned int indent, const unsigned char* buff, uint32_t length)
 {
+    TSS_PrintAllLogLevel(LOGLEVEL_DEBUG, string, indent, buff, length);
+}
+
+/* TSS_PrintAllLogLevel() prints based on loglevel the 'string', the length, and then the entire
+   byte array
+
+   loglevel LOGLEVEL_DEBUG prints the length and prints the array with a newline every 16 bytes.
+   otherwitss2/se prints no length and prints the array with no newlines.
+
+*/
+
+void TSS_PrintAllLogLevel(uint32_t loglevel, const char *string, unsigned int indent,
+			  const unsigned char* buff, uint32_t length)
+{
     uint32_t i;
     if (buff != NULL) {
-        printf("%*s" "%s length %u\n" "%*s", indent, "", string, length, indent, "");
+        if (loglevel == LOGLEVEL_DEBUG) {
+	    printf("%*s" "%s length %u\n" "%*s", indent, "", string, length,
+		   indent, "");
+	}
+        else {
+	    printf("%*s" "%s" "%*s", indent, "", string, indent, "");
+	}
         for (i = 0 ; i < length ; i++) {
-            if (i && !( i % 16 )) {
+            if ((loglevel == LOGLEVEL_DEBUG) && i && !( i % 16 )) {
                 printf("\n" "%*s", indent, "");
-            }
+	    }
             printf("%.2x ",buff[i]);
         }
         printf("\n");

@@ -54,6 +54,9 @@
 #endif
 #include <tss2/TPM_Types.h>
 
+#define LOGLEVEL_INFO 6		/* LOGLEVEL_INFO prints a concise output */
+#define LOGLEVEL_DEBUG 7	/* LOGLEVEL_DEBUG prints a verbose output */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -76,6 +79,9 @@ extern "C" {
     LIB_EXPORT 
     void TSS_PrintAlli(const char *string, unsigned int indent,
 		       const unsigned char* buff, uint32_t length);
+    LIB_EXPORT
+    void TSS_PrintAllLogLevel(uint32_t log_level, const char *string, unsigned int indent,
+			      const unsigned char* buff, uint32_t length);
     LIB_EXPORT
     void TSS_TPM_ALG_ID_Print(TPM_ALG_ID source, unsigned int indent);
     LIB_EXPORT
