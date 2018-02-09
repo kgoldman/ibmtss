@@ -258,8 +258,11 @@ int main(int argc, char * argv[])
 		TSS_TPM_ALG_ID_Print(specIdEvent.digestSizes[bankNum].algorithmId, 0);
 		for (pcrNum = 0 ; pcrNum < TPM_BIOS_PCR ; pcrNum++) {
 		    sprintf(pcrString, "PCR %02u:", pcrNum);
-		    TSS_PrintAll(pcrString, simPcrs[bankNum][pcrNum].digest.tssmax,
-				 specIdEvent.digestSizes[bankNum].digestSize);
+		    /* TSS_PrintAllLogLevel() with a log level of LOGLEVEL_INFO to print the byte
+		       array on one line with no length */
+		    TSS_PrintAllLogLevel(LOGLEVEL_INFO, pcrString, 1,
+					 simPcrs[bankNum][pcrNum].digest.tssmax,
+					 specIdEvent.digestSizes[bankNum].digestSize);
 		}
 	    }
 	    /* calculate the boot aggregate, hash of PCR 0-7 */
@@ -285,8 +288,9 @@ int main(int argc, char * argv[])
 	    }
 	    /* trace the boot aggregate */
 	    if (rc == 0) {
-		TSS_PrintAll("\nboot aggregate", bootAggregates[bankNum].digest.tssmax,
-			     specIdEvent.digestSizes[bankNum].digestSize);
+		TSS_PrintAllLogLevel(LOGLEVEL_INFO, "\nboot aggregate:", 1,
+				     bootAggregates[bankNum].digest.tssmax,
+				     specIdEvent.digestSizes[bankNum].digestSize);
 	    }
 	}
     }
