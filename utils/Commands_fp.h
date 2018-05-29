@@ -3,7 +3,7 @@
 /*			  Command and Response Marshal and Unmarshal		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Commands_fp.h 1124 2018-01-05 21:32:55Z kgoldman $		*/
+/*            $Id: Commands_fp.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -75,7 +75,6 @@
 #include <tss2/Clear_fp.h>
 #include <tss2/ClockRateAdjust_fp.h>
 #include <tss2/ClockSet_fp.h>
-#include <tss2/Commit_fp.h>
 #include <tss2/Commit_fp.h>
 #include <tss2/ContextLoad_fp.h>
 #include <tss2/ContextSave_fp.h>

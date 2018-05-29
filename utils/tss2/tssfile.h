@@ -3,7 +3,7 @@
 /*			TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssfile.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
+/*	      $Id: tssfile.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -48,9 +48,6 @@
 
 #include <stdio.h>
 
-#ifndef TPM_TSS
-#define TPM_TSS
-#endif
 #include <tss2/TPM_Types.h>
 #include <tss2/tssutils.h>
 

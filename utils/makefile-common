@@ -1,12 +1,12 @@
 #################################################################################
 #										#
 #										#
-#	TPM2 Library and Utilities makefile - Common to all variations		#
+# TPM2 Library and Utilities makefile - Common to TPM 1.2 and 2.0 variations	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile-common 2 2014-12-26 17:40:17Z kgoldman $		#
+#	      $Id: makefile-common 1221 2018-05-16 21:10:46Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2014						#
+# (c) Copyright IBM Corporation 2014, 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -55,122 +55,9 @@ CCFLAGS += 				\
 
 #LNFLAGS += 	-ggdb
 
-
 ALL += 	$(LIBTSS)				\
 	$(LIBTSSA)				\
-	activatecredential$(EXE)		\
-	eventextend$(EXE)			\
-	imaextend$(EXE)				\
-	certify$(EXE)				\
-	certifycreation$(EXE)			\
-	changeeps$(EXE)				\
-	changepps$(EXE)				\
-	clear$(EXE)				\
-	clearcontrol$(EXE)			\
-	clockrateadjust$(EXE)			\
-	clockset$(EXE)				\
-	commit$(EXE)				\
-	contextload$(EXE)			\
-	contextsave$(EXE)			\
-	create$(EXE)				\
-	createloaded$(EXE)			\
-	createprimary$(EXE)			\
-	dictionaryattacklockreset$(EXE) 	\
-	dictionaryattackparameters$(EXE) 	\
-	duplicate$(EXE)				\
-	eccparameters$(EXE)			\
-	ecephemeral$(EXE)			\
-	encryptdecrypt$(EXE)			\
-	evictcontrol$(EXE)			\
-	eventsequencecomplete$(EXE)		\
-	flushcontext$(EXE)			\
-	getcommandauditdigest$(EXE)		\
-	getcapability$(EXE)			\
-	getrandom$(EXE)				\
-	getsessionauditdigest$(EXE)		\
-	gettime$(EXE)				\
-	hash$(EXE)				\
-	hashsequencestart$(EXE) 		\
-	hierarchycontrol$(EXE) 			\
-	hierarchychangeauth$(EXE) 		\
-	hmac$(EXE)				\
-	hmacstart$(EXE)				\
-	import$(EXE)				\
-	importpem$(EXE)				\
-	load$(EXE)				\
-	loadexternal$(EXE)			\
-	makecredential$(EXE)			\
-	nvcertify$(EXE)				\
-	nvchangeauth$(EXE)			\
-	nvdefinespace$(EXE)			\
-	nvextend$(EXE) 				\
-	nvglobalwritelock$(EXE)			\
-	nvincrement$(EXE) 			\
-	nvread$(EXE)				\
-	nvreadlock$(EXE)			\
-	nvreadpublic$(EXE)			\
-	nvsetbits$(EXE)				\
-	nvundefinespace$(EXE)			\
-	nvundefinespacespecial$(EXE)		\
-	nvwrite$(EXE)				\
-	nvwritelock$(EXE)			\
-	objectchangeauth$(EXE) 			\
-	pcrallocate$(EXE)			\
-	pcrevent$(EXE)				\
-	pcrextend$(EXE)				\
-	pcrread$(EXE)				\
-	pcrreset$(EXE)				\
-	policyauthorize$(EXE)			\
-	policyauthvalue$(EXE)			\
-	policycommandcode$(EXE) 		\
-	policycphash$(EXE)	 		\
-	policycountertimer$(EXE)		\
-	policygetdigest$(EXE)			\
-	policymaker$(EXE)			\
-	policymakerpcr$(EXE)			\
-	policynv$(EXE)				\
-	policyauthorizenv$(EXE)			\
-	policynvwritten$(EXE)			\
-	policypassword$(EXE)			\
-	policypcr$(EXE)				\
-	policyor$(EXE)				\
-	policyrestart$(EXE)			\
-	policysigned$(EXE)			\
-	policysecret$(EXE)			\
-	policytemplate$(EXE)			\
-	policyticket$(EXE)			\
-	powerup$(EXE)				\
-	quote$(EXE)				\
-	readclock$(EXE)				\
-	readpublic$(EXE)			\
-	returncode$(EXE)			\
-	rewrap$(EXE)				\
-	rsadecrypt$(EXE)			\
-	rsaencrypt$(EXE)			\
-	sequencecomplete$(EXE)			\
-	sequenceupdate$(EXE)			\
-	setprimarypolicy$(EXE) 			\
-	shutdown$(EXE) 				\
-	sign$(EXE)				\
-	startauthsession$(EXE)			\
-	startup$(EXE) 				\
-	stirrandom$(EXE)			\
-	unseal$(EXE)				\
-	verifysignature$(EXE)			\
-	zgen2phase$(EXE)			\
-						\
-	signapp$(EXE)				\
-	writeapp$(EXE)				\
-	timepacket$(EXE)			\
-	createek$(EXE)				\
-	createekcert$(EXE)			\
-	tpm2pem$(EXE)				\
-	tpmpublic2eccpoint$(EXE)
-
-ALL	+= 					\
-	ntc2getconfig$(EXE)			\
-	ntc2preconfig$(EXE)			\
-	ntc2lockconfig$(EXE)
+	$(LIBTSSUTILS)
 
 # TSS shared library headers 
 
@@ -187,10 +74,12 @@ TSS_HEADERS += 					\
 		tss2/tssfile.h			\
 		tss2/tssmarshal.h		\
 		tss2/tssprint.h			\
+		tss2/tssprintcmd.h		\
 		tssproperties.h			\
 		tss2/tsstransmit.h		\
 		tss2/tssresponsecode.h		\
-		tss2/tssutils.h
+		tss2/tssutils.h			\
+		tss2/Unmarshal_fp.h
 
 # TSS shared library object files
 
@@ -207,8 +96,7 @@ TSS_OBJS += 	tss.o			\
 		fail.o			\
 		tssprint.o		\
 		Unmarshal.o 		\
-		Commands.o 		\
 		CommandAttributeData.o
 
-TSS_OBJS +=	ntc2lib.o		\
-		tssntc.o
+#		tssprintcmd.o		\
+

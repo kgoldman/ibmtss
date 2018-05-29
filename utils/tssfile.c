@@ -3,7 +3,7 @@
 /*			    TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssfile.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*		$Id: tssfile.c 1219 2018-05-15 21:12:32Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -143,7 +143,7 @@ TPM_RC TSS_File_ReadBinaryFile(unsigned char **data,     /* must be freed by cal
     if (rc != 0) {
 	if (tssVerbose) printf("TSS_File_ReadBinaryFile: Error reading %s\n", filename);
 	free(*data);
-	data = NULL;
+	*data = NULL;
     }
     return rc;
 }

@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsign.bat 1090 2017-10-30 16:28:38Z kgoldman $		#
+REM #		$Id: testsign.bat 1209 2018-05-10 21:26:10Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
@@ -249,7 +249,7 @@ for %%H in (sha1 sha256 sha384) do (
     )
 
     echo "Convert TPM public key to PEM"
-    %TPM_EXE_PATH%tpm2pem -ipu tmppub.bin -opem tmppub.pem
+    %TPM_EXE_PATH%tpm2pem -ipu tmppub.bin -opem tmppub.pem > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -311,7 +311,7 @@ for %%H in (sha1 sha256 sha384) do (
        exit /B 1
     )
     echo "Convert TPM public key to PEM"
-    %TPM_EXE_PATH%tpm2pem -ipu tmppub.bin -opem tmppub.pem
+    %TPM_EXE_PATH%tpm2pem -ipu tmppub.bin -opem tmppub.pem > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

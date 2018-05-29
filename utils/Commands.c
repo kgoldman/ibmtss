@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Commands.c 1124 2018-01-05 21:32:55Z kgoldman $		*/
+/*            $Id: Commands.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -584,7 +584,7 @@ ZGen_2Phase_In_Unmarshal(ZGen_2Phase_In *target, BYTE **buffer, uint32_t *size, 
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->counter, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->counter, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ZGen_2Phase_counter;
 	}
@@ -714,7 +714,7 @@ GetRandom_In_Unmarshal(GetRandom_In *target, BYTE **buffer, uint32_t *size, TPM_
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->bytesRequested, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->bytesRequested, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetRandom_bytesRequested;
 	}
@@ -1256,7 +1256,7 @@ PolicySigned_In_Unmarshal(PolicySigned_In *target, BYTE **buffer, uint32_t *size
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = INT32_Unmarshal(&target->expiration, buffer, size);
+	rc = TSS_INT32_Unmarshal(&target->expiration, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicySigned_expiration;
 	}
@@ -1297,7 +1297,7 @@ PolicySecret_In_Unmarshal(PolicySecret_In *target, BYTE **buffer, uint32_t *size
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = INT32_Unmarshal(&target->expiration, buffer, size);
+	rc = TSS_INT32_Unmarshal(&target->expiration, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicySecret_expiration;
 	}
@@ -1416,7 +1416,7 @@ PolicyNV_In_Unmarshal(PolicyNV_In *target, BYTE **buffer, uint32_t *size, TPM_HA
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->offset, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->offset, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyNV_offset;
 	}
@@ -1458,7 +1458,7 @@ PolicyCounterTimer_In_Unmarshal(PolicyCounterTimer_In *target, BYTE **buffer, ui
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->offset, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->offset, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyCounterTimer_offset;
 	}
@@ -1830,19 +1830,19 @@ DictionaryAttackParameters_In_Unmarshal(DictionaryAttackParameters_In *target, B
 	target->lockHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->newMaxTries, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->newMaxTries, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_DictionaryAttackParameters_newMaxTries;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->newRecoveryTime, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->newRecoveryTime, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_DictionaryAttackParameters_newRecoveryTime;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->lockoutRecovery, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->lockoutRecovery, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_DictionaryAttackParameters_lockoutRecovery;
 	}
@@ -1880,7 +1880,7 @@ SetAlgorithmSet_In_Unmarshal(SetAlgorithmSet_In *target, BYTE **buffer, uint32_t
 	target->authHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->algorithmSet, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->algorithmSet, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SetAlgorithmSet_algorithmSet;
 	}
@@ -1953,7 +1953,7 @@ ClockSet_In_Unmarshal(ClockSet_In *target, BYTE **buffer, uint32_t *size, TPM_HA
 	target->auth = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT64_Unmarshal(&target->newTime, buffer, size);
+	rc = TSS_UINT64_Unmarshal(&target->newTime, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ClockSet_newTime;
 	}
@@ -1989,13 +1989,13 @@ GetCapability_In_Unmarshal(GetCapability_In *target, BYTE **buffer, uint32_t *si
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->property, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->property, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetCapability_property;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->propertyCount, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->propertyCount, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetCapability_propertyCount;
 	}
@@ -2092,7 +2092,7 @@ NV_Write_In_Unmarshal(NV_Write_In *target, BYTE **buffer, uint32_t *size, TPM_HA
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->offset, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->offset, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_Write_offset;
 	}
@@ -2139,7 +2139,7 @@ NV_SetBits_In_Unmarshal(NV_SetBits_In *target, BYTE **buffer, uint32_t *size, TP
 	target->nvIndex = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT64_Unmarshal(&target->bits, buffer, size);
+	rc = TSS_UINT64_Unmarshal(&target->bits, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_SetBits_bits;
 	}
@@ -2181,13 +2181,13 @@ NV_Read_In_Unmarshal(NV_Read_In *target, BYTE **buffer, uint32_t *size, TPM_HAND
  	target->nvIndex = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->size, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->size, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_Read_size;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->offset, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->offset, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_Read_offset;
 	}
@@ -2246,13 +2246,13 @@ NV_Certify_In_Unmarshal(NV_Certify_In *target, BYTE **buffer, uint32_t *size, TP
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->size, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->size, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_Certify_size;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->offset, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->offset, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_Certify_offset;
 	}

@@ -3,7 +3,7 @@
 /*			 Headers from Part 2    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 1145 2018-02-06 20:41:50Z kgoldman $		*/
+/*            $Id: TPM_Types.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -1351,9 +1351,7 @@ typedef union {
 #ifdef TPM_ALG_SM3_256
     BYTE	sm3_256 [SM3_256_DIGEST_SIZE];	/* TPM_ALG_SM3_256 */
 #endif
-#ifdef TPM_TSS
     BYTE	tssmax [128];			/* to make union size larger */
-#endif
     
 } TPMU_HA;
 

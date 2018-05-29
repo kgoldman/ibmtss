@@ -3,9 +3,9 @@
 #		Linux TPM2 Makefile Sample for Fedora Installed rpms		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.sample 1094 2017-11-08 21:50:29Z kgoldman $		#
+#	      $Id: makefile.sample 1221 2018-05-16 21:10:46Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2014						#
+# (c) Copyright IBM Corporation 2014, 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -46,15 +46,14 @@ CC = /usr/bin/gcc
 CCFLAGS = 	-DTPM_POSIX \
 		-Wall  -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
 		-ggdb -O0 -c 			\
-		-DTPM_BITFIELD_LE		\
+		-DTPM_TPM20			\
 		-I/usr/include/tss2
 
 # for shared library
 
 LNFLAGS = 	-DTPM_POSIX		\
 		-ggdb 			\
-		-DTPM_BITFIELD_LE	\
-		-ltss -lcrypto
+		-libmtss -lcrypto
 
 # default build target
 
@@ -86,6 +85,7 @@ ALL = 	activatecredential			\
 	getcommandauditdigest			\
 	getcapability				\
 	getrandom				\
+	gettestresult				\
 	getsessionauditdigest			\
 	gettime					\
 	hash					\
@@ -122,7 +122,9 @@ ALL = 	activatecredential			\
 	policyauthvalue				\
 	policycommandcode	 		\
 	policycphash		 		\
+	policynamehash		 		\
 	policycountertimer			\
+	policyduplicationselect			\
 	policygetdigest				\
 	policymaker				\
 	policymakerpcr				\
@@ -203,12 +205,12 @@ contextload:		contextload.o
 			$(CC) $(LNFLAGS) contextload.o -o contextload
 contextsave:		contextsave.o
 			$(CC) $(LNFLAGS) contextsave.o -o contextsave
-create:			create.o cryptoutils.o 
-			$(CC) $(LNFLAGS) create.o cryptoutils.o -o create
-createloaded:		createloaded.o cryptoutils.o 
-			$(CC) $(LNFLAGS) createloaded.o cryptoutils.o -o createloaded
-createprimary:		createprimary.o cryptoutils.o 
-			$(CC) $(LNFLAGS) createprimary.o cryptoutils.o -o createprimary
+create:			create.o 
+			$(CC) $(LNFLAGS) create.o -o create
+createloaded:		createloaded.o 
+			$(CC) $(LNFLAGS) createloaded.o -o createloaded
+createprimary:		createprimary.o 
+			$(CC) $(LNFLAGS) createprimary.o -o createprimary
 dictionaryattacklockreset:		dictionaryattacklockreset.o
 			$(CC) $(LNFLAGS) dictionaryattacklockreset.o -o dictionaryattacklockreset
 dictionaryattackparameters:		dictionaryattackparameters.o
@@ -233,6 +235,8 @@ getcapability:		getcapability.o
 			$(CC) $(LNFLAGS) getcapability.o -o getcapability
 getrandom:		getrandom.o
 			$(CC) $(LNFLAGS) getrandom.o -o getrandom
+gettestresult:		gettestresult.o
+			$(CC) $(LNFLAGS) gettestresult.o -o gettestresult
 getsessionauditdigest:	getsessionauditdigest.o
 			$(CC) $(LNFLAGS) getsessionauditdigest.o -o getsessionauditdigest
 gettime:		gettime.o
@@ -269,8 +273,8 @@ nvglobalwritelock:	nvglobalwritelock.o
 			$(CC) $(LNFLAGS) nvglobalwritelock.o -o nvglobalwritelock
 nvincrement:		nvincrement.o
 			$(CC) $(LNFLAGS) nvincrement.o -o nvincrement
-nvread:			nvread.o ekutils.o 
-			$(CC) $(LNFLAGS) nvread.o ekutils.o -o nvread
+nvread:			nvread.o 
+			$(CC) $(LNFLAGS) nvread.o -o nvread
 nvreadlock:		nvreadlock.o
 			$(CC) $(LNFLAGS) nvreadlock.o -o nvreadlock
 nvreadpublic:		nvreadpublic.o
@@ -281,8 +285,8 @@ nvundefinespace:	nvundefinespace.o
 			$(CC) $(LNFLAGS) nvundefinespace.o -o nvundefinespace
 nvundefinespacespecial:	nvundefinespacespecial.o
 			$(CC) $(LNFLAGS) nvundefinespacespecial.o -o nvundefinespacespecial
-nvwrite:		nvwrite.o ekutils.o 
-			$(CC) $(LNFLAGS) nvwrite.o ekutils.o -o nvwrite
+nvwrite:		nvwrite.o 
+			$(CC) $(LNFLAGS) nvwrite.o -o nvwrite
 nvwritelock:		nvwritelock.o
 			$(CC) $(LNFLAGS) nvwritelock.o -o nvwritelock
 objectchangeauth:	objectchangeauth.o
@@ -305,8 +309,12 @@ policycommandcode:	policycommandcode.o
 			$(CC) $(LNFLAGS) policycommandcode.o -o policycommandcode
 policycphash:		policycphash.o
 			$(CC) $(LNFLAGS) policycphash.o -o policycphash
+policynamehash:		tss2/tss.h policynamehash.o
+			$(CC) $(LNFLAGS) policynamehash.o -o policynamehash
 policycountertimer :	policycountertimer.o
 			$(CC) $(LNFLAGS) policycountertimer.o -o policycountertimer
+policyduplicationselect:	tss2/tss.h policyduplicationselect.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyduplicationselect.o $(LNALIBS) -o policyduplicationselect
 policygetdigest:	policygetdigest.o
 			$(CC) $(LNFLAGS) policygetdigest.o -o policygetdigest
 policymaker:		policymaker.o
@@ -341,8 +349,8 @@ powerup:		powerup.o
 			$(CC) $(LNFLAGS) powerup.o -o powerup
 readclock:		readclock.o
 			$(CC) $(LNFLAGS) readclock.o -o readclock
-readpublic:		readpublic.o cryptoutils.o 
-			$(CC) $(LNFLAGS) readpublic.o cryptoutils.o -o readpublic
+readpublic:		readpublic.o 
+			$(CC) $(LNFLAGS) readpublic.o -o readpublic
 returncode:		returncode.o
 			$(CC) $(LNFLAGS) returncode.o -o returncode
 rewrap:			rewrap.o
@@ -360,7 +368,7 @@ setprimarypolicy:	setprimarypolicy.o
 shutdown:		shutdown.o
 			$(CC) $(LNFLAGS) shutdown.o -o shutdown
 sign:			sign.o cryptoutils.o
-			$(CC) $(LNFLAGS) sign.o cryptoutils.o -o sign
+			$(CC) $(LNFLAGS) sign.o -o sign
 startauthsession:	startauthsession.o
 			$(CC) $(LNFLAGS) startauthsession.o -o startauthsession
 startup:		startup.o
@@ -369,16 +377,16 @@ stirrandom:		stirrandom.o
 			$(CC) $(LNFLAGS) stirrandom.o -o stirrandom
 unseal:			unseal.o
 			$(CC) $(LNFLAGS) unseal.o -o unseal
-verifysignature:	verifysignature.o cryptoutils.o 
-			$(CC) $(LNFLAGS) verifysignature.o cryptoutils.o -o verifysignature
+verifysignature:	verifysignature.o 
+			$(CC) $(LNFLAGS) verifysignature.o -o verifysignature
 signapp:		signapp.o
 			$(CC) $(LNFLAGS) signapp.o -o signapp
 writeapp:		writeapp.o
 			$(CC) $(LNFLAGS) writeapp.o -o writeapp
 createek:		createek.o ekutils.o
-			$(CC) $(LNFLAGS) createek.o ekutils.o -o createek		
+			$(CC) $(LNFLAGS) createek.o -o createek		
 tpm2pem:		tpm2pem.o cryptoutils.o
-			$(CC) $(LNFLAGS) tpm2pem.o cryptoutils.o -o tpm2pem		
+			$(CC) $(LNFLAGS) tpm2pem.o -o tpm2pem		
 tpmpublic2eccpoint:	tpmpublic2eccpoint.o
 			$(CC) $(LNFLAGS) tpmpublic2eccpoint.o -o tpmpublic2eccpoint
 

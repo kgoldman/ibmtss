@@ -3,7 +3,7 @@
 /*			     TPM2 Response Code Printer				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
+/*	      $Id: tssresponsecode.c 1182 2018-04-25 18:46:10Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -42,6 +42,9 @@
 
 #include <tss2/tssresponsecode.h>
 #include <tss2/tsserror.h>
+#ifdef TPM_TPM12
+#include <tss2/tsserror12.h>
+#endif
 #include <tss2/tssprint.h>
 
 /* The intended usage is:
@@ -63,6 +66,115 @@ typedef struct {
     TPM_RC rc;
     const char *text;
 } RC_TABLE;
+
+#ifdef TPM_TPM12
+const RC_TABLE tpm12Table [] = {
+
+    {TPM_AUTHFAIL, "TPM 1.2 TPM_AUTHFAIL - Authentication failed"},
+    {TPM_BADINDEX, "TPM 1.2 TPM_BADINDEX - The index to a PCR, DIR or other register is incorrect"},
+    {TPM_BAD_PARAMETER, "TPM 1.2 TPM_BAD_PARAMETER - One or more parameter is bad"},
+    {TPM_AUDITFAILURE, "TPM 1.2 TPM_AUDITFAILURE - An operation completed successfully but the auditing of that operation failed. "},
+    {TPM_CLEAR_DISABLED, "TPM 1.2 TPM_CLEAR_DISABLED - The clear disable flag is set and all clear operations now require physical access"},
+    {TPM_DEACTIVATED, "TPM 1.2 TPM_DEACTIVATED - The TPM is deactivated"},
+    {TPM_DISABLED, "TPM 1.2 TPM_DISABLED - The TPM is disabled"},
+    {TPM_DISABLED_CMD, "TPM 1.2 TPM_DISABLED_CMD - The target command has been disabled"},
+    {TPM_FAIL, "TPM 1.2 TPM_FAIL - The operation failed"},
+    {TPM_BAD_ORDINAL, "TPM 1.2 TPM_BAD_ORDINAL - The ordinal was unknown or inconsistent"},
+    {TPM_INSTALL_DISABLED, "TPM 1.2 TPM_INSTALL_DISABLED - The ability to install an owner is disabled"},
+    {TPM_INVALID_KEYHANDLE, "TPM 1.2 TPM_INVALID_KEYHANDLE - The key handle presented was invalid"},
+    {TPM_KEYNOTFOUND, "TPM 1.2 TPM_KEYNOTFOUND - The target key was not found"},
+    {TPM_INAPPROPRIATE_ENC, "TPM 1.2 TPM_INAPPROPRIATE_ENC - Unacceptable encryption scheme"},
+    {TPM_MIGRATEFAIL, "TPM 1.2 TPM_MIGRATEFAIL - Migration authorization failed"},
+    {TPM_INVALID_PCR_INFO, "TPM 1.2 TPM_INVALID_PCR_INFO - PCR information could not be interpreted"},
+    {TPM_NOSPACE, "TPM 1.2 TPM_NOSPACE - No room to load key. "},
+    {TPM_NOSRK, "TPM 1.2 TPM_NOSRK - There is no SRK set"},
+    {TPM_NOTSEALED_BLOB, "TPM 1.2 TPM_NOTSEALED_BLOB - An encrypted blob is invalid or was not created by this TPM"},
+    {TPM_OWNER_SET, "TPM 1.2 TPM_OWNER_SET - There is already an Owner"},
+    {TPM_RESOURCES, "TPM 1.2 TPM_RESOURCES - The TPM has insufficient internal resources to perform the requested action. "},
+    {TPM_SHORTRANDOM, "TPM 1.2 TPM_SHORTRANDOM - A random string was too short"},
+    {TPM_SIZE, "TPM 1.2 TPM_SIZE - The TPM does not have the space to perform the operation."},
+    {TPM_WRONGPCRVAL, "TPM 1.2 TPM_WRONGPCRVAL - The named PCR value does not match the current PCR value."},
+    {TPM_BAD_PARAM_SIZE, "TPM 1.2 TPM_BAD_PARAM_SIZE - The paramSize argument to the command has the incorrect value"},
+    {TPM_SHA_THREAD, "TPM 1.2 TPM_SHA_THREAD - There is no existing SHA-1 thread. "},
+    {TPM_SHA_ERROR, "TPM 1.2 TPM_SHA_ERROR - The calculation is unable to proceed because the existing SHA-1 thread has already encountered an error. "},
+    {TPM_FAILEDSELFTEST, "TPM 1.2 TPM_FAILEDSELFTEST - Self-test has failed and the TPM has shutdown. "},
+    {TPM_AUTH2FAIL, "TPM 1.2 TPM_AUTH2FAIL - The authorization for the second key in a 2 key function failed authorization"},
+    {TPM_BADTAG, "TPM 1.2 TPM_BADTAG - The tag value sent to the TPM for a command is invalid"},
+    {TPM_IOERROR, "TPM 1.2 TPM_IOERROR - An IO error occurred transmitting information to the TPM"},
+    {TPM_ENCRYPT_ERROR, "TPM 1.2 TPM_ENCRYPT_ERROR - The encryption process had a problem. "},
+    {TPM_DECRYPT_ERROR, "TPM 1.2 TPM_DECRYPT_ERROR - The decryption process did not complete. "},
+    {TPM_INVALID_AUTHHANDLE, "TPM 1.2 TPM_INVALID_AUTHHANDLE - An invalid handle was used. "},
+    {TPM_NO_ENDORSEMENT, "TPM 1.2 TPM_NO_ENDORSEMENT - The TPM does not a EK installed"},
+    {TPM_INVALID_KEYUSAGE, "TPM 1.2 TPM_INVALID_KEYUSAGE - The usage of a key is not allowed"},
+    {TPM_WRONG_ENTITYTYPE, "TPM 1.2 TPM_WRONG_ENTITYTYPE - The submitted entity type is not allowed"},
+    {TPM_INVALID_POSTINIT, "TPM 1.2 TPM_INVALID_POSTINIT - The command was received in the wrong sequence relative to TPM_Init and a subsequent TPM_Startup"},
+    {TPM_INAPPROPRIATE_SIG, "TPM 1.2 TPM_INAPPROPRIATE_SIG - Signed data cannot include additional DER information"},
+    {TPM_BAD_KEY_PROPERTY, "TPM 1.2 TPM_BAD_KEY_PROPERTY - The key properties in TPM_KEY_PARMs are not supported by this TPM"},
+    {TPM_BAD_MIGRATION, "TPM 1.2 TPM_BAD_MIGRATION - The migration properties of this key are incorrect."},
+    {TPM_BAD_SCHEME, "TPM 1.2 TPM_BAD_SCHEME - The signature or encryption scheme for this key is incorrect or not permitted in this situation. "},
+    {TPM_BAD_DATASIZE, "TPM 1.2 TPM_BAD_DATASIZE - The size of the data (or blob) parameter is bad or inconsistent with the referenced key"},
+    {TPM_BAD_MODE, "TPM 1.2 TPM_BAD_MODE - A mode parameter is bad, such as capArea or subCapArea for TPM_GetCapability, physicalPresence parameter for TPM_PhysicalPresence, or migrationType for TPM_CreateMigrationBlob. "},
+    {TPM_BAD_PRESENCE, "TPM 1.2 TPM_BAD_PRESENCE- Either the physicalPresence or physicalPresenceLock bits have the wrong value"},
+    {TPM_BAD_VERSION, "TPM 1.2 TPM_BAD_VERSION - The TPM cannot perform this version of the capability"},
+    {TPM_NO_WRAP_TRANSPORT, "TPM 1.2 TPM_NO_WRAP_TRANSPORT - The TPM does not allow for wrapped transport sessions"},
+    {TPM_AUDITFAIL_UNSUCCESSFUL, "TPM 1.2 TPM_AUDITFAIL_UNSUCCESSFUL - TPM audit construction failed and the underlying command was returning a failure also"},
+    {TPM_AUDITFAIL_SUCCESSFUL, "TPM 1.2 TPM_AUDITFAIL_SUCCESSFUL - TPM audit construction failed and the underlying command was returning success"},
+    {TPM_NOTRESETABLE, "TPM 1.2 TPM_NOTRESETABLE - Attempt to reset a PCR register that does not have the resettable attribute"},
+    {TPM_NOTLOCAL, "TPM 1.2 TPM_NOTLOCAL - Attempt to reset a PCR register that requires locality and locality modifier not part of command transport"},
+    {TPM_BAD_TYPE, "TPM 1.2 TPM_BAD_TYPE - Make identity blob not properly typed"},
+    {TPM_INVALID_RESOURCE, "TPM 1.2 TPM_INVALID_RESOURCE - When saving context identified resource type does not match actual resource"},
+    {TPM_NOTFIPS, "TPM 1.2 TPM_NOTFIPS - The TPM is attempting to execute a command only available when in FIPS mode"},
+    {TPM_INVALID_FAMILY, "TPM 1.2 TPM_INVALID_FAMILY - The command is attempting to use an invalid family ID"},
+    {TPM_NO_NV_PERMISSION, "TPM 1.2 TPM_NO_NV_PERMISSION - The permission to manipulate the NV storage is not available"},
+    {TPM_REQUIRES_SIGN, "TPM 1.2 TPM_REQUIRES_SIGN - The operation requires a signed command"},
+    {TPM_KEY_NOTSUPPORTED, "TPM 1.2 TPM_KEY_NOTSUPPORTED - Wrong operation to load an NV key"},
+    {TPM_AUTH_CONFLICT, "TPM 1.2 TPM_AUTH_CONFLICT - NV_DefineSpace requires both owner and blob authorization"},
+    {TPM_AREA_LOCKED, "TPM 1.2 TPM_AREA_LOCKED - The NV area is locked and not writable"},
+    {TPM_BAD_LOCALITY, "TPM 1.2 TPM_BAD_LOCALITY - The locality is incorrect for the attempted operation"},
+    {TPM_READ_ONLY, "TPM 1.2 TPM_READ_ONLY - The NV area is read only and can't be written to  "},
+    {TPM_PER_NOWRITE, "TPM 1.2 TPM_PER_NOWRITE - There is no protection on the write to the NV area  "},
+    {TPM_FAMILYCOUNT, "TPM 1.2 TPM_FAMILYCOUNT - The family count value does not match"},
+    {TPM_WRITE_LOCKED, "TPM 1.2 TPM_WRITE_LOCKED - The NV area has already been written to"},
+    {TPM_BAD_ATTRIBUTES, "TPM 1.2 TPM_BAD_ATTRIBUTES - The NV area attributes conflict"},
+    {TPM_INVALID_STRUCTURE, "TPM 1.2 TPM_INVALID_STRUCTURE - The structure tag and version are invalid or inconsistent"},
+    {TPM_KEY_OWNER_CONTROL, "TPM 1.2 TPM_KEY_OWNER_CONTROL - The key is under control of the TPM Owner and can only be evicted by the TPM Owner. "},
+    {TPM_BAD_COUNTER, "TPM 1.2 TPM_BAD_COUNTER - The counter handle is incorrect"},
+    {TPM_NOT_FULLWRITE, "TPM 1.2 TPM_NOT_FULLWRITE - The write is not a complete write of the area"},
+    {TPM_CONTEXT_GAP, "TPM 1.2 TPM_CONTEXT_GAP - The gap between saved context counts is too large  "},
+    {TPM_MAXNVWRITES, "TPM 1.2 TPM_MAXNVWRITES - The maximum number of NV writes without an owner has been exceeded"},
+    {TPM_NOOPERATOR, "TPM 1.2 TPM_NOOPERATOR - No operator authorization value is set"},
+    {TPM_RESOURCEMISSING, "TPM 1.2 TPM_RESOURCEMISSING - The resource pointed to by context is not loaded  "},
+    {TPM_DELEGATE_LOCK, "TPM 1.2 TPM_DELEGATE_LOCK - The delegate administration is locked"},
+    {TPM_DELEGATE_FAMILY, "TPM 1.2 TPM_DELEGATE_FAMILY - Attempt to manage a family other then the delegated family"},
+    {TPM_DELEGATE_ADMIN, "TPM 1.2 TPM_DELEGATE_ADMIN - Delegation table management not enabled"},
+    {TPM_TRANSPORT_NOTEXCLUSIVE, "TPM 1.2 TPM_TRANSPORT_NOTEXCLUSIVE - There was a command executed outside of an exclusive transport session"},
+    {TPM_OWNER_CONTROL, "TPM 1.2 TPM_OWNER_CONTROL - Attempt to context save a owner evict controlled key"},
+    {TPM_DAA_RESOURCES, "TPM 1.2 TPM_DAA_RESOURCES - The DAA command has no resources available to execute the command"},
+    {TPM_DAA_INPUT_DATA0, "TPM 1.2 TPM_DAA_INPUT_DATA0 - The consistency check on DAA parameter inputData0 has failed."},
+    {TPM_DAA_INPUT_DATA1, "TPM 1.2 TPM_DAA_INPUT_DATA1 - The consistency check on DAA parameter inputData1 has failed."},
+    {TPM_DAA_ISSUER_SETTINGS, "TPM 1.2 TPM_DAA_ISSUER_SETTINGS - The consistency check on DAA_issuerSettings has failed."},
+    {TPM_DAA_TPM_SETTINGS, "TPM 1.2 TPM_DAA_TPM_SETTINGS - The consistency check on DAA_tpmSpecific has failed."},
+    {TPM_DAA_STAGE, "TPM 1.2 TPM_DAA_STAGE - The atomic process indicated by the submitted DAA command is not the expected process."},
+    {TPM_DAA_ISSUER_VALIDITY, "TPM 1.2 TPM_DAA_ISSUER_VALIDITY - The issuer's validity check has detected an inconsistency"},
+    {TPM_DAA_WRONG_W, "TPM 1.2 TPM_DAA_WRONG_W - The consistency check on w has failed."},
+    {TPM_BAD_HANDLE, "TPM 1.2 TPM_BAD_HANDLE - The handle is incorrect"},
+    {TPM_BAD_DELEGATE, "TPM 1.2 TPM_BAD_DELEGATE - Delegation is not correct"},
+    {TPM_BADCONTEXT, "TPM 1.2 TPM_BADCONTEXT - The context blob is invalid"},
+    {TPM_TOOMANYCONTEXTS, "TPM 1.2 TPM_TOOMANYCONTEXTS - Too many contexts held by the TPM"},
+    {TPM_MA_TICKET_SIGNATURE, "TPM 1.2 TPM_MA_TICKET_SIGNATURE - Migration authority signature validation failure  "},
+    {TPM_MA_DESTINATION, "TPM 1.2 TPM_MA_DESTINATION - Migration destination not authenticated"},
+    {TPM_MA_SOURCE, "TPM 1.2 TPM_MA_SOURCE - Migration source incorrect"},
+    {TPM_MA_AUTHORITY, "TPM 1.2 TPM_MA_AUTHORITY - Incorrect migration authority"},
+    {TPM_PERMANENTEK, "TPM 1.2 TPM_PERMANENTEK - Attempt to revoke the EK and the EK is not revocable"},
+    {TPM_BAD_SIGNATURE, "TPM 1.2 TPM_BAD_SIGNATURE - Bad signature of CMK ticket "},
+    {TPM_NOCONTEXTSPACE, "TPM 1.2 TPM_NOCONTEXTSPACE - There is no room in the context list for additional contexts"},
+    {TPM_RETRY, "TPM 1.2 TPM_RETRY - The TPM is too busy to respond to the command immediately, but the command could be submitted at a later time"},
+    {TPM_NEEDS_SELFTEST, "TPM 1.2 TPM_NEEDS_SELFTEST - TPM_ContinueSelfTest has has not been run"},
+    {TPM_DOING_SELFTEST, "TPM 1.2 TPM_DOING_SELFTEST - The TPM is currently executing the actions of TPM_ContinueSelfTest because the ordinal required resources that have not been tested."},
+    {TPM_DEFEND_LOCK_RUNNING, "TPM 1.2 TPM_DEFEND_LOCK_RUNNING - The TPM is defending against dictionary attacks and is in some time-out period."},
+
+};
+#endif
 
 static const char *TSS_ResponseCode_RcToText(const RC_TABLE *table, size_t tableSize, TPM_RC rc);
 static const char *TSS_ResponseCode_NumberToText(unsigned int num);
@@ -228,16 +340,17 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_NAME_FILENAME, "TSS_RC_NAME_FILENAME - The name filename function has inconsistent arguments"},
     {TSS_RC_DECRYPT_SESSIONS, "TSS_RC_DECRYPT_SESSIONS - More than one command decrypt session"},
     {TSS_RC_ENCRYPT_SESSIONS, "TSS_RC_ENCRYPT_SESSIONS - More than one response encrypt session"},
-    {TSS_RC_NO_DECRYPT_PARAMETER, "TSS_RC_NO_DECRYPT_PARAMETER - and has no decrypt parameter"},
-    {TSS_RC_NO_ENCRYPT_PARAMETER, "TSS_RC_NO_ENCRYPT_PARAMETER - nse has no encrypt parameter"},
-    {TSS_RC_BAD_DECRYPT_ALGORITHM, "TSS_RC_BAD_DECRYPT_ALGORITHM - ion had an unimplemented decrypt symmetric algorithm"},
-    {TSS_RC_BAD_ENCRYPT_ALGORITHM, "TSS_RC_BAD_ENCRYPT_ALGORITHM - ion had an unimplemented encrypt symmetric algorithm"},
+    {TSS_RC_NO_DECRYPT_PARAMETER, "TSS_RC_NO_DECRYPT_PARAMETER - Command has no decrypt parameter"},
+    {TSS_RC_NO_ENCRYPT_PARAMETER, "TSS_RC_NO_ENCRYPT_PARAMETER - Respnse has no encrypt parameter"},
+    {TSS_RC_BAD_DECRYPT_ALGORITHM, "TSS_RC_BAD_DECRYPT_ALGORITHM - Session had an unimplemented decrypt symmetric algorithm"},
+    {TSS_RC_BAD_ENCRYPT_ALGORITHM, "TSS_RC_BAD_ENCRYPT_ALGORITHM - Session had an unimplemented encrypt symmetric algorithm"},
     {TSS_RC_AES_ENCRYPT_FAILURE, "TSS_RC_AES_ENCRYPT_FAILURE - AES encryption failed"},
     {TSS_RC_AES_DECRYPT_FAILURE, "TSS_RC_AES_DECRYPT_FAILURE - AES decryption failed\n"
      "\tIf using command line utilities, set env variable TPM_ENCRYPT_SESSIONS to 0\n"
      "\tor see TSS manual for more options"},
     {TSS_RC_BAD_ENCRYPT_SIZE, "TSS_RC_BAD_ENCRYPT_SIZE - Parameter encryption size mismatch"},
     {TSS_RC_AES_KEYGEN_FAILURE, "TSS_RC_AES_KEYGEN_FAILURE - AES key generation failed"},
+    {TSS_RC_SESSION_NUMBER, "TSS_RC_SESSION_NUMBER - session number out of range"},
     {TSS_RC_BAD_SALT_KEY, "TSS_RC_BAD_SALT_KEY - Key is unsuitable for salt"},
     {TSS_RC_KDFA_FAILED, "TSS_RC_KDFA_FAILED - KDFa function failed"},
     {TSS_RC_HMAC, "TSS_RC_HMAC -  An HMAC calculation failed"},
@@ -260,6 +373,7 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_BAD_HANDLE_NUMBER, "TSS_RC_BAD_HANDLE_NUMBER - Bad handle number for this command"},
     {TSS_RC_KDFE_FAILED, "TSS_RC_KDFE_FAILED - KDFe function failed"},
     {TSS_RC_EC_EPHEMERAL_FAILURE, "TSS_RC_EC_EPHEMERAL_FAILURE - Failed while making or using EC ephemeral key"},
+    {TSS_RC_FAIL, "TSS_RC_FAIL - TSS internal failure"},
     {TSS_RC_NO_SESSION_SLOT, "TSS_RC_NO_SESSION_SLOT - TSS context has no session slot for handle"},
     {TSS_RC_NO_OBJECTPUBLIC_SLOT, "TSS_RC_NO_OBJECTPUBLIC_SLOT - TSS context has no object public slot for handle"},
     {TSS_RC_NO_NVPUBLIC_SLOT, "TSS_RC_NO_NVPUBLIC_SLOT -TSS context has no NV public slot for handle"}
@@ -314,7 +428,11 @@ void TSS_ResponseCode_toString(const char **msg, const char **submsg,  const cha
     /* if bits 8:7 are 00 */
     else if ((rc & BITS87) == 0) {
 	/* TPM 1.2  x000 0xxx xxxx */
+#ifdef TPM_TPM12
+	*msg = TSS_ResponseCode_RcToText(tpm12Table, sizeof(tpm12Table) / sizeof(RC_TABLE), rc);
+#else
 	*msg = "TPM 1.2 response code";
+#endif
     }
     /* if bits 8:7 are not 00 */
     else {

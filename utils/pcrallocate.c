@@ -3,7 +3,7 @@
 /*			    PCR_Allocate	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrallocate.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: pcrallocate.c 1204 2018-05-09 19:36:24Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     PCR_Allocate_Out 		out;
     int 			sha256 = FALSE;
     int 			sha1 = FALSE;
-    const char			*parentPassword = NULL; 
+    const char			*platformPassword = NULL; 
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
@@ -79,10 +79,10 @@ int main(int argc, char *argv[])
 	if (strcmp(argv[i],"-pwdp") == 0) {
 	    i++;
 	    if (i < argc) {
-		parentPassword = argv[i];
+		platformPassword = argv[i];
 	    }
 	    else {
-		printf("-pwda option needs a value\n");
+		printf("-pwdp option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 			 (COMMAND_PARAMETERS *)&in,
 			 NULL,
 			 TPM_CC_PCR_Allocate,
-			 sessionHandle0, parentPassword, sessionAttributes0,
+			 sessionHandle0, platformPassword, sessionAttributes0,
 			 sessionHandle1, NULL, sessionAttributes1,
 			 sessionHandle2, NULL, sessionAttributes2,
 			 TPM_RH_NULL, NULL, 0);

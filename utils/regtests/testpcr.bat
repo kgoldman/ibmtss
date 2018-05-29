@@ -3,7 +3,7 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: testpcr.bat 1048 2017-07-20 20:28:26Z kgoldman $		#
+REM		$Id: testpcr.bat 1157 2018-04-17 14:09:56Z kgoldman $		#
 REM										#
 REM (c) Copyright IBM Corporation 2015, 2017					#
 REM 										#
@@ -93,7 +93,7 @@ IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
-echo "PCR Extend"
+echo "PCR Event"
 %TPM_EXE_PATH%pcrevent -ha 16 -if policies/aaa -of1 tmpsha1.bin -of2 tmpsha256.bin -of3 tmpsha384.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1

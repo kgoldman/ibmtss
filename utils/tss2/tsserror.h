@@ -3,7 +3,7 @@
 /*			     TSS Error Codes					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsserror.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
+/*	      $Id: tsserror.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -84,6 +84,7 @@
 #define	TSS_RC_AES_DECRYPT_FAILURE	0x000b0057	/* AES decryption failed */
 #define TSS_RC_BAD_ENCRYPT_SIZE		0x000b0058	/* Parameter encryption size mismatch */
 #define TSS_RC_AES_KEYGEN_FAILURE	0x000b0059	/* AES key generation failed */
+#define TSS_RC_SESSION_NUMBER		0x000b005a	/* session number out of range */
 #define	TSS_RC_BAD_SALT_KEY		0x000b0060	/* tpmKey is unsuitable for salt */
 #define	TSS_RC_KDFA_FAILED		0x000b0070	/* KDFa function failed */
 #define	TSS_RC_HMAC			0x000b0071	/* An HMAC calculation failed */
@@ -106,6 +107,7 @@
 #define TSS_RC_BAD_HANDLE_NUMBER	0x000b0083	/* Bad handle number for this command */
 #define TSS_RC_KDFE_FAILED              0x000b0084      /* KDFe function failed */
 #define TSS_RC_EC_EPHEMERAL_FAILURE     0x000b0085      /* Failed while making or using EC ephemeral key */
+#define TSS_RC_FAIL			0x000b0086	/* TSS internal failure */
 #define TSS_RC_NO_SESSION_SLOT		0x000b0090	/* TSS context has no session slot for handle */
 #define TSS_RC_NO_OBJECTPUBLIC_SLOT	0x000b0091	/* TSS context has no object public slot for handle */
 #define TSS_RC_NO_NVPUBLIC_SLOT		0x000b0092	/* TSS context has no NV public slot for handle */

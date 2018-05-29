@@ -7,7 +7,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy138.sh 793 2016-11-10 21:27:40Z kgoldman $	#
+#		$Id: testpolicy138.sh 1209 2018-05-10 21:26:10Z kgoldman $	#
 #										#
 # (c) Copyright IBM Corporation 2016						#
 # 										#
@@ -102,7 +102,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy Authorize NV against 01000000"
-${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000
+${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000 > run.out
 checkSuccess $?
 
 echo "Policy get digest - should be 66 1f ..."
@@ -122,7 +122,7 @@ ${PREFIX}policycommandcode -ha 03000000 -cc 15d > run.out
 checkSuccess $?
 
 echo "Policy Authorize NV against 01000000"
-${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000
+${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000 > run.out
 checkSuccess $?
 
 echo "Quote - policy, should fail"
@@ -220,7 +220,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Create loaded signing key under primary key"
-${PREFIX}createloaded -si -hp 80000001 -kt f -kt p -se0 03000000 1
+${PREFIX}createloaded -si -hp 80000001 -kt f -kt p -se0 03000000 1 > run.out
 checkSuccess $?
 
 echo "Flush the primary key 80000001"

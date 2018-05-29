@@ -8,7 +8,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>c:/program files/openssl/include;../../utils</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>TPM_WINDOWS;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;TPM_ENCRYPT_SESSIONS_DEFAULT="0";TPM_WINDOWS_TBSI;TPM_WINDOWS_TBSI_WIN8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TPM_WINDOWS;TPM_TPM20;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;TPM_ENCRYPT_SESSIONS_DEFAULT="0";TPM_WINDOWS_TBSI_WIN8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libeay32mdd.lib;ssleay32mdd.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>

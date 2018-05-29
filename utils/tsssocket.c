@@ -3,9 +3,9 @@
 /*			   Socket Transmit and Receive Utilities		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsssocket.c 1126 2018-01-08 20:46:17Z kgoldman $		*/
+/*	      $Id: tsssocket.c 1197 2018-05-03 21:06:26Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -43,7 +43,6 @@
 #include <stdarg.h>
 #include <errno.h>
 
-#ifdef TPM_POSIX
 #ifndef TPM_NOSOCKET
 
 /* TSS_SOCKET_FD encapsulates the differences between the Posix and Windows socket type */
@@ -85,7 +84,8 @@ static uint32_t TSS_Socket_ReceiveBytes(TSS_SOCKET_FD sock_fd, uint8_t *buffer, 
 static uint32_t TSS_Socket_SendBytes(TSS_SOCKET_FD sock_fd, const uint8_t *buffer, size_t length);
 
 static uint32_t TSS_Socket_GetServerType(TSS_CONTEXT *tssContext,
-					 int *mssim);
+					 int *mssim,
+					 int *rawsingle);
 
 extern int tssVverbose;
 extern int tssVerbose;
@@ -98,12 +98,13 @@ TPM_RC TSS_Socket_TransmitPlatform(TSS_CONTEXT *tssContext,
     TPM_RC 	rc = 0;
     int 	mssim;	/* boolean, true for MS simulator packet format, false for raw packet
 			   format */
-
+    int 	rawsingle = FALSE;	/* boolean, true for raw format with an open and close per
+					   command */
     /* open on first transmit */
     if (tssContext->tssFirstTransmit) {	
 	/* detect errors before starting, get the server packet type, MS sim or raw */
 	if (rc == 0) {
-	    rc = TSS_Socket_GetServerType(tssContext, &mssim);
+	    rc = TSS_Socket_GetServerType(tssContext, &mssim, &rawsingle);
 	}
 	/* the platform administrative commands can only work with the simulator */
 	if (rc == 0) {
@@ -144,12 +145,14 @@ TPM_RC TSS_Socket_Transmit(TSS_CONTEXT *tssContext,
     TPM_RC 	rc = 0;
     int 	mssim;	/* boolean, true for MS simulator packet format, false for raw packet
 			   format */
+    int 	rawsingle = FALSE;	/* boolean, true for raw packet format requiring an open and
+					   close for each command */
 
     /* open on first transmit */
     if (tssContext->tssFirstTransmit) {	
 	/* detect errors before starting, get the server packet type, MS sim or raw */
 	if (rc == 0) {
-	    rc = TSS_Socket_GetServerType(tssContext, &mssim);
+	    rc = TSS_Socket_GetServerType(tssContext, &mssim, &rawsingle);
 	}
 	if (rc == 0) {
 	    rc = TSS_Socket_Open(tssContext, tssContext->tssCommandPort);
@@ -167,28 +170,46 @@ TPM_RC TSS_Socket_Transmit(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	rc = TSS_Socket_ReceiveCommand(tssContext, responseBuffer, read);
     }
+    /* rawsingle flags a close after each command */
+    if (rawsingle) {
+	TPM_RC rc1;
+	rc1 = TSS_Socket_Close(tssContext);
+	if (rc == 0) {
+	    rc = rc1;
+	}
+	tssContext->tssFirstTransmit = TRUE;	/* force reopen on next command */
+    }
     return rc;
 }
 
-/* TSS_Socket_GetssrverType() gets the type of server packet format
+/* TSS_Socket_GetServerType() gets the type of server packet format
 
-   Currently, the two formats supported are:
+   Currently, the formats supported are:
 
-   mssim
+   mssim, raw, rawsingle
 
-   TRUE  - the MS simulator packet
-   FALSE - raw TPM specification Part 3 packets
+   mssim TRUE  - the MS simulator packet
+   mssim FALSE - raw TPM specification Part 3 packets
+   rawsingle is the same as mssim FALSE but forces an open and cose for each command
 */
 
-static uint32_t TSS_Socket_GetServerType(TSS_CONTEXT *tssContext, int *mssim)
+static uint32_t TSS_Socket_GetServerType(TSS_CONTEXT *tssContext,
+					 int *mssim,
+					 int *rawsingle)
 {
     uint32_t 	rc = 0;
     if (rc == 0) {
 	if ((strcmp(tssContext->tssServerType, "mssim") == 0)) {
 	    *mssim = TRUE;
+	    *rawsingle = FALSE;
 	}
 	else if ((strcmp(tssContext->tssServerType, "raw") == 0)) {
 	    *mssim = FALSE;
+	    *rawsingle = FALSE;
+	}
+	else if ((strcmp(tssContext->tssServerType, "rawsingle") == 0)) {
+	    *mssim = FALSE;
+	    *rawsingle = TRUE;
 	}
 	else {
 	    if (tssVerbose) printf("TSS_Socket_GetServerType: server type %s unsupported\n",
@@ -294,6 +315,7 @@ static uint32_t TSS_Socket_SendCommand(TSS_CONTEXT *tssContext,
     uint32_t 	rc = 0;
     int 	mssim;	/* boolean, true for MS simulator packet format, false for raw packet
 			   format */
+    int 	rawsingle;
     
     if (message != NULL) {
 	if (tssVverbose) printf("TSS_Socket_SendCommand: %s\n", message);
@@ -305,7 +327,7 @@ static uint32_t TSS_Socket_SendCommand(TSS_CONTEXT *tssContext,
     }
     /* get the server packet type, MS sim or raw */
     if (rc == 0) {
-	rc = TSS_Socket_GetServerType(tssContext, &mssim);
+	rc = TSS_Socket_GetServerType(tssContext, &mssim, &rawsingle);
     }
     /* MS simulator wants a command type, locality, length */
     if ((rc == 0) && mssim) {
@@ -410,10 +432,11 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
     uint32_t 	size;		/* dummy for unmarshal call */
     int 	mssim;		/* boolean, true for MS simulator packet format, false for raw
 				   packet format */
+    int		rawsingle;
     
     /* get the server packet type, MS sim or raw */
     if (rc == 0) {
-	rc = TSS_Socket_GetServerType(tssContext, &mssim);
+	rc = TSS_Socket_GetServerType(tssContext, &mssim, &rawsingle);
     }
     /* read the length prepended by the simulator */
     if ((rc == 0) && mssim) {
@@ -432,7 +455,7 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
 	bufferPtr += sizeof(TPM_ST);
 	
 	size = sizeof(uint32_t);		/* dummy for call */
-	rc = UINT32_Unmarshal(&responseSize, &bufferPtr, &size);
+	rc = TSS_UINT32_Unmarshal(&responseSize, &bufferPtr, &size);
 	*length = responseSize;			/* returned length */
 
 	/* check the response size, see TSS_CONTEXT structure */
@@ -472,7 +495,7 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
 	/* skip to responseCode */
 	bufferPtr = buffer + sizeof(TPM_ST) + sizeof(uint32_t);
 	size = sizeof(TPM_RC);		/* dummy for call */
-	rc = UINT32_Unmarshal(&responseCode, &bufferPtr, &size);
+	rc = TSS_UINT32_Unmarshal(&responseCode, &bufferPtr, &size);
     }
     /* if there is no other (receive or unmarshal) error, return the TPM response code */
     if (rc == 0) {
@@ -560,12 +583,14 @@ TPM_RC TSS_Socket_Close(TSS_CONTEXT *tssContext)
     uint32_t 	rc = 0;
     int 	mssim;	/* boolean, true for MS simulator packet format, false for raw packet
 			   format */
+    int		rawsingle;	/* boolean, true for raw format with an open and close per
+				   command */
     
     if (tssVverbose) printf("TSS_Socket_Close: Closing %s-%s\n",
 			    tssContext->tssServerName, tssContext->tssServerType);
     /* get the server packet type, MS sim or raw */
     if (rc == 0) {
-	rc = TSS_Socket_GetServerType(tssContext, &mssim);
+	rc = TSS_Socket_GetServerType(tssContext, &mssim, &rawsingle);
     }
     /* the MS simulator expects a TPM_SESSION_END command before close */
     if ((rc == 0) && mssim) {
@@ -573,19 +598,25 @@ TPM_RC TSS_Socket_Close(TSS_CONTEXT *tssContext)
 	rc = TSS_Socket_SendBytes(tssContext->sock_fd, (uint8_t *)&commandType, sizeof(uint32_t));
     }
 #ifdef TPM_POSIX
+    /* always attempt a close, even though rawsingle should already have closed the socket */
     if (close(tssContext->sock_fd) != 0) {
-	if (tssVerbose) printf("TSS_Socket_Close: close error\n");
-	rc = TSS_RC_BAD_CONNECTION;
+	if (!rawsingle) {
+	    if (tssVerbose) printf("TSS_Socket_Close: close error\n");
+	    rc = TSS_RC_BAD_CONNECTION;
+	}
     }
 #endif
 #ifdef TPM_WINDOWS
     /* gracefully shut down the socket */
+    /* always attempt a close, even though rawsingle should already have closed the socket */
     {
 	int		irc;
 	irc = shutdown(tssContext->sock_fd, SD_SEND);
-	if (irc == SOCKET_ERROR) {       /* error */
-	    if (tssVerbose) printf("TSS_Socket_Close: shutdown error\n");
-	    rc = TSS_RC_BAD_CONNECTION;
+	if (!rawsingle) {
+	    if (irc == SOCKET_ERROR) {       /* error */
+		if (tssVerbose) printf("TSS_Socket_Close: shutdown error\n");
+		rc = TSS_RC_BAD_CONNECTION;
+	    }
 	}
     }
     closesocket(tssContext->sock_fd);
@@ -594,4 +625,3 @@ TPM_RC TSS_Socket_Close(TSS_CONTEXT *tssContext)
     return rc;
 }
 #endif 	/* TPM_NOSOCKET */
-#endif

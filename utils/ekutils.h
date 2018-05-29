@@ -3,7 +3,7 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.h 1117 2017-12-18 21:23:21Z kgoldman $		*/
+/*	      $Id: ekutils.h 1219 2018-05-15 21:12:32Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -121,8 +121,10 @@ extern "C" {
 			    X509 *x509Certificate);
     TPM_RC convertX509ToRsa(RSA  **rsaPkey,
 			    X509 *x509);
+#ifndef TPM_TSS_NOECC
     TPM_RC convertX509ToEc(EC_KEY **ecKey,
 			   X509 *x509);
+#endif	/* TPM_TSS_NOECC */
     TPM_RC convertX509PemToDer(uint32_t *certLength,
 				unsigned char **certificate,
 				const char *pemCertificateFilename);
@@ -141,6 +143,9 @@ extern "C" {
 				    X509 *ekCertificate,
 				    TPMI_RH_NV_INDEX ekCertIndex,
 				    int print);
+    TPM_RC convertCertificatePubKey12(uint8_t **modulusBin,
+				      int *modulusBytes,
+				      X509 *ekCertificate);
 
     /* certificate key to nid mapping array */
 
@@ -175,8 +180,10 @@ extern "C" {
     TPM_RC addCertExtension(X509 *x509Certificate, int nid, char *value);
     TPM_RC addCertKeyRsa(X509 *x509Certificate,
 			 const TPM2B_PUBLIC_KEY_RSA *tpm2bRsa);
+#ifndef TPM_TSS_NOECC
     TPM_RC addCertKeyEcc(X509 *x509Certificate,
 			 const TPMS_ECC_POINT *tpmsEccPoint);
+#endif	/* TPM_TSS_NOECC */
     TPM_RC addCertSignatureRoot(X509 *x509Certificate,
 				const char *caKeyFileName,
 				const char *caKeyPassword);

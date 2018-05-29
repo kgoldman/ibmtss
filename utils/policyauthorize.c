@@ -3,7 +3,7 @@
 /*			    PolicyAuthorize	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyauthorize.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
+/*	      $Id: policyauthorize.c 1203 2018-05-09 18:13:49Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 	printf("Missing parameter -appr\n");
 	printUsage();
     }
-    if (policyRefFilename == 0) {
+    if (policyRefFilename == NULL) {
 	in.policyRef.b.size = 0;	/* default empty buffer */
     }
     if (signingKeyNameFilename == NULL) {

@@ -3,7 +3,7 @@
 /*		TPM 2.0 Attestation - Client EK and EK certificate  		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: createekcert.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*            $Id: createekcert.c 1204 2018-05-09 19:36:24Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -73,11 +73,13 @@ static void printUsage(void);
 
 static TPM_RC defineEKCertIndex(TSS_CONTEXT *tssContext,
 				uint32_t certLength,	
-				TPMI_RH_NV_INDEX nvIndex);
+				TPMI_RH_NV_INDEX nvIndex,
+				const char *platformPassword);
 static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 				 uint32_t certLength,
 				 unsigned char *certificate,	
-				 TPMI_RH_NV_INDEX nvIndex);
+				 TPMI_RH_NV_INDEX nvIndex,
+				 const char *platformPassword);
 
 int vverbose = 0;
 int verbose = 0;
@@ -93,6 +95,7 @@ int main(int argc, char *argv[])
     /* the CA for endorsement key certificates */
     const char 		*caKeyFileName = NULL;
     const char 		*caKeyPassword = "";
+    const char		*platformPassword = NULL; 
 
     /* FIXME may be better from command line or config file */
     char *subjectEntries[] = {
@@ -203,6 +206,16 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-pwdp") == 0) {
+	    i++;
+	    if (i < argc) {
+		platformPassword = argv[i];
+	    }
+	    else {
+		printf("-pwdp option needs a value\n");
+		printUsage();
+	    }
+	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
@@ -266,13 +279,15 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	rc = defineEKCertIndex(tssContext,
 			       certLength,	
-			       ekCertIndex);
+			       ekCertIndex,
+			       platformPassword);
     }
     /* store the EK certificate in NV */
     if (rc == 0) {
 	rc = storeEkCertificate(tssContext,
 				certLength, certificate,	
-				ekCertIndex);
+				ekCertIndex,
+				platformPassword);
     }
     /* optionally store the certificate in DER format */
     if ((rc == 0) && (certificateFilename != NULL)) {
@@ -294,7 +309,8 @@ int main(int argc, char *argv[])
 
 static TPM_RC defineEKCertIndex(TSS_CONTEXT *tssContext,
 				uint32_t certLength,	
-				TPMI_RH_NV_INDEX nvIndex)
+				TPMI_RH_NV_INDEX nvIndex,
+				const char *platformPassword)
 {
     TPM_RC 		rc = 0;
     NV_ReadPublic_In 	nvReadPublicIn;
@@ -330,13 +346,14 @@ static TPM_RC defineEKCertIndex(TSS_CONTEXT *tssContext,
 	nvDefineSpaceIn.publicInfo.nvPublic.nvIndex = nvIndex;	/* handle of the data area */
 	nvDefineSpaceIn.publicInfo.nvPublic.nameAlg = TPM_ALG_SHA256; 	/* name hash algorithm */
 	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val = 0;
-	/* wide open for test */
-	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val |= TPMA_NVA_PLATFORMCREATE;
-	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val |= TPMA_NVA_PPWRITE | TPMA_NVA_PPREAD;
+	/* PC Client specification */
 	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val |= TPMA_NVA_ORDINARY;
-	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val |= TPMA_NVA_AUTHWRITE;
+	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val |= TPMA_NVA_PLATFORMCREATE;
 	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val |= TPMA_NVA_AUTHREAD;
 	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val |= TPMA_NVA_NO_DA;
+	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val |= TPMA_NVA_PPWRITE;
+	/* required for Microsoft Windows certification test */
+	nvDefineSpaceIn.publicInfo.nvPublic.attributes.val |= TPMA_NVA_OWNERREAD; 
 	if (certLength < 1000) {
 	    nvDefineSpaceIn.publicInfo.nvPublic.dataSize = 1000;		/* minimum size */
 	}
@@ -350,7 +367,7 @@ static TPM_RC defineEKCertIndex(TSS_CONTEXT *tssContext,
 			     (COMMAND_PARAMETERS *)&nvDefineSpaceIn,
 			     NULL,
 			     TPM_CC_NV_DefineSpace,
-			     TPM_RS_PW, NULL, 0,
+			     TPM_RS_PW, platformPassword, 0,
 			     TPM_RH_NULL, NULL, 0);
 	}
     }
@@ -374,7 +391,8 @@ static TPM_RC defineEKCertIndex(TSS_CONTEXT *tssContext,
 static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 				 uint32_t certLength,
 				 unsigned char *certificate,	
-				 TPMI_RH_NV_INDEX nvIndex)
+				 TPMI_RH_NV_INDEX nvIndex,
+				 const char *platformPassword)
 {
     TPM_RC 		rc = 0;
     NV_Write_In 	nvWriteIn;
@@ -389,7 +407,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	if (verbose) printf("storeEkCertificate: writing %u bytes to %08x\n",
 			    certLength, nvIndex);
-	nvWriteIn.authHandle = nvIndex;  
+	nvWriteIn.authHandle = TPM_RH_PLATFORM;  
 	nvWriteIn.nvIndex = nvIndex;
 	nvWriteIn.offset = 0;
 	bytesWritten = 0;	/* bytes written so far */
@@ -413,7 +431,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 			     (COMMAND_PARAMETERS *)&nvWriteIn,
 			     NULL,
 			     TPM_CC_NV_Write,
-			     TPM_RS_PW, NULL, 0,
+			     TPM_RS_PW, platformPassword, 0,
 			     TPM_RH_NULL, NULL, 0);
 	}
 	if (rc == 0) {
@@ -452,6 +470,7 @@ static void printUsage(void)
     printf("createekcert -alg rsa -cakey cakey.pem    -capwd rrrr -v\n");
     printf("createekcert -alg ecc -cakey cakeyecc.pem -capwd rrrr -caalg ec -v\n");
     printf("\n");
+    printf("\t[-pwdp platform hierarchy password (default empty)]\n");
     printf("-cakey CA PEM key file name\n");
     printf("[-capwd CA PEM key password (default empty)]\n");
     printf("[-caalg CA key algorithm (rsa or ec) (default rsa)]\n");

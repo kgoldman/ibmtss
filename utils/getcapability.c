@@ -3,7 +3,7 @@
 /*			    Get Capability	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
+/*	      $Id: getcapability.c 1210 2018-05-10 21:39:52Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 	if (strcmp(argv[i],"-cap") == 0) {
 	    i++;
 	    if (i < argc) {
-		sscanf(argv[i],"%x",&capability);
+		sscanf(argv[i],"%x", &capability);
 	    }
 	    else {
 		printf("Missing parameter for -cap\n");
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-pr") == 0) {
 	    i++;
 	    if (i < argc) {
-		sscanf(argv[i],"%x",&property);
+		sscanf(argv[i],"%x", &property);
 	    }
 	    else {
 		printf("Missing parameter for -pr\n");
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-pc") == 0) {
 	    i++;
 	    if (i < argc) {
-		sscanf(argv[i],"%u",&propertyCount);
+		sscanf(argv[i],"%u", &propertyCount);
 	    }
 	    else {
 		printf("Missing parameter for -pc\n");
@@ -317,7 +317,7 @@ static TPM_RC responseAlgs(TPMS_CAPABILITY_DATA *capabilityData, uint32_t proper
     printf("%u algorithms \n", algorithms->count);
     for (count = 0 ; count < algorithms->count ; count++) {
 	TPMS_ALG_PROPERTY *algProperties = &(algorithms->algProperties[count]);
-	TSS_TPM_ALG_ID_Print(algProperties->alg, 2);
+	TSS_TPM_ALG_ID_Print("", algProperties->alg, 2);
 	TSS_TPM_TPMA_ALGORITHM_Print(algProperties->algProperties, 4);
     }
     return rc;

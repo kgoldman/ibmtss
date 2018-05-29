@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testunseal.sh 1089 2017-10-27 19:18:29Z kgoldman $			#
+#	$Id: testunseal.sh 1214 2018-05-14 20:44:25Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -82,7 +82,7 @@ diff msg.bin tmp.bin
 checkSuccess $?
 
 echo "Flush the primary sealed object"
-${PREFIX}flushcontext -ha 80000001
+${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo ""
@@ -212,7 +212,7 @@ do
     checkFailure $?
 
     echo "Extend PCR 16 to correct value"
-    ${PREFIX}pcrextend -halg ${HALG} -ha 16 -if policies/aaa
+    ${PREFIX}pcrextend -halg ${HALG} -ha 16 -if policies/aaa > run.out
     checkSuccess $?
 
     echo "Policy restart, set back to zero"
@@ -241,8 +241,84 @@ do
 
 done
 
+echo ""
+echo "Import and Unseal"
+echo ""
+
+# primary key P1 80000000
+# sealed data S1 80000001 originally under 80000000
+# target storage key K1 80000002
+
+for ALG in "" "ecc"
+do 
+
+    echo "Create a sealed data object S1 under the primary key P1 80000000"
+    ${PREFIX}create -hp 80000000 -bl -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin -pol policies/policyccduplicate.bin > run.out
+    checkSuccess $?
+
+    echo "Load the sealed data object S1 at 80000001"
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    checkSuccess $?
+
+    echo "Load the ${ALG} storage key K1 80000002"
+    ${PREFIX}load -hp 80000000 -ipr store${ALG}priv.bin -ipu store${ALG}pub.bin -pwdp pps > run.out
+    checkSuccess $?
+
+    echo "Start a policy session 03000000"
+    ${PREFIX}startauthsession -se p > run.out
+    checkSuccess $?
+
+    echo "Policy command code, duplicate"
+    ${PREFIX}policycommandcode -ha 03000000 -cc 14b > run.out
+    checkSuccess $?
+
+    echo "Get policy digest"
+    ${PREFIX}policygetdigest -ha 03000000 > run.out 
+    checkSuccess $?
+
+    echo "Duplicate sealed data object S1 80000001 under ${ALG} K1 80000002"
+    ${PREFIX}duplicate -ho 80000001 -pwdo sig -hp 80000002 -od tmpdup.bin -oss tmpss.bin -se0 03000000 1 > run.out
+    checkSuccess $?
+
+    echo "Flush the original S1 to free object slot for import"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "Import S1 under ${ALG} K1 80000002"
+    ${PREFIX}import -hp 80000002 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin -opr tmppriv1.bin > run.out
+    checkSuccess $?
+
+    echo "Load the duplicated sealed data object S1 at 80000001 under ${ALG} K1 80000002"
+    ${PREFIX}load -hp 80000002 -ipr tmppriv1.bin -ipu tmppub.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    echo "Unseal the data blob"
+    ${PREFIX}unseal -ha 80000001 -pwd sea -of tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the unsealed result"
+    diff msg.bin tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the sealed data object at 80000001"
+    ${PREFIX}flushcontext -ha 80000002 > run.out
+    checkSuccess $?
+
+    echo "Flush the storage key at 80000002"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "Flush the session"
+    ${PREFIX}flushcontext -ha 03000000 > run.out
+    checkSuccess $?
+
+done
+
 rm -r tmppriv.bin
 rm -r tmppub.bin
 rm -r tmp.bin
+rm -f tmpdup.bin
+rm -f tmpss.bin
+rm -f tmppriv1.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000

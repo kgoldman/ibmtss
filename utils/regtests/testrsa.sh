@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testrsa.sh 979 2017-04-04 17:57:18Z kgoldman $			#
+#	$Id: testrsa.sh 1209 2018-05-10 21:26:10Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -85,7 +85,7 @@ do
     checkSuccess $?
 
     echo "Encrypt/Verify - ${HALG[i]}"
-    ${PREFIX}rsaencrypt -hk 80000001 -id tmpsig.bin -oe tmpmsg.bin
+    ${PREFIX}rsaencrypt -hk 80000001 -id tmpsig.bin -oe tmpmsg.bin > run.out
     checkSuccess $?
 
     echo "Verify Result - ${HALG[i]} ${HSIZ[i]} bytes"
@@ -96,7 +96,7 @@ do
 done
 
 echo "Flush the RSA signing key"
-${PREFIX}flushcontext -ha 80000001
+${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 rm -f tmpmsg.bin

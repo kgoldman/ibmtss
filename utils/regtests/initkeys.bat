@@ -3,7 +3,7 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: initkeys.bat 1048 2017-07-20 20:28:26Z kgoldman $		#
+REM		$Id: initkeys.bat 1209 2018-05-10 21:26:10Z kgoldman $		#
 REM										#
 REM (c) Copyright IBM Corporation 2015, 2017					#
 REM 										#
@@ -105,7 +105,7 @@ IF !ERRORLEVEL! NEQ 0 (
 
 for %%H in (sha1 sha256 sha384) do (
     echo "Create a %%H keyed hash key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -kh -kt f -kt p -opr khpriv%%H.bin -opu khpub%%H.bin -pwdp pps -pwdk khk -halg %%H
+%TPM_EXE_PATH%create -hp 80000000 -kh -kt f -kt p -opr khpriv%%H.bin -opu khpub%%H.bin -pwdp pps -pwdk khk -halg %%H > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )

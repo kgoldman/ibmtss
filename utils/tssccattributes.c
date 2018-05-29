@@ -71,8 +71,6 @@ uint32_t getresponseHandleCount(COMMAND_INDEX index)
     return s_ccAttr[index].rHandle;
 }
 
-/* from CommandCodeAttributes.c */
-
 int getDecryptSize(COMMAND_INDEX    commandIndex)
 {
     COMMAND_ATTRIBUTES      ca = s_commandAttributes[commandIndex];

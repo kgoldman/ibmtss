@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.h 1124 2018-01-05 21:32:55Z kgoldman $		*/
+/*	      $Id: tssmarshal.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -45,10 +45,6 @@
 
 #ifndef TSSMARSHAL_H
 #define TSSMARSHAL_H
-
-#ifndef TPM_TSS
-#define TPM_TSS
-#endif
 
 #include "BaseTypes.h"
 #include <tss2/TPM_Types.h>

@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 1145 2018-02-06 20:41:50Z kgoldman $	*/
+/*	      $Id: verifysignature.c 1219 2018-05-15 21:12:32Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -315,8 +315,10 @@ int main(int argc, char *argv[])
 	    in.digest.t.size = dataLength;
 	    memcpy(&in.digest.t.buffer, (uint8_t *)data, dataLength);
 	}
-	if (verbose) TSS_PrintAll("verifysignature: hash",
-				  (uint8_t *)&in.digest.t.buffer, in.digest.t.size);
+	if (rc == 0) {
+	    if (verbose) TSS_PrintAll("verifysignature: hash",
+				      (uint8_t *)&in.digest.t.buffer, in.digest.t.size);
+	}
     }
     if (rc == 0) {
 	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @2 */
@@ -405,18 +407,25 @@ TPM_RC rawUnmarshal(TPMT_SIGNATURE *tSignature,
 		    uint8_t *signatureBin, size_t signatureBinLen)
 {
     TPM_RC			rc = 0;
-    if (algPublic == TPM_ALG_RSA) {
+    switch (algPublic) {
+      case TPM_ALG_RSA:
 	rc = convertRsaBinToTSignature(tSignature,
 				       halg,
 				       signatureBin,
 				       signatureBinLen);
-    }
-    /* TPM_ALG_ECC, the raw signature is DER encoded R and S elements */
-    else {
+	break;
+#ifndef TPM_TSS_NOECC
+      case TPM_ALG_ECC:
+	/* TPM_ALG_ECC, the raw signature is DER encoded R and S elements */
 	rc = convertEcBinToTSignature(tSignature,
 				      halg,
 				      signatureBin,
 				      signatureBinLen);
+	break;
+#endif	/* TPM_TSS_NOECC */
+      default:
+	printf("rawUnmarshal: algorithm %04x not supported\n", algPublic);
+	rc = TPM_RC_ASYMMETRIC;
     }
     return rc;
 }

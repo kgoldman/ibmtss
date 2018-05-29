@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.h 1145 2018-02-06 20:41:50Z kgoldman $		*/
+/*	      $Id: eventlib.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -83,6 +83,9 @@
 #define EV_EFI_HCRTM_EVENT			0x80000010 
 #define EV_EFI_VARIABLE_AUTHORITY		0x800000E0
 
+/* PCR 0-7 are the BIOS / UEFI / firmware / pre-OS PCRs */
+#define TPM_BIOS_PCR	8
+
 /* TCG_PCR_EVENT is the TPM 1.2 SHA-1 event log entry format.  It is defined in the TCG PC Client
    Specific Implementation Specification for Conventional BIOS, where it is called
    TCG_PCClientPCREventStruc.  In the PFP, it's called TCG_PCClientPCREvent.
@@ -122,6 +125,9 @@ typedef struct tdTCG_EfiSpecIdEventAlgorithmSize {
 
 /* TCG_EfiSpecIDEvent is the event field of the first TCG_PCR_EVENT entry in a hash agile TPM 2.0
    format log.
+
+   NOTE: If vendorInfo is ever changed to less than 0xff, unmarshal needs a range check on
+   vendorInfoSize.
 */
 
 typedef struct tdTCG_EfiSpecIdEvent {
@@ -145,6 +151,15 @@ extern "C" {
 			    int *endOfFile,
 			    FILE *inFile);
 
+    TPM_RC TSS_EVENT_Line_Marshal(TCG_PCR_EVENT *source,
+				  uint16_t *written, uint8_t **buffer, uint32_t *size);
+    
+    TPM_RC TSS_EVENT_Line_Unmarshal(TCG_PCR_EVENT *event, BYTE **buffer, uint32_t *size);
+
+    TPM_RC TSS_EVENT_PCR_Extend(TPMT_HA pcrs[TPM_BIOS_PCR],
+				TCG_PCR_EVENT *event);
+    
+    void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event);
 
     int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event2,
 			     int *endOfFile,
@@ -157,8 +172,6 @@ extern "C" {
 
     TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][8],
 				 TCG_PCR_EVENT2 *event2);
-
-    void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event);
 
     void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event);
 

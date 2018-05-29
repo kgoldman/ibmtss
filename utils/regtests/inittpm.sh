@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: inittpm.sh 979 2017-04-04 17:57:18Z kgoldman $		#
+#		$Id: inittpm.sh 1148 2018-02-09 14:59:16Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
@@ -53,3 +53,6 @@ echo "Startup"
 ${PREFIX}startup -c > run.out
 checkSuccess $?
 
+echo "Get Test Result"
+${PREFIX}gettestresult > run.out
+checkSuccess $?

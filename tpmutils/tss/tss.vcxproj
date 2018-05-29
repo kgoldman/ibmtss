@@ -14,6 +14,7 @@
     <ProjectGuid>{5C11AF70-45A6-4888-A66A-C0A70302BD89}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tss</RootNamespace>
+    <ProjectName>ibmtss</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -52,7 +53,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;TPM_TSS;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;TPM_TSS;TPM_TPM20;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../utils;../../src;c:/program files/openssl/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -68,7 +69,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;TPM_TSS;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;TPM_TSS;TPM_TPM20;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>../../utils;../../src;c:/program files/openssl/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -88,13 +89,17 @@
     <ClCompile Include="..\..\utils\Commands.c" />
     <ClCompile Include="..\..\utils\fail.c" />
     <ClCompile Include="..\..\utils\tss.c" />
+    <ClCompile Include="..\..\utils\tss20.c" />
     <ClCompile Include="..\..\utils\tssauth.c" />
+    <ClCompile Include="..\..\utils\tssauth20.c" />
     <ClCompile Include="..\..\utils\tssccattributes.c" />
     <ClCompile Include="..\..\utils\tsscrypto.c" />
     <ClCompile Include="..\..\utils\tsscryptoh.c" />
     <ClCompile Include="..\..\utils\tssfile.c" />
     <ClCompile Include="..\..\utils\tssmarshal.c" />
+    <ClCompile Include="..\..\utils\tssntc.c" />
     <ClCompile Include="..\..\utils\tssprint.c" />
+    <ClCompile Include="..\..\utils\tssprintcmd.c" />
     <ClCompile Include="..\..\utils\tssproperties.c" />
     <ClCompile Include="..\..\utils\tssresponsecode.c" />
     <ClCompile Include="..\..\utils\tsssocket.c" />

@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testunseal.bat 1090 2017-10-30 16:28:38Z kgoldman $	#
+REM #		$Id: testunseal.bat 1215 2018-05-15 13:13:46Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
@@ -99,7 +99,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Flush the primary sealed object"
-%TPM_EXE_PATH%flushcontext -ha 80000001
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -197,7 +197,7 @@ REM a4 24 f5 f2
 REM SHA-256
 
 REM extend of aaa + 0 pad to digest length
-REM > pcrextend -ha 16 -if policies/aaa
+REM > pcrextend -ha 16 -if policies/aaa > run.out
 
 REM read the PCR 16 value back
 REM > pcrread -ha 16 -ns
@@ -266,7 +266,7 @@ for %%H in (sha1 sha256 ) do (
     )
 
     echo "Extend PCR 16 to correct value"
-    %TPM_EXE_PATH%pcrextend -halg %%H -ha 16 -if policies/aaa
+    %TPM_EXE_PATH%pcrextend -halg %%H -ha 16 -if policies/aaa > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -309,9 +309,114 @@ for %%H in (sha1 sha256 ) do (
 
 )
 
+echo ""
+echo "Import and Unseal"
+echo ""
+
+REM # primary key P1 80000000
+REM # sealed data S1 80000001 originally under 80000000
+REM # target storage key K1 80000002
+
+for %%A in ("" "ecc") do (
+
+    echo "Create a sealed data object S1 under the primary key P1 80000000"
+    %TPM_EXE_PATH%create -hp 80000000 -bl -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin -pol policies/policyccduplicate.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Load the sealed data object S1 at 80000001"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Load the %%~A storage key K1 80000002"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr store%%~Apriv.bin -ipu store%%~Apub.bin -pwdp pps > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Start a policy session 03000000"
+    %TPM_EXE_PATH%startauthsession -se p > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Policy command code, duplicate"
+    %TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 14b > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Get policy digest"
+    %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out 
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Duplicate sealed data object S1 80000001 under %%~A K1 80000002"
+    %TPM_EXE_PATH%duplicate -ho 80000001 -pwdo sig -hp 80000002 -od tmpdup.bin -oss tmpss.bin -se0 03000000 1 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the original S1 to free object slot for import"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Import S1 under %%~A K1 80000002"
+    %TPM_EXE_PATH%import -hp 80000002 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin -opr tmppriv1.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Load the duplicated sealed data object S1 at 80000001 under %%~A K1 80000002"
+    %TPM_EXE_PATH%load -hp 80000002 -ipr tmppriv1.bin -ipu tmppub.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Unseal the data blob"
+    %TPM_EXE_PATH%unseal -ha 80000001 -pwd sea -of tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Verify the unsealed result"
+    diff msg.bin tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the sealed data object at 80000001"
+    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the storage key at 80000002"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the session"
+    %TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+)
+
 rm tmppriv.bin
 rm tmppub.bin
 rm tmp.bin
+rm tmpdup.bin
+rm tmpss.bin
+rm tmppriv1.bin
 
 exit /B 0
 

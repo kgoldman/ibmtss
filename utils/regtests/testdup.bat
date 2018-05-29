@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 1097 2017-11-10 22:25:33Z kgoldman $		#
+REM #		$Id: testdup.bat 1209 2018-05-10 21:26:10Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
@@ -218,7 +218,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Duplicate K2 under storage key"
-%TPM_EXE_PATH%duplicate -ho 80000001 -hp 80000000 -od tmpdup.bin -oss tmpss.bin -se0 03000000 1
+%TPM_EXE_PATH%duplicate -ho 80000001 -hp 80000000 -od tmpdup.bin -oss tmpss.bin -se0 03000000 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -651,13 +651,13 @@ REM # change it.
     )
 
     echo "Target: Import the sealed AES key under the EK storage key"
-    %TPM_EXE_PATH%import -hp 80000001 -ipu tmpsdbpub.bin -id tmpsdbdup.bin -iss tmpss.bin -opr tmpsdbpriv.bin -se0 03000000 1
+    %TPM_EXE_PATH%import -hp 80000001 -ipu tmpsdbpub.bin -id tmpsdbdup.bin -iss tmpss.bin -opr tmpsdbpriv.bin -se0 03000000 1 > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 
     echo "Target: Restart the policy session"
-    %TPM_EXE_PATH%policyrestart -ha 03000000
+    %TPM_EXE_PATH%policyrestart -ha 03000000 > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

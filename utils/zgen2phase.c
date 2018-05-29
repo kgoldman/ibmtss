@@ -3,7 +3,7 @@
 /*			    ZGen_2Phase						*/
 /*	     		Written by Ken Goldman 					*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: zgen2phase.c 1064 2017-08-24 17:24:41Z kgoldman $		*/
+/*	      $Id: zgen2phase.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -281,7 +281,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.counter, 
-				    (UnmarshalFunction_t)UINT16_Unmarshal,
+				    (UnmarshalFunction_t)TSS_UINT16_Unmarshal,
 				    counterFilename);
     }
     /* Start a TSS context */

@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: tssproperties.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -42,6 +42,7 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <tss2/tss.h>
 #include <tss2/tsstransmit.h>
@@ -147,6 +148,7 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
     if (rc == 0) {
 	tssContext->tssAuthContext = NULL;
 	tssContext->tssFirstTransmit = TRUE;	/* connection not opened */
+	tssContext->tpm12Command = FALSE;
 #ifdef TPM_WINDOWS
 	tssContext->sock_fd = INVALID_SOCKET;
 #endif
@@ -158,7 +160,7 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 	tssContext->dev_fd = -1;
 #ifdef TPM_WINDOWS
 #ifdef TPM_WINDOWS_TBSI
-	tssContext->hContext = 0;	/* FIXME:  Guess at an illegal value */
+	tssContext->hContext;
 #endif
 #endif
 #ifndef TPM_TSS_NOCRYPTO
@@ -343,7 +345,12 @@ static TPM_RC TSS_SetDataDirectory(TSS_CONTEXT *tssContext, const char *value)
     }
     if (rc == 0) {
 	tssContext->tssDataDirectory = value;
-	/* FIXME check length, don't hard code max length, use max path size */
+	/* appended to this is 17 characters /cccnnnnnnnn.bin[nul], add a bit of margin for future
+	   prefixes */
+	if (strlen(value) > (TPM_DATA_DIR_PATH_LENGTH - 24)) {
+	    if (tssVerbose) printf("TSS_SetDataDirectory: Error, value too long\n");
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
     }
     return rc;
 }

@@ -3,7 +3,7 @@
 /*			    NV_Certify						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvcertify.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: nvcertify.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -182,7 +182,6 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		offset = atoi(argv[i]);
-		/* FIXME range check */
 	    }
 	    else {
 		printf("-off option needs a value\n");

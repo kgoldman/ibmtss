@@ -3,7 +3,7 @@
 /*			    Create Primary	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createprimary.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: createprimary.c 1178 2018-04-24 15:06:52Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -462,10 +462,14 @@ int main(int argc, char *argv[])
       case TYPE_DAA:
       case TYPE_DAAR:
 	if (algPublic != TPM_ALG_ECC) {
-	    printf("-dau and -dar needs -ecc\n");
+	    printf("-dau and -dar need -ecc\n");
  	    printUsage();
 	}
-	/* fall through to next test is intentional */
+	if (dataFilename != NULL) {
+	    printf("asymmetric key cannot have -if (sensitive data)\n");
+	    printUsage();
+	}
+	break;
       case TYPE_ST:
       case TYPE_DEN:
       case TYPE_DEO:
@@ -476,6 +480,7 @@ int main(int argc, char *argv[])
 	    printf("asymmetric key cannot have -if (sensitive data)\n");
 	    printUsage();
 	}
+	break;
       case TYPE_DES:
       case TYPE_KH:
       case TYPE_DP:

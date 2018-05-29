@@ -3,9 +3,9 @@
 #		Linux TPM2 Utilities Makefile - for Debian source RPM ONLY!	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.debian 1094 2017-11-08 21:50:29Z kgoldman $		#
+#	      $Id: makefile.debian 1217 2018-05-15 17:07:20Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2017						#
+# (c) Copyright IBM Corporation 2017, 2018.					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -58,11 +58,12 @@ CCFLAGS += 	-DTPM_POSIX
 # include the hardening flag PIC needed for compiling for dynamic
 # linking
 
-CCLFLAGS += 	-I. -DTPM_TSS	\
-		-fPIC
+CCLFLAGS += 	-I. 		\
+		-fPIC		\
+		-DTPM_TPM20
 
 # to compile out printf's.  Regression test will fail because it tries
-# to print a structure -DTPM_NO_PRINT
+# to print a structure -DTPM_TSS_NO_PRINT
 
 # example of changing the default interface type
 #	-DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
@@ -72,7 +73,8 @@ CCLFLAGS += 	-I. -DTPM_TSS	\
 # include the hardening flag PIE needed for compiling for
 # static linking
 
-CCAFLAGS += 	-I.	\
+CCAFLAGS += 	-I.		\
+		-DTPM_TPM20	\
 		-fPIE
 
 # link - common flags flags TSS library and applications
@@ -101,26 +103,26 @@ LNLLIBS += -lcrypto
 # hardening flags for linking executables
 LNAFLAGS += -pie -Wl,-z,now
 
-LNALIBS +=  -ltss -lcrypto
+LNALIBS +=  -libmtss -lcrypto
 
 # shared library
 
 # versioned shared library
-LIBTSSVERSIONED=libtss.so.0.1
+LIBTSSVERSIONED=libibmtss.so.0.1
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
 # this is used to provide version backward-compatibility information
-LIBTSSSONAME=libtss.so.0
+LIBTSSSONAME=libibmtss.so.0
 
 # symbolic link to the versioned shared library
-# this allows linking to the shared library with '-ltss' 
+# this allows linking to the shared library with '-libmtss' 
 
 os := $(shell uname -o)
 ifeq ($(os),Cygwin)
-  LIBTSS=libtss.dll
+  LIBTSS=libibmtss.dll
 else
-  LIBTSS=libtss.so
+  LIBTSS=libibmtss.so
 endif
 
 # executable extension
@@ -135,11 +137,13 @@ TSS_HEADERS=
 
 TSS_OBJS = 	tssfile.o 		\
 		tsscryptoh.o 		\
-		tsscrypto.o
+		tsscrypto.o 		\
+		tssprintcmd.o
 
 # common to all builds
 
 include makefile-common
+include makefile-common20
 
 # default build target
 
@@ -187,6 +191,13 @@ ntc2lib.o:	$(TSS_HEADERS) ntc2lib.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) ntc2lib.c
 tssntc.o:	$(TSS_HEADERS) tssntc.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssntc.c
+
+# TPM 2.0
+
+tss20.o: 	$(TSS_HEADERS) tss20.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tss20.c
+tssauth20.o: 	$(TSS_HEADERS) tssauth20.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth20.c
 
 # TSS shared library build
 
@@ -267,6 +278,8 @@ getcapability:		tss2/tss.h getcapability.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getcapability.o $(LNALIBS) -o getcapability
 getrandom:		tss2/tss.h getrandom.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getrandom.o $(LNALIBS) -o getrandom
+gettestresult:		tss2/tss.h gettestresult.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) gettestresult.o $(LNALIBS) -o gettestresult
 getsessionauditdigest:	tss2/tss.h getsessionauditdigest.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getsessionauditdigest.o $(LNALIBS) -o getsessionauditdigest
 gettime:		tss2/tss.h gettime.o $(LIBTSS)
@@ -341,8 +354,12 @@ policycommandcode:	tss2/tss.h policycommandcode.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycommandcode.o $(LNALIBS) -o policycommandcode
 policycphash:		tss2/tss.h policycphash.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycphash.o $(LNALIBS) -o policycphash
+policynamehash:		tss2/tss.h policynamehash.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policynamehash.o $(LNALIBS) -o policynamehash
 policycountertimer :	tss2/tss.h policycountertimer.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycountertimer.o $(LNALIBS) -o policycountertimer
+policyduplicationselect:	tss2/tss.h policyduplicationselect.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyduplicationselect.o $(LNALIBS) -o policyduplicationselect
 policygetdigest:	tss2/tss.h policygetdigest.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policygetdigest.o $(LNALIBS) -o policygetdigest
 policymaker:		tss2/tss.h policymaker.o $(LIBTSS)

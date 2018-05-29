@@ -3,7 +3,7 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.h 1124 2018-01-05 21:32:55Z kgoldman $		*/
+/*            $Id: tssauth.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -43,10 +43,43 @@
 #define TSS_AUTH_H
 
 #include <tss2/tss.h>
-#include "Commands_fp.h"
-#include <tssccattributes.h>
+#include "tssccattributes.h"
 
-typedef struct TSS_AUTH_CONTEXT TSS_AUTH_CONTEXT;
+/* Generic functions to marshal and unmarshal Part 3 ordinal command and response parameters */
+
+typedef TPM_RC (*MarshalInFunction_t)(COMMAND_PARAMETERS *source,
+				      uint16_t *written, BYTE **buffer, uint32_t *size);
+typedef TPM_RC (*UnmarshalOutFunction_t)(RESPONSE_PARAMETERS *target,
+					 TPM_ST tag, BYTE **buffer, uint32_t *size);
+typedef TPM_RC (*UnmarshalInFunction_t)(COMMAND_PARAMETERS *target,
+					BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
+
+/* The context for the entire command processor.  Update TSS_InitAuthContext() when changing
+   this structure */
+
+typedef struct TSS_AUTH_CONTEXT {
+    uint8_t 		commandBuffer [MAX_COMMAND_SIZE];
+    uint8_t 		responseBuffer [MAX_RESPONSE_SIZE];
+    const char 		*commandText;
+    COMMAND_INDEX    	tpmCommandIndex;	/* index into attributes table */
+    TPM_CC 		commandCode;
+    TPM_RC 		responseCode;
+    size_t		commandHandleCount;
+    uint32_t 		responseHandleCount;
+    uint16_t		authCount;		/* authorizations in command */
+    uint16_t 		commandSize;
+    uint32_t 		cpBufferSize;
+    uint8_t 		*cpBuffer;
+    uint32_t 		responseSize;
+    MarshalInFunction_t    marshalInFunction;
+    UnmarshalOutFunction_t unmarshalOutFunction;
+    UnmarshalInFunction_t  unmarshalInFunction;
+#ifdef TPM_TPM12
+    uint16_t		sessionNumber;		/* session used for ADIP, zero based */
+    int16_t		encAuthOffset0;		/* offset to first TPM_ENCAUTH parameter */
+    int16_t		encAuthOffset1;		/* offset to second TPM_ENCAUTH parameter if not NULL */
+#endif
+} TSS_AUTH_CONTEXT;
 
 TPM_RC TSS_AuthCreate(TSS_AUTH_CONTEXT **tssAuthContext);
 
@@ -54,52 +87,15 @@ void TSS_InitAuthContext(TSS_AUTH_CONTEXT *tssAuthContext);
 
 TPM_RC TSS_AuthDelete(TSS_AUTH_CONTEXT *tssAuthContext);
 
-TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
-		   COMMAND_PARAMETERS *in,
-		   TPM_CC commandCode);
-
-TPM_RC TSS_Unmarshal(TSS_AUTH_CONTEXT *tssAuthContext,
-		     RESPONSE_PARAMETERS *out);
-
-TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...);
-
-TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...);
-
 TPM_CC TSS_GetCommandCode(TSS_AUTH_CONTEXT *tssAuthContext);
 
 TPM_RC TSS_GetCpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
 		       uint32_t *cpBufferSize,
 		       uint8_t **cpBuffer);
 
-TPM_RC TSS_GetCommandDecryptParam(TSS_AUTH_CONTEXT *tssAuthContext,
-				  uint32_t *decryptParamSize,
-				  uint8_t **decryptParamBuffer);
-
-TPM_RC TSS_SetCommandDecryptParam(TSS_AUTH_CONTEXT *tssAuthContext,
-				  uint32_t encryptParamSize,
-				  uint8_t *encryptParamBuffer);
 
 TPM_RC TSS_GetCommandHandleCount(TSS_AUTH_CONTEXT *tssAuthContext,
 				 size_t *commandHandleCount);
-
-AUTH_ROLE TSS_GetAuthRole(TSS_AUTH_CONTEXT *tssAuthContext,
-			  size_t handleIndex);
-
-TPM_RC TSS_GetCommandHandle(TSS_AUTH_CONTEXT *tssAuthContext,
-			    TPM_HANDLE *commandHandle,
-			    size_t index);
-
-TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
-		       uint32_t *rpBufferSize,
-		       uint8_t **rpBuffer);
-
-TPM_RC TSS_GetResponseEncryptParam(TSS_AUTH_CONTEXT *tssAuthContext,
-				   uint32_t *encryptParamSize,
-				   uint8_t **encryptParamBuffer);
-
-TPM_RC TSS_SetResponseDecryptParam(TSS_AUTH_CONTEXT *tssAuthContext,
-				   uint32_t decryptParamSize,
-				   uint8_t *decryptParamBuffer);
 
 TPM_RC TSS_AuthExecute(TSS_CONTEXT *tssContext);
 

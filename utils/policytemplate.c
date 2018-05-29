@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 	printf("Missing handle parameter -ha\n");
 	printUsage();
     }
-    if (templateFilename == 0) {
+    if (templateFilename == NULL) {
 	printf("Missing handle parameter -te\n");
 	printUsage();
     }

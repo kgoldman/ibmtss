@@ -3,7 +3,7 @@
 /*			  Command and Response Parameter Structures		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Parameters.h 1055 2017-08-08 20:30:09Z kgoldman $		*/
+/*            $Id: Parameters.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -340,12 +340,5 @@ typedef union
     VerifySignature_Out            VerifySignature;
     ZGen_2Phase_Out                ZGen_2Phase;
 } RESPONSE_PARAMETERS;
-
-/* The TPM implements in and out as globals */
-
-#ifndef TPM_TSS
-extern COMMAND_PARAMETERS in;
-extern RESPONSE_PARAMETERS out;
-#endif
 
 #endif

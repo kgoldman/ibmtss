@@ -3,7 +3,7 @@
 /*			Return Code Hex to String     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: returncode.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: returncode.c 1221 2018-05-16 21:10:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -45,6 +45,8 @@
 #include <tss2/tssresponsecode.h>
 
 static void printUsage(void);
+
+int verbose = FALSE;
 
 int main(int argc, char *argv[])
 {

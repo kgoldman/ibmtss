@@ -3,9 +3,9 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: ekutils.c 1221 2018-05-16 21:10:46Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2017.					*/
+/* (c) Copyright IBM Corporation 2016, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -741,6 +741,8 @@ TPM_RC processEKNonce(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#ifdef TPM_TPM20
+
 /* processEKTemplate() reads the EK template from NV and returns the unmarshaled TPMT_PUBLIC */
 
 TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
@@ -773,6 +775,8 @@ TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
     free(data);   			/* @1 */
     return rc;
 }
+
+#endif
 
 /* processEKCertificate() reads the EK certificate from NV and returns an openssl X509 certificate
    structure.  It also extracts and returns the public modulus.
@@ -860,11 +864,9 @@ TPM_RC convertX509ToRsa(RSA  **rsaPkey,	/* freed by caller */
 			X509 *x509)
 {
     TPM_RC rc = 0;
-
-    if (verbose) printf("convertX509ToRsa: Entry\n\n");
-    
     EVP_PKEY *evpPkey = NULL;
 
+    if (verbose) printf("convertX509ToRsa: Entry\n\n");
     if (rc == 0) {
 	evpPkey = X509_get_pubkey(x509);	/* freed @1 */
 	if (evpPkey == NULL) {
@@ -885,19 +887,19 @@ TPM_RC convertX509ToRsa(RSA  **rsaPkey,	/* freed by caller */
     return rc;
 }
 
+#ifndef TPM_TSS_NOECC
+
 /* convertX509ToEc extracts the public key from an X509 structure to an openssl RSAEC_KEY structure
 
  */
 
 TPM_RC convertX509ToEc(EC_KEY **ecKey,	/* freed by caller */
-			 X509 *x509)
+		       X509 *x509)
 {
     TPM_RC rc = 0;
-
-    if (verbose) printf("convertX509ToEc: Entry\n\n");
-    
     EVP_PKEY *evpPkey = NULL;
 
+    if (verbose) printf("convertX509ToEc: Entry\n\n");
     if (rc == 0) {
 	evpPkey = X509_get_pubkey(x509);	/* freed @1 */
 	if (evpPkey == NULL) {
@@ -917,6 +919,8 @@ TPM_RC convertX509ToEc(EC_KEY **ecKey,	/* freed by caller */
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOECC */
 
 /* convertCertificatePubKey() returns the public modulus from an openssl X509 certificate
    structure.  ekCertIndex determines whether the algorithm is RSA or ECC.
@@ -945,70 +949,147 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
     if (rc == 0) {
 	pkey = X509_get_pubkey(ekCertificate);		/* freed @2 */
 	if (pkey == NULL) {
-	    printf("convertCertificatePubKey: Could not extract public key from X509 certificate\n");
+	    if (verbose) printf("convertCertificatePubKey: "
+				"Could not extract public key from X509 certificate, "
+				"may be TPM 1.2\n");
+	    /* if the conversion failed, this may be a TPM 1.2 certificate with a non-standard TCG
+	       algorithm.  Try a different method to get the public modulus. */
+	    rc = convertCertificatePubKey12(modulusBin,	/* freed by caller */
+					    modulusBytes,
+					    ekCertificate);
+	}
+	else {
+	    if (rc == 0) {
+		pkeyType = getRsaPubkeyAlgorithm(pkey);
+	    }
+	    switch (ekCertIndex) {
+	      case EK_CERT_RSA_INDEX:
+		  {
+		      RSA *rsaKey = NULL;
+		      /* check that the public key algorithm matches the ekCertIndex algorithm */
+		      if (rc == 0) {
+			  if (pkeyType != EVP_PKEY_RSA) {
+			      printf("convertCertificatePubKey: "
+				     "Public key from X509 certificate is not RSA\n");
+			      rc = TPM_RC_INTEGRITY;
+			  }
+		      }
+		      /* convert the public key to OpenSSL structure */
+		      if (rc == 0) {
+			  rsaKey = EVP_PKEY_get1_RSA(pkey);		/* freed @3 */
+			  if (rsaKey == NULL) {
+			      printf("convertCertificatePubKey: Could not extract RSA public key "
+				     "from X509 certificate\n");
+			      rc = TPM_RC_INTEGRITY;
+			  }
+		      }
+		      if (rc == 0) {
+			  rc = convertRsaKeyToPublicKeyBin(modulusBytes,
+							   modulusBin,	/* freed by caller */
+							   rsaKey);
+		      }
+		      if (rc == 0) {
+			  if (print) TSS_PrintAll("Certificate public key:",
+						  *modulusBin, *modulusBytes);
+		      }    
+		      RSA_free(rsaKey);   		/* @3 */
+		  }
+		  break;
+#ifndef TPM_TSS_NOECC
+	      case EK_CERT_EC_INDEX:
+		  {
+		      EC_KEY *ecKey = NULL;
+		      /* check that the public key algorithm matches the ekCertIndex algorithm */
+		      if (rc == 0) {
+			  if (pkeyType != EVP_PKEY_EC) {
+			      printf("convertCertificatePubKey: "
+				     "Public key from X509 certificate is not EC\n");
+			      rc = TPM_RC_INTEGRITY;
+			  }
+		      }
+		      /* convert the public key to OpenSSL structure */
+		      if (rc == 0) {
+			  ecKey = EVP_PKEY_get1_EC_KEY(pkey);		/* freed @3 */
+			  if (ecKey == NULL) {
+			      printf("convertCertificatePubKey: Could not extract EC public key "
+				     "from X509 certificate\n");
+			      rc = TPM_RC_INTEGRITY;
+			  }
+		      }
+		      if (rc == 0) {
+			  rc = convertEcKeyToPublicKeyBin(modulusBytes,
+							  modulusBin,	/* freed by caller */
+							  ecKey);
+		      }
+		      if (rc == 0) {
+			  if (print) TSS_PrintAll("Certificate public key:",
+						  *modulusBin, *modulusBytes);
+		      }
+		      EC_KEY_free(ecKey);   		/* @3 */
+		  }
+		  break;
+#endif	/* TPM_TSS_NOECC */
+	      default:
+		printf("convertCertificatePubKey: "
+		       "ekCertIndex %08x (asymmetric algorithm) not supported\n", ekCertIndex);
+		break;
+	    }
+	}
+	EVP_PKEY_free(pkey);   		/* @2 */
+    }
+    return rc;
+}
+
+TPM_RC convertCertificatePubKey12(uint8_t **modulusBin,	/* freed by caller */
+				  int *modulusBytes,
+				  X509 *ekCertificate)
+{
+    TPM_RC		rc = 0;
+    int			irc;
+    X509_PUBKEY 	*pubkey = NULL;
+
+    /* get internal pointer to the public key in the certificate */
+    if (rc == 0) {
+	pubkey = X509_get_X509_PUBKEY(ekCertificate);	/* do not free */
+	if (pubkey == NULL) {
+	    printf("convertCertificatePubKey12: Could not extract X509_PUBKEY public key "
+		   "from X509 certificate\n");
+	    rc = TPM_RC_INTEGRITY;
+	}
+    }
+    /* get the public key parameters, as a byte stream pk */
+    ASN1_OBJECT *ppkalg = NULL;			/* ignore OID */
+    const unsigned char *pk = NULL;		/* do not free */
+    int ppklen;
+    X509_ALGOR *palg = NULL;			/* algorithm identifier for public key */
+    if (rc == 0) {
+	irc = X509_PUBKEY_get0_param(&ppkalg,
+				     &pk, &ppklen,	/* internal, don't free */
+				     &palg, pubkey);
+	if (irc != 1) {
+	    printf("convertCertificatePubKey12: Could not extract public key parameters "
+		   "from X509 certificate\n");
+	    rc = TPM_RC_INTEGRITY;
+	}
+    }
+    RSA *rsaKey = NULL;
+    if (rc == 0) {
+	const unsigned char *tmppk = pk;	/* because d2i moves the pointer */
+	rsaKey = d2i_RSAPublicKey(NULL, &tmppk, ppklen);	/* freed @1 */
+	if (rsaKey == NULL) {
+	    printf("convertCertificatePubKey12: Could not convert to RSA structure\n");
 	    rc = TPM_RC_INTEGRITY;
 	}
     }
     if (rc == 0) {
-	pkeyType = getRsaPubkeyAlgorithm(pkey);
+	rc = convertRsaKeyToPublicKeyBin(modulusBytes,
+					 modulusBin,	/* freed by caller */
+					 rsaKey);
+	TSS_PrintAll("convertCertificatePubKey12", *modulusBin, *modulusBytes);
     }
-    if (ekCertIndex == EK_CERT_RSA_INDEX) {
-	RSA *rsaKey = NULL;
-	/* check that the public key algorithm matches the ekCertIndex algorithm */
-	if (rc == 0) {
-	    if (pkeyType != EVP_PKEY_RSA) {
-		printf("convertCertificatePubKey: Public key from X509 certificate is not RSA\n");
-		rc = TPM_RC_INTEGRITY;
-	    }
-	}
-	/* convert the public key to OpenSSL structure */
-	if (rc == 0) {
-	    rsaKey = EVP_PKEY_get1_RSA(pkey);		/* freed @3 */
-	    if (rsaKey == NULL) {
-		printf("convertCertificatePubKey: Could not extract RSA public key "
-		       "from X509 certificate\n");
-		rc = TPM_RC_INTEGRITY;
-	    }
-	}
-	if (rc == 0) {
-	    rc = convertRsaKeyToPublicKeyBin(modulusBytes,
-					     modulusBin,	/* freed by caller */
-					     rsaKey);
-	}
-	if (rc == 0) {
-	    if (print) TSS_PrintAll("Certificate public key:", *modulusBin, *modulusBytes);
-	}    
-	RSA_free(rsaKey);   		/* @3 */
+    if (rsaKey != NULL) {
+	RSA_free(rsaKey);		/* @1 */
     }
-    else {	/* EC index */
-	EC_KEY *ecKey = NULL;
-	/* check that the public key algorithm matches the ekCertIndex algorithm */
-	if (rc == 0) {
-	    if (pkeyType != EVP_PKEY_EC) {
-		printf("convertCertificatePubKey: Public key from X509 certificate is not EC\n");
-		rc = TPM_RC_INTEGRITY;
-	    }
-	}
-	/* convert the public key to OpenSSL structure */
-	if (rc == 0) {
-	    ecKey = EVP_PKEY_get1_EC_KEY(pkey);		/* freed @3 */
-	    if (ecKey == NULL) {
-		printf("convertCertificatePubKey: Could not extract EC public key "
-		       "from X509 certificate\n");
-		rc = TPM_RC_INTEGRITY;
-	    }
-	}
-	if (rc == 0) {
-	rc = convertEcKeyToPublicKeyBin(modulusBytes,
-					modulusBin,	/* freed by caller */
-					ecKey);
-	}
-	if (rc == 0) {
-	    if (print) TSS_PrintAll("Certificate public key:", *modulusBin, *modulusBytes);
-	}
-	EC_KEY_free(ecKey);   		/* @3 */
-    }
-    EVP_PKEY_free(pkey);   		/* @2 */
     return rc;
 }
 
@@ -1094,10 +1175,9 @@ uint32_t convertPemMemToX509(X509 **x509,		/* freed by caller */
 			     const char *pemCertificate)
 {
     uint32_t rc = 0;
+    BIO *bio = NULL;
 
     if (verbose) printf("convertPemMemToX509: pemCertificate\n%s\n", pemCertificate);  
-
-    BIO *bio = NULL;
     /* create a BIO that uses an in-memory buffer */
     if (rc == 0) {
 	bio = BIO_new(BIO_s_mem());		/* freed @1 */
@@ -1298,7 +1378,6 @@ TPM_RC calculateNid(void)
     TPM_RC rc = 0;
     size_t 	i;
 
-    /* if (vverbose) printf("calculateNid:\n"); */
     for (i=0 ; (i < sizeof(certificateName)/sizeof(CertificateName)) && (rc == 0) ; i++) {
 	certificateName[i].nid = OBJ_txt2nid(certificateName[i].key);	/* look up the NID for the
 									   field */
@@ -1381,13 +1460,16 @@ TPM_RC createCertificate(char **x509CertString,		/* freed by caller */
     }
     /* add the TPM public key to be certified */
     if (rc == 0) {
-	if (tpmtPublic->type == TPM_ALG_RSA) {
+	switch (tpmtPublic->type) {
+	  case TPM_ALG_RSA:
 	    rc = addCertKeyRsa(x509Certificate, &tpmtPublic->unique.rsa);
-	}
-	else if (tpmtPublic->type == TPM_ALG_ECC) {
+	    break;
+#ifndef TPM_TSS_NOECC
+	  case TPM_ALG_ECC:
 	    rc = addCertKeyEcc(x509Certificate, &tpmtPublic->unique.ecc);
-	}
-	else {
+	    break;
+#endif	/* TPM_TSS_NOECC */
+	  default:
 	    printf("createCertificate: public key algorithm %04x not supported\n",
 		   tpmtPublic->type);
 	    rc = TSS_RC_BAD_SIGNATURE_ALGORITHM;
@@ -1495,6 +1577,8 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
     /* add validity */
     if (rc == 0) {
 	if (verbose) printf("startCertificate: Adding certificate validity\n");
+    }
+    if (rc == 0) {
 	/* can't fail, just returns a structure member */
 	ASN1_TIME *notBefore = X509_get_notBefore(x509Certificate);
 	arc = X509_gmtime_adj(notBefore ,0L);			/* set to today */
@@ -1654,6 +1738,8 @@ TPM_RC addCertKeyRsa(X509 *x509Certificate,
     return rc;
 }
 
+#ifndef TPM_TSS_NOECC
+
 /* addCertKeyEcc() adds the TPM ECC public key (the key to be certified) to the openssl X509
    certificate
 
@@ -1685,6 +1771,8 @@ TPM_RC addCertKeyEcc(X509 *x509Certificate,
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOECC */
 
 /* addCertSignatureRoot() uses the openSSL root key to sign the X509 certificate.
 
@@ -2037,6 +2125,8 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,		/* from certificate */
 
 }
 
+#ifdef TPM_TPM20
+
 /* processPrimary() reads the EK nonce and EK template from NV.  It combines them to form the
    createprimary input.  It creates the primary key.
 
@@ -2114,5 +2204,5 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-
+#endif
 

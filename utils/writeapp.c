@@ -3,9 +3,9 @@
 /*			    NV Write Application				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: writeapp.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: writeapp.c 1212 2018-05-11 20:05:25Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -40,7 +40,7 @@
 /* 
    Demo application, and test of "no file TSS"
 
-   Create an EK
+   Create an EK for the salt
 
    Start a session, salt with EK
 
@@ -212,8 +212,9 @@ int main(int argc, char *argv[])
     if (verbose) printf("INFO: Flush the primary key\n");
     flush(tssContext, ekKeyHandle);
     {
+	TPM_RC rc1;
 	if (verbose) printf("INFO: Delete the TSS context\n");
-	TPM_RC rc1 = TSS_Delete(tssContext);
+	rc1 = TSS_Delete(tssContext);
 	if (rc == 0) {
 	    rc = rc1;
 	}
@@ -398,6 +399,7 @@ static void printUsage(void)
     printf("HMAC session using AES CFB parameter encryption.\n");
     printf("\n");
     printf("\t[-pwsess Use a password session, no HMAC or parameter encryption]\n");
+    printf("\t\tUsed to test minimal TSS build\n");
     printf("\n");
     exit(1);	
 }

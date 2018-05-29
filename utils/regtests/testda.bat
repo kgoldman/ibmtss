@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testda.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testda.bat 1209 2018-05-10 21:26:10Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -163,37 +163,37 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Reset DA lock with good password"
-%TPM_EXE_PATH%dictionaryattacklockreset -pwd lll
+%TPM_EXE_PATH%dictionaryattacklockreset -pwd lll > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Set DA recovery time to 0 with good password"
-%TPM_EXE_PATH%dictionaryattackparameters -nrt 0 -pwd lll
+%TPM_EXE_PATH%dictionaryattackparameters -nrt 0 -pwd lll > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Clear lockout auth"
-%TPM_EXE_PATH%hierarchychangeauth -hi l -pwda lll
+%TPM_EXE_PATH%hierarchychangeauth -hi l -pwda lll > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Set DA recovery time to 0"
-%TPM_EXE_PATH%dictionaryattackparameters -nrt 0
+%TPM_EXE_PATH%dictionaryattackparameters -nrt 0 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Reset DA lock"
-%TPM_EXE_PATH%dictionaryattacklockreset
+%TPM_EXE_PATH%dictionaryattacklockreset > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Flush signing key"
-%TPM_EXE_PATH%flushcontext -ha 80000001
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

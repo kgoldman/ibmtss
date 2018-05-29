@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Unmarshal_fp.h 1124 2018-01-05 21:32:55Z kgoldman $		*/
+/*            $Id: Unmarshal_fp.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -71,19 +71,19 @@ extern "C" {
 #endif
 
     LIB_EXPORT TPM_RC
-    UINT8_Unmarshal(UINT8 *target, BYTE **buffer, uint32_t *size);
+    TSS_UINT8_Unmarshal(UINT8 *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
-    INT8_Unmarshal(INT8 *target, BYTE **buffer, uint32_t *size);
+    TSS_INT8_Unmarshal(INT8 *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
-    UINT16_Unmarshal(UINT16 *target, BYTE **buffer, uint32_t *size);
+    TSS_UINT16_Unmarshal(UINT16 *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
-    UINT32_Unmarshal(UINT32 *target, BYTE **buffer, uint32_t *size);
+    TSS_UINT32_Unmarshal(UINT32 *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
-    INT32_Unmarshal(INT32 *target, BYTE **buffer, uint32_t *size);
+    TSS_INT32_Unmarshal(INT32 *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
-    UINT64_Unmarshal(UINT64 *target, BYTE **buffer, uint32_t *size);
+    TSS_UINT64_Unmarshal(UINT64 *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
-    Array_Unmarshal(BYTE *targetBuffer, UINT16 targetSize, BYTE **buffer, uint32_t *size);
+    TSS_Array_Unmarshal(BYTE *targetBuffer, UINT16 targetSize, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TPM2B_Unmarshal(TPM2B *target, UINT16 targetSize, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC

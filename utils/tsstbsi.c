@@ -3,7 +3,7 @@
 /*	Windows 7,8,10 Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstbsi.c 1124 2018-01-05 21:32:55Z kgoldman $ 		*/
+/*	      $Id: tsstbsi.c 1157 2018-04-17 14:09:56Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -111,18 +111,34 @@ TPM_RC TSS_Tbsi_Transmit(TSS_CONTEXT *tssContext,
 			 const char *message)
 {
     TPM_RC rc = 0;
-    
 #if defined TPM_WINDOWS_TBSI_WIN7
     TBS_CONTEXT_PARAMS contextParams;
-    contextParams.version = TBS_CONTEXT_VERSION_ONE;
 #elif defined  TPM_WINDOWS_TBSI_WIN8
-    TBS_CONTEXT_PARAMS2 contextParams;
-    contextParams.version = TBS_CONTEXT_VERSION_TWO;
-    contextParams.includeTpm12 = 0;
-    contextParams.includeTpm20 = 1;
+    TBS_CONTEXT_PARAMS contextParams;
+#else
+#error "One of TPM_WINDOWS_TBSI_WIN7 or TPM_WINDOWS_TBSI_WIN8 must be defined"
 #endif
-    *read = MAX_RESPONSE_SIZE;
 
+    if (rc == 0) {
+#if defined TPM_WINDOWS_TBSI_WIN7
+	if (!tssContext->>tpm12Command) {
+	    if (tssVerbose) printf("TSS_Tbsi_Transmit: TPM 2.0 unsupported\n");
+	    rc = TSS_RC_INSUPPORTED_INTERFACE;
+	}
+	contextParams.version = TBS_CONTEXT_VERSION_ONE;
+#elif defined  TPM_WINDOWS_TBSI_WIN8
+	contextParams.version = TBS_CONTEXT_VERSION_TWO;
+	if (!tssContext->tpm12Command) {	/* TPM 2.0 command */
+	    contextParams.includeTpm12 = 0;
+	    contextParams.includeTpm20 = 1;
+	}
+	else {					/* TPM 1.2 command */
+	    contextParams.includeTpm12 = 1;
+	    contextParams.includeTpm20 = 0;
+	}
+#endif
+    }
+    *read = MAX_RESPONSE_SIZE;
     /* open on first transmit */
     if (tssContext->tssFirstTransmit) {	
 	if (rc == 0) {
@@ -210,7 +226,7 @@ static uint32_t TSS_Tbsi_SubmitCommand(TBS_HCONTEXT hContext,
 
 	bufferPtr = responseBuffer + sizeof(TPM_ST) + sizeof(uint32_t);		/* skip to responseCode */
 	size = sizeof(TPM_RC);		/* dummy for call */
-	rc = UINT32_Unmarshal(&responseCode, &bufferPtr, &size);
+	rc = TSS_UINT32_Unmarshal(&responseCode, &bufferPtr, &size);
     }
     if (rc == 0) {
 	rc = responseCode;

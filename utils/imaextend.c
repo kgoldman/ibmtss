@@ -3,9 +3,9 @@
 /*		      Extend an IMA measurement list into PCR 10		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: imaextend.c 1136 2018-01-16 17:21:50Z kgoldman $		*/
+/*	      $Id: imaextend.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2014, 2017.					*/
+/* (c) Copyright IBM Corporation 2014, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -37,8 +37,8 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
-/* imaextend is test/demo code.  It parses a TPM2 event log file and extends the measurements
-   into TPM PCRs.  This simulates the actions that would be performed by BIOS / firmware in a
+/* imaextend is test/demo code.  It parses a TPM 1.2 IMA event log file and extends the measurements
+   into TPM PCRs.  This simulates the actions that would be performed by the Linux kernel IMA in a
    hardware platform.
 
    To test incremental attestations, the caller can optionally specify a beginning event number and
@@ -226,7 +226,7 @@ int main(int argc, char * argv[])
 	if (infile != NULL) {
 	    fclose(infile);
 	}
-	sleep(loopTime);
+	usleep(loopTime * 1000000);
     } while ((rc == 0) && (loopTime != 0)); 		/* sleep loop */
     {
 	TPM_RC rc1 = TSS_Delete(tssContext);

@@ -118,7 +118,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy Authorize NV against 01000000"
-%TPM_EXE_PATH%policyauthorizenv -ha 01000000 -hs 03000000
+%TPM_EXE_PATH%policyauthorizenv -ha 01000000 -hs 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -148,7 +148,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy Authorize NV against 01000000"
-%TPM_EXE_PATH%policyauthorizenv -ha 01000000 -hs 03000000
+%TPM_EXE_PATH%policyauthorizenv -ha 01000000 -hs 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -278,7 +278,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create loaded signing key under primary key"
-%TPM_EXE_PATH%createloaded -si -hp 80000001 -kt f -kt p -se0 03000000 1
+%TPM_EXE_PATH%createloaded -si -hp 80000001 -kt f -kt p -se0 03000000 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

@@ -3,9 +3,9 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.c 1124 2018-01-05 21:32:55Z kgoldman $		*/
+/*	      $Id: tssmarshal.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -44,6 +44,21 @@
 #include <tss2/tssprint.h>
 #include <tss2/Unmarshal_fp.h>
 
+/* This file holds:
+
+   Primary shared marshal functions
+   
+   TPM 2.0 command marshal functions
+   TPM 2.0 response unmarshal functions
+   
+   TPM 2.0 Structure marshal functions
+
+   - for historical reasons, previously shared code with the TPM 2.0 SW TPM
+   
+   TPM 2.0 structure unmarshal functions are in Unmarshal.c
+   TPM 2.0 command unmarshal functions (for error checking) are in Commands.c
+*/
+
 /* The marshaling functions are slightly different from the TPM side.  The TPM assumes that all
    structures are trusted, and so has no error checking.  The TSS side makes no such assumption.
 
@@ -65,8 +80,150 @@
    If 'size' is NULL, the source is unmarshaled without a size check.  The caller must ensure that
    the buffer is sufficient, often due to a malloc after the first pass.  */
 
+/* Marshal functions shared by TPM 1.2 and TPM 2.0 */
+
+TPM_RC
+TSS_UINT8_Marshal(const UINT8 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (buffer != NULL) {	/* if buffer is NULL, don't marshal, just return written */
+	/* if size is NULL, ignore it, else check sufficient */
+	if ((size == NULL) || (*size >= sizeof(UINT8))) {
+	    /* marshal, move the buffer */
+	    (*buffer)[0] = *source;
+	    *buffer += sizeof(UINT8);
+	    /* is size was supplied, update it */
+	    if (size != NULL) {
+		*size -= sizeof(UINT8);
+	    }
+	}
+	else {
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    *written += sizeof(UINT8);
+    return rc;
+}
+    
+TPM_RC
+TSS_INT8_Marshal(const INT8 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    rc = TSS_UINT8_Marshal((const UINT8 *)source, written, buffer, size);
+    return rc;
+}
+
+TPM_RC
+TSS_UINT16_Marshal(const UINT16 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (buffer != NULL) {
+	if ((size == NULL) || (*size >= sizeof(uint16_t))) {
+
+	    (*buffer)[0] = (BYTE)((*source >> 8) & 0xff);
+	    (*buffer)[1] = (BYTE)((*source >> 0) & 0xff);
+	    *buffer += sizeof(uint16_t);
+
+	    if (size != NULL) {
+		*size -= sizeof(uint16_t);
+	    }
+	}
+	else {
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    *written += sizeof(uint16_t);
+    return rc;
+}
+
+TPM_RC
+TSS_UINT32_Marshal(const UINT32 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (buffer != NULL) {
+	if ((size == NULL) || (*size >= sizeof(uint32_t))) {
+
+	    (*buffer)[0] = (BYTE)((*source >> 24) & 0xff);
+	    (*buffer)[1] = (BYTE)((*source >> 16) & 0xff);
+	    (*buffer)[2] = (BYTE)((*source >>  8) & 0xff);
+	    (*buffer)[3] = (BYTE)((*source >>  0) & 0xff);
+	    *buffer += sizeof(uint32_t);
+
+	    if (size != NULL) {
+		*size -= sizeof(uint32_t);
+	    }
+	}
+	else {
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    *written += sizeof(uint32_t);
+    return rc;
+}
+
+TPM_RC
+TSS_INT32_Marshal(const INT32 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    rc = TSS_UINT32_Marshal((const UINT32 *)source, written, buffer, size);
+    return rc;
+}
+
+TPM_RC
+TSS_UINT64_Marshal(const UINT64 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (buffer != NULL) {
+	if ((size == NULL) || (*size >= sizeof(UINT64))) {
+
+	    (*buffer)[0] = (BYTE)((*source >> 56) & 0xff);
+	    (*buffer)[1] = (BYTE)((*source >> 48) & 0xff);
+	    (*buffer)[2] = (BYTE)((*source >> 40) & 0xff);
+	    (*buffer)[3] = (BYTE)((*source >> 32) & 0xff);
+	    (*buffer)[4] = (BYTE)((*source >> 24) & 0xff);
+	    (*buffer)[5] = (BYTE)((*source >> 16) & 0xff);
+	    (*buffer)[6] = (BYTE)((*source >>  8) & 0xff);
+	    (*buffer)[7] = (BYTE)((*source >>  0) & 0xff);
+	    *buffer += sizeof(UINT64);
+
+	    if (size != NULL) {
+		*size -= sizeof(UINT64);
+	    }
+	}
+	else {
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    *written += sizeof(UINT64);
+    return rc;
+}
+
+TPM_RC
+TSS_Array_Marshal(const BYTE *source, uint16_t sourceSize, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (buffer != NULL) {
+	if ((size == NULL) || (*size >= sourceSize)) {
+	    memcpy(*buffer, source, sourceSize);
+
+	    *buffer += sourceSize;
+
+	    if (size != NULL) {
+		*size -= sourceSize;
+	    }
+	}
+	else {
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    *written += sourceSize;
+    return rc;
+}
+
+#ifdef TPM_TPM20
+
 /*
-  Command parameter marshaling
+  TPM 2.0 Command parameter marshaling
 */
 
 TPM_RC
@@ -1620,7 +1777,7 @@ TSS_NV_Certify_In_Marshal(const NV_Certify_In *source, uint16_t *written, BYTE *
 }
 
 /*
-  Response parameter unmarshaling
+  TPM 2.0 Response parameter unmarshaling
 */
 
 TPM_RC
@@ -1630,7 +1787,7 @@ TSS_IncrementalSelfTest_Out_Unmarshal(IncrementalSelfTest_Out *target, TPM_ST ta
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1646,7 +1803,7 @@ TSS_GetTestResult_Out_Unmarshal(GetTestResult_Out *target, TPM_ST tag, BYTE **bu
     uint32_t parameterSize;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1668,7 +1825,7 @@ TSS_StartAuthSession_Out_Unmarshal(StartAuthSession_Out *target, TPM_ST tag, BYT
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1684,7 +1841,7 @@ TSS_Create_Out_Unmarshal(Create_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
 
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1715,7 +1872,7 @@ TSS_Load_Out_Unmarshal(Load_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *si
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1734,7 +1891,7 @@ TSS_LoadExternal_Out_Unmarshal(LoadExternal_Out *target, TPM_ST tag, BYTE **buff
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1750,7 +1907,7 @@ TSS_ReadPublic_Out_Unmarshal(ReadPublic_Out *target, TPM_ST tag, BYTE **buffer, 
 
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1772,7 +1929,7 @@ TSS_ActivateCredential_Out_Unmarshal(ActivateCredential_Out *target, TPM_ST tag,
 
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1788,7 +1945,7 @@ TSS_MakeCredential_Out_Unmarshal(MakeCredential_Out *target, TPM_ST tag, BYTE **
 
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1806,7 +1963,7 @@ TSS_Unseal_Out_Unmarshal(Unseal_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1821,7 +1978,7 @@ TSS_ObjectChangeAuth_Out_Unmarshal(ObjectChangeAuth_Out *target, TPM_ST tag, BYT
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1840,7 +1997,7 @@ TSS_CreateLoaded_Out_Unmarshal(CreateLoaded_Out *target, TPM_ST tag, BYTE **buff
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1861,7 +2018,7 @@ TSS_Duplicate_Out_Unmarshal(Duplicate_Out *target, TPM_ST tag, BYTE **buffer, ui
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1882,7 +2039,7 @@ TSS_Rewrap_Out_Unmarshal(Rewrap_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1900,7 +2057,7 @@ TSS_Import_Out_Unmarshal(Import_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1915,7 +2072,7 @@ TSS_RSA_Encrypt_Out_Unmarshal(RSA_Encrypt_Out *target, TPM_ST tag, BYTE **buffer
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1930,7 +2087,7 @@ TSS_RSA_Decrypt_Out_Unmarshal(RSA_Decrypt_Out *target, TPM_ST tag, BYTE **buffer
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1945,7 +2102,7 @@ TSS_ECDH_KeyGen_Out_Unmarshal(ECDH_KeyGen_Out *target, TPM_ST tag, BYTE **buffer
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1963,7 +2120,7 @@ TSS_ECDH_ZGen_Out_Unmarshal(ECDH_ZGen_Out *target, TPM_ST tag, BYTE **buffer, ui
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1978,7 +2135,7 @@ TSS_ECC_Parameters_Out_Unmarshal(ECC_Parameters_Out *target, TPM_ST tag, BYTE **
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -1993,7 +2150,7 @@ TSS_ZGen_2Phase_Out_Unmarshal(ZGen_2Phase_Out *target, TPM_ST tag, BYTE **buffer
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2011,7 +2168,7 @@ TSS_EncryptDecrypt_Out_Unmarshal(EncryptDecrypt_Out *target, TPM_ST tag, BYTE **
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2034,7 +2191,7 @@ TSS_Hash_Out_Unmarshal(Hash_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *si
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2052,7 +2209,7 @@ TSS_HMAC_Out_Unmarshal(HMAC_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *si
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2067,7 +2224,7 @@ TSS_GetRandom_Out_Unmarshal(GetRandom_Out *target, TPM_ST tag, BYTE **buffer, ui
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2085,7 +2242,7 @@ TSS_HMAC_Start_Out_Unmarshal(HMAC_Start_Out *target, TPM_ST tag, BYTE **buffer, 
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     return rc;
@@ -2100,7 +2257,7 @@ TSS_HashSequenceStart_Out_Unmarshal(HashSequenceStart_Out *target, TPM_ST tag, B
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     return rc;
@@ -2112,7 +2269,7 @@ TSS_SequenceComplete_Out_Unmarshal(SequenceComplete_Out *target, TPM_ST tag, BYT
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2130,7 +2287,7 @@ TSS_EventSequenceComplete_Out_Unmarshal(EventSequenceComplete_Out *target, TPM_S
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2145,7 +2302,7 @@ TSS_Certify_Out_Unmarshal(Certify_Out *target, TPM_ST tag, BYTE **buffer, uint32
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2163,7 +2320,7 @@ TSS_CertifyCreation_Out_Unmarshal(CertifyCreation_Out *target, TPM_ST tag, BYTE 
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2181,7 +2338,7 @@ TSS_Quote_Out_Unmarshal(Quote_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2199,7 +2356,7 @@ TSS_GetSessionAuditDigest_Out_Unmarshal(GetSessionAuditDigest_Out *target, TPM_S
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2217,7 +2374,7 @@ TSS_GetCommandAuditDigest_Out_Unmarshal(GetCommandAuditDigest_Out *target, TPM_S
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2235,7 +2392,7 @@ TSS_GetTime_Out_Unmarshal(GetTime_Out *target, TPM_ST tag, BYTE **buffer, uint32
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2253,7 +2410,7 @@ TSS_Commit_Out_Unmarshal(Commit_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2266,7 +2423,7 @@ TSS_Commit_Out_Unmarshal(Commit_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
 	rc = TPM2B_ECC_POINT_Unmarshal(&target->E, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->counter, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->counter, buffer, size);
     }
     return rc;
 }
@@ -2277,14 +2434,14 @@ TSS_EC_Ephemeral_Out_Unmarshal(EC_Ephemeral_Out *target, TPM_ST tag, BYTE **buff
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TPM2B_ECC_POINT_Unmarshal(&target->Q, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16_Unmarshal(&target->counter, buffer, size);
+	rc = TSS_UINT16_Unmarshal(&target->counter, buffer, size);
     }
     return rc;
 }
@@ -2295,7 +2452,7 @@ TSS_VerifySignature_Out_Unmarshal(VerifySignature_Out *target, TPM_ST tag, BYTE 
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2310,7 +2467,7 @@ TSS_Sign_Out_Unmarshal(Sign_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *si
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2325,7 +2482,7 @@ TSS_PCR_Event_Out_Unmarshal(PCR_Event_Out *target, TPM_ST tag, BYTE **buffer, ui
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2340,11 +2497,11 @@ TSS_PCR_Read_Out_Unmarshal(PCR_Read_Out *target, TPM_ST tag, BYTE **buffer, uint
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->pcrUpdateCounter, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->pcrUpdateCounter, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TPML_PCR_SELECTION_Unmarshal(&target->pcrSelectionOut, buffer, size);
@@ -2361,20 +2518,20 @@ TSS_PCR_Allocate_Out_Unmarshal(PCR_Allocate_Out *target, TPM_ST tag, BYTE **buff
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TPMI_YES_NO_Unmarshal(&target->allocationSuccess, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->maxPCR, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->maxPCR, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->sizeNeeded, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->sizeNeeded, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32_Unmarshal(&target->sizeAvailable, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->sizeAvailable, buffer, size);
     }
     return rc;
 }
@@ -2385,7 +2542,7 @@ TSS_PolicySigned_Out_Unmarshal(PolicySigned_Out *target, TPM_ST tag, BYTE **buff
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2403,7 +2560,7 @@ TSS_PolicySecret_Out_Unmarshal(PolicySecret_Out *target, TPM_ST tag, BYTE **buff
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2421,7 +2578,7 @@ TSS_PolicyGetDigest_Out_Unmarshal(PolicyGetDigest_Out *target, TPM_ST tag, BYTE 
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2440,7 +2597,7 @@ TSS_CreatePrimary_Out_Unmarshal(CreatePrimary_Out *target, TPM_ST tag, BYTE **bu
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2467,7 +2624,7 @@ TSS_ContextSave_Out_Unmarshal(ContextSave_Out *target, TPM_ST tag, BYTE **buffer
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2485,7 +2642,7 @@ TSS_ContextLoad_Out_Unmarshal(ContextLoad_Out *target, TPM_ST tag, BYTE **buffer
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     return rc;
@@ -2497,7 +2654,7 @@ TSS_ReadClock_Out_Unmarshal(ReadClock_Out *target, TPM_ST tag, BYTE **buffer, ui
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2513,7 +2670,7 @@ TSS_GetCapability_Out_Unmarshal(GetCapability_Out *target, TPM_ST tag, BYTE **bu
 
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2531,7 +2688,7 @@ TSS_NV_ReadPublic_Out_Unmarshal(NV_ReadPublic_Out *target, TPM_ST tag, BYTE **bu
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2549,7 +2706,7 @@ TSS_NV_Read_Out_Unmarshal(NV_Read_Out *target, TPM_ST tag, BYTE **buffer, uint32
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2564,7 +2721,7 @@ TSS_NV_Certify_Out_Unmarshal(NV_Certify_Out *target, TPM_ST tag, BYTE **buffer, 
     uint32_t parameterSize           = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
-	    rc = UINT32_Unmarshal(&parameterSize, buffer, size);
+	    rc = TSS_UINT32_Unmarshal(&parameterSize, buffer, size);
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
@@ -2577,146 +2734,8 @@ TSS_NV_Certify_Out_Unmarshal(NV_Certify_Out *target, TPM_ST tag, BYTE **buffer, 
 }
 
 /*
-  Structure marshaling
+  TPM 2.0 Structure marshaling
 */
-
-TPM_RC
-TSS_UINT8_Marshal(const UINT8 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
-{
-    TPM_RC rc = 0;
-    if (buffer != NULL) {	/* if buffer is NULL, don't marshal, just return written */
-	/* if size is NULL, ignore it, else check sufficient */
-	if ((size == NULL) || (*size >= sizeof(UINT8))) {
-	    /* marshal, move the buffer */
-	    (*buffer)[0] = *source;
-	    *buffer += sizeof(UINT8);
-	    /* is size was supplied, update it */
-	    if (size != NULL) {
-		*size -= sizeof(UINT8);
-	    }
-	}
-	else {
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-    }
-    *written += sizeof(UINT8);
-    return rc;
-}
-    
-TPM_RC
-TSS_INT8_Marshal(const INT8 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
-{
-    TPM_RC rc = 0;
-    rc = TSS_UINT8_Marshal((const UINT8 *)source, written, buffer, size);
-    return rc;
-}
-
-TPM_RC
-TSS_UINT16_Marshal(const UINT16 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
-{
-    TPM_RC rc = 0;
-    if (buffer != NULL) {
-	if ((size == NULL) || (*size >= sizeof(uint16_t))) {
-
-	    (*buffer)[0] = (BYTE)((*source >> 8) & 0xff);
-	    (*buffer)[1] = (BYTE)((*source >> 0) & 0xff);
-	    *buffer += sizeof(uint16_t);
-
-	    if (size != NULL) {
-		*size -= sizeof(uint16_t);
-	    }
-	}
-	else {
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-    }
-    *written += sizeof(uint16_t);
-    return rc;
-}
-
-TPM_RC
-TSS_UINT32_Marshal(const UINT32 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
-{
-    TPM_RC rc = 0;
-    if (buffer != NULL) {
-	if ((size == NULL) || (*size >= sizeof(uint32_t))) {
-
-	    (*buffer)[0] = (BYTE)((*source >> 24) & 0xff);
-	    (*buffer)[1] = (BYTE)((*source >> 16) & 0xff);
-	    (*buffer)[2] = (BYTE)((*source >>  8) & 0xff);
-	    (*buffer)[3] = (BYTE)((*source >>  0) & 0xff);
-	    *buffer += sizeof(uint32_t);
-
-	    if (size != NULL) {
-		*size -= sizeof(uint32_t);
-	    }
-	}
-	else {
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-    }
-    *written += sizeof(uint32_t);
-    return rc;
-}
-
-TPM_RC
-TSS_INT32_Marshal(const INT32 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
-{
-    TPM_RC rc = 0;
-    rc = TSS_UINT32_Marshal((const UINT32 *)source, written, buffer, size);
-    return rc;
-}
-
-TPM_RC
-TSS_UINT64_Marshal(const UINT64 *source, uint16_t *written, BYTE **buffer, uint32_t *size)
-{
-    TPM_RC rc = 0;
-    if (buffer != NULL) {
-	if ((size == NULL) || (*size >= sizeof(UINT64))) {
-
-	    (*buffer)[0] = (BYTE)((*source >> 56) & 0xff);
-	    (*buffer)[1] = (BYTE)((*source >> 48) & 0xff);
-	    (*buffer)[2] = (BYTE)((*source >> 40) & 0xff);
-	    (*buffer)[3] = (BYTE)((*source >> 32) & 0xff);
-	    (*buffer)[4] = (BYTE)((*source >> 24) & 0xff);
-	    (*buffer)[5] = (BYTE)((*source >> 16) & 0xff);
-	    (*buffer)[6] = (BYTE)((*source >>  8) & 0xff);
-	    (*buffer)[7] = (BYTE)((*source >>  0) & 0xff);
-	    *buffer += sizeof(UINT64);
-
-	    if (size != NULL) {
-		*size -= sizeof(UINT64);
-	    }
-	}
-	else {
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-    }
-    *written += sizeof(UINT64);
-    return rc;
-}
-
-TPM_RC
-TSS_Array_Marshal(const BYTE *source, uint16_t sourceSize, uint16_t *written, BYTE **buffer, uint32_t *size)
-{
-    TPM_RC rc = 0;
-    if (buffer != NULL) {
-	if ((size == NULL) || (*size >= sourceSize)) {
-	    memcpy(*buffer, source, sourceSize);
-
-	    *buffer += sourceSize;
-
-	    if (size != NULL) {
-		*size -= sourceSize;
-	    }
-	}
-	else {
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-    }
-    *written += sourceSize;
-    return rc;
-}
 
 TPM_RC
 TSS_TPM2B_Marshal(const TPM2B *source, uint16_t *written, BYTE **buffer, uint32_t *size)
@@ -5876,3 +5895,5 @@ TSS_TPM2B_CREATION_DATA_Marshal(const TPM2B_CREATION_DATA *source, uint16_t *wri
     }
     return rc;
 }
+
+#endif /* TPM 2.0 */

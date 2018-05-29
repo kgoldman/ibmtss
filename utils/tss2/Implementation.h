@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Implementation.h 1138 2018-01-16 19:53:47Z kgoldman $		*/
+/*            $Id: Implementation.h 1157 2018-04-17 14:09:56Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -331,20 +331,14 @@
 						   saved contexts */
 #define CONTEXT_COUNTER                  UINT64	/* the type of the saved session counter */
 
-#ifndef TPM_TSS
-#define MAX_LOADED_SESSIONS		3	/* the number of sessions that the TPM may have in memory */
-#else	/* TSS can permit maximum range */
-#define MAX_LOADED_SESSIONS		0x10000000
-#endif
+/* TSS can permit maximum range */
+#define MAX_LOADED_SESSIONS		0x10000000	/* the number of sessions that the TPM may have in memory */
 
 #define MAX_SESSION_NUM 		3	/* this is the current maximum value */
 
-#ifndef TPM_TSS
-#define MAX_LOADED_OBJECTS		3	/* the number of simultaneously loaded objects that
-						   are supported by the TPM */
-#else	/* TSS can permit maximum range */
-#define MAX_LOADED_OBJECTS		0x10000000
-#endif
+/* TSS can permit maximum range */
+#define MAX_LOADED_OBJECTS		0x10000000	/* the number of simultaneously loaded
+							   objects that are supported by the TPM */
 
 #define MIN_EVICT_OBJECTS		2	/* the minimum number of evict objects supported by the TPM */
 #define PCR_SELECT_MIN			((PLATFORM_PCR+7)/8)
@@ -357,26 +351,10 @@
 #define NUM_POLICY_PCR_GROUP 		0	/* number of PCR groups that have individual policies */
 #define NUM_AUTHVALUE_PCR_GROUP		0	/* number of PCR groups that have individual authorization values */
 #define MAX_CONTEXT_SIZE		2048	/* This may be larger than necessary */
-
-#ifndef TPM_TSS
-#define MAX_DIGEST_BUFFER		1024
-#else
 #define MAX_DIGEST_BUFFER		2048
-#endif
-
 #define MAX_NV_INDEX_SIZE               2048		/* maximum data size allowed in an NV Index */
-
-#ifndef TPM_TSS
-#define MAX_NV_BUFFER_SIZE              1024
-#else
 #define MAX_NV_BUFFER_SIZE		2048
-#endif
-
-#ifndef TPM_TSS
-#define MAX_CAP_BUFFER                  1024
-#else
 #define MAX_CAP_BUFFER                  2048
-#endif
 
 #define NV_MEMORY_SIZE                  16384	/* size of NV memory in octets */
 #define NUM_STATIC_PCR                  16
@@ -655,6 +633,9 @@
 // From TPM 2.0 Part 2: Table 12 - Definition of TPM_CC Constants
 
 typedef  UINT32             TPM_CC;
+
+#define TPM_CC_FIRST	0x0000011f	/* Compile variable. May decrease based on
+					   implementation. */
 
 #ifndef CC_NV_UndefineSpaceSpecial
 #   define CC_NV_UndefineSpaceSpecial NO
@@ -1328,6 +1309,14 @@ typedef  UINT32             TPM_CC;
 #if CC_EncryptDecrypt2 == YES
 #define  TPM_CC_EncryptDecrypt2               (TPM_CC)(0x00000193)
 #endif
+
+#define  TPM_CC_AC_GetCapability		(TPM_CC)(0x00000194)
+#define  TPM_CC_AC_Send				(TPM_CC)(0x00000195)
+#define  TPM_CC_Policy_AC_SendSelect		(TPM_CC)(0x00000196)
+
+/* Compile variable. May increase based on implementation. */
+#define  TPM_CC_LAST				(TPM_CC)(0x00000196)
+
 #ifndef CC_Vendor_TCG_Test
 #   define CC_Vendor_TCG_Test NO
 #endif

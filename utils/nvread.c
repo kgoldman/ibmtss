@@ -3,7 +3,7 @@
 /*			    NV Read		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvread.c 1103 2017-12-04 17:17:18Z kgoldman $		*/
+/*	      $Id: nvread.c 1194 2018-05-02 15:07:19Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -128,7 +128,6 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		offset = atoi(argv[i]);
-		/* FIXME range check */
 	    }
 	    else {
 		printf("-off option needs a value\n");
@@ -329,8 +328,10 @@ int main(int argc, char *argv[])
 			     TPM_RH_NULL, NULL, 0);
 	}
 	/* copy the results to the read buffer */
-	if (rc == 0) {
+	if ((rc == 0) && (readBuffer != NULL)) {	/* check to handle 0 size read */
 	    memcpy(readBuffer + bytesRead, out.data.b.buffer, out.data.b.size);
+	}
+	if (rc == 0) {
 	    bytesRead += out.data.b.size;
 	    if (bytesRead == readLength) {
 		done = TRUE;
@@ -343,7 +344,7 @@ int main(int argc, char *argv[])
 	    rc = rc1;
 	}
     }
-    if ((rc == 0) && (datafilename != NULL)) {
+    if ((rc == 0) && (datafilename != NULL) && (readBuffer != NULL)) {
 	rc = TSS_File_WriteBinaryFile(readBuffer, readLength, datafilename);
     }
     if (rc == 0) {

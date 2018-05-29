@@ -3,9 +3,9 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: inittpm.bat 480 2015-12-29 22:41:45Z kgoldman $	#
+REM		$Id: inittpm.bat 1152 2018-02-12 20:24:57Z kgoldman $		#
 REM										#
-REM (c) Copyright IBM Corporation 2015						#
+REM (c) Copyright IBM Corporation 2015, 2018					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -48,6 +48,12 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "Startup"
 %TPM_EXE_PATH%startup -c -v > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Get Test Result"
+%TPM_EXE_PATH%gettestresult > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )

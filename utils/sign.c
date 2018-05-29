@@ -3,7 +3,7 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 1140 2018-01-22 15:13:31Z kgoldman $			*/
+/*	      $Id: sign.c 1157 2018-04-17 14:09:56Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -334,7 +334,7 @@ int main(int argc, char *argv[])
 	else if (scheme == TPM_ALG_ECDAA) {
 	    in.inScheme.details.ecdaa.hashAlg = halg;
 	    rc = TSS_File_ReadStructure(&in.inScheme.details.ecdaa.count, 
-					(UnmarshalFunction_t)UINT16_Unmarshal,
+					(UnmarshalFunction_t)TSS_UINT16_Unmarshal,
 					counterFilename);
 	}
 	else {	/* scheme TPM_ALG_ECDSA */

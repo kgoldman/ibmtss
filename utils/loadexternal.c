@@ -3,7 +3,7 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: loadexternal.c 1219 2018-05-15 21:12:32Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -365,27 +365,35 @@ int main(int argc, char *argv[])
 	}
 	/* PEM format, output from e.g. openssl, readpublic, createprimary, create */
 	else if (pemKeyFilename != NULL) {
-	    if (algPublic == TPM_ALG_RSA) {
+	    switch (algPublic) {
+	      case TPM_ALG_RSA:
 		rc = convertRsaPemToPublic(&in.inPublic,
 					   keyType,
 					   scheme,
 					   nalg,
 					   halg,
 					   pemKeyFilename);
-	    }
-	    /* TPM_ALG_ECC */
-	    else {
+		break;
+#ifndef TPM_TSS_NOECC
+	      case TPM_ALG_ECC:
 		rc = convertEcPemToPublic(&in.inPublic,
 					  keyType,
 					  scheme,
 					  nalg,
 					  halg,
 					  pemKeyFilename);
+		break;
+#endif	/* TPM_TSS_NOECC */
+	      default:
+		printf("-rsa algorithm %04x not supported\n", algPublic);
+		rc = TPM_RC_ASYMMETRIC;
 	    }
 	}
 	/* DER format key pair */
 	else if (derKeyFilename != NULL) {
-	    if (algPublic == TPM_ALG_RSA) {
+	    in.inPrivate.t.size = 1;		/* mark that private area should be loaded */
+	    switch (algPublic) {
+	      case TPM_ALG_RSA:
 		rc = convertRsaDerToKeyPair(&in.inPublic,
 					    &in.inPrivate,
 					    keyType,
@@ -394,9 +402,9 @@ int main(int argc, char *argv[])
 					    halg,
 					    derKeyFilename,
 					    keyPassword);
-	    }
-	    /* TPM_ALG_ECC */
-	    else {
+		break;
+#ifndef TPM_TSS_NOECC
+	      case TPM_ALG_ECC:
 		rc = convertEcDerToKeyPair(&in.inPublic,
 					   &in.inPrivate,
 					   keyType,
@@ -405,8 +413,12 @@ int main(int argc, char *argv[])
 					   halg,
 					   derKeyFilename,
 					   keyPassword);
+		break;
+#endif	/* TPM_TSS_NOECC */
+	      default:
+		printf("-rsa algorithm %04x not supported\n", algPublic);
+		rc = TPM_RC_ASYMMETRIC;
 	    }
-	    in.inPrivate.t.size = 1;		/* mark that private area should be loaded */
 	}
 	else {
 	    printf("Failure parsing -ipu, -ipem, -ider\n");

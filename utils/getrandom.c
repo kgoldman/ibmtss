@@ -3,7 +3,7 @@
 /*			   GetRandom						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getrandom.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
+/*	      $Id: getrandom.c 1202 2018-05-07 17:20:15Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -220,9 +220,9 @@ int main(int argc, char *argv[])
 			     TPM_RH_NULL, NULL, 0);
 	}
 	if (rc == 0) {
+	    size_t br;
 	    if (verbose) TSS_PrintAll("randomBytes in pass",
 				      out.randomBytes.t.buffer, out.randomBytes.t.size);
-	    size_t br;
 	    /* copy as many bytes as were received or until bytes requested */
 	    for (br = 0 ; (br < out.randomBytes.t.size) && (bytesCopied < bytesRequested) ; br++) {
 

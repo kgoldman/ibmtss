@@ -40,12 +40,9 @@
 #ifndef TSS_H
 #define TSS_H
 
-#ifndef TPM_TSS
-#define TPM_TSS
-#endif
-
 #include <tss2/TPM_Types.h>
 #include <tss2/Parameters.h>
+#include <tss2/Parameters12.h>
 
 /* include this as a convenience to applications */
 #include <tss2/tsserror.h>
@@ -69,6 +66,8 @@ extern "C" {
 
     /* extra parameters as required */
 
+    /* TPM 2.0 */
+
     typedef struct {
 	const char 		*bindPassword;
 	TPM2B_DIGEST 		salt;
@@ -78,6 +77,16 @@ extern "C" {
 	StartAuthSession_Extra 	StartAuthSession;
     } EXTRA_PARAMETERS;
 
+    /* TPM 1.2 */
+
+    typedef struct {
+	const char 	*usagePassword;
+    } OSAP_Extra;
+	
+    typedef union {
+	OSAP_Extra 	OSAP;
+    } EXTRA12_PARAMETERS;
+    
     LIB_EXPORT
     TPM_RC TSS_Create(TSS_CONTEXT **tssContext);
 

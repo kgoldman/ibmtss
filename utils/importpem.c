@@ -3,7 +3,7 @@
 /*			   Import a PEM RSA keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: importpem.c 1219 2018-05-15 21:12:32Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017					*/
 /*										*/
@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
     const char			*outPrivateFilename = NULL;
     const char			*policyFilename = NULL;
     int				keyType = TYPE_SI;
+    uint32_t 			keyTypeSpecified = 0;
     TPMI_ALG_SIG_SCHEME 	scheme = TPM_ALG_RSASSA;
     TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
@@ -135,6 +136,30 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i], "-ecc") == 0) {
 	    algPublic = TPM_ALG_ECC;
 	    scheme = TPM_ALG_ECDSA;
+	}
+	else if (strcmp(argv[i],"-scheme") == 0) {
+            i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"rsassa") == 0) {
+		    scheme = TPM_ALG_RSASSA;
+		}
+		else if (strcmp(argv[i],"rsapss") == 0) {
+		    scheme = TPM_ALG_RSAPSS;
+		}
+		else {
+		    printf("Bad parameter %s for -scheme\n", argv[i]);
+		    printUsage();
+		}
+	    }
+        }
+	else if (strcmp(argv[i], "-st") == 0) {
+	    keyType = TYPE_ST;
+	    scheme = TPM_ALG_NULL;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-si") == 0) {
+	    keyType = TYPE_SI;
+	    keyTypeSpecified++;
 	}
 	else if (strcmp(argv[i],"-pwdk") == 0) {
 	    i++;
@@ -306,6 +331,10 @@ int main(int argc, char *argv[])
 	printf("Missing parameter -ipem\n");
 	printUsage();
     }
+    if (keyTypeSpecified > 1) {
+	printf("Too many key attributes\n");
+	printUsage();
+    }
     if (outPublicFilename == NULL) {
 	printf("Missing parameter -opu\n");
 	printUsage();
@@ -321,7 +350,8 @@ int main(int argc, char *argv[])
 	in.symmetricAlg.algorithm = TPM_ALG_NULL;
     }
     if (rc == 0) {
-	if (algPublic == TPM_ALG_RSA) {
+	switch (algPublic) {
+	  case TPM_ALG_RSA:
 	    rc = convertRsaPemToKeyPair(&in.objectPublic,
 					&in.duplicate,
 					keyType,
@@ -330,8 +360,9 @@ int main(int argc, char *argv[])
 					halg,
 					pemKeyFilename,
 					pemKeyPassword);
-	}
-	else if (algPublic == TPM_ALG_ECC) {
+	    break;
+#ifndef TPM_TSS_NOECC
+	  case TPM_ALG_ECC:
 	    rc = convertEcPemToKeyPair(&in.objectPublic,
 				       &in.duplicate,
 				       keyType,
@@ -340,12 +371,13 @@ int main(int argc, char *argv[])
 				       halg,
 				       pemKeyFilename,
 				       pemKeyPassword);
-	}
-	else {
+	    break;
+#endif	/* TPM_TSS_NOECC */
+	  default:
+	    printf("-rsa algorithm %04x not supported\n", algPublic);
 	    rc = TPM_RC_ASYMMETRIC;
 	}
     }
-
     /* instantiate optional policy */
     if (rc == 0) {
 	rc = getPolicy(&in.objectPublic.publicArea, policyFilename);
@@ -418,6 +450,11 @@ static void printUsage(void)
     printf("\t[Asymmetric Key Algorithm]\n");
     printf("\t\t-rsa (default), RSASSA scheme\n");
     printf("\t\t-ecc curve\n");
+    printf("\t[-si signing (default) RSA default RSASSA scheme]\n");
+    printf("\t\t[-scheme]\n");
+    printf("\t\t\trsassa\n");
+    printf("\t\t\trsapss\n");
+    printf("\t[-st storage (default NULL scheme)]\n");
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t-opu public area file name\n");
     printf("\t-opr private area file name\n");

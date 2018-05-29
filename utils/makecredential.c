@@ -3,9 +3,9 @@
 /*			    MakeCredential					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: makecredential.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: makecredential.c 1148 2018-02-09 14:59:16Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

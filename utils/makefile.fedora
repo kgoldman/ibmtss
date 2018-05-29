@@ -3,9 +3,9 @@
 #		Linux TPM2 Utilities Makefile - for Fedora source RPM ONLY!	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.fedora 1094 2017-11-08 21:50:29Z kgoldman $		#
+#	      $Id: makefile.fedora 1217 2018-05-15 17:07:20Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2014, 2017					#
+# (c) Copyright IBM Corporation 2014, 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -44,23 +44,23 @@
 # 'makefile.fedora.'  If you are building directly from the source
 # tree, use 'makefile.'
 
-# 1) This builds a versioned shared library (libtss.so.n.n) as opposed
-# to the unversioned one (libtss.so) in 'makefile'. The versioned
+# 1) This builds a versioned shared library (libibmtss.so.n.n) as opposed
+# to the unversioned one (libibmtss.so) in 'makefile'. The versioned
 # shared lib will be available on Fedora for dynamic linking.
 
-# 2) A field called 'soname' (named: libtss.so.n) is placed/built inside
-# the libtss.so.n.n for dynamic linking.  (Done via gcc flag:
-# -Wl,-soname,libtss.so.n ). soname was made symbolic link to the
-# versioned shared lib (libtss.so.n.n)
+# 2) A field called 'soname' (named: libibmtss.so.n) is placed/built inside
+# the libibmtss.so.n.n for dynamic linking.  (Done via gcc flag:
+# -Wl,-soname,libibmtss.so.n ). soname was made symbolic link to the
+# versioned shared lib (libibmtss.so.n.n)
 
-# 3) the libtss.so was made the symbolic link to the libtss.so.n, so
-# that an API can just dynamically link to the library with -ltss
+# 3) the libibmtss.so was made the symbolic link to the libibmtss.so.n, so
+# that an API can just dynamically link to the library with -libmtss
 
 # Now, we build executables by linking to the unversioned shared
-# library, which is linked to libtss.so.0 that links to libtss.so.0.1.
+# library, which is linked to libibmtss.so.0 that links to libibmtss.so.0.1.
 
 # At run-time, the dynamic linker will check for the soname
-# (libtss.so.0) field instead of the filename (libtss.so.0.1). It can
+# (libibmtss.so.0) field instead of the filename (libibmtss.so.0.1). It can
 # point to a version of the library which is different from the version
 # against which linking was performed.  It'll link against the correct
 # object.
@@ -81,11 +81,12 @@ CCFLAGS += 	-DTPM_POSIX
 # include the hardening flag PIC needed for compiling for dynamic
 # linking
 
-CCLFLAGS += 	-I. -DTPM_TSS	\
-		-fPIC
+CCLFLAGS += 	-I. 		\
+		-fPIC		\
+		-DTPM_TPM20
 
 # to compile out printf's.  Regression test will fail because it tries
-# to print a structure -DTPM_NO_PRINT
+# to print a structure -DTPM_TSS_NO_PRINT
 
 # example of changing the default interface type
 #	-DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
@@ -95,7 +96,8 @@ CCLFLAGS += 	-I. -DTPM_TSS	\
 # include the hardening flag PIE needed for compiling for
 # static linking
 
-CCAFLAGS += 	-I.	\
+CCAFLAGS += 	-I.		\
+		-DTPM_TPM20	\
 		-fPIE
 
 # link - common flags flags TSS library and applications
@@ -124,21 +126,21 @@ LNLFLAGS += -shared -Wl,-z,now
 # hardening flags for linking executables
 LNAFLAGS += -pie -Wl,-z,now
 
-LNALIBS +=  -ltss -lcrypto
+LNALIBS +=  -libmtss -lcrypto
 
 # shared library
 
 # versioned shared library
-LIBTSSVERSIONED=libtss.so.0.1
+LIBTSSVERSIONED=libibmtss.so.0.1
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
 # this is used to provide version backward-compatibility information
-LIBTSSSONAME=libtss.so.0
+LIBTSSSONAME=libibmtss.so.0
 
 # symbolic link to the versioned shared library
-# this allows linking to the shared library with '-ltss' 
-LIBTSS=libtss.so
+# this allows linking to the shared library with '-libmtss' 
+LIBTSS=libibmtss.so
 
 # executable extension
 
@@ -153,11 +155,13 @@ TSS_HEADERS=
 
 TSS_OBJS = 	tssfile.o 		\
 		tsscryptoh.o 		\
-		tsscrypto.o
+		tsscrypto.o 		\
+		tssprintcmd.o
 
 # common to all builds
 
 include makefile-common
+include makefile-common20
 
 # default build target
 
@@ -205,6 +209,13 @@ ntc2lib.o:	$(TSS_HEADERS) ntc2lib.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) ntc2lib.c
 tssntc.o:	$(TSS_HEADERS) tssntc.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssntc.c
+
+# TPM 2.0
+
+tss20.o: 	$(TSS_HEADERS) tss20.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tss20.c
+tssauth20.o: 	$(TSS_HEADERS) tssauth20.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth20.c
 
 # TSS shared library build
 
@@ -285,6 +296,8 @@ getcapability:		tss2/tss.h getcapability.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getcapability.o $(LNALIBS) -o getcapability
 getrandom:		tss2/tss.h getrandom.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getrandom.o $(LNALIBS) -o getrandom
+gettestresult:		tss2/tss.h gettestresult.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) gettestresult.o $(LNALIBS) -o gettestresult
 getsessionauditdigest:	tss2/tss.h getsessionauditdigest.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getsessionauditdigest.o $(LNALIBS) -o getsessionauditdigest
 gettime:		tss2/tss.h gettime.o $(LIBTSS)
@@ -359,8 +372,12 @@ policycommandcode:	tss2/tss.h policycommandcode.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycommandcode.o $(LNALIBS) -o policycommandcode
 policycphash:		tss2/tss.h policycphash.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycphash.o $(LNALIBS) -o policycphash
+policynamehash:		tss2/tss.h policynamehash.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policynamehash.o $(LNALIBS) -o policynamehash
 policycountertimer :	tss2/tss.h policycountertimer.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycountertimer.o $(LNALIBS) -o policycountertimer
+policyduplicationselect:	tss2/tss.h policyduplicationselect.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyduplicationselect.o $(LNALIBS) -o policyduplicationselect
 policygetdigest:	tss2/tss.h policygetdigest.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policygetdigest.o $(LNALIBS) -o policygetdigest
 policymaker:		tss2/tss.h policymaker.o $(LIBTSS)
@@ -425,7 +442,7 @@ unseal:			tss2/tss.h unseal.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) unseal.o $(LNALIBS) -o unseal
 verifysignature:	tss2/tss.h verifysignature.o cryptoutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) verifysignature.o cryptoutils.o $(LNALIBS) -o verifysignature
-zgen2phase:	t	ss2/tss.h zgen2phase.o cryptoutils.o $(LIBTSS)
+zgen2phase:		tss2/tss.h zgen2phase.o cryptoutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) zgen2phase.o cryptoutils.o $(LNALIBS) -o zgen2phase
 signapp:		tss2/tss.h signapp.o ekutils.o cryptoutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o ekutils.o cryptoutils.o $(LNALIBS) -o signapp

@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 1145 2018-02-06 20:41:50Z kgoldman $		*/
+/*	      $Id: eventlib.c 1191 2018-05-01 14:53:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -49,7 +49,9 @@
 
 #include "eventlib.h"
 
+#ifdef TPM_TPM20
 static uint16_t Uint16_Convert(uint16_t in);
+#endif
 static uint32_t Uint32_Convert(uint32_t in);
 static TPM_RC UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size);
 static TPM_RC UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size);
@@ -151,6 +153,91 @@ int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
     return rc;
 }
 
+/* TSS_EVENT_Line_Marshal() marshals a TCG_PCR_EVENT structure */
+
+TPM_RC TSS_EVENT_Line_Marshal(TCG_PCR_EVENT *source,
+			      uint16_t *written, uint8_t **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_UINT32_Marshal(&source->pcrIndex, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32_Marshal(&source->eventType, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Marshal(source->digest, SHA1_DIGEST_SIZE, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32_Marshal(&source->eventDataSize, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Marshal(source->event, source->eventDataSize, written, buffer, size);
+    }
+    return rc;
+}
+
+/* TSS_EVENT_Line_Unmarshal() unmarshals a TCG_PCR_EVENT2 structure
+
+ */
+
+TPM_RC TSS_EVENT_Line_Unmarshal(TCG_PCR_EVENT *target, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_UINT32_Unmarshal(&target->pcrIndex, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32_Unmarshal(&target->eventType, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshal((uint8_t *)target->digest, SHA1_DIGEST_SIZE, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32_Unmarshal(&target->eventDataSize, buffer, size);
+    }
+    if (rc == 0) {
+	if (target->eventDataSize > sizeof(target->event)) {
+	    rc = TPM_RC_SIZE;
+	}
+    }    
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshal((uint8_t *)target->event, target->eventDataSize, buffer, size);
+    }
+    return rc;
+}
+
+/* TSS_EVENT_PCR_Extend() extends PCR digest with the digest from the TCG_PCR_EVENT event log
+   entry.
+*/
+
+TPM_RC TSS_EVENT_PCR_Extend(TPMT_HA pcrs[TPM_BIOS_PCR],
+			    TCG_PCR_EVENT *event)
+{
+    TPM_RC 		rc = 0;
+    
+    /* validate PCR number */
+    if (rc == 0) {
+	if (event->pcrIndex > TPM_BIOS_PCR) {
+	    printf("ERROR: TSS_EVENT_PCR_Extend: PCR number %u out of range\n", event->pcrIndex);
+	    rc = 1;
+	}
+    }
+    /* process each event hash algorithm */
+    if (rc == 0) {
+	pcrs[event->pcrIndex].hashAlg = TPM_ALG_SHA1;	/* should already be initialized */
+	if (rc == 0) {
+	    rc = TSS_Hash_Generate(&pcrs[event->pcrIndex],
+				   SHA1_DIGEST_SIZE, (uint8_t *)&pcrs[event->pcrIndex].digest,
+				   SHA1_DIGEST_SIZE, &event->digest,
+				   0, NULL);
+	}
+    }
+    return rc;
+}
+
 void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event)
 {
     printf("TSS_EVENT_Line_Trace: PCR index %u\n", event->pcrIndex);
@@ -177,23 +264,23 @@ TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
     uint32_t 	i;
 
     if (rc == 0) {
-	rc = Array_Unmarshal(specIdEvent->signature, sizeof(specIdEvent->signature),
+	rc = TSS_Array_Unmarshal(specIdEvent->signature, sizeof(specIdEvent->signature),
 			     &buffer, &size);
     }
     if (rc == 0) {
 	rc = UINT32LE_Unmarshal(&(specIdEvent->platformClass), &buffer, &size);
     }
     if (rc == 0) {
-	rc = UINT8_Unmarshal(&(specIdEvent->specVersionMinor), &buffer, &size);
+	rc = TSS_UINT8_Unmarshal(&(specIdEvent->specVersionMinor), &buffer, &size);
     }
     if (rc == 0) {
-	rc = UINT8_Unmarshal(&(specIdEvent->specVersionMajor), &buffer, &size);
+	rc = TSS_UINT8_Unmarshal(&(specIdEvent->specVersionMajor), &buffer, &size);
     }
     if (rc == 0) {
-	rc = UINT8_Unmarshal(&(specIdEvent->specErrata), &buffer, &size);
+	rc = TSS_UINT8_Unmarshal(&(specIdEvent->specErrata), &buffer, &size);
     }
     if (rc == 0) {
-	rc = UINT8_Unmarshal(&(specIdEvent->uintnSize), &buffer, &size);
+	rc = TSS_UINT8_Unmarshal(&(specIdEvent->uintnSize), &buffer, &size);
     }
     if (rc == 0) {
 	rc = UINT32LE_Unmarshal(&(specIdEvent->numberOfAlgorithms), &buffer, &size);
@@ -203,10 +290,17 @@ TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
 						    &buffer, &size);
     }	    
     if (rc == 0) {
-	rc = UINT8_Unmarshal(&(specIdEvent->vendorInfoSize), &buffer, &size);
+	rc = TSS_UINT8_Unmarshal(&(specIdEvent->vendorInfoSize), &buffer, &size);
     }
+#if 0	/* NOTE: Can never fail because vendorInfoSize is uint8_t and vendorInfo is 0xff bytes */
     if (rc == 0) {
-	rc = Array_Unmarshal(specIdEvent->vendorInfo, specIdEvent->vendorInfoSize,
+	if (specIdEvent->vendorInfoSize > sizeof(specIdEvent->vendorInfo)) {
+	    rc = TPM_RC_SIZE;
+	}
+    }    
+#endif
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshal(specIdEvent->vendorInfo, specIdEvent->vendorInfoSize,
 			     &buffer, &size);
     }
     return rc;
@@ -281,6 +375,8 @@ static void TSS_SpecIdEventAlgorithmSize_Trace(TCG_EfiSpecIdEventAlgorithmSize *
     printf("TSS_SpecIdEventAlgorithmSize_Trace: digestSize %u\n", algSize->digestSize);
     return;
 }
+
+#ifdef TPM_TPM20
 
 /* TSS_EVENT2_Line_Read() reads a TPM2 event line from a binary file inFile.
 
@@ -464,19 +560,24 @@ TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = UINT32_Unmarshal(&target->pcrIndex, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->pcrIndex, buffer, size);
     }
     if (rc == 0) {
-	rc = UINT32_Unmarshal(&target->eventType, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->eventType, buffer, size);
     }
     if (rc == 0) {
 	rc = TPML_DIGEST_VALUES_Unmarshal(&target->digests, buffer, size);
     }
     if (rc == 0) {
-	rc = UINT32_Unmarshal(&target->eventSize, buffer, size);
+	rc = TSS_UINT32_Unmarshal(&target->eventSize, buffer, size);
     }
     if (rc == 0) {
-	rc = Array_Unmarshal((uint8_t *)target->event, target->eventSize, buffer, size);
+	if (target->eventSize > sizeof(target->event)) {
+	    rc = TPM_RC_SIZE;
+	}
+    }    
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshal((uint8_t *)target->event, target->eventSize, buffer, size);
     }
     return rc;
 }
@@ -537,6 +638,10 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][8],
     return rc;
 }
 
+#endif	/* TPM_TPM20 */
+
+#ifdef TPM_TPM20
+
 /* Uint16_Convert() converts a little endian uint16_t (from an input stream) to host byte order
  */
 
@@ -550,6 +655,8 @@ static uint16_t Uint16_Convert(uint16_t in)
 	  (inb[1] <<  8);
     return out;
 }
+
+#endif
 
 /* Uint32_Convert() converts a little endian uint32_t (from an input stream) to host byte order
  */
@@ -567,7 +674,7 @@ static uint32_t Uint32_Convert(uint32_t in)
     return out;
 }
 
-/* UINT16LE_Unmarshal() unmarshals a little endian 4-byte array from buffer into a HBO uint16_t */
+/* UINT16LE_Unmarshal() unmarshals a little endian 2-byte array from buffer into a HBO uint16_t */
 
 static TPM_RC
 UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size)
@@ -582,7 +689,7 @@ UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size)
     return TPM_RC_SUCCESS;
 }
 
-/* uint32LE_Unmarshal() unmarshals a little endian 4-byte array from buffer into a HBO uint32_t */
+/* UINT32LE_Unmarshal() unmarshals a little endian 4-byte array from buffer into a HBO uint32_t */
 
 static TPM_RC
 UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size)

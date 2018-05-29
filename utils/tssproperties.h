@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.h 941 2017-02-16 18:33:03Z kgoldman $		*/
+/*	      $Id: tssproperties.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -71,6 +71,10 @@ typedef SOCKET TSS_SOCKET_FD;
 typedef int TSS_SOCKET_FD;
 #endif 	/* TPM_NOSOCKET */
 #endif	/* TPM_POSIX */
+
+/* There doesn't seem to be a portable Unix MAXPATHLEN variable, so pick a large number.  The
+   directory length will be (currently) 17 bytes smaller. */
+#define TPM_DATA_DIR_PATH_LENGTH 256
 
 #ifdef __cplusplus
 extern "C" {
@@ -145,6 +149,7 @@ extern "C" {
 
 	/* TRUE for the first time through, indicates that interface open must occur */
 	int tssFirstTransmit;
+	int tpm12Command;		/* TRUE for TPM 1.2 command */
 
 	/* socket file descriptor */
 #ifndef TPM_NOSOCKET

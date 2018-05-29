@@ -3,7 +3,7 @@
 /*		     	TPM2 Nuvoton Proprietary Commands			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssntc.c 1124 2018-01-05 21:32:55Z kgoldman $		*/
+/*	      $Id: tssntc.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -56,7 +56,7 @@ NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, uint32_t *size
     /* assumes that the NTC2_CFG_STRUCT structure are all uint8_t so that there are no endian
        issues */
     if (rc == TPM_RC_SUCCESS) {
-	rc = Array_Unmarshal((BYTE *)target, sizeof(NTC2_CFG_STRUCT), buffer, size);
+	rc = TSS_Array_Unmarshal((BYTE *)target, sizeof(NTC2_CFG_STRUCT), buffer, size);
     }
     return rc;
 }

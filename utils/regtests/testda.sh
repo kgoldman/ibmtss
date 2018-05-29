@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testda.sh 979 2017-04-04 17:57:18Z kgoldman $		#
+#		$Id: testda.sh 1209 2018-05-10 21:26:10Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
@@ -126,27 +126,27 @@ ${PREFIX}hierarchychangeauth -hi l -pwdn lll > run.out
 checkSuccess $?
 
 echo "Reset DA lock with good password"
-${PREFIX}dictionaryattacklockreset -pwd lll
+${PREFIX}dictionaryattacklockreset -pwd lll > run.out
 checkSuccess $?
 
 echo "Set DA recovery time to 0 with good password"
-${PREFIX}dictionaryattackparameters -nrt 0 -pwd lll
+${PREFIX}dictionaryattackparameters -nrt 0 -pwd lll > run.out
 checkSuccess $?
 
 echo "Clear lockout auth"
-${PREFIX}hierarchychangeauth -hi l -pwda lll
+${PREFIX}hierarchychangeauth -hi l -pwda lll > run.out
 checkSuccess $?
 
 echo "Set DA recovery time to 0"
-${PREFIX}dictionaryattackparameters -nrt 0
+${PREFIX}dictionaryattackparameters -nrt 0 > run.out
 checkSuccess $?
 
 echo "Reset DA lock"
-${PREFIX}dictionaryattacklockreset
+${PREFIX}dictionaryattacklockreset > run.out
 checkSuccess $?
 
 echo "Flush signing key"
-${PREFIX}flushcontext -ha 80000001
+${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000

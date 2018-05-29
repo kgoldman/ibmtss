@@ -3,9 +3,9 @@
 #		Linux TPM2 Utilities Makefile for minimal TSS			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.min 1034 2017-06-30 20:49:51Z kgoldman $		#
+#	      $Id: makefile.min 1217 2018-05-15 17:07:20Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2016, 2017					#
+# (c) Copyright IBM Corporation 2016, 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -50,19 +50,26 @@ CC = /usr/bin/gcc
 # compile - common flags for TSS library and applications
 
 CCFLAGS  += \
-	-DTPM_POSIX			\
-	-DTPM_TSS_NOFILE			\
+	-DTPM_POSIX		\
+	-DTPM_TSS_NOFILE	\
 	-DTPM_TSS_NOCRYPTO
 
 # -DTPM_NOSOCKET
 
 # compile - for TSS library
 
-CCLFLAGS += 	-I. -DTPM_TSS
+CCLFLAGS += 	-I.			\
+		-fPIC			\
+		-DTPM_TPM20		\
+		-DTPM_TSS_NOFILE	\
+		-DTPM_TSS_NOCRYPTO	\
+		-DTPM_TSS_NO_PRINT
 
 # compile - for applications
 
-CCAFLAGS += 	-I.
+CCAFLAGS += 	-I.		\
+		-DTPM_TPM20	\
+		-fPIE
 
 # link - common flags flags TSS library and applications
 
@@ -78,11 +85,11 @@ LNFLAGS += 	-DTPM_POSIX		\
 
 LNAFLAGS += -Wl,-rpath,.
 
-LNALIBS +=  -ltssmin -lcrypto
+LNALIBS +=  -libmtssmin -lcrypto
 
 # shared library
 
-LIBTSS=libtssmin.so
+LIBTSS=libibmtssmin.so
 
 # 
 
@@ -96,6 +103,7 @@ TSS_OBJS =
 # common to all builds
 
 include makefile-common
+include makefile-common20
 
 # default build target
 
@@ -141,6 +149,13 @@ ntc2lib.o:		$(TSS_HEADERS) ntc2lib.c
 			$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC ntc2lib.c
 tssntc.o:		$(TSS_HEADERS) tssntc.c
 			$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssntc.c
+
+# TPM 2.0
+
+tss20.o: 	$(TSS_HEADERS) tss20.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tss20.c
+tssauth20.o: 	$(TSS_HEADERS) tssauth20.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth20.c
 
 # TSS shared library build
 

@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy.sh 1145 2018-02-06 20:41:50Z kgoldman $		#
+#		$Id: testpolicy.sh 1212 2018-05-11 20:05:25Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -641,11 +641,11 @@ echo "Create a signing key with policy authorize"
 ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyauthorize.bin > run.out
 checkSuccess $?
 
-echo "Load external just the public part of PEM authorizing key"
+echo "Load external just the public part of PEM authorizing key 80000001"
 ${PREFIX}loadexternal -hi p -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
 checkSuccess $?
 
-echo "Load the signing key under the primary key"
+echo "Load the signing key under the primary key 80000002 "
 ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
 checkSuccess $?
 
@@ -654,30 +654,30 @@ ${PREFIX}startauthsession -se p > run.out
 checkSuccess $?
 
 echo "Get policy digest, should be zero"
-${PREFIX}policygetdigest -ha 03000000 -of policyapproved.bin > run.out
+${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy command code - sign"
 ${PREFIX}policycommandcode -ha 03000000 -cc 15d > run.out
 checkSuccess $?
 
-echo "Get policy digest, should be policy to approve, aHash input"
-${PREFIX}policygetdigest -ha 03000000 -of policyapproved.bin > run.out
+echo "Get policy digest, should be policy to approve, aHash input, same as policies/policyccsign.bin"
+${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Openssl generate and sign aHash (empty policyRef)"
-openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policyapproved.bin
+openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policyccsign.bin
 
-echo "Verify the signature to generate ticket"
-${PREFIX}verifysignature -hk 80000001 -halg sha1 -if policyapproved.bin -is pssig.bin -raw -tk tkt.bin > run.out
+echo "Verify the signature to generate ticket 80000001"
+${PREFIX}verifysignature -hk 80000001 -halg sha1 -if policies/policyccsign.bin -is pssig.bin -raw -tk tkt.bin > run.out
 checkSuccess $?
 
 echo "Policy authorize using the ticket"
-${PREFIX}policyauthorize -ha 03000000 -appr policyapproved.bin -skn ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin > run.out
+${PREFIX}policyauthorize -ha 03000000 -appr policies/policyccsign.bin -skn ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin > run.out
 checkSuccess $?
 
 echo "Get policy digest, should be policy authorize"
-${PREFIX}policygetdigest -ha 03000000 -of policyapproved.bin > run.out
+${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Sign a digest"
@@ -884,7 +884,7 @@ echo "Flush the key"
 ${PREFIX}flushcontext -ha 80000001 > run.out 
 checkSuccess $?
 
-# 01000000 authorizing ndex
+# 01000000 authorizing index
 # 01000001 authorized index
 # 03000000 policy session
 #
@@ -1089,6 +1089,232 @@ echo "NV Undefine authorizing index"
 ${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
 checkSuccess $?
 
+echo ""
+echo "Policy Signed externally signed cpHash"
+echo ""
+
+# NV Index 01000000 has policy OR
+
+# Policy A - provisioning: policy written false + policysigned
+#	demo: authorizer signs NV write all zero
+
+# Policy B - application: policy written true + policysigned
+#	demo: authorizer signs NV write abcdefgh
+
+echo "Load external just the public part of PEM at 80000001"
+${PREFIX}loadexternal -ipem policies/rsapubkey.pem > run.out
+checkSuccess $?
+
+echo "Get the Name of the signing key at 80000001"
+${PREFIX}readpublic -ho 80000001 -ns > run.out
+checkSuccess $?
+# 000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+
+# construct policy A
+
+# policies/policywrittenclrsigned.txt
+# 0000018f00
+# 00000160000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+# Add the extra blank line here for policyRef
+
+# policymaker -if policies/policywrittenclrsigned.txt -of policies/policywrittenclrsigned.bin -pr -ns -v
+# intermediate policy digest length 32
+#  3c 32 63 23 67 0e 28 ad 37 bd 57 f6 3b 4c c3 4d 
+#  26 ab 20 5e f2 2f 27 5c 58 d4 7f ab 24 85 46 6e 
+#  intermediate policy digest length 32
+#  6b 0d 2d 2b 55 4d 68 ec bc 6c d5 b8 c0 96 c1 70 
+#  57 5a 95 25 37 56 38 7e 83 d7 76 d9 5b 1b 8e f3 
+#  intermediate policy digest length 32
+#  48 0b 78 2e 02 82 c2 40 88 32 c4 df 9c 0e be 87 
+#  18 6f 92 54 bd e0 5b 0c 2e a9 52 48 3e b7 69 f2 
+#  policy digest length 32
+#  48 0b 78 2e 02 82 c2 40 88 32 c4 df 9c 0e be 87 
+#  18 6f 92 54 bd e0 5b 0c 2e a9 52 48 3e b7 69 f2 
+# policy digest:
+# 480b782e0282c2408832c4df9c0ebe87186f9254bde05b0c2ea952483eb769f2
+
+# construct policy B
+
+# policies/policywrittensetsigned.txt
+# 0000018f01
+# 00000160000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+# Add the extra blank line here for policyRef
+
+# policymaker -if policies/policywrittensetsigned.txt -of policies/policywrittensetsigned.bin -pr -ns -v
+#  intermediate policy digest length 32
+#  f7 88 7d 15 8a e8 d3 8b e0 ac 53 19 f3 7a 9e 07 
+#  61 8b f5 48 85 45 3c 7a 54 dd b0 c6 a6 19 3b eb 
+#  intermediate policy digest length 32
+#  7d c2 8f b0 dd 4f ee 97 78 2b 55 43 b1 dc 6b 1e 
+#  e2 bc 79 05 d4 a1 f6 8d e2 97 69 5f a9 aa 78 5f 
+#  intermediate policy digest length 32
+#  09 43 ba 3c 3b 4d b1 c8 3f c3 97 85 f9 dc 0a 82 
+#  49 f6 79 4a 04 38 e6 45 0a 50 56 8f b4 eb d2 46 
+#  policy digest length 32
+#  09 43 ba 3c 3b 4d b1 c8 3f c3 97 85 f9 dc 0a 82 
+#  49 f6 79 4a 04 38 e6 45 0a 50 56 8f b4 eb d2 46 
+# policy digest:
+# 0943ba3c3b4db1c83fc39785f9dc0a8249f6794a0438e6450a50568fb4ebd246
+
+# construct the Policy OR of A and B
+
+# policyorwrittensigned.txt - command code plus two policy digests
+# 00000171480b782e0282c2408832c4df9c0ebe87186f9254bde05b0c2ea952483eb769f20943ba3c3b4db1c83fc39785f9dc0a8249f6794a0438e6450a50568fb4ebd246
+# policymaker -if policies/policyorwrittensigned.txt -of policies/policyorwrittensigned.bin -pr 
+#  policy digest length 32
+#  06 00 ae 34 7a 30 b0 67 36 d3 32 85 a0 cc ad 46 
+#  54 1e 62 71 f5 d0 85 10 a7 ff 0e 90 30 54 d6 c9 
+
+echo "Define index 01000000 with the policy OR"
+${PREFIX}nvdefinespace -ha 01000000 -hi o -sz 8 -pwdn "" -pol policies/policyorwrittensigned.bin -at aw > run.out
+checkSuccess $?
+
+echo "Get the Name of the NV index not written, should be 00 0b ... bb 0b"
+${PREFIX}nvreadpublic -ha 01000000 -ns > run.out
+checkSuccess $?
+
+# 000b366258674dcf8aa16d344f24dde1c799fc60f9427a7286bb8cd1e4e9fd1fbb0b
+
+echo "Start a policy session 03000000"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo ""
+echo "Policy A - not written"
+echo ""
+
+# construct cpHash for Policy A - not written, writing zeros
+ 
+# (commandCode || authHandle Name || NV Index Name || data + offset) - data 8 bytes of 0's at offset 0000
+# For index auth, authHandle Name and index Name are the same
+# policies/nvwritecphasha.txt
+# 00000137000b366258674dcf8aa16d344f24dde1c799fc60f9427a7286bb8cd1e4e9fd1fbb0b000b366258674dcf8aa16d344f24dde1c799fc60f9427a7286bb8cd1e4e9fd1fbb0b000800000000000000000000
+# policymaker -nz -if policies/nvwritecphasha.txt -of policies/nvwritecphasha.bin -pr -ns
+#  policy digest length 32
+#  cf 98 1e ee 68 04 3b dd ee 0c ab bc 75 b3 63 be 
+#  3c f9 ee 22 2a 78 b8 26 3f 06 7b b3 55 2c a6 11 
+# policy digest:
+# cf981eee68043bddee0cabbc75b363be3cf9ee222a78b8263f067bb3552ca611
+
+# construct aHash for Policy A
+
+# expiration + cpHashA
+# policies/nvwriteahasha.txt
+# 00000000cf981eee68043bddee0cabbc75b363be3cf9ee222a78b8263f067bb3552ca611
+# just convert to binary, because openssl does the hash before signing
+# xxd -r -p policies/nvwriteahasha.txt policies/nvwriteahasha.bin
+
+echo "Policy NV Written no, satisfy policy"
+${PREFIX}policynvwritten -hs 03000000 -ws n > run.out
+checkSuccess $?
+
+echo "Should be policy A first intermediate value 3c 32 63 23 ..."
+${PREFIX}policygetdigest -ha 03000000 > run.out 
+checkSuccess $?
+
+echo "Sign aHash with openssl 8813 6530 ..."
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out sig.bin policies/nvwriteahasha.bin
+echo ""
+
+echo "Policy signed, signature generated externally"
+${PREFIX}policysigned -hk 80000001 -ha 03000000 -halg sha256 -cp policies/nvwritecphasha.bin -is sig.bin > run.out
+checkSuccess $?
+
+echo "Should be policy A final value 48 0b 78 2e ..."
+${PREFIX}policygetdigest -ha 03000000 > run.out 
+checkSuccess $?
+
+echo "Policy OR"
+${PREFIX}policyor -ha 03000000 -if policies/policywrittenclrsigned.bin -if policies/policywrittensetsigned.bin > run.out
+checkSuccess $?
+
+echo "Should be policy OR final value 06 00 ae 34 "
+${PREFIX}policygetdigest -ha 03000000 > run.out 
+checkSuccess $?
+
+echo "NV write to set written"
+${PREFIX}nvwrite -ha 01000000 -if policies/zero8.bin -se0 03000000 1 > run.out
+checkSuccess $?
+
+echo ""
+echo "Policy B - written"
+echo ""
+
+echo "Get the new (written) Name of the NV index not written, should be 00 0b f5 75"
+${PREFIX}nvreadpublic -ha 01000000 -ns > run.out
+checkSuccess $?
+
+# 000bf575f09107d38c4cb82e8ec054b1aca9a91e40a06ec074b578bdd9cdaf4b76c8
+
+# construct cpHash for Policy B
+ 
+# (commandCode || authHandle Name || NV Index Name || data + offset) - data 8 bytes of abcdefgh at offset 00000
+# For index auth, authHandle Name and index Name are the same
+# policies/nvwritecphashb.txt
+# 00000137000bf575f09107d38c4cb82e8ec054b1aca9a91e40a06ec074b578bdd9cdaf4b76c8000bf575f09107d38c4cb82e8ec054b1aca9a91e40a06ec074b578bdd9cdaf4b76c8000861626364656667680000
+# policymaker -nz -if policies/nvwritecphashb.txt -of policies/nvwritecphashb.bin -pr -ns
+#  policy digest length 32
+#  df 58 08 f9 ab cb 23 7f 8c d7 c9 09 1c 86 12 2d 
+#  88 6f 02 d4 6e db 53 c8 da 39 bf a2 d6 cf 07 63 
+# policy digest:
+# df5808f9abcb237f8cd7c9091c86122d886f02d46edb53c8da39bfa2d6cf0763
+
+# construct aHash for Policy B
+
+# expiration + cpHashA
+# policies/nvwriteahashb.txt
+# 00000000df5808f9abcb237f8cd7c9091c86122d886f02d46edb53c8da39bfa2d6cf0763
+# just convert to binary, because openssl does the hash before signing
+# xxd -r -p policies/nvwriteahashb.txt policies/nvwriteahashb.bin
+
+echo "Policy NV Written yes, satisfy policy"
+${PREFIX}policynvwritten -hs 03000000 -ws y > run.out
+checkSuccess $?
+
+echo "Should be policy A first intermediate value f7 88 7d 15 ..."
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Sign aHash with openssl 3700 0a91 ..."
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out sig.bin policies/nvwriteahashb.bin > run.out
+echo ""
+
+echo "Policy signed, signature generated externally - $HALG"
+${PREFIX}policysigned -hk 80000001 -ha 03000000 -halg sha256 -cp policies/nvwritecphashb.bin -is sig.bin > run.out
+checkSuccess $?
+
+echo "Should be policy B final value 09 43 ba 3c ..."
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Policy OR"
+${PREFIX}policyor -ha 03000000 -if policies/policywrittenclrsigned.bin -if policies/policywrittensetsigned.bin > run.out
+checkSuccess $?
+
+echo "Should be policy OR final value 06 00 ae 34 "
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "NV write new data"
+${PREFIX}nvwrite -ha 01000000 -ic abcdefgh -se0 03000000 1 > run.out
+checkSuccess $?
+
+echo ""
+echo "Cleanup"
+echo ""
+
+echo "Flush the policy session 03000000"
+${PREFIX}flushcontext -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Flush the signature verification key 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Undefine the NV Index 01000000"
+${PREFIX}nvundefinespace -hi o -ha 01000000 > run.out 
+checkSuccess $?
+
 # test using clockrateadjust
 # policycphashhash.txt is (hex) 00000130 4000000c 000
 # hash -if policycphashhash.txt -oh policycphashhash.bin -halg sha1 -v
@@ -1141,6 +1367,302 @@ checkSuccess $?
 
 echo "Flush policy session"
 ${PREFIX}flushcontext -ha 03000000 > run.out 
+checkSuccess $?
+
+echo ""
+echo "Policy Duplication Select with includeObject FALSE"
+echo ""
+
+# These tests uses a new parent and object to be duplicated generated
+# externally.  This makes the Names repeatable and permits the
+# policy to be pre-calculated and static.
+
+# command code 00000188
+# newParentName
+# 000b 1a5d f667 7533 4527 37bc 79a5 5ab6 
+# d9fa 9174 5c03 3dfe 3f82 cdf0 903b a9d6
+# 55f1
+# includeObject 00
+# policymaker -if policies/policydupsel-no.txt -of policies/policydupsel-no.bin -pr -v
+# 5f 55 ba 2b 69 0f b0 38 ac 15 ff 2a 86 ef 65 66 
+# be a8 23 68 43 97 4c 3f a7 36 37 72 56 ec bc 45 
+
+# 80000000 SK storage primary key
+# 80000001 NP new parent, the target of the duplication
+# 80000002 SI signing key, duplicate from SK to NP
+# 03000000 policy session
+
+echo "Import the new parent storage key NP under the primary key"
+${PREFIX}importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -st -pwdk rrrr -opu tmpstpub.bin -opr tmpstpriv.bin -halg sha256 > run.out
+checkSuccess $?
+	
+echo "Load the new parent TPM storage key NP at 80000001"
+${PREFIX}load -hp 80000000 -pwdp pps -ipu tmpstpub.bin -ipr tmpstpriv.bin > run.out
+checkSuccess $?
+
+echo "Import a signing key SI under the primary key 80000000, with policy duplication select"
+${PREFIX}importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policydupsel-no.bin > run.out
+checkSuccess $?
+
+echo "Load the signing key SI at 80000002"
+${PREFIX}load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+checkSuccess $?
+
+echo "Sign a digest"
+${PREFIX}sign -hk 80000002 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+checkSuccess $?
+
+echo "Verify the signature"
+${PREFIX}verifysignature -hk 80000002 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+checkSuccess $?
+
+echo "Start a policy session 03000000"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo "Policy duplication select, object SI 80000002 to new parent NP 80000001"
+${PREFIX}policyduplicationselect -ha 03000000 -inpn h80000001.bin -ion h80000002.bin > run.out
+checkSuccess $?
+
+echo "Get policy digest, should be 5f 55 ba 2b ...."
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Duplicate signing key SI at 80000002 under new parent TPM storage key NP 80000001"
+${PREFIX}duplicate -ho 80000002 -hp 80000001 -od tmpdup.bin -oss tmpss.bin -se0 03000000 0 > run.out
+checkSuccess $?
+
+echo "Flush the original SI at 80000002 to free object slot for import"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Import signing key SI under new parent TPM storage key NP 80000001"
+${PREFIX}import -hp 80000001 -pwdp rrrr -ipu tmpsipub.bin -id tmpdup.bin -iss tmpss.bin -opr tmpsipriv1.bin > run.out
+checkSuccess $?
+
+echo "Load the signing key SI at 80000002"
+${PREFIX}load -hp 80000001 -pwdp rrrr -ipu tmpsipub.bin -ipr tmpsipriv1.bin > run.out
+checkSuccess $?
+
+echo "Sign a digest"
+${PREFIX}sign -hk 80000002 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+checkSuccess $?
+
+echo "Verify the signature"
+${PREFIX}verifysignature -hk 80000002 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+checkSuccess $?
+
+echo "Flush the duplicated SI at 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo ""
+echo "Policy Duplication Select with includeObject TRUE"
+echo ""
+
+# command code 00000188
+# newParentName
+# 000b 
+# 1a5d f667 7533 4527 37bc 79a5 5ab6 d9fa 
+# 9174 5c03 3dfe 3f82 cdf0 903b a9d6 55f1
+# objectName
+# 000b 
+# 7601 a382 a1fa 6407 8180 62ee b389 6d80 
+# e5a9 5eac db5f fa8e 4e0d c009 c83f 3195
+# includeObject 01
+# policymaker -if policies/policydupsel-yes.txt -of policies/policydupsel-yes.bin -pr -v
+# 9c 09 51 b0 31 ca 76 c3 03 0e e0 aa fa 97 f7 4f 
+# b6 1b 01 fe 47 f4 04 37 31 7e af 32 f7 09 fe a9 
+
+# 80000000 SK storage primary key
+# 80000001 NP new parent, the target of the duplication
+# 80000002 SI signing key, duplicate from SK to NP
+# 03000000 policy session
+
+echo "Import a signing key SI under the primary key 80000000, with policy authorize"
+${PREFIX}importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
+checkSuccess $?
+
+echo "Load the signing key SI at 80000002"
+${PREFIX}load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+checkSuccess $?
+
+echo "Sign a digest"
+${PREFIX}sign -hk 80000002 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+checkSuccess $?
+
+echo "Verify the signature"
+${PREFIX}verifysignature -hk 80000002 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+checkSuccess $?
+
+echo "Start a policy session 03000000"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo "Policy duplication select, object SI 80000002 to new parent NP 80000001 with includeObject"
+${PREFIX}policyduplicationselect -ha 03000000 -inpn h80000001.bin -ion h80000002.bin -io > run.out
+checkSuccess $?
+
+echo "Get policy digest,should be policy to approve, aHash input 9c 09 51 b0 same as policies/policydupsel-yes.bin"
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Flush the original SI at 80000002 to free object slot for loadexternal "
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Openssl generate and sign aHash (empty policyRef)"
+openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policydupsel-yes.bin
+
+echo "Load external just the public part of PEM authorizing key 80000002"
+${PREFIX}loadexternal -hi p -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
+checkSuccess $?
+
+echo "Verify the signature against 80000002 to generate ticket"
+${PREFIX}verifysignature -hk 80000002 -halg sha1 -if policies/policydupsel-yes.bin -is pssig.bin -raw -tk tkt.bin > run.out
+checkSuccess $?
+
+echo "Policy authorize using the ticket"
+${PREFIX}policyauthorize -ha 03000000 -appr policies/policydupsel-yes.bin -skn ${TPM_DATA_DIR}/h80000002.bin -tk tkt.bin > run.out
+checkSuccess $?
+
+echo "Get policy digest, should be 46 d4 8c 7e ...."
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Flush the PEM authorizing verification key at 80000002 to free object slot for import"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Load the original signing key SI at 80000002"
+${PREFIX}load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+checkSuccess $?
+
+echo "Duplicate signing key SI at 80000002 under new parent TPM storage key NP 80000001"
+${PREFIX}duplicate -ho 80000002 -hp 80000001 -od tmpdup.bin -oss tmpss.bin -se0 03000000 0 > run.out
+checkSuccess $?
+
+echo "Flush the original SI at 80000002 to free object slot for import"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Import signing key SI under new parent TPM storage key NP 80000001"
+${PREFIX}import -hp 80000001 -pwdp rrrr -ipu tmpsipub.bin -id tmpdup.bin -iss tmpss.bin -opr tmpsipriv1.bin > run.out
+checkSuccess $?
+
+echo "Load the signing key SI at 80000002"
+${PREFIX}load -hp 80000001 -pwdp rrrr -ipu tmpsipub.bin -ipr tmpsipriv1.bin > run.out
+checkSuccess $?
+
+echo "Sign a digest"
+${PREFIX}sign -hk 80000002 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+checkSuccess $?
+
+echo "Verify the signature"
+${PREFIX}verifysignature -hk 80000002 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+checkSuccess $?
+
+echo "Flush the duplicated SI at 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Flush the new parent TPM storage key NP 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo ""
+echo "Policy Name Hash"
+echo ""
+
+# signing key SI Name
+# 000b 
+# 7601 a382 a1fa 6407 8180 62ee b389 6d80 
+# e5a9 5eac db5f fa8e 4e0d c009 c83f 3195
+
+#compute nameHash
+
+# nameHash - just a hash, not an extend
+# policymaker -if policies/pnhnamehash.txt -of policies/pnhnamehash.bin -nz -pr -v -ns
+# e8 6a 85 01 60 c9 32 0b 2b 61 f7 97 38 c4 e6 06 
+# 5f 43 5d cb b8 e7 9e d4 14 fe 8f 93 27 b4 62 62 
+# e86a850160c9320b2b61f79738c4e6065f435dcbb8e79ed414fe8f9327b46262
+
+# compute policy (based on 
+
+# 00000170 TPM_CC_PolicyNameHash
+# signing key SI Name
+# e86a850160c9320b2b61f79738c4e6065f435dcbb8e79ed414fe8f9327b46262
+
+# policymaker -if policies/policynamehash.txt -of policies/policynamehash.bin -pr -v
+# 54 20 1d 4b 59 65 5a 10 cc be 5d 14 5f af cd fc 
+# 91 07 d3 cb 29 c6 d3 e3 4b c0 1f 91 eb ea 46 ca 
+
+# 80000000 SK storage primary key
+# 80000001 SI signing key
+# 80000002 Authorizing public key
+# 03000000 policy session
+
+echo "Import a signing key SI under the primary key 80000000, with policy authorize"
+${PREFIX}importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
+checkSuccess $?
+
+echo "Load the signing key SI at 80000001"
+${PREFIX}load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+checkSuccess $?
+
+echo "Sign a digest using the password"
+${PREFIX}sign -hk 80000001 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+checkSuccess $?
+
+echo "Verify the signature"
+${PREFIX}verifysignature -hk 80000001 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+checkSuccess $?
+
+echo "Start a policy session 03000000"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo "Policy name hash, object SI 80000001"
+${PREFIX}policynamehash -ha 03000000 -nh policies/pnhnamehash.bin > run.out
+checkSuccess $?
+
+echo "Get policy digest,should be policy to approve, 54 20 1d 4b"
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Openssl generate and sign aHash (empty policyRef)"
+openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policynamehash.bin
+
+echo "Load external just the public part of PEM authorizing key 80000002"
+${PREFIX}loadexternal -hi p -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
+checkSuccess $?
+
+echo "Verify the signature against 80000002 to generate ticket"
+${PREFIX}verifysignature -hk 80000002 -halg sha1 -if policies/policynamehash.bin -is pssig.bin -raw -tk tkt.bin > run.out
+checkSuccess $?
+
+echo "Policy authorize using the ticket"
+${PREFIX}policyauthorize -ha 03000000 -appr policies/policynamehash.bin -skn ${TPM_DATA_DIR}/h80000002.bin -tk tkt.bin > run.out
+checkSuccess $?
+
+echo "Get policy digest, should be 46 d4 8c 7e ...."
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Sign a digest using the policy"
+${PREFIX}sign -hk 80000001 -halg sha256 -if policies/aaa -os tmpsig.bin -se0 03000000 0 > run.out
+checkSuccess $?
+
+echo "Verify the signature"
+${PREFIX}verifysignature -hk 80000001 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+checkSuccess $?
+
+echo "Flush the signing key at 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Flush the authorizing key 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
 checkSuccess $?
 
 # test using clockrateadjust and platform policy
@@ -1323,6 +1845,17 @@ checkSuccess $?
 rm -f tmppol.bin
 rm -r tmppriv.bin
 rm -r tmppub.bin
+rm -f tmpstpub.bin
+rm -f tmpstpriv.bin
+rm -f tmpsipub.bin
+rm -f tmpsipriv.bin
+rm -f pssig.bin
+rm -f tkt.bin
+rm -f tmpdup.bin
+rm -f tmpss.bin
+rm -f tmpsipriv1.bin
+rm -f tmpsig.bin
+rm -f run.out
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 01000000

@@ -3,7 +3,7 @@
 /*			    PolicyNV	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policynv.c 1098 2017-11-27 23:07:26Z kgoldman $		*/
+/*	      $Id: policynv.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -144,7 +144,6 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		offset = atoi(argv[i]);
-		/* FIXME range check */
 	    }
 	    else {
 		printf("-off option needs a value\n");

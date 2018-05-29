@@ -3,7 +3,7 @@
 /*		      Extend an EVENT measurement file into PCRs		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventextend.c 1145 2018-02-06 20:41:50Z kgoldman $		*/
+/*	      $Id: eventextend.c 1210 2018-05-10 21:39:52Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -255,7 +255,7 @@ int main(int argc, char * argv[])
 	        char pcrString[9];	/* PCR number */
 
 		printf("\n");
-		TSS_TPM_ALG_ID_Print(specIdEvent.digestSizes[bankNum].algorithmId, 0);
+		TSS_TPM_ALG_ID_Print("algorithmId", specIdEvent.digestSizes[bankNum].algorithmId, 0);
 		for (pcrNum = 0 ; pcrNum < TPM_BIOS_PCR ; pcrNum++) {
 		    sprintf(pcrString, "PCR %02u:", pcrNum);
 		    /* TSS_PrintAllLogLevel() with a log level of LOGLEVEL_INFO to print the byte

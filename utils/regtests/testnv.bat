@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testnv.bat 783 2016-10-24 14:30:29Z kgoldman $		#
+REM #		$Id: testnv.bat 1211 2018-05-10 22:08:49Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -659,7 +659,7 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "NV global lock"
-    %TPM_EXE_PATH%nvglobalwritelock -hia p
+    %TPM_EXE_PATH%nvglobalwritelock -hia p > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -773,13 +773,13 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "Policy command code"    
-    %TPM_EXE_PATH%policycommandcode -ha 03000001 -cc 0000013b
+    %TPM_EXE_PATH%policycommandcode -ha 03000001 -cc 0000013b > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
     echo "Policy authvalue"    
-    %TPM_EXE_PATH%policyauthvalue -ha 03000001
+    %TPM_EXE_PATH%policyauthvalue -ha 03000001 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -857,13 +857,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy command code"    
-%TPM_EXE_PATH%policycommandcode -ha 03000001 -cc 0000013b
+%TPM_EXE_PATH%policycommandcode -ha 03000001 -cc 0000013b > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Policy authvalue"    
-%TPM_EXE_PATH%policyauthvalue -ha 03000001
+%TPM_EXE_PATH%policyauthvalue -ha 03000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

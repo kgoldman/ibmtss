@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testencsession.bat 978 2017-04-04 15:37:15Z kgoldman $	#
+REM #		$Id: testencsession.bat 1209 2018-05-10 21:26:10Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
@@ -353,7 +353,7 @@ set L=!i!
 for /L %%i in (1,1,!L!) do (
 
     echo "Policy restart"
-    %TPM_EXE_PATH%policyrestart -ha 03000001
+    %TPM_EXE_PATH%policyrestart -ha 03000001 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -435,7 +435,7 @@ set L=!i!
 for /L %%i in (1,1,!L!) do (
 
     echo "Policy restart"
-    %TPM_EXE_PATH%policyrestart -ha 03000001
+    %TPM_EXE_PATH%policyrestart -ha 03000001 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

@@ -75,5 +75,17 @@
     <ClCompile Include="..\..\utils\tsscryptoh.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\utils\tssntc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\utils\tss20.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\utils\tssauth20.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\utils\tssprintcmd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

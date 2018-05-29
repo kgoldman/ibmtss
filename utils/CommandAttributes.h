@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: CommandAttributes.h 816 2016-11-16 23:18:27Z kgoldman $	*/
+/*            $Id: CommandAttributes.h 1157 2018-04-17 14:09:56Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -61,10 +61,10 @@
 
 /* rev 119 */
 
-#include <tss2/TPM_Types.h>
-
 #ifndef COMMANDATTRIBUTES_H
 #define COMMANDATTRIBUTES_H
+
+#include <tss2/TPM_Types.h>
 
 /* kgold stub until next version of the spec */
 
@@ -87,10 +87,6 @@
 
 typedef UINT32 COMMAND_ATTRIBUTES;
 
-#ifndef TPM_TSS
-extern const TPM_CC ccAttr [];
-
-#else
 typedef union {
     struct {
 	uint32_t commandCode;
@@ -101,14 +97,15 @@ typedef union {
 	uint8_t cHandles;
 	uint8_t rHandle;
 	uint8_t V;
-	uint8_t reserved2;
+	uint8_t tpm12Ordinal;	/* kgold - was reserved, flags TPM 1.2 ordinal */
     };
     /* must be a union so the below 'bitfield' structure intiializer works */
     uint8_t dummy;
 } TPMA_CC_TSS;
 
 extern const TPMA_CC_TSS s_ccAttr [];
-
+#ifdef TPM_TPM12
+extern const TPMA_CC_TSS s_ccAttr12 [];
 #endif
 
 extern const COMMAND_ATTRIBUTES    s_commandAttributes [];

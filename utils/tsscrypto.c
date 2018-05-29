@@ -4,9 +4,9 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
-/*	      $Id: tsscrypto.c 1124 2018-01-05 21:32:55Z kgoldman $		*/
+/*	      $Id: tsscrypto.c 1219 2018-05-15 21:12:32Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -73,10 +73,14 @@ extern int tssVerbose;
 
 static TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
 			     TPMI_ALG_HASH hashAlg);
+
+#ifndef TPM_TSS_NOECC
 static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData,
 						   EC_KEY *myecc);
 static TPM_RC TSS_BN_new(BIGNUM **bn);
 static TPM_RC TSS_BN_hex2bn(BIGNUM **bn, const char *str);
+#endif	/* TPM_TSS_NOECC */
+
 static TPM_RC TSS_bin2bn(BIGNUM **bn, const unsigned char *bin, unsigned int bytes);
 
 /*
@@ -86,8 +90,18 @@ static TPM_RC TSS_bin2bn(BIGNUM **bn, const unsigned char *bin, unsigned int byt
 TPM_RC TSS_Crypto_Init(void)
 {
     TPM_RC		rc = 0;
+#if 0
+    int			irc;
+#endif
+
     ERR_load_crypto_strings ();
     OpenSSL_add_all_algorithms();
+#if 0
+    irc = FIPS_mode_set(1);
+    if (irc == 0) {
+	if (tssVerbose) printf("TSS_Crypto_Init: Cannot set FIPS mode\n");
+    }
+#endif
     return rc;
 }
 
@@ -253,13 +267,14 @@ TPM_RC TSS_Hash_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
     }
     while ((rc == 0) && !done) {
 	length = va_arg(ap, int);		/* first vararg is the length */
-	buffer = va_arg(ap, unsigned char *);		/* second vararg is the array */
+	buffer = va_arg(ap, unsigned char *);	/* second vararg is the array */
 	if (buffer != NULL) {			/* loop until a NULL buffer terminates */
 	    if (length < 0) {
 		if (tssVerbose) printf("TSS_Hash_Generate: Length is negative\n");
 		rc = TSS_RC_HASH;
 	    }
 	    else {
+		/* if (tssVverbose) TSS_PrintAll("TSS_Hash_Generate:", buffer, length); */
 		if (length != 0) {
 		    EVP_DigestUpdate(mdctx, buffer, length);
 		}
@@ -421,6 +436,8 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
     return rc;
 }
 
+#ifndef TPM_TSS_NOECC
+
 /* TSS_GeneratePlatformEphemeralKey sets the EC parameters to NIST P256 for generating the ephemeral
    key. Some OpenSSL versions do not come with NIST p256.  */
 
@@ -572,7 +589,10 @@ static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KE
     return rc;
 }
 
-/* TSS_ECC_Salt() returns both the plaintext and excrypted salt, based on the salt key bPublic. */
+/* TSS_ECC_Salt() returns both the plaintext and excrypted salt, based on the salt key bPublic.
+
+   This is currently hard coded to the TPM_ECC_NIST_P256 curve.
+*/
 
 TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 		    TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
@@ -903,9 +923,9 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 				      encryptedSalt->t.secret,
 				      encryptedSalt->t.size);
     }
-    /* sharedX_For_KDFE */
+    /* TPM2B_ECC_PARAMETER sharedX_For_KDFE */
     if (rc == 0) {
-	if (lengthSharedXBin > sizeof(sharedX_For_KDFE.t.buffer)) {
+	if (lengthSharedXBin > 32) {
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
 				   "lengthSharedXBin %u too large\n",
 				   lengthSharedXBin);
@@ -921,9 +941,9 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 				      sharedX_For_KDFE.t.buffer,
 				      sharedX_For_KDFE.t.size);
     }
-    /* p_caller_X_For_KDFE */
+    /* TPM2B_ECC_PARAMETER p_caller_X_For_KDFE */
     if (rc == 0) {
-	if (length_p_caller_Xbin > sizeof(p_caller_X_For_KDFE.t.buffer)) {
+	if (length_p_caller_Xbin > 32) {
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
 				   "length_p_caller_Xbin %u too large\n",
 				   length_p_caller_Xbin);
@@ -941,7 +961,7 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     }
     /* p_tpmX_For_KDFE */
     if (rc == 0) {
-	if (length_p_tpmXbin > sizeof(p_tpmX_For_KDFE.t.buffer)) {
+	if (length_p_tpmXbin > 32) {
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
 				   "length_p_tpmXbin %u too large\n",
 				   length_p_tpmXbin);
@@ -1048,6 +1068,8 @@ static TPM_RC TSS_BN_hex2bn(BIGNUM **bn, const char *str)	/* freed by caller */
     return rc;
 }
 
+#endif	/* TPM_TSS_NOECC */
+
 /* TSS_bin2bn() wraps the openSSL function in a TPM error handler
 
    Converts a char array to bignum
@@ -1119,7 +1141,8 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
     else {
 	/* hexascii to binary */
 	if (rc == 0) {
-	    rc = TSS_Array_Scan(&envKeyBin, &envKeyBinLen, envKeyString);
+	    rc = TSS_Array_Scan(&envKeyBin,			/* freed @1 */
+				&envKeyBinLen, envKeyString);
 	}
 	/* range check */
 	if (rc == 0) {
@@ -1158,7 +1181,7 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
 	    rc = TSS_RC_AES_KEYGEN_FAILURE; 
 	}
     }
-    free(envKeyBin);
+    free(envKeyBin);	/* @1 */
     return rc;
 }
 

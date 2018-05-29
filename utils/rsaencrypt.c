@@ -3,7 +3,7 @@
 /*			   RSA_Encrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsaencrypt.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: rsaencrypt.c 1194 2018-05-02 15:07:19Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -70,7 +70,6 @@ int main(int argc, char *argv[])
     uint16_t			written = 0;
     size_t 			length = 0;
     uint8_t			*buffer = NULL;	/* for the free */
-    uint8_t			*buffer1 = NULL;	/* for marshaling */
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -180,21 +179,16 @@ int main(int argc, char *argv[])
 	}
     }
     if ((rc == 0) && (encryptFilename != NULL)) {
-	written = 0;
-	rc = TSS_TPM2B_PUBLIC_KEY_RSA_Marshal(&out.outData, &written, NULL, NULL);
-    }    
-    if ((rc == 0) && (encryptFilename != NULL)) {
-	buffer = realloc(buffer, written);
-	buffer1 = buffer;
-	written = 0;
-	rc = TSS_TPM2B_PUBLIC_KEY_RSA_Marshal(&out.outData, &written, &buffer1, NULL);
-    }    
+	rc = TSS_Structure_Marshal(&buffer,	/* freed @1 */
+				   &written,
+				   &out.outData,
+				   (MarshalFunction_t)TSS_TPM2B_PUBLIC_KEY_RSA_Marshal);
+    }
     if ((rc == 0) && (encryptFilename != NULL)) {
 	rc = TSS_File_WriteBinaryFile(buffer + sizeof(uint16_t),
 				      written - sizeof(uint16_t),
 				      encryptFilename); 
     }    
-    free(buffer);
     if (rc == 0) {
 	if (verbose) printRsaEncrypt(&out);
 	if (verbose) printf("rsaencrypt: success\n");
@@ -208,6 +202,7 @@ int main(int argc, char *argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
+    free(buffer);	/* @1 */
     return rc;
 }
 

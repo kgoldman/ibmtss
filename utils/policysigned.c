@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: policysigned.c 1232 2018-05-29 17:09:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -45,13 +45,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
-#ifdef TPM_POSIX
-#include <netinet/in.h>
-#endif
-#ifdef TPM_WINDOWS
-#include <winsock2.h>
-#endif
 
 #include <openssl/evp.h>
 #include <openssl/err.h>

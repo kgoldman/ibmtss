@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testpolicy.bat 1087 2017-10-24 18:08:49Z kgoldman $	#
+REM #		$Id: testpolicy.bat 1213 2018-05-11 20:45:02Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2017					#
+REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -368,7 +368,7 @@ REM # sign a test message msg.bin
 REM # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 REM #
 REM # create the policy:
-REM # after loadexternal, get the name from readpublic -ho 80000001 -v
+REM # after loadexternal, get the name from readpublic -ho 80000001 -ns
 REM 
 REM # sha1
 REM # 00 04 42 34 c2 4f c1 b9 de 66 93 a6 24 53 41 7d 
@@ -1479,6 +1479,279 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+echo ""
+echo "Policy Signed externally signed cpHash"
+echo ""
+
+REM # NV Index 01000000 has policy OR
+REM 
+REM # Policy A - provisioning: policy written false + policysigned
+REM #	demo: authorizer signs NV write all zero
+REM 
+REM # Policy B - application: policy written true + policysigned
+REM #	demo: authorizer signs NV write abcdefgh
+
+echo "Load external just the public part of PEM at 80000001"
+%TPM_EXE_PATH%loadexternal -ipem policies/rsapubkey.pem > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Get the Name of the signing key at 80000001"
+%TPM_EXE_PATH%readpublic -ho 80000001 -ns > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+REM # 000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+REM 
+REM # construct policy A
+REM 
+REM # policies/policywrittenclrsigned.txt
+REM # 0000018f00
+REM # 00000160000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+REM # Add the extra blank line here for policyRef
+REM 
+REM # policymaker -if policies/policywrittenclrsigned.txt -of policies/policywrittenclrsigned.bin -pr -ns -v
+REM # intermediate policy digest length 32
+REM #  3c 32 63 23 67 0e 28 ad 37 bd 57 f6 3b 4c c3 4d 
+REM #  26 ab 20 5e f2 2f 27 5c 58 d4 7f ab 24 85 46 6e 
+REM #  intermediate policy digest length 32
+REM #  6b 0d 2d 2b 55 4d 68 ec bc 6c d5 b8 c0 96 c1 70 
+REM #  57 5a 95 25 37 56 38 7e 83 d7 76 d9 5b 1b 8e f3 
+REM #  intermediate policy digest length 32
+REM #  48 0b 78 2e 02 82 c2 40 88 32 c4 df 9c 0e be 87 
+REM #  18 6f 92 54 bd e0 5b 0c 2e a9 52 48 3e b7 69 f2 
+REM #  policy digest length 32
+REM #  48 0b 78 2e 02 82 c2 40 88 32 c4 df 9c 0e be 87 
+REM #  18 6f 92 54 bd e0 5b 0c 2e a9 52 48 3e b7 69 f2 
+REM # policy digest:
+REM # 480b782e0282c2408832c4df9c0ebe87186f9254bde05b0c2ea952483eb769f2
+REM 
+REM # construct policy B
+REM 
+REM # policies/policywrittensetsigned.txt
+REM # 0000018f01
+REM # 00000160000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+REM # Add the extra blank line here for policyRef
+REM 
+REM # policymaker -if policies/policywrittensetsigned.txt -of policies/policywrittensetsigned.bin -pr -ns -v
+REM #  intermediate policy digest length 32
+REM #  f7 88 7d 15 8a e8 d3 8b e0 ac 53 19 f3 7a 9e 07 
+REM #  61 8b f5 48 85 45 3c 7a 54 dd b0 c6 a6 19 3b eb 
+REM #  intermediate policy digest length 32
+REM #  7d c2 8f b0 dd 4f ee 97 78 2b 55 43 b1 dc 6b 1e 
+REM #  e2 bc 79 05 d4 a1 f6 8d e2 97 69 5f a9 aa 78 5f 
+REM #  intermediate policy digest length 32
+REM #  09 43 ba 3c 3b 4d b1 c8 3f c3 97 85 f9 dc 0a 82 
+REM #  49 f6 79 4a 04 38 e6 45 0a 50 56 8f b4 eb d2 46 
+REM #  policy digest length 32
+REM #  09 43 ba 3c 3b 4d b1 c8 3f c3 97 85 f9 dc 0a 82 
+REM #  49 f6 79 4a 04 38 e6 45 0a 50 56 8f b4 eb d2 46 
+REM # policy digest:
+REM # 0943ba3c3b4db1c83fc39785f9dc0a8249f6794a0438e6450a50568fb4ebd246
+REM 
+REM # construct the Policy OR of A and B
+REM 
+REM # policyorwrittensigned.txt - command code plus two policy digests
+REM # 00000171480b782e0282c2408832c4df9c0ebe87186f9254bde05b0c2ea952483eb769f20943ba3c3b4db1c83fc39785f9dc0a8249f6794a0438e6450a50568fb4ebd246
+REM # policymaker -if policies/policyorwrittensigned.txt -of policies/policyorwrittensigned.bin -pr 
+REM #  policy digest length 32
+REM #  06 00 ae 34 7a 30 b0 67 36 d3 32 85 a0 cc ad 46 
+REM #  54 1e 62 71 f5 d0 85 10 a7 ff 0e 90 30 54 d6 c9 
+
+echo "Define index 01000000 with the policy OR"
+%TPM_EXE_PATH%nvdefinespace -ha 01000000 -hi o -sz 8 -pwdn "" -pol policies/policyorwrittensigned.bin -at aw > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Get the Name of the NV index not written, should be 00 0b ... bb 0b"
+%TPM_EXE_PATH%nvreadpublic -ha 01000000 -ns > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+REM # 000b366258674dcf8aa16d344f24dde1c799fc60f9427a7286bb8cd1e4e9fd1fbb0b
+
+echo "Start a policy session 03000000"
+%TPM_EXE_PATH%startauthsession -se p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Policy A - not written"
+echo ""
+
+REM # construct cpHash for Policy A - not written, writing zeros
+REM  
+REM # (commandCode || authHandle Name || NV Index Name || data + offset) - data 8 bytes of 0's at offset 0000
+REM # For index auth, authHandle Name and index Name are the same
+REM # policies/nvwritecphasha.txt
+REM # 00000137000b366258674dcf8aa16d344f24dde1c799fc60f9427a7286bb8cd1e4e9fd1fbb0b000b366258674dcf8aa16d344f24dde1c799fc60f9427a7286bb8cd1e4e9fd1fbb0b000800000000000000000000
+REM # policymaker -nz -if policies/nvwritecphasha.txt -of policies/nvwritecphasha.bin -pr -ns
+REM #  policy digest length 32
+REM #  cf 98 1e ee 68 04 3b dd ee 0c ab bc 75 b3 63 be 
+REM #  3c f9 ee 22 2a 78 b8 26 3f 06 7b b3 55 2c a6 11 
+REM # policy digest:
+REM # cf981eee68043bddee0cabbc75b363be3cf9ee222a78b8263f067bb3552ca611
+REM 
+REM # construct aHash for Policy A
+REM 
+REM # expiration + cpHashA
+REM # policies/nvwriteahasha.txt
+REM # 00000000cf981eee68043bddee0cabbc75b363be3cf9ee222a78b8263f067bb3552ca611
+REM # just convert to binary, because openssl does the hash before signing
+REM # xxd -r -p policies/nvwriteahasha.txt policies/nvwriteahasha.bin
+
+echo "Policy NV Written no, satisfy policy"
+%TPM_EXE_PATH%policynvwritten -hs 03000000 -ws n > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Should be policy A first intermediate value 3c 32 63 23 ..."
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out 
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign aHash with openssl 8813 6530 ..."
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out sig.bin policies/nvwriteahasha.bin
+echo ""
+
+echo "Policy signed, signature generated externally"
+%TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -halg sha256 -cp policies/nvwritecphasha.bin -is sig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Should be policy A final value 48 0b 78 2e ..."
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out 
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy OR"
+%TPM_EXE_PATH%policyor -ha 03000000 -if policies/policywrittenclrsigned.bin -if policies/policywrittensetsigned.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Should be policy OR final value 06 00 ae 34 "
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out 
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write to set written"
+%TPM_EXE_PATH%nvwrite -ha 01000000 -if policies/zero8.bin -se0 03000000 1 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Policy B - written"
+echo ""
+
+echo "Get the new (written) Name of the NV index not written, should be 00 0b f5 75"
+%TPM_EXE_PATH%nvreadpublic -ha 01000000 -ns > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+REM # 000bf575f09107d38c4cb82e8ec054b1aca9a91e40a06ec074b578bdd9cdaf4b76c8
+REM 
+REM # construct cpHash for Policy B
+REM  
+REM # (commandCode || authHandle Name || NV Index Name || data + offset) - data 8 bytes of abcdefgh at offset 00000
+REM # For index auth, authHandle Name and index Name are the same
+REM # policies/nvwritecphashb.txt
+REM # 00000137000bf575f09107d38c4cb82e8ec054b1aca9a91e40a06ec074b578bdd9cdaf4b76c8000bf575f09107d38c4cb82e8ec054b1aca9a91e40a06ec074b578bdd9cdaf4b76c8000861626364656667680000
+REM # policymaker -nz -if policies/nvwritecphashb.txt -of policies/nvwritecphashb.bin -pr -ns
+REM #  policy digest length 32
+REM #  df 58 08 f9 ab cb 23 7f 8c d7 c9 09 1c 86 12 2d 
+REM #  88 6f 02 d4 6e db 53 c8 da 39 bf a2 d6 cf 07 63 
+REM # policy digest:
+REM # df5808f9abcb237f8cd7c9091c86122d886f02d46edb53c8da39bfa2d6cf0763
+REM 
+REM # construct aHash for Policy B
+REM 
+REM # expiration + cpHashA
+REM # policies/nvwriteahashb.txt
+REM # 00000000df5808f9abcb237f8cd7c9091c86122d886f02d46edb53c8da39bfa2d6cf0763
+REM # just convert to binary, because openssl does the hash before signing
+REM # xxd -r -p policies/nvwriteahashb.txt policies/nvwriteahashb.bin
+
+echo "Policy NV Written yes, satisfy policy"
+%TPM_EXE_PATH%policynvwritten -hs 03000000 -ws y > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Should be policy A first intermediate value f7 88 7d 15 ..."
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign aHash with openssl 3700 0a91 ..."
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out sig.bin policies/nvwriteahashb.bin > run.out
+echo ""
+
+echo "Policy signed, signature generated externally - $HALG"
+%TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -halg sha256 -cp policies/nvwritecphashb.bin -is sig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Should be policy B final value 09 43 ba 3c ..."
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy OR"
+%TPM_EXE_PATH%policyor -ha 03000000 -if policies/policywrittenclrsigned.bin -if policies/policywrittensetsigned.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Should be policy OR final value 06 00 ae 34 "
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write new data"
+%TPM_EXE_PATH%nvwrite -ha 01000000 -ic abcdefgh -se0 03000000 1 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Cleanup"
+echo ""
+
+echo "Flush the policy session 03000000"
+%TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the signature verification key 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Undefine the NV Index 01000000"
+%TPM_EXE_PATH%nvundefinespace -hi o -ha 01000000 > run.out 
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
 REM # test using clockrateadjust
 REM # policycphashhash.txt is (hex) 00000130 4000000c 000
 REM # hash -if policycphashhash.txt -oh policycphashhash.bin -halg sha1 -v
@@ -1549,6 +1822,408 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "Flush policy session"
 %TPM_EXE_PATH%flushcontext -ha 03000000 > run.out 
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Policy Duplication Select with includeObject FALSE"
+echo ""
+
+REM # These tests uses a new parent and object to be duplicated generated
+REM # externally.  This makes the Names repeatable and permits the
+REM # policy to be pre-calculated and static.
+REM 
+REM # command code 00000188
+REM # newParentName
+REM # 000b 1a5d f667 7533 4527 37bc 79a5 5ab6 
+REM # d9fa 9174 5c03 3dfe 3f82 cdf0 903b a9d6
+REM # 55f1
+REM # includeObject 00
+REM # policymaker -if policies/policydupsel-no.txt -of policies/policydupsel-no.bin -pr -v
+REM # 5f 55 ba 2b 69 0f b0 38 ac 15 ff 2a 86 ef 65 66 
+REM # be a8 23 68 43 97 4c 3f a7 36 37 72 56 ec bc 45 
+REM 
+REM # 80000000 SK storage primary key
+REM # 80000001 NP new parent, the target of the duplication
+REM # 80000002 SI signing key, duplicate from SK to NP
+REM # 03000000 policy session
+
+echo "Import the new parent storage key NP under the primary key"
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -st -pwdk rrrr -opu tmpstpub.bin -opr tmpstpriv.bin -halg sha256 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+	
+echo "Load the new parent TPM storage key NP at 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpstpub.bin -ipr tmpstpriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Import a signing key SI under the primary key 80000000, with policy duplication select"
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policydupsel-no.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the signing key SI at 80000002"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign a digest"
+%TPM_EXE_PATH%sign -hk 80000002 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature"
+%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start a policy session 03000000"
+%TPM_EXE_PATH%startauthsession -se p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy duplication select, object SI 80000002 to new parent NP 80000001"
+%TPM_EXE_PATH%policyduplicationselect -ha 03000000 -inpn h80000001.bin -ion h80000002.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Get policy digest, should be 5f 55 ba 2b ...."
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Duplicate signing key SI at 80000002 under new parent TPM storage key NP 80000001"
+%TPM_EXE_PATH%duplicate -ho 80000002 -hp 80000001 -od tmpdup.bin -oss tmpss.bin -se0 03000000 0 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the original SI at 80000002 to free object slot for import"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Import signing key SI under new parent TPM storage key NP 80000001"
+%TPM_EXE_PATH%import -hp 80000001 -pwdp rrrr -ipu tmpsipub.bin -id tmpdup.bin -iss tmpss.bin -opr tmpsipriv1.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the signing key SI at 80000002"
+%TPM_EXE_PATH%load -hp 80000001 -pwdp rrrr -ipu tmpsipub.bin -ipr tmpsipriv1.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign a digest"
+%TPM_EXE_PATH%sign -hk 80000002 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature"
+%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the duplicated SI at 80000002"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Policy Duplication Select with includeObject TRUE"
+echo ""
+
+REM # command code 00000188
+REM # newParentName
+REM # 000b 
+REM # 1a5d f667 7533 4527 37bc 79a5 5ab6 d9fa 
+REM # 9174 5c03 3dfe 3f82 cdf0 903b a9d6 55f1
+REM # objectName
+REM # 000b 
+REM # 7601 a382 a1fa 6407 8180 62ee b389 6d80 
+REM # e5a9 5eac db5f fa8e 4e0d c009 c83f 3195
+REM # includeObject 01
+REM # policymaker -if policies/policydupsel-yes.txt -of policies/policydupsel-yes.bin -pr -v
+REM # 9c 09 51 b0 31 ca 76 c3 03 0e e0 aa fa 97 f7 4f 
+REM # b6 1b 01 fe 47 f4 04 37 31 7e af 32 f7 09 fe a9 
+REM 
+REM # 80000000 SK storage primary key
+REM # 80000001 NP new parent, the target of the duplication
+REM # 80000002 SI signing key, duplicate from SK to NP
+REM # 03000000 policy session
+
+echo "Import a signing key SI under the primary key 80000000, with policy authorize"
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the signing key SI at 80000002"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign a digest"
+%TPM_EXE_PATH%sign -hk 80000002 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature"
+%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start a policy session 03000000"
+%TPM_EXE_PATH%startauthsession -se p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy duplication select, object SI 80000002 to new parent NP 80000001 with includeObject"
+%TPM_EXE_PATH%policyduplicationselect -ha 03000000 -inpn h80000001.bin -ion h80000002.bin -io > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Get policy digest,should be policy to approve, aHash input 9c 09 51 b0 same as policies/policydupsel-yes.bin"
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the original SI at 80000002 to free object slot for loadexternal "
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Openssl generate and sign aHash (empty policyRef)"
+openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policydupsel-yes.bin
+
+echo "Load external just the public part of PEM authorizing key 80000002"
+%TPM_EXE_PATH%loadexternal -hi p -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature against 80000002 to generate ticket"
+%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha1 -if policies/policydupsel-yes.bin -is pssig.bin -raw -tk tkt.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy authorize using the ticket"
+%TPM_EXE_PATH%policyauthorize -ha 03000000 -appr policies/policydupsel-yes.bin -skn h80000002.bin -tk tkt.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Get policy digest, should be 46 d4 8c 7e ...."
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the PEM authorizing verification key at 80000002 to free object slot for import"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the original signing key SI at 80000002"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Duplicate signing key SI at 80000002 under new parent TPM storage key NP 80000001"
+%TPM_EXE_PATH%duplicate -ho 80000002 -hp 80000001 -od tmpdup.bin -oss tmpss.bin -se0 03000000 0 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the original SI at 80000002 to free object slot for import"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Import signing key SI under new parent TPM storage key NP 80000001"
+%TPM_EXE_PATH%import -hp 80000001 -pwdp rrrr -ipu tmpsipub.bin -id tmpdup.bin -iss tmpss.bin -opr tmpsipriv1.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the signing key SI at 80000002"
+%TPM_EXE_PATH%load -hp 80000001 -pwdp rrrr -ipu tmpsipub.bin -ipr tmpsipriv1.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign a digest"
+%TPM_EXE_PATH%sign -hk 80000002 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature"
+%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the duplicated SI at 80000002"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the new parent TPM storage key NP 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Policy Name Hash"
+echo ""
+
+REM # signing key SI Name
+REM # 000b 
+REM # 7601 a382 a1fa 6407 8180 62ee b389 6d80 
+REM # e5a9 5eac db5f fa8e 4e0d c009 c83f 3195
+REM 
+REM #compute nameHash
+REM 
+REM # nameHash - just a hash, not an extend
+REM # policymaker -if policies/pnhnamehash.txt -of policies/pnhnamehash.bin -nz -pr -v -ns
+REM # e8 6a 85 01 60 c9 32 0b 2b 61 f7 97 38 c4 e6 06 
+REM # 5f 43 5d cb b8 e7 9e d4 14 fe 8f 93 27 b4 62 62 
+REM # e86a850160c9320b2b61f79738c4e6065f435dcbb8e79ed414fe8f9327b46262
+REM 
+REM # compute policy (based on 
+REM 
+REM # 00000170 TPM_CC_PolicyNameHash
+REM # signing key SI Name
+REM # e86a850160c9320b2b61f79738c4e6065f435dcbb8e79ed414fe8f9327b46262
+REM 
+REM # policymaker -if policies/policynamehash.txt -of policies/policynamehash.bin -pr -v
+REM # 54 20 1d 4b 59 65 5a 10 cc be 5d 14 5f af cd fc 
+REM # 91 07 d3 cb 29 c6 d3 e3 4b c0 1f 91 eb ea 46 ca 
+REM 
+REM # 80000000 SK storage primary key
+REM # 80000001 SI signing key
+REM # 80000002 Authorizing public key
+REM # 03000000 policy session
+
+echo "Import a signing key SI under the primary key 80000000, with policy authorize"
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the signing key SI at 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign a digest using the password"
+%TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if policies/aaa -os tmpsig.bin -pwdk rrrr > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature"
+%TPM_EXE_PATH%verifysignature -hk 80000001 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start a policy session 03000000"
+%TPM_EXE_PATH%startauthsession -se p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy name hash, object SI 80000001"
+%TPM_EXE_PATH%policynamehash -ha 03000000 -nh policies/pnhnamehash.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Get policy digest,should be policy to approve, 54 20 1d 4b"
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Openssl generate and sign aHash (empty policyRef)"
+openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policynamehash.bin
+
+echo "Load external just the public part of PEM authorizing key 80000002"
+%TPM_EXE_PATH%loadexternal -hi p -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature against 80000002 to generate ticket"
+%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha1 -if policies/policynamehash.bin -is pssig.bin -raw -tk tkt.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy authorize using the ticket"
+%TPM_EXE_PATH%policyauthorize -ha 03000000 -appr policies/policynamehash.bin -skn h80000002.bin -tk tkt.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Get policy digest, should be 46 d4 8c 7e ...."
+%TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Sign a digest using the policy"
+%TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if policies/aaa -os tmpsig.bin -se0 03000000 0 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature"
+%TPM_EXE_PATH%verifysignature -hk 80000001 -halg sha256 -if policies/aaa -is tmpsig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the signing key at 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the authorizing key 80000002"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1800,6 +2475,18 @@ IF !ERRORLEVEL! NEQ 0 (
 rm tmppol.bin
 rm tmppriv.bin
 rm tmppub.bin
+rm tmpstpub.bin
+rm tmpstpriv.bin
+rm tmpsipub.bin
+rm tmpsipriv.bin
+rm pssig.bin
+rm tkt.bin
+rm tmpdup.bin
+rm tmpss.bin
+rm tmpsipriv1.bin
+rm tmpsig.bin
+rm run.out
+
 exit /B 0
 
 REM # getcapability -cap 1 -pr 80000000

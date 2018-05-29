@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testsign.sh 1088 2017-10-26 19:41:33Z kgoldman $		#
+#		$Id: testsign.sh 1209 2018-05-10 21:26:10Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -202,7 +202,7 @@ do
     checkSuccess $?
 
     echo "Convert TPM public key to PEM"
-    ${PREFIX}tpm2pem -ipu tmppub.bin -opem tmppub.pem
+    ${PREFIX}tpm2pem -ipu tmppub.bin -opem tmppub.pem > run.out
     checkSuccess $?
 
     echo "Verify the signature using createprimary converted PEM - $HALG"
@@ -247,7 +247,7 @@ do
     checkSuccess $?
 
     echo "Convert TPM public key to PEM"
-    ${PREFIX}tpm2pem -ipu tmppub.bin -opem tmppub.pem
+    ${PREFIX}tpm2pem -ipu tmppub.bin -opem tmppub.pem > run.out
     checkSuccess $?
 
     echo "Verify the signature using createprimary converted PEM - $HALG"

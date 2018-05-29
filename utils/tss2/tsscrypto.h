@@ -3,7 +3,7 @@
 /*			     TSS Library Dependent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
+/*	      $Id: tsscrypto.h 1219 2018-05-15 21:12:32Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -49,22 +49,22 @@
 #include <stdio.h>
 
 #include <openssl/rsa.h>
+#ifndef TPM_TSS_NOECC
 #include <openssl/ec.h>
-#include <openssl/bn.h>
-
-#ifndef TPM_TSS
-#define TPM_TSS
 #endif
+#include <openssl/bn.h>
 
 #include <tss2/tss.h>
 
 /* ECC salt */
 
+#ifndef TPM_TSS_NOECC
 typedef struct
 {
     EC_GROUP            *G;
     BN_CTX              *ctx;
 } CURVE_DATA;
+#endif	/* TPM_TSS_NOECC */
 
 #ifdef __cplusplus
 extern "C" {

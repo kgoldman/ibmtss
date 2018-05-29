@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 1095 2017-11-09 21:52:27Z kgoldman $		#
+#		$Id: testdup.sh 1209 2018-05-10 21:26:10Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2017					#
 # 										#
@@ -179,7 +179,7 @@ ${PREFIX}policycommandcode -ha 03000000 -cc 14b > run.out
 checkSuccess $?
 
 echo "Duplicate K2 under storage key"
-${PREFIX}duplicate -ho 80000001 -hp 80000000 -od tmpdup.bin -oss tmpss.bin -se0 03000000 1
+${PREFIX}duplicate -ho 80000001 -hp 80000000 -od tmpdup.bin -oss tmpss.bin -se0 03000000 1 > run.out
 checkSuccess $?
 
 echo "Import K2 under storage key"
@@ -500,11 +500,11 @@ do
     checkSuccess $?
 
     echo "Target: Import the sealed AES key under the EK storage key"
-    ${PREFIX}import -hp 80000001 -ipu tmpsdbpub.bin -id tmpsdbdup.bin -iss tmpss.bin -opr tmpsdbpriv.bin -se0 03000000 1
+    ${PREFIX}import -hp 80000001 -ipu tmpsdbpub.bin -id tmpsdbdup.bin -iss tmpss.bin -opr tmpsdbpriv.bin -se0 03000000 1 > run.out
     checkSuccess $?
 
     echo "Target: Restart the policy session"
-    ${PREFIX}policyrestart -ha 03000000
+    ${PREFIX}policyrestart -ha 03000000 > run.out
     checkSuccess $?
 
     echo "Target: Policy Secret with PWAP session and (Empty) endorsement auth"

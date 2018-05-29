@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testnv.sh 979 2017-04-04 17:57:18Z kgoldman $		#
+#		$Id: testnv.sh 1209 2018-05-10 21:26:10Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2016					#
 # 										#
@@ -489,7 +489,7 @@ do
     checkSuccess $?
 
     echo "NV global lock"
-    ${PREFIX}nvglobalwritelock -hia p
+    ${PREFIX}nvglobalwritelock -hia p > run.out
     checkSuccess $?
 
     echo "NV Read Public, 01000000, locked"
@@ -570,14 +570,14 @@ do
     checkSuccess $?
 
     echo "Policy command code"    
-    ${PREFIX}policycommandcode -ha 03000001 -cc 0000013b
+    ${PREFIX}policycommandcode -ha 03000001 -cc 0000013b > run.out
     checkSuccess $?
 
     echo "Policy authvalue"    
-    ${PREFIX}policyauthvalue -ha 03000001
+    ${PREFIX}policyauthvalue -ha 03000001 > run.out
     checkSuccess $?
 
-   echo "NV Change authorization"
+    echo "NV Change authorization"
     ${PREFIX}nvchangeauth -ha 01000000 -pwdo nnn -pwdn xxx -se0 03000001 1 > run.out 
     checkSuccess $?
 
@@ -628,11 +628,11 @@ ${PREFIX}startauthsession -se p > run.out
 checkSuccess $?
 
 echo "Policy command code"    
-${PREFIX}policycommandcode -ha 03000001 -cc 0000013b
+${PREFIX}policycommandcode -ha 03000001 -cc 0000013b > run.out
 checkSuccess $?
 
 echo "Policy authvalue"    
-${PREFIX}policyauthvalue -ha 03000001
+${PREFIX}policyauthvalue -ha 03000001 > run.out
 checkSuccess $?
 
 echo "NV Change authorization"

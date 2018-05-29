@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			     				*/
+/*			  Command Attributes Table   				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: CommandAttributeData.c 1138 2018-01-16 19:53:47Z kgoldman $	*/
+/*            $Id: CommandAttributeData.c 1157 2018-04-17 14:09:56Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,13 +55,17 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2017				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2018				*/
 /*										*/
 /********************************************************************************/
 
 /* rev 119 */
 
 // 9.3	CommandAttributeData.c
+
+#ifdef TPM_TPM12
+#include <tss2/tpmconstants12.h>
+#endif
 
 #include "CommandAttributes.h"
 #if defined COMPRESSED_LISTS
@@ -83,15 +87,12 @@
    cHandles
    rHandle
    V
-   reserved
+   reserved, flags TPM 1.2 command
 */
    
-#ifndef TPM_TSS
-const TPMA_CC    s_ccAttr [] = {
-#else
 #include "tssccattributes.h"
+
 const TPMA_CC_TSS    s_ccAttr [] = {
-#endif
     
 #if (PAD_LIST || CC_NV_UndefineSpaceSpecial)
     {{0x011f, 0, 1, 0, 0, 2, 0, 0, 0}},     // TPM_CC_NV_UndefineSpaceSpecial
@@ -450,29 +451,16 @@ const TPMA_CC_TSS    s_ccAttr [] = {
 #endif
 
 #if (PAD_LIST || CC_NTC2_PreConfig)
-#ifndef TPM_TSS
-    {{0x0211, 0, 1, 0, 0, 0, 0, 1, 0}},     // TPM_CC_NTC2_PreConfig
-#else
     {{0x20000211, 0, 1, 0, 0, 0, 0, 1, 0}}, // TPM_CC_NTC2_PreConfig
-#endif
 #endif
 
 #if (PAD_LIST || CC_NTC2_LockPreConfig)
-#ifndef TPM_TSS
-    {{0x0212, 0, 1, 0, 0, 0, 0, 1, 0}},     // TPM_CC_NTC2_LockPreConfig
-#else
     {{0x20000212, 0, 1, 0, 0, 0, 0, 1, 0}}, // TPM_CC_NTC2_LockPreConfig
-#endif
 #endif
 
 #if (PAD_LIST || CC_NTC2_GetConfig)
-#ifndef TPM_TSS
-    {{0x0213, 0, 1, 0, 0, 0, 0, 1, 0}},     // TPM_CC_NTC2_GetConfig
-#else
     {{0x20000213, 0, 1, 0, 0, 0, 0, 1, 0}}, // TPM_CC_NTC2_GetConfig
 #endif
-#endif
-
 
     {{0x0000, 0, 0, 0, 0, 0, 0, 0, 0}},     // kg - terminator?
 };
