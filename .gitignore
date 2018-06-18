@@ -1,3 +1,5 @@
+*.o
+*.so
 acs/
 tpmutils/Debug/
 tpmutils/activatecredential/Debug/
@@ -130,6 +132,7 @@ getcapability
 getcommandauditdigest
 getrandom
 getsessionauditdigest
+gettestresult
 gettime
 hash
 hashsequencestart
@@ -175,9 +178,11 @@ policyauthvalue
 policycommandcode
 policycountertimer
 policycphash
+policyduplicationselect
 policygetdigest
 policymaker
 policymakerpcr
+policynamehash
 policynv
 policynvwritten
 policyor
@@ -212,6 +217,13 @@ unseal
 verifysignature
 writeapp
 zgen2phase
-libtss.so
-libtss.so.0
-libtss.so.0.1
+libibmtss.so
+libibmtss.so.0
+libibmtss.so.0.1
+libibmtssutils.so
+libibmtssutils.so.0
+libibmtssutils.so.0.1
+utils/libibmtss.so.1
+utils/libibmtss.so.1.1
+utils/libibmtssutils.so.1
+utils/libibmtssutils.so.1.1
