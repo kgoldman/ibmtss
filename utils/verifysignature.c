@@ -3,9 +3,9 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 1219 2018-05-15 21:12:32Z kgoldman $	*/
+/*	      $Id: verifysignature.c 1239 2018-06-11 20:33:21Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
 	    uint32_t ilength = length;	/* values that can move during the unmarshal */
 	    buffer1 = buffer;
 	    /* input is TPMT_SIGNATURE */
-	    rc = TPMT_SIGNATURE_Unmarshal(&in.signature, &buffer1, &ilength, NO);
+	    rc = TSS_TPMT_SIGNATURE_Unmarshal(&in.signature, &buffer1, &ilength, NO);
 	}
 	else {
 	    /* input is raw bytes */

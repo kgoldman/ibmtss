@@ -1456,10 +1456,10 @@ static TPM_RC TSS_HmacSession_Unmarshal(struct TSS_HMAC_CONTEXT *target,
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = TPMI_SH_AUTH_SESSION_Unmarshal(&target->sessionHandle, buffer, size, NO);
+	rc = TSS_TPMI_SH_AUTH_SESSION_Unmarshal(&target->sessionHandle, buffer, size, NO);
     }
     if (rc == 0) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->authHashAlg, buffer, size, NO);
+	rc = TSS_TPMI_ALG_HASH_Unmarshal(&target->authHashAlg, buffer, size, NO);
     }
 #ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
@@ -1467,30 +1467,30 @@ static TPM_RC TSS_HmacSession_Unmarshal(struct TSS_HMAC_CONTEXT *target,
     }
 #endif
     if (rc == 0) {
-	rc = TPMT_SYM_DEF_Unmarshal(&target->symmetric, buffer, size, YES);
+	rc = TSS_TPMT_SYM_DEF_Unmarshal(&target->symmetric, buffer, size, YES);
     }
     if (rc == 0) {
-	rc = TPMI_DH_ENTITY_Unmarshal(&target->bind, buffer, size, YES);
+	rc = TSS_TPMI_DH_ENTITY_Unmarshal(&target->bind, buffer, size, YES);
     }
     if (rc == 0) {
-	rc = TPM2B_NAME_Unmarshal(&target->bindName, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->bindName, buffer, size);
     }
     if (rc == 0) {
-	rc = TPM2B_AUTH_Unmarshal(&target->bindAuthValue, buffer, size);
+	rc = TSS_TPM2B_AUTH_Unmarshal(&target->bindAuthValue, buffer, size);
     }
 #ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
-	rc = TPM2B_NONCE_Unmarshal(&target->nonceTPM, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->nonceTPM, buffer, size);
     }
     if (rc == 0) {
-	rc = TPM2B_NONCE_Unmarshal(&target->nonceCaller, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->nonceCaller, buffer, size);
     }
     if (rc == 0) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->sessionKey, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->sessionKey, buffer, size);
     }
 #endif
     if (rc == 0) {
-	rc = TPM_SE_Unmarshal(&target->sessionType, buffer, size);
+	rc = TSS_TPM_SE_Unmarshal(&target->sessionType, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_UINT8_Unmarshal(&target->isPasswordNeeded, buffer, size);
@@ -1920,7 +1920,7 @@ static TPM_RC TSS_Public_Load(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_Public_Load: File %s\n", publicFilename);
 	rc = TSS_File_ReadStructure(public,
-				    (UnmarshalFunction_t)TPM2B_PUBLIC_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshal,
 				    publicFilename);
     }
     return rc;
@@ -2240,7 +2240,7 @@ static TPM_RC TSS_NVPublic_Load(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	sprintf(nvpFilename, "%s/nvp%08x.bin", tssContext->tssDataDirectory, nvIndex);
 	rc = TSS_File_ReadStructure(nvPublic,
-				    (UnmarshalFunction_t)TPMS_NV_PUBLIC_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPMS_NV_PUBLIC_Unmarshal,
 				    nvpFilename);
     }
     return rc;

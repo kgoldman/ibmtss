@@ -1423,7 +1423,7 @@ void TSS_TPM2B_ATTEST_Print(TPM2B_ATTEST *source, unsigned int indent)
     if (rc == 0) {
 	buffer = source->t.attestationData;
 	size = source->t.size;
-	rc = TPMS_ATTEST_Unmarshal(&attests, &buffer, &size);
+	rc = TSS_TPMS_ATTEST_Unmarshal(&attests, &buffer, &size);
     }
     if (rc == 0) {
 	TSS_TPMS_ATTEST_Print(&attests, indent+2);

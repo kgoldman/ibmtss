@@ -80,7 +80,7 @@ Startup_In_Unmarshal(Startup_In *target, BYTE **buffer, uint32_t *size, TPM_HAND
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_SU_Unmarshal(&target->startupType, buffer, size);	
+	rc = TSS_TPM_SU_Unmarshal(&target->startupType, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {	
 	    rc += RC_Startup_startupType;
 	}
@@ -94,7 +94,7 @@ Shutdown_In_Unmarshal(Shutdown_In *target, BYTE **buffer, uint32_t *size, TPM_HA
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_SU_Unmarshal(&target->shutdownType, buffer, size);
+	rc = TSS_TPM_SU_Unmarshal(&target->shutdownType, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Shutdown_shutdownType;
 	}
@@ -108,7 +108,7 @@ SelfTest_In_Unmarshal(SelfTest_In *target, BYTE **buffer, uint32_t *size, TPM_HA
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_YES_NO_Unmarshal(&target->fullTest, buffer, size);
+	rc = TSS_TPMI_YES_NO_Unmarshal(&target->fullTest, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SelfTest_fullTest;
 	}
@@ -122,7 +122,7 @@ IncrementalSelfTest_In_Unmarshal(IncrementalSelfTest_In *target, BYTE **buffer, 
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_ALG_Unmarshal(&target->toTest, buffer, size);
+	rc = TSS_TPML_ALG_Unmarshal(&target->toTest, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_IncrementalSelfTest_toTest;
 	}
@@ -139,31 +139,31 @@ StartAuthSession_In_Unmarshal(StartAuthSession_In *target, BYTE **buffer, uint32
 	target->bind = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NONCE_Unmarshal(&target->nonceCaller, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->nonceCaller, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_StartAuthSession_nonceCaller;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->encryptedSalt, buffer, size);
+	rc = TSS_TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->encryptedSalt, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_StartAuthSession_encryptedSalt;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_SE_Unmarshal(&target->sessionType, buffer, size);
+	rc = TSS_TPM_SE_Unmarshal(&target->sessionType, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_StartAuthSession_sessionType;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SYM_DEF_Unmarshal(&target->symmetric, buffer, size, YES);
+	rc = TSS_TPMT_SYM_DEF_Unmarshal(&target->symmetric, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_StartAuthSession_symmetric;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->authHash, buffer, size, NO);
+	rc = TSS_TPMI_ALG_HASH_Unmarshal(&target->authHash, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_StartAuthSession_authHash;
 	}
@@ -191,25 +191,25 @@ Create_In_Unmarshal(Create_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE
 	target->parentHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_SENSITIVE_CREATE_Unmarshal(&target->inSensitive, buffer, size);
+	rc = TSS_TPM2B_SENSITIVE_CREATE_Unmarshal(&target->inSensitive, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Create_inSensitive;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_Unmarshal(&target->inPublic, buffer, size, NO);
+	rc = TSS_TPM2B_PUBLIC_Unmarshal(&target->inPublic, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Create_inPublic;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->outsideInfo, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->outsideInfo, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Create_outsideInfo;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_PCR_SELECTION_Unmarshal(&target->creationPCR, buffer, size);
+	rc = TSS_TPML_PCR_SELECTION_Unmarshal(&target->creationPCR, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Create_creationPCR;
 	}
@@ -225,13 +225,13 @@ Load_In_Unmarshal(Load_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE han
 	target->parentHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PRIVATE_Unmarshal(&target->inPrivate, buffer, size);
+	rc = TSS_TPM2B_PRIVATE_Unmarshal(&target->inPrivate, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Load_inPrivate;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_Unmarshal(&target->inPublic, buffer, size, NO);
+	rc = TSS_TPM2B_PUBLIC_Unmarshal(&target->inPublic, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Load_inPublic;
 	}
@@ -245,19 +245,19 @@ LoadExternal_In_Unmarshal(LoadExternal_In *target, BYTE **buffer, uint32_t *size
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_SENSITIVE_Unmarshal(&target->inPrivate, buffer, size);
+	rc = TSS_TPM2B_SENSITIVE_Unmarshal(&target->inPrivate, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_LoadExternal_inPrivate;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_Unmarshal(&target->inPublic, buffer, size, YES);
+	rc = TSS_TPM2B_PUBLIC_Unmarshal(&target->inPublic, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_LoadExternal_inPublic;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_RH_HIERARCHY_Unmarshal(&target->hierarchy, buffer, size, YES);
+	rc = TSS_TPMI_RH_HIERARCHY_Unmarshal(&target->hierarchy, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_LoadExternal_hierarchy;
 	}
@@ -287,13 +287,13 @@ ActivateCredential_In_Unmarshal(ActivateCredential_In *target, BYTE **buffer, ui
 	target->keyHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ID_OBJECT_Unmarshal(&target->credentialBlob, buffer, size);
+	rc = TSS_TPM2B_ID_OBJECT_Unmarshal(&target->credentialBlob, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ActivateCredential_credentialBlob;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->secret, buffer, size);
+	rc = TSS_TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->secret, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ActivateCredential_secret;
 	}
@@ -309,13 +309,13 @@ MakeCredential_In_Unmarshal(MakeCredential_In *target, BYTE **buffer, uint32_t *
 	target->handle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->credential, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->credential, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_MakeCredential_credential;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->objectName, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->objectName, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_MakeCredential_objectName;
 	}
@@ -344,7 +344,7 @@ ObjectChangeAuth_In_Unmarshal(ObjectChangeAuth_In *target, BYTE **buffer, uint32
 	target->parentHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_AUTH_Unmarshal(&target->newAuth, buffer, size);
+	rc = TSS_TPM2B_AUTH_Unmarshal(&target->newAuth, buffer, size);
     }
     return rc;
 }
@@ -357,13 +357,13 @@ CreateLoaded_In_Unmarshal(CreateLoaded_In *target, BYTE **buffer, uint32_t *size
 	target->parentHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_SENSITIVE_CREATE_Unmarshal(&target->inSensitive, buffer, size);
+	rc = TSS_TPM2B_SENSITIVE_CREATE_Unmarshal(&target->inSensitive, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Create_inSensitive;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_TEMPLATE_Unmarshal(&target->inPublic, buffer, size);
+	rc = TSS_TPM2B_TEMPLATE_Unmarshal(&target->inPublic, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_CreateLoaded_inPublic;
 	}
@@ -380,13 +380,13 @@ Duplicate_In_Unmarshal(Duplicate_In *target, BYTE **buffer, uint32_t *size, TPM_
 	target->newParentHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->encryptionKeyIn, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->encryptionKeyIn, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Duplicate_encryptionKeyIn;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SYM_DEF_OBJECT_Unmarshal(&target->symmetricAlg, buffer, size, YES);
+	rc = TSS_TPMT_SYM_DEF_OBJECT_Unmarshal(&target->symmetricAlg, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Duplicate_symmetricAlg;
 	}
@@ -403,19 +403,19 @@ Rewrap_In_Unmarshal(Rewrap_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE
 	target->newParent = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PRIVATE_Unmarshal(&target->inDuplicate, buffer, size);
+	rc = TSS_TPM2B_PRIVATE_Unmarshal(&target->inDuplicate, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Rewrap_inDuplicate;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->name, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->name, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Rewrap_name;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->inSymSeed, buffer, size);
+	rc = TSS_TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->inSymSeed, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Rewrap_inSymSeed;
 	}
@@ -431,28 +431,28 @@ Import_In_Unmarshal(Import_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE
 	target->parentHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->encryptionKey, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->encryptionKey, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_Unmarshal(&target->objectPublic, buffer, size, NO);
+	rc = TSS_TPM2B_PUBLIC_Unmarshal(&target->objectPublic, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Import_objectPublic;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PRIVATE_Unmarshal(&target->duplicate, buffer, size);
+	rc = TSS_TPM2B_PRIVATE_Unmarshal(&target->duplicate, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Import_duplicate;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->inSymSeed, buffer, size);
+	rc = TSS_TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->inSymSeed, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Import_inSymSeed;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SYM_DEF_OBJECT_Unmarshal(&target->symmetricAlg, buffer, size, YES);
+	rc = TSS_TPMT_SYM_DEF_OBJECT_Unmarshal(&target->symmetricAlg, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Import_symmetricAlg;
 	}
@@ -468,19 +468,19 @@ RSA_Encrypt_In_Unmarshal(RSA_Encrypt_In *target, BYTE **buffer, uint32_t *size, 
 	target->keyHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_KEY_RSA_Unmarshal(&target->message, buffer, size);
+	rc = TSS_TPM2B_PUBLIC_KEY_RSA_Unmarshal(&target->message, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_RSA_Encrypt_message;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_RSA_DECRYPT_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_RSA_DECRYPT_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_RSA_Encrypt_inScheme;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->label, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->label, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_RSA_Encrypt_label;
 	}
@@ -496,19 +496,19 @@ RSA_Decrypt_In_Unmarshal(RSA_Decrypt_In *target, BYTE **buffer, uint32_t *size, 
 	target->keyHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_KEY_RSA_Unmarshal(&target->cipherText, buffer, size);
+	rc = TSS_TPM2B_PUBLIC_KEY_RSA_Unmarshal(&target->cipherText, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_RSA_Decrypt_cipherText;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_RSA_DECRYPT_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_RSA_DECRYPT_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_RSA_Decrypt_inScheme;
 	}
    }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->label, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->label, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_RSA_Decrypt_label;
 	}
@@ -536,7 +536,7 @@ ECDH_ZGen_In_Unmarshal(ECDH_ZGen_In *target, BYTE **buffer, uint32_t *size, TPM_
 	target->keyHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->inPoint, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->inPoint, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ECDH_ZGen_inPoint;
 	}
@@ -550,7 +550,7 @@ ECC_Parameters_In_Unmarshal(ECC_Parameters_In *target, BYTE **buffer, uint32_t *
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ECC_CURVE_Unmarshal(&target->curveID, buffer, size);
+	rc = TSS_TPMI_ECC_CURVE_Unmarshal(&target->curveID, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ECC_Parameters_curveID;
 	}
@@ -566,19 +566,19 @@ ZGen_2Phase_In_Unmarshal(ZGen_2Phase_In *target, BYTE **buffer, uint32_t *size, 
 	target->keyA = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->inQsB, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->inQsB, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ZGen_2Phase_inQsB;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->inQeB, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->inQeB, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ZGen_2Phase_inQeB;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ECC_KEY_EXCHANGE_Unmarshal(&target->inScheme, buffer, size, NO);
+	rc = TSS_TPMI_ECC_KEY_EXCHANGE_Unmarshal(&target->inScheme, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ZGen_2Phase_inScheme;
 	}
@@ -600,25 +600,25 @@ EncryptDecrypt_In_Unmarshal(EncryptDecrypt_In *target, BYTE **buffer, uint32_t *
 	target->keyHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_YES_NO_Unmarshal(&target->decrypt, buffer, size);
+	rc = TSS_TPMI_YES_NO_Unmarshal(&target->decrypt, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EncryptDecrypt_decrypt;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_SYM_MODE_Unmarshal(&target->mode, buffer, size, YES);
+	rc = TSS_TPMI_ALG_SYM_MODE_Unmarshal(&target->mode, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EncryptDecrypt_mode;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_IV_Unmarshal(&target->ivIn, buffer, size);
+	rc = TSS_TPM2B_IV_Unmarshal(&target->ivIn, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EncryptDecrypt_ivIn;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_BUFFER_Unmarshal(&target->inData, buffer, size);
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshal(&target->inData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EncryptDecrypt_inData;
 	}
@@ -634,25 +634,25 @@ EncryptDecrypt2_In_Unmarshal(EncryptDecrypt2_In *target, BYTE **buffer, uint32_t
 	target->keyHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_BUFFER_Unmarshal(&target->inData, buffer, size);
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshal(&target->inData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EncryptDecrypt2_inData;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_YES_NO_Unmarshal(&target->decrypt, buffer, size);
+	rc = TSS_TPMI_YES_NO_Unmarshal(&target->decrypt, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EncryptDecrypt2_decrypt;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_SYM_MODE_Unmarshal(&target->mode, buffer, size, YES);
+	rc = TSS_TPMI_ALG_SYM_MODE_Unmarshal(&target->mode, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EncryptDecrypt2_mode;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_IV_Unmarshal(&target->ivIn, buffer, size);
+	rc = TSS_TPM2B_IV_Unmarshal(&target->ivIn, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EncryptDecrypt2_ivIn;
 	}
@@ -666,19 +666,19 @@ Hash_In_Unmarshal(Hash_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE han
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_BUFFER_Unmarshal(&target->data, buffer, size);
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshal(&target->data, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Hash_data;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, NO);
+	rc = TSS_TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Hash_hashAlg;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_RH_HIERARCHY_Unmarshal(&target->hierarchy, buffer, size, YES);
+	rc = TSS_TPMI_RH_HIERARCHY_Unmarshal(&target->hierarchy, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Hash_hierarchy;
 	}
@@ -694,13 +694,13 @@ HMAC_In_Unmarshal(HMAC_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE han
 	target->handle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_BUFFER_Unmarshal(&target->buffer, buffer, size);
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshal(&target->buffer, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_HMAC_buffer;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
+	rc = TSS_TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_HMAC_hashAlg;
 	}
@@ -728,7 +728,7 @@ StirRandom_In_Unmarshal(StirRandom_In *target, BYTE **buffer, uint32_t *size, TP
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_SENSITIVE_DATA_Unmarshal(&target->inData, buffer, size);
+	rc = TSS_TPM2B_SENSITIVE_DATA_Unmarshal(&target->inData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_StirRandom_inData;
 	}
@@ -744,13 +744,13 @@ HMAC_Start_In_Unmarshal(HMAC_Start_In *target, BYTE **buffer, uint32_t *size, TP
 	target->handle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_AUTH_Unmarshal(&target->auth, buffer, size);
+	rc = TSS_TPM2B_AUTH_Unmarshal(&target->auth, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_HMAC_Start_auth;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
+	rc = TSS_TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_HMAC_Start_hashAlg;
 	}
@@ -764,13 +764,13 @@ HashSequenceStart_In_Unmarshal(HashSequenceStart_In *target, BYTE **buffer, uint
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_AUTH_Unmarshal(&target->auth, buffer, size);
+	rc = TSS_TPM2B_AUTH_Unmarshal(&target->auth, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_HashSequenceStart_auth;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
+	rc = TSS_TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_HashSequenceStart_hashAlg;
 	}
@@ -788,7 +788,7 @@ SequenceUpdate_In_Unmarshal(SequenceUpdate_In *target, BYTE **buffer, uint32_t *
 	target->sequenceHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_BUFFER_Unmarshal(&target->buffer, buffer, size);
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshal(&target->buffer, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SequenceUpdate_buffer;
 	}
@@ -804,13 +804,13 @@ SequenceComplete_In_Unmarshal(SequenceComplete_In *target, BYTE **buffer, uint32
 	target->sequenceHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_BUFFER_Unmarshal(&target->buffer, buffer, size);
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshal(&target->buffer, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SequenceComplete_buffer;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_RH_HIERARCHY_Unmarshal(&target->hierarchy, buffer, size, YES);
+	rc = TSS_TPMI_RH_HIERARCHY_Unmarshal(&target->hierarchy, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SequenceComplete_hierarchy;
 	}
@@ -827,7 +827,7 @@ EventSequenceComplete_In_Unmarshal(EventSequenceComplete_In *target, BYTE **buff
 	target->sequenceHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_BUFFER_Unmarshal(&target->buffer, buffer, size);
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshal(&target->buffer, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EventSequenceComplete_buffer;
 	}
@@ -844,13 +844,13 @@ Certify_In_Unmarshal(Certify_In *target, BYTE **buffer, uint32_t *size, TPM_HAND
 	target->signHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Certify_qualifyingData;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Certify_inScheme;
 	}
@@ -867,25 +867,25 @@ CertifyCreation_In_Unmarshal(CertifyCreation_In *target, BYTE **buffer, uint32_t
 	target->objectHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_CertifyCreation_creationHash;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->creationHash, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->creationHash, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_CertifyCreation_creationHash;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_CertifyCreation_inScheme;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_CREATION_Unmarshal(&target->creationTicket, buffer, size);
+	rc = TSS_TPMT_TK_CREATION_Unmarshal(&target->creationTicket, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_CertifyCreation_creationTicket;
 	}
@@ -901,19 +901,19 @@ Quote_In_Unmarshal(Quote_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE h
 	target->signHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Quote_qualifyingData;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Quote_inScheme;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_PCR_SELECTION_Unmarshal(&target->PCRselect, buffer, size);
+	rc = TSS_TPML_PCR_SELECTION_Unmarshal(&target->PCRselect, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Quote_PCRselect;
 	}
@@ -931,13 +931,13 @@ GetSessionAuditDigest_In_Unmarshal(GetSessionAuditDigest_In *target, BYTE **buff
 	target->sessionHandle = handles[2];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetSessionAuditDigest_qualifyingData;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetSessionAuditDigest_inScheme;
 	}
@@ -954,13 +954,13 @@ GetCommandAuditDigest_In_Unmarshal(GetCommandAuditDigest_In *target, BYTE **buff
 	target->signHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetCommandAuditDigest_qualifyingData;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetCommandAuditDigest_inScheme;
 	}
@@ -977,13 +977,13 @@ GetTime_In_Unmarshal(GetTime_In *target, BYTE **buffer, uint32_t *size, TPM_HAND
 	target->signHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetTime_qualifyingData;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetTime_inScheme;
 	}
@@ -999,19 +999,19 @@ Commit_In_Unmarshal(Commit_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE
 	target->signHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->P1, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->P1, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Commit_P1;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_SENSITIVE_DATA_Unmarshal(&target->s2, buffer, size);
+	rc = TSS_TPM2B_SENSITIVE_DATA_Unmarshal(&target->s2, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Commit_s2;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_PARAMETER_Unmarshal(&target->y2, buffer, size);
+	rc = TSS_TPM2B_ECC_PARAMETER_Unmarshal(&target->y2, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Commit_y2;
 	}
@@ -1025,7 +1025,7 @@ EC_Ephemeral_In_Unmarshal(EC_Ephemeral_In *target, BYTE **buffer, uint32_t *size
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ECC_CURVE_Unmarshal(&target->curveID, buffer, size);
+	rc = TSS_TPMI_ECC_CURVE_Unmarshal(&target->curveID, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EC_Ephemeral_curveID;
 	}
@@ -1041,13 +1041,13 @@ VerifySignature_In_Unmarshal(VerifySignature_In *target, BYTE **buffer, uint32_t
 	target->keyHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->digest, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->digest, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_VerifySignature_digest;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_VerifySignature_signature;
 	}
@@ -1063,19 +1063,19 @@ Sign_In_Unmarshal(Sign_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE han
 	target->keyHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->digest, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->digest, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Sign_digest;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Sign_inScheme;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_HASHCHECK_Unmarshal(&target->validation, buffer, size);
+	rc = TSS_TPMT_TK_HASHCHECK_Unmarshal(&target->validation, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_Sign_validation;
 	}
@@ -1091,19 +1091,19 @@ SetCommandCodeAuditStatus_In_Unmarshal(SetCommandCodeAuditStatus_In *target, BYT
 	target->auth = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->auditAlg, buffer, size, YES);
+	rc = TSS_TPMI_ALG_HASH_Unmarshal(&target->auditAlg, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SetCommandCodeAuditStatus_auditAlg;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_CC_Unmarshal(&target->setList, buffer, size);
+	rc = TSS_TPML_CC_Unmarshal(&target->setList, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SetCommandCodeAuditStatus_setList;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_CC_Unmarshal(&target->clearList, buffer, size);
+	rc = TSS_TPML_CC_Unmarshal(&target->clearList, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SetCommandCodeAuditStatus_clearList;
 	}
@@ -1119,7 +1119,7 @@ PCR_Extend_In_Unmarshal(PCR_Extend_In *target, BYTE **buffer, uint32_t *size, TP
 	target->pcrHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_DIGEST_VALUES_Unmarshal(&target->digests, buffer, size);
+	rc = TSS_TPML_DIGEST_VALUES_Unmarshal(&target->digests, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PCR_Extend_digests;
 	}
@@ -1135,7 +1135,7 @@ PCR_Event_In_Unmarshal(PCR_Event_In *target, BYTE **buffer, uint32_t *size, TPM_
 	target->pcrHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_EVENT_Unmarshal(&target->eventData, buffer, size);
+	rc = TSS_TPM2B_EVENT_Unmarshal(&target->eventData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PCR_Event_eventData;
 	}
@@ -1149,7 +1149,7 @@ PCR_Read_In_Unmarshal(PCR_Read_In *target, BYTE **buffer, uint32_t *size, TPM_HA
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_PCR_SELECTION_Unmarshal(&target->pcrSelectionIn, buffer, size);
+	rc = TSS_TPML_PCR_SELECTION_Unmarshal(&target->pcrSelectionIn, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PCR_Read_pcrSelectionIn;
 	}
@@ -1165,7 +1165,7 @@ PCR_Allocate_In_Unmarshal(PCR_Allocate_In *target, BYTE **buffer, uint32_t *size
 	target->authHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_PCR_SELECTION_Unmarshal(&target->pcrAllocation, buffer, size);
+	rc = TSS_TPML_PCR_SELECTION_Unmarshal(&target->pcrAllocation, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PCR_Allocate_pcrAllocation;
 	}
@@ -1181,19 +1181,19 @@ PCR_SetAuthPolicy_In_Unmarshal(PCR_SetAuthPolicy_In *target, BYTE **buffer, uint
 	target->authHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->authPolicy, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->authPolicy, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PCR_SetAuthPolicy_authPolicy;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
+	rc = TSS_TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PCR_SetAuthPolicy_hashAlg;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_DH_PCR_Unmarshal(&target->pcrNum, buffer, size, NO);
+	rc = TSS_TPMI_DH_PCR_Unmarshal(&target->pcrNum, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PCR_SetAuthPolicy_pcrNum;
 	}
@@ -1209,7 +1209,7 @@ PCR_SetAuthValue_In_Unmarshal(PCR_SetAuthValue_In *target, BYTE **buffer, uint32
 	target->pcrHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->auth, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->auth, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PCR_SetAuthValue_auth;
 	}
@@ -1238,19 +1238,19 @@ PolicySigned_In_Unmarshal(PolicySigned_In *target, BYTE **buffer, uint32_t *size
 	target->policySession = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NONCE_Unmarshal(&target->nonceTPM, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->nonceTPM, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicySigned_nonceTPM;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->cpHashA, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->cpHashA, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicySigned_cpHashA;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NONCE_Unmarshal(&target->policyRef, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->policyRef, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicySigned_policyRef;
 	}
@@ -1262,7 +1262,7 @@ PolicySigned_In_Unmarshal(PolicySigned_In *target, BYTE **buffer, uint32_t *size
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->auth, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->auth, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicySigned_auth;
 	}
@@ -1279,19 +1279,19 @@ PolicySecret_In_Unmarshal(PolicySecret_In *target, BYTE **buffer, uint32_t *size
 	target->policySession = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NONCE_Unmarshal(&target->nonceTPM, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->nonceTPM, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicySecret_nonceTPM;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->cpHashA, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->cpHashA, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicySecret_cpHashA;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NONCE_Unmarshal(&target->policyRef, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->policyRef, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicySecret_policyRef;
 	}
@@ -1313,31 +1313,31 @@ PolicyTicket_In_Unmarshal(PolicyTicket_In *target, BYTE **buffer, uint32_t *size
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_TIMEOUT_Unmarshal(&target->timeout, buffer, size);
+	rc = TSS_TPM2B_TIMEOUT_Unmarshal(&target->timeout, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyTicket_timeout;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->cpHashA, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->cpHashA, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyTicket_cpHashA;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NONCE_Unmarshal(&target->policyRef, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->policyRef, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyTicket_policyRef;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->authName, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->authName, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyTicket_authName;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_AUTH_Unmarshal(&target->ticket, buffer, size);
+	rc = TSS_TPMT_TK_AUTH_Unmarshal(&target->ticket, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyTicket_ticket;
 	}
@@ -1354,7 +1354,7 @@ PolicyOR_In_Unmarshal(PolicyOR_In *target, BYTE **buffer, uint32_t *size, TPM_HA
     }
     if (rc == TPM_RC_SUCCESS) {
 	/* Policy OR requires at least two OR terms */
-	rc = TPML_DIGEST_Unmarshal(&target->pHashList, buffer, size, 2);
+	rc = TSS_TPML_DIGEST_Unmarshal(&target->pHashList, buffer, size, 2);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyOR_pHashList;
 	}
@@ -1370,13 +1370,13 @@ PolicyPCR_In_Unmarshal(PolicyPCR_In *target, BYTE **buffer, uint32_t *size, TPM_
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->pcrDigest, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->pcrDigest, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyPCR_pcrDigest;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_PCR_SELECTION_Unmarshal(&target->pcrs, buffer, size);
+	rc = TSS_TPML_PCR_SELECTION_Unmarshal(&target->pcrs, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyPCR_pcrs;
 	}
@@ -1392,7 +1392,7 @@ PolicyLocality_In_Unmarshal(PolicyLocality_In *target, BYTE **buffer, uint32_t *
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMA_LOCALITY_Unmarshal(&target->locality, buffer, size);
+	rc = TSS_TPMA_LOCALITY_Unmarshal(&target->locality, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyLocality_locality;
 	}
@@ -1410,7 +1410,7 @@ PolicyNV_In_Unmarshal(PolicyNV_In *target, BYTE **buffer, uint32_t *size, TPM_HA
 	target->policySession = handles[2];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_OPERAND_Unmarshal(&target->operandB, buffer, size);
+	rc = TSS_TPM2B_OPERAND_Unmarshal(&target->operandB, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyNV_operandB;
 	}
@@ -1422,7 +1422,7 @@ PolicyNV_In_Unmarshal(PolicyNV_In *target, BYTE **buffer, uint32_t *size, TPM_HA
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_EO_Unmarshal(&target->operation, buffer, size);
+	rc = TSS_TPM_EO_Unmarshal(&target->operation, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyNV_operation;
 	}
@@ -1452,7 +1452,7 @@ PolicyCounterTimer_In_Unmarshal(PolicyCounterTimer_In *target, BYTE **buffer, ui
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_OPERAND_Unmarshal(&target->operandB, buffer, size);
+	rc = TSS_TPM2B_OPERAND_Unmarshal(&target->operandB, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyCounterTimer_operandB;
 	}
@@ -1464,7 +1464,7 @@ PolicyCounterTimer_In_Unmarshal(PolicyCounterTimer_In *target, BYTE **buffer, ui
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_EO_Unmarshal(&target->operation, buffer, size);
+	rc = TSS_TPM_EO_Unmarshal(&target->operation, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyCounterTimer_operation;
 	}
@@ -1480,7 +1480,7 @@ PolicyCommandCode_In_Unmarshal(PolicyCommandCode_In *target, BYTE **buffer, uint
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_CC_Unmarshal(&target->code, buffer, size);
+	rc = TSS_TPM_CC_Unmarshal(&target->code, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyCommandCode_code;
 	}
@@ -1508,7 +1508,7 @@ PolicyCpHash_In_Unmarshal(PolicyCpHash_In *target, BYTE **buffer, uint32_t *size
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->cpHashA, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->cpHashA, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyCpHash_cpHashA;
 	}
@@ -1524,7 +1524,7 @@ PolicyNameHash_In_Unmarshal(PolicyNameHash_In *target, BYTE **buffer, uint32_t *
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->nameHash, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->nameHash, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyNameHash_nameHash;
 	}
@@ -1540,19 +1540,19 @@ PolicyDuplicationSelect_In_Unmarshal(PolicyDuplicationSelect_In *target, BYTE **
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->objectName, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->objectName, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyDuplicationSelect_objectName;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->newParentName, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->newParentName, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyDuplicationSelect_newParentName;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_YES_NO_Unmarshal(&target->includeObject, buffer, size);
+	rc = TSS_TPMI_YES_NO_Unmarshal(&target->includeObject, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyDuplicationSelect_includeObject;
 	}
@@ -1568,25 +1568,25 @@ PolicyAuthorize_In_Unmarshal(PolicyAuthorize_In *target, BYTE **buffer, uint32_t
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->approvedPolicy, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->approvedPolicy, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyAuthorize_approvedPolicy;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NONCE_Unmarshal(&target->policyRef, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->policyRef, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyAuthorize_policyRef;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->keySign, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->keySign, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyAuthorize_keySign;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_VERIFIED_Unmarshal(&target->checkTicket, buffer, size);
+	rc = TSS_TPMT_TK_VERIFIED_Unmarshal(&target->checkTicket, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyAuthorize_checkTicket;
 	}
@@ -1638,7 +1638,7 @@ PolicyNvWritten_In_Unmarshal(PolicyNvWritten_In *target, BYTE **buffer, uint32_t
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_YES_NO_Unmarshal(&target->writtenSet, buffer, size);
+	rc = TSS_TPMI_YES_NO_Unmarshal(&target->writtenSet, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyNvWritten_writtenSet;
 	}
@@ -1656,7 +1656,7 @@ PolicyTemplate_In_Unmarshal(PolicyTemplate_In *target, BYTE **buffer, uint32_t *
 	target->policySession = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->templateHash, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->templateHash, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyTemplate_templateHash;
 	}
@@ -1672,25 +1672,25 @@ CreatePrimary_In_Unmarshal(CreatePrimary_In *target, BYTE **buffer, uint32_t *si
 	target->primaryHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_SENSITIVE_CREATE_Unmarshal(&target->inSensitive, buffer, size);
+	rc = TSS_TPM2B_SENSITIVE_CREATE_Unmarshal(&target->inSensitive, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_CreatePrimary_inSensitive;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_Unmarshal(&target->inPublic, buffer, size, NO);
+	rc = TSS_TPM2B_PUBLIC_Unmarshal(&target->inPublic, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_CreatePrimary_inPublic;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->outsideInfo, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->outsideInfo, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_CreatePrimary_outsideInfo;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_PCR_SELECTION_Unmarshal(&target->creationPCR, buffer, size);
+	rc = TSS_TPML_PCR_SELECTION_Unmarshal(&target->creationPCR, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_CreatePrimary_creationPCR;
 	}
@@ -1706,13 +1706,13 @@ HierarchyControl_In_Unmarshal(HierarchyControl_In *target, BYTE **buffer, uint32
 	target->authHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_RH_ENABLES_Unmarshal(&target->enable, buffer, size, NO);
+	rc = TSS_TPMI_RH_ENABLES_Unmarshal(&target->enable, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_HierarchyControl_enable;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_YES_NO_Unmarshal(&target->state, buffer, size);
+	rc = TSS_TPMI_YES_NO_Unmarshal(&target->state, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_HierarchyControl_state;
 	}
@@ -1728,13 +1728,13 @@ SetPrimaryPolicy_In_Unmarshal(SetPrimaryPolicy_In *target, BYTE **buffer, uint32
 	target->authHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->authPolicy, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->authPolicy, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SetPrimaryPolicy_authPolicy;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
+	rc = TSS_TPMI_ALG_HASH_Unmarshal(&target->hashAlg, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_SetPrimaryPolicy_hashAlg;
 	}
@@ -1786,7 +1786,7 @@ ClearControl_In_Unmarshal(ClearControl_In *target, BYTE **buffer, uint32_t *size
 	target->auth = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_YES_NO_Unmarshal(&target->disable, buffer, size);
+	rc = TSS_TPMI_YES_NO_Unmarshal(&target->disable, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ClearControl_disable;
 	}
@@ -1802,7 +1802,7 @@ HierarchyChangeAuth_In_Unmarshal(HierarchyChangeAuth_In *target, BYTE **buffer, 
 	target->authHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_AUTH_Unmarshal(&target->newAuth, buffer, size);
+	rc = TSS_TPM2B_AUTH_Unmarshal(&target->newAuth, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_HierarchyChangeAuth_newAuth;
 	}
@@ -1858,13 +1858,13 @@ PP_Commands_In_Unmarshal(PP_Commands_In *target, BYTE **buffer, uint32_t *size, 
 	target->auth = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_CC_Unmarshal(&target->setList, buffer, size);
+	rc = TSS_TPML_CC_Unmarshal(&target->setList, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PP_Commands_setList;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_CC_Unmarshal(&target->clearList, buffer, size);
+	rc = TSS_TPML_CC_Unmarshal(&target->clearList, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PP_Commands_clearList;
 	}
@@ -1906,7 +1906,7 @@ ContextLoad_In_Unmarshal(ContextLoad_In *target, BYTE **buffer, uint32_t *size, 
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMS_CONTEXT_Unmarshal(&target->context, buffer, size);
+	rc = TSS_TPMS_CONTEXT_Unmarshal(&target->context, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ContextLoad_context;
 	}
@@ -1920,7 +1920,7 @@ FlushContext_In_Unmarshal(FlushContext_In *target, BYTE **buffer, uint32_t *size
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_DH_CONTEXT_Unmarshal(&target->flushHandle, buffer, size, NO);
+	rc = TSS_TPMI_DH_CONTEXT_Unmarshal(&target->flushHandle, buffer, size, NO);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_FlushContext_flushHandle;
 	}
@@ -1937,7 +1937,7 @@ EvictControl_In_Unmarshal(EvictControl_In *target, BYTE **buffer, uint32_t *size
 	target->objectHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_DH_PERSISTENT_Unmarshal(&target->persistentHandle, buffer, size);
+	rc = TSS_TPMI_DH_PERSISTENT_Unmarshal(&target->persistentHandle, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_EvictControl_persistentHandle;
 	}
@@ -1969,7 +1969,7 @@ ClockRateAdjust_In_Unmarshal(ClockRateAdjust_In *target, BYTE **buffer, uint32_t
 	target->auth = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_CLOCK_ADJUST_Unmarshal(&target->rateAdjust, buffer, size);
+	rc = TSS_TPM_CLOCK_ADJUST_Unmarshal(&target->rateAdjust, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ClockRateAdjust_rateAdjust;
 	}
@@ -1983,7 +1983,7 @@ GetCapability_In_Unmarshal(GetCapability_In *target, BYTE **buffer, uint32_t *si
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_CAP_Unmarshal(&target->capability, buffer, size);
+	rc = TSS_TPM_CAP_Unmarshal(&target->capability, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_GetCapability_capability;
 	}
@@ -2009,7 +2009,7 @@ TestParms_In_Unmarshal(TestParms_In *target, BYTE **buffer, uint32_t *size, TPM_
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_PUBLIC_PARMS_Unmarshal(&target->parameters, buffer, size);
+	rc = TSS_TPMT_PUBLIC_PARMS_Unmarshal(&target->parameters, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_TestParms_parameters;
 	}
@@ -2025,13 +2025,13 @@ NV_DefineSpace_In_Unmarshal(NV_DefineSpace_In *target, BYTE **buffer, uint32_t *
 	target->authHandle = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_AUTH_Unmarshal(&target->auth, buffer, size);
+	rc = TSS_TPM2B_AUTH_Unmarshal(&target->auth, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_DefineSpace_auth;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NV_PUBLIC_Unmarshal(&target->publicInfo, buffer, size);
+	rc = TSS_TPM2B_NV_PUBLIC_Unmarshal(&target->publicInfo, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_DefineSpace_publicInfo;
 	}
@@ -2086,7 +2086,7 @@ NV_Write_In_Unmarshal(NV_Write_In *target, BYTE **buffer, uint32_t *size, TPM_HA
 	target->nvIndex = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_NV_BUFFER_Unmarshal(&target->data, buffer, size);
+	rc = TSS_TPM2B_MAX_NV_BUFFER_Unmarshal(&target->data, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_Write_data;
 	}
@@ -2122,7 +2122,7 @@ NV_Extend_In_Unmarshal(NV_Extend_In *target, BYTE **buffer, uint32_t *size, TPM_
  	target->nvIndex = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_NV_BUFFER_Unmarshal(&target->data, buffer, size);
+	rc = TSS_TPM2B_MAX_NV_BUFFER_Unmarshal(&target->data, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_Extend_data;
 	}
@@ -2216,7 +2216,7 @@ NV_ChangeAuth_In_Unmarshal(NV_ChangeAuth_In *target, BYTE **buffer, uint32_t *si
 	target->nvIndex = handles[0];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_AUTH_Unmarshal(&target->newAuth, buffer, size);
+	rc = TSS_TPM2B_AUTH_Unmarshal(&target->newAuth, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_ChangeAuth_newAuth;
 	}
@@ -2234,13 +2234,13 @@ NV_Certify_In_Unmarshal(NV_Certify_In *target, BYTE **buffer, uint32_t *size, TP
 	target->nvIndex = handles[2];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->qualifyingData, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_Certify_qualifyingData;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
+	rc = TSS_TPMT_SIG_SCHEME_Unmarshal(&target->inScheme, buffer, size, YES);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_NV_Certify_inScheme;
 	}

@@ -3,9 +3,9 @@
 /*			    GetCommandAuditDigest				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcommandauditdigest.c 1140 2018-01-22 15:13:31Z kgoldman $	*/
+/*	      $Id: getcommandauditdigest.c 1239 2018-06-11 20:33:21Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	uint8_t *tmpBuffer = out.auditInfo.t.attestationData;
 	uint32_t tmpSize = out.auditInfo.t.size;
-	rc = TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
+	rc = TSS_TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
 	if (verbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
     }
     if (rc == 0) {

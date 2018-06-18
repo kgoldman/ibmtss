@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
     /* creationTicket */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.creationTicket,
-				    (UnmarshalFunction_t)TPMT_TK_CREATION_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPMT_TK_CREATION_Unmarshal,
 				    ticketFilename);
     }
     /* creationHash */
@@ -376,7 +376,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	uint8_t *tmpBuffer = out.certifyInfo.t.attestationData;
 	uint32_t tmpSize = out.certifyInfo.t.size;
-	rc = TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
+	rc = TSS_TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
     }
     if (rc == 0) {
 	int match;

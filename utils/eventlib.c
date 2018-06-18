@@ -566,7 +566,7 @@ TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t
 	rc = TSS_UINT32_Unmarshal(&target->eventType, buffer, size);
     }
     if (rc == 0) {
-	rc = TPML_DIGEST_VALUES_Unmarshal(&target->digests, buffer, size);
+	rc = TSS_TPML_DIGEST_VALUES_Unmarshal(&target->digests, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_UINT32_Unmarshal(&target->eventSize, buffer, size);

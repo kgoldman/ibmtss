@@ -1791,7 +1791,7 @@ TSS_IncrementalSelfTest_Out_Unmarshal(IncrementalSelfTest_Out *target, TPM_ST ta
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_ALG_Unmarshal(&target->toDoList, buffer, size);
+	rc = TSS_TPML_ALG_Unmarshal(&target->toDoList, buffer, size);
     }
     return rc;
 }
@@ -1807,10 +1807,10 @@ TSS_GetTestResult_Out_Unmarshal(GetTestResult_Out *target, TPM_ST tag, BYTE **bu
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_BUFFER_Unmarshal(&target->outData, buffer, size);
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshal(&target->outData, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_RC_Unmarshal(&target->testResult, buffer, size);
+	rc = TSS_TPM_RC_Unmarshal(&target->testResult, buffer, size);
     }
     return rc;
 }
@@ -1821,7 +1821,7 @@ TSS_StartAuthSession_Out_Unmarshal(StartAuthSession_Out *target, TPM_ST tag, BYT
     uint32_t parameterSize = 0;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_SH_AUTH_SESSION_Unmarshal(&target->sessionHandle, buffer, size, NO);
+	rc = TSS_TPMI_SH_AUTH_SESSION_Unmarshal(&target->sessionHandle, buffer, size, NO);
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
@@ -1829,7 +1829,7 @@ TSS_StartAuthSession_Out_Unmarshal(StartAuthSession_Out *target, TPM_ST tag, BYT
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NONCE_Unmarshal(&target->nonceTPM, buffer, size);
+	rc = TSS_TPM2B_NONCE_Unmarshal(&target->nonceTPM, buffer, size);
     }
     return rc;
 }
@@ -1845,19 +1845,19 @@ TSS_Create_Out_Unmarshal(Create_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PRIVATE_Unmarshal(&target->outPrivate, buffer, size);
+	rc = TSS_TPM2B_PRIVATE_Unmarshal(&target->outPrivate, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_Unmarshal(&target->outPublic, buffer, size, NO);
+	rc = TSS_TPM2B_PUBLIC_Unmarshal(&target->outPublic, buffer, size, NO);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_CREATION_DATA_Unmarshal(&target->creationData, buffer, size);
+	rc = TSS_TPM2B_CREATION_DATA_Unmarshal(&target->creationData, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->creationHash, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->creationHash, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_CREATION_Unmarshal(&target->creationTicket, buffer, size);
+	rc = TSS_TPMT_TK_CREATION_Unmarshal(&target->creationTicket, buffer, size);
     }
     return rc;
 }
@@ -1868,7 +1868,7 @@ TSS_Load_Out_Unmarshal(Load_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *si
     uint32_t parameterSize = 0;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_HANDLE_Unmarshal(&target->objectHandle, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshal(&target->objectHandle, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
@@ -1876,7 +1876,7 @@ TSS_Load_Out_Unmarshal(Load_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *si
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->name, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->name, buffer, size);
     }
     return rc;
 }
@@ -1887,7 +1887,7 @@ TSS_LoadExternal_Out_Unmarshal(LoadExternal_Out *target, TPM_ST tag, BYTE **buff
     uint32_t parameterSize = 0;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_HANDLE_Unmarshal(&target->objectHandle, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshal(&target->objectHandle, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
@@ -1895,7 +1895,7 @@ TSS_LoadExternal_Out_Unmarshal(LoadExternal_Out *target, TPM_ST tag, BYTE **buff
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->name, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->name, buffer, size);
     }
     return rc;
 }
@@ -1911,13 +1911,13 @@ TSS_ReadPublic_Out_Unmarshal(ReadPublic_Out *target, TPM_ST tag, BYTE **buffer, 
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_Unmarshal(&target->outPublic, buffer, size, NO);
+	rc = TSS_TPM2B_PUBLIC_Unmarshal(&target->outPublic, buffer, size, NO);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->name, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->name, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->qualifiedName, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->qualifiedName, buffer, size);
     }
     return rc;
 }
@@ -1933,7 +1933,7 @@ TSS_ActivateCredential_Out_Unmarshal(ActivateCredential_Out *target, TPM_ST tag,
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->certInfo, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->certInfo, buffer, size);
     }
     return rc;
 }
@@ -1949,10 +1949,10 @@ TSS_MakeCredential_Out_Unmarshal(MakeCredential_Out *target, TPM_ST tag, BYTE **
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ID_OBJECT_Unmarshal(&target->credentialBlob, buffer, size);
+	rc = TSS_TPM2B_ID_OBJECT_Unmarshal(&target->credentialBlob, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->secret, buffer, size);
+	rc = TSS_TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->secret, buffer, size);
     }
     return rc;
 }
@@ -1967,7 +1967,7 @@ TSS_Unseal_Out_Unmarshal(Unseal_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_SENSITIVE_DATA_Unmarshal(&target->outData, buffer, size);
+	rc = TSS_TPM2B_SENSITIVE_DATA_Unmarshal(&target->outData, buffer, size);
     }
     return rc;
 }
@@ -1982,7 +1982,7 @@ TSS_ObjectChangeAuth_Out_Unmarshal(ObjectChangeAuth_Out *target, TPM_ST tag, BYT
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PRIVATE_Unmarshal(&target->outPrivate, buffer, size);
+	rc = TSS_TPM2B_PRIVATE_Unmarshal(&target->outPrivate, buffer, size);
     }
     return rc;
 }
@@ -1993,7 +1993,7 @@ TSS_CreateLoaded_Out_Unmarshal(CreateLoaded_Out *target, TPM_ST tag, BYTE **buff
     uint32_t parameterSize = 0;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_HANDLE_Unmarshal(&target->objectHandle, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshal(&target->objectHandle, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
@@ -2001,13 +2001,13 @@ TSS_CreateLoaded_Out_Unmarshal(CreateLoaded_Out *target, TPM_ST tag, BYTE **buff
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PRIVATE_Unmarshal(&target->outPrivate, buffer, size);
+	rc = TSS_TPM2B_PRIVATE_Unmarshal(&target->outPrivate, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_Unmarshal(&target->outPublic, buffer, size, NO);
+	rc = TSS_TPM2B_PUBLIC_Unmarshal(&target->outPublic, buffer, size, NO);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->name, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->name, buffer, size);
     }
     return rc;
 }
@@ -2022,13 +2022,13 @@ TSS_Duplicate_Out_Unmarshal(Duplicate_Out *target, TPM_ST tag, BYTE **buffer, ui
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DATA_Unmarshal(&target->encryptionKeyOut, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshal(&target->encryptionKeyOut, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PRIVATE_Unmarshal(&target->duplicate, buffer, size);
+	rc = TSS_TPM2B_PRIVATE_Unmarshal(&target->duplicate, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->outSymSeed, buffer, size);
+	rc = TSS_TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->outSymSeed, buffer, size);
     }
     return rc;
 }
@@ -2043,10 +2043,10 @@ TSS_Rewrap_Out_Unmarshal(Rewrap_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PRIVATE_Unmarshal(&target->outDuplicate, buffer, size);
+	rc = TSS_TPM2B_PRIVATE_Unmarshal(&target->outDuplicate, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->outSymSeed, buffer, size);
+	rc = TSS_TPM2B_ENCRYPTED_SECRET_Unmarshal(&target->outSymSeed, buffer, size);
     }
     return rc;
 }
@@ -2061,7 +2061,7 @@ TSS_Import_Out_Unmarshal(Import_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PRIVATE_Unmarshal(&target->outPrivate, buffer, size);
+	rc = TSS_TPM2B_PRIVATE_Unmarshal(&target->outPrivate, buffer, size);
     }
     return rc;
 }
@@ -2076,7 +2076,7 @@ TSS_RSA_Encrypt_Out_Unmarshal(RSA_Encrypt_Out *target, TPM_ST tag, BYTE **buffer
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_KEY_RSA_Unmarshal(&target->outData, buffer, size);
+	rc = TSS_TPM2B_PUBLIC_KEY_RSA_Unmarshal(&target->outData, buffer, size);
     }
     return rc;
 }
@@ -2091,7 +2091,7 @@ TSS_RSA_Decrypt_Out_Unmarshal(RSA_Decrypt_Out *target, TPM_ST tag, BYTE **buffer
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_KEY_RSA_Unmarshal(&target->message, buffer, size);
+	rc = TSS_TPM2B_PUBLIC_KEY_RSA_Unmarshal(&target->message, buffer, size);
     }
     return rc;
 }
@@ -2106,10 +2106,10 @@ TSS_ECDH_KeyGen_Out_Unmarshal(ECDH_KeyGen_Out *target, TPM_ST tag, BYTE **buffer
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->zPoint, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->zPoint, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->pubPoint, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->pubPoint, buffer, size);
     }
     return rc;
 }
@@ -2124,7 +2124,7 @@ TSS_ECDH_ZGen_Out_Unmarshal(ECDH_ZGen_Out *target, TPM_ST tag, BYTE **buffer, ui
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->outPoint, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->outPoint, buffer, size);
     }
     return rc;
 }
@@ -2139,7 +2139,7 @@ TSS_ECC_Parameters_Out_Unmarshal(ECC_Parameters_Out *target, TPM_ST tag, BYTE **
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMS_ALGORITHM_DETAIL_ECC_Unmarshal(&target->parameters, buffer, size);
+	rc = TSS_TPMS_ALGORITHM_DETAIL_ECC_Unmarshal(&target->parameters, buffer, size);
     }
     return rc;
 }
@@ -2154,10 +2154,10 @@ TSS_ZGen_2Phase_Out_Unmarshal(ZGen_2Phase_Out *target, TPM_ST tag, BYTE **buffer
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->outZ1, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->outZ1, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->outZ2, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->outZ2, buffer, size);
     }
     return rc;
 }
@@ -2172,10 +2172,10 @@ TSS_EncryptDecrypt_Out_Unmarshal(EncryptDecrypt_Out *target, TPM_ST tag, BYTE **
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_BUFFER_Unmarshal(&target->outData, buffer, size);
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshal(&target->outData, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_IV_Unmarshal(&target->ivOut, buffer, size);
+	rc = TSS_TPM2B_IV_Unmarshal(&target->ivOut, buffer, size);
     }
     return rc;
 }
@@ -2195,10 +2195,10 @@ TSS_Hash_Out_Unmarshal(Hash_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *si
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->outHash, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->outHash, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_HASHCHECK_Unmarshal(&target->validation, buffer, size);
+	rc = TSS_TPMT_TK_HASHCHECK_Unmarshal(&target->validation, buffer, size);
     }
     return rc;
 }
@@ -2213,7 +2213,7 @@ TSS_HMAC_Out_Unmarshal(HMAC_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *si
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->outHMAC, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->outHMAC, buffer, size);
     }
     return rc;
 }
@@ -2228,7 +2228,7 @@ TSS_GetRandom_Out_Unmarshal(GetRandom_Out *target, TPM_ST tag, BYTE **buffer, ui
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->randomBytes, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->randomBytes, buffer, size);
     }
     return rc;
 }
@@ -2238,7 +2238,7 @@ TSS_HMAC_Start_Out_Unmarshal(HMAC_Start_Out *target, TPM_ST tag, BYTE **buffer, 
     TPM_RC rc = TPM_RC_SUCCESS;
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_DH_OBJECT_Unmarshal(&target->sequenceHandle, buffer, size, NO);
+	rc = TSS_TPMI_DH_OBJECT_Unmarshal(&target->sequenceHandle, buffer, size, NO);
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
@@ -2253,7 +2253,7 @@ TSS_HashSequenceStart_Out_Unmarshal(HashSequenceStart_Out *target, TPM_ST tag, B
     TPM_RC rc = TPM_RC_SUCCESS;
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_DH_OBJECT_Unmarshal(&target->sequenceHandle, buffer, size, NO);
+	rc = TSS_TPMI_DH_OBJECT_Unmarshal(&target->sequenceHandle, buffer, size, NO);
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
@@ -2273,10 +2273,10 @@ TSS_SequenceComplete_Out_Unmarshal(SequenceComplete_Out *target, TPM_ST tag, BYT
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->result, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->result, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_HASHCHECK_Unmarshal(&target->validation, buffer, size);
+	rc = TSS_TPMT_TK_HASHCHECK_Unmarshal(&target->validation, buffer, size);
     }
     return rc;
 }
@@ -2291,7 +2291,7 @@ TSS_EventSequenceComplete_Out_Unmarshal(EventSequenceComplete_Out *target, TPM_S
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_DIGEST_VALUES_Unmarshal(&target->results, buffer, size);
+	rc = TSS_TPML_DIGEST_VALUES_Unmarshal(&target->results, buffer, size);
     }
     return rc;
 }
@@ -2306,10 +2306,10 @@ TSS_Certify_Out_Unmarshal(Certify_Out *target, TPM_ST tag, BYTE **buffer, uint32
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ATTEST_Unmarshal(&target->certifyInfo, buffer, size);
+	rc = TSS_TPM2B_ATTEST_Unmarshal(&target->certifyInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
     }
     return rc;
 }
@@ -2324,10 +2324,10 @@ TSS_CertifyCreation_Out_Unmarshal(CertifyCreation_Out *target, TPM_ST tag, BYTE 
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ATTEST_Unmarshal(&target->certifyInfo, buffer, size);
+	rc = TSS_TPM2B_ATTEST_Unmarshal(&target->certifyInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
     }
     return rc;
 }
@@ -2342,10 +2342,10 @@ TSS_Quote_Out_Unmarshal(Quote_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ATTEST_Unmarshal(&target->quoted, buffer, size);
+	rc = TSS_TPM2B_ATTEST_Unmarshal(&target->quoted, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
     }
     return rc;
 }
@@ -2360,10 +2360,10 @@ TSS_GetSessionAuditDigest_Out_Unmarshal(GetSessionAuditDigest_Out *target, TPM_S
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ATTEST_Unmarshal(&target->auditInfo, buffer, size);
+	rc = TSS_TPM2B_ATTEST_Unmarshal(&target->auditInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
     }
     return rc;
 }
@@ -2378,10 +2378,10 @@ TSS_GetCommandAuditDigest_Out_Unmarshal(GetCommandAuditDigest_Out *target, TPM_S
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ATTEST_Unmarshal(&target->auditInfo, buffer, size);
+	rc = TSS_TPM2B_ATTEST_Unmarshal(&target->auditInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
     }
     return rc;
 }
@@ -2396,10 +2396,10 @@ TSS_GetTime_Out_Unmarshal(GetTime_Out *target, TPM_ST tag, BYTE **buffer, uint32
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ATTEST_Unmarshal(&target->timeInfo, buffer, size);
+	rc = TSS_TPM2B_ATTEST_Unmarshal(&target->timeInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
     }
     return rc;
 }
@@ -2414,13 +2414,13 @@ TSS_Commit_Out_Unmarshal(Commit_Out *target, TPM_ST tag, BYTE **buffer, uint32_t
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->K, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->K, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->L, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->L, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->E, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->E, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshal(&target->counter, buffer, size);
@@ -2438,7 +2438,7 @@ TSS_EC_Ephemeral_Out_Unmarshal(EC_Ephemeral_Out *target, TPM_ST tag, BYTE **buff
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ECC_POINT_Unmarshal(&target->Q, buffer, size);
+	rc = TSS_TPM2B_ECC_POINT_Unmarshal(&target->Q, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshal(&target->counter, buffer, size);
@@ -2456,7 +2456,7 @@ TSS_VerifySignature_Out_Unmarshal(VerifySignature_Out *target, TPM_ST tag, BYTE 
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_VERIFIED_Unmarshal(&target->validation, buffer, size);
+	rc = TSS_TPMT_TK_VERIFIED_Unmarshal(&target->validation, buffer, size);
     }
     return rc;
 }
@@ -2471,7 +2471,7 @@ TSS_Sign_Out_Unmarshal(Sign_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *si
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
     }
     return rc;
 }
@@ -2486,7 +2486,7 @@ TSS_PCR_Event_Out_Unmarshal(PCR_Event_Out *target, TPM_ST tag, BYTE **buffer, ui
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_DIGEST_VALUES_Unmarshal(&target->digests, buffer, size);
+	rc = TSS_TPML_DIGEST_VALUES_Unmarshal(&target->digests, buffer, size);
     }
     return rc;
 }
@@ -2504,10 +2504,10 @@ TSS_PCR_Read_Out_Unmarshal(PCR_Read_Out *target, TPM_ST tag, BYTE **buffer, uint
 	rc = TSS_UINT32_Unmarshal(&target->pcrUpdateCounter, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_PCR_SELECTION_Unmarshal(&target->pcrSelectionOut, buffer, size);
+	rc = TSS_TPML_PCR_SELECTION_Unmarshal(&target->pcrSelectionOut, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPML_DIGEST_Unmarshal(&target->pcrValues, buffer, size, 0);
+	rc = TSS_TPML_DIGEST_Unmarshal(&target->pcrValues, buffer, size, 0);
     }
     return rc;
 }
@@ -2522,7 +2522,7 @@ TSS_PCR_Allocate_Out_Unmarshal(PCR_Allocate_Out *target, TPM_ST tag, BYTE **buff
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_YES_NO_Unmarshal(&target->allocationSuccess, buffer, size);
+	rc = TSS_TPMI_YES_NO_Unmarshal(&target->allocationSuccess, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT32_Unmarshal(&target->maxPCR, buffer, size);
@@ -2546,10 +2546,10 @@ TSS_PolicySigned_Out_Unmarshal(PolicySigned_Out *target, TPM_ST tag, BYTE **buff
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_TIMEOUT_Unmarshal(&target->timeout, buffer, size);
+	rc = TSS_TPM2B_TIMEOUT_Unmarshal(&target->timeout, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_AUTH_Unmarshal(&target->policyTicket, buffer, size);
+	rc = TSS_TPMT_TK_AUTH_Unmarshal(&target->policyTicket, buffer, size);
     }
     return rc;
 }
@@ -2564,10 +2564,10 @@ TSS_PolicySecret_Out_Unmarshal(PolicySecret_Out *target, TPM_ST tag, BYTE **buff
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_TIMEOUT_Unmarshal(&target->timeout, buffer, size);
+	rc = TSS_TPM2B_TIMEOUT_Unmarshal(&target->timeout, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_AUTH_Unmarshal(&target->policyTicket, buffer, size);
+	rc = TSS_TPMT_TK_AUTH_Unmarshal(&target->policyTicket, buffer, size);
     }
     return rc;
 }
@@ -2582,7 +2582,7 @@ TSS_PolicyGetDigest_Out_Unmarshal(PolicyGetDigest_Out *target, TPM_ST tag, BYTE 
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->policyDigest, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->policyDigest, buffer, size);
     }
     return rc;
 }
@@ -2593,7 +2593,7 @@ TSS_CreatePrimary_Out_Unmarshal(CreatePrimary_Out *target, TPM_ST tag, BYTE **bu
     uint32_t parameterSize = 0;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM_HANDLE_Unmarshal(&target->objectHandle, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshal(&target->objectHandle, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
@@ -2601,19 +2601,19 @@ TSS_CreatePrimary_Out_Unmarshal(CreatePrimary_Out *target, TPM_ST tag, BYTE **bu
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_PUBLIC_Unmarshal(&target->outPublic, buffer, size, NO);
+	rc = TSS_TPM2B_PUBLIC_Unmarshal(&target->outPublic, buffer, size, NO);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_CREATION_DATA_Unmarshal(&target->creationData, buffer, size);
+	rc = TSS_TPM2B_CREATION_DATA_Unmarshal(&target->creationData, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_DIGEST_Unmarshal(&target->creationHash, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshal(&target->creationHash, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_TK_CREATION_Unmarshal(&target->creationTicket, buffer, size);
+	rc = TSS_TPMT_TK_CREATION_Unmarshal(&target->creationTicket, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->name, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->name, buffer, size);
     }
     return rc;
 }
@@ -2628,7 +2628,7 @@ TSS_ContextSave_Out_Unmarshal(ContextSave_Out *target, TPM_ST tag, BYTE **buffer
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMS_CONTEXT_Unmarshal(&target->context, buffer, size);
+	rc = TSS_TPMS_CONTEXT_Unmarshal(&target->context, buffer, size);
     }
     return rc;
 }
@@ -2638,7 +2638,7 @@ TSS_ContextLoad_Out_Unmarshal(ContextLoad_Out *target, TPM_ST tag, BYTE **buffer
     TPM_RC rc = TPM_RC_SUCCESS;
     uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_DH_CONTEXT_Unmarshal(&target->loadedHandle, buffer, size, NO);
+	rc = TSS_TPMI_DH_CONTEXT_Unmarshal(&target->loadedHandle, buffer, size, NO);
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
@@ -2658,7 +2658,7 @@ TSS_ReadClock_Out_Unmarshal(ReadClock_Out *target, TPM_ST tag, BYTE **buffer, ui
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMS_TIME_INFO_Unmarshal(&target->currentTime, buffer, size);
+	rc = TSS_TPMS_TIME_INFO_Unmarshal(&target->currentTime, buffer, size);
     }
     return rc;
 }
@@ -2674,10 +2674,10 @@ TSS_GetCapability_Out_Unmarshal(GetCapability_Out *target, TPM_ST tag, BYTE **bu
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMI_YES_NO_Unmarshal(&target->moreData, buffer, size);
+	rc = TSS_TPMI_YES_NO_Unmarshal(&target->moreData, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMS_CAPABILITY_DATA_Unmarshal(&target->capabilityData, buffer, size);
+	rc = TSS_TPMS_CAPABILITY_DATA_Unmarshal(&target->capabilityData, buffer, size);
     }
     return rc;
 }
@@ -2692,10 +2692,10 @@ TSS_NV_ReadPublic_Out_Unmarshal(NV_ReadPublic_Out *target, TPM_ST tag, BYTE **bu
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NV_PUBLIC_Unmarshal(&target->nvPublic, buffer, size);
+	rc = TSS_TPM2B_NV_PUBLIC_Unmarshal(&target->nvPublic, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_NAME_Unmarshal(&target->nvName, buffer, size);
+	rc = TSS_TPM2B_NAME_Unmarshal(&target->nvName, buffer, size);
     }
     return rc;
 }
@@ -2710,7 +2710,7 @@ TSS_NV_Read_Out_Unmarshal(NV_Read_Out *target, TPM_ST tag, BYTE **buffer, uint32
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_MAX_NV_BUFFER_Unmarshal(&target->data, buffer, size);
+	rc = TSS_TPM2B_MAX_NV_BUFFER_Unmarshal(&target->data, buffer, size);
     }
     return rc;
 }
@@ -2725,10 +2725,10 @@ TSS_NV_Certify_Out_Unmarshal(NV_Certify_Out *target, TPM_ST tag, BYTE **buffer, 
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPM2B_ATTEST_Unmarshal(&target->certifyInfo, buffer, size);
+	rc = TSS_TPM2B_ATTEST_Unmarshal(&target->certifyInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshal(&target->signature, buffer, size, NO);
     }
     return rc;
 }

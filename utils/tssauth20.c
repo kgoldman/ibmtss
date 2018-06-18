@@ -810,7 +810,7 @@ TPM_RC TSS_Unmarshal(TSS_AUTH_CONTEXT *tssAuthContext,
 		   unmarshal */
 		buffer = tssAuthContext->responseBuffer;
 		size = tssAuthContext->responseSize;
-		rc = TPM_ST_Unmarshal(&tag, &buffer, &size);
+		rc = TSS_TPM_ST_Unmarshal(&tag, &buffer, &size);
 	    }
 	    if (rc == 0) {
 		/* move the buffer and size past the header */
@@ -968,7 +968,7 @@ TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
     if (rc == 0) {
 	size = tssAuthContext->responseSize;
   	buffer = tssAuthContext->responseBuffer;
-	rc = TPM_ST_Unmarshal(&tag, &buffer, &size);
+	rc = TSS_TPM_ST_Unmarshal(&tag, &buffer, &size);
     }
     /* check that the tag indicates that there are sessions */
     if ((rc == 0) && (tag == TPM_ST_SESSIONS)) {
@@ -998,7 +998,7 @@ TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	while ((rc == 0) && !done){
 	    authResponse = va_arg(ap, TPMS_AUTH_RESPONSE *);
 	    if (authResponse != NULL) {
-		rc = TPMS_AUTH_RESPONSE_Unmarshal(authResponse, &buffer, &size);
+		rc = TSS_TPMS_AUTH_RESPONSE_Unmarshal(authResponse, &buffer, &size);
 		authCount++;
 	    }
 	    else {
@@ -1130,7 +1130,7 @@ TPM_RC TSS_GetCommandHandle(TSS_AUTH_CONTEXT *tssAuthContext,
 		 sizeof(TPMI_ST_COMMAND_TAG) + sizeof (uint32_t) + sizeof(TPM_CC) +
 		 (sizeof(TPM_HANDLE) * index);
 	size = sizeof(TPM_HANDLE);
-	rc = TPM_HANDLE_Unmarshal(commandHandle, &buffer, &size);
+	rc = TSS_TPM_HANDLE_Unmarshal(commandHandle, &buffer, &size);
     }
     return rc;
 }
@@ -1159,7 +1159,7 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
 
 	size = tssAuthContext->responseSize;
   	buffer = tssAuthContext->responseBuffer;
-	rc = TPM_ST_Unmarshal(&tag, &buffer, &size);	/* does value checking */
+	rc = TSS_TPM_ST_Unmarshal(&tag, &buffer, &size);	/* does value checking */
     }
     /* no sessions -> no parameterSize */
     if (tag == TPM_ST_NO_SESSIONS) {

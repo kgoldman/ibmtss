@@ -205,7 +205,7 @@ TPM_RC TSS_File_ReadStructure(void 			*structure,
 				     filename);
     }
     if (rc == 0) {
-	int32_t ilength = length;
+	uint32_t ilength = length;
 	buffer1 = buffer;
 	rc = unmarshalFunction(structure, &buffer1, &ilength);
     }

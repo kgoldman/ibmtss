@@ -766,7 +766,7 @@ TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	tmpData = data;		/* temps because unmarshal moves the pointers */
 	tmpDataSize = dataSize;
-	rc = TPMT_PUBLIC_Unmarshal(tpmtPublic, &tmpData, &tmpDataSize, YES);
+	rc = TSS_TPMT_PUBLIC_Unmarshal(tpmtPublic, &tmpData, &tmpDataSize, YES);
     }
     /* optional tracing */
     if (rc == 0) {

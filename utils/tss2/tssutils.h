@@ -54,8 +54,8 @@
 extern "C" {
 #endif
 
-    typedef TPM_RC (*UnmarshalFunction_t)(void *target, uint8_t **buffer, int32_t *size);
-    typedef TPM_RC (*MarshalFunction_t)(void *source, uint16_t *written, uint8_t **buffer, int32_t *size);
+    typedef TPM_RC (*UnmarshalFunction_t)(void *target, uint8_t **buffer, uint32_t *size);
+    typedef TPM_RC (*MarshalFunction_t)(void *source, uint16_t *written, uint8_t **buffer, uint32_t *size);
 
     LIB_EXPORT
     TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size);
