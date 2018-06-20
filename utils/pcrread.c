@@ -3,7 +3,7 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: pcrread.c 1248 2018-06-20 20:11:40Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -269,7 +269,7 @@ static void printUsage(void)
     printf("\t\t-halg may be specified more than once\n");
     printf("\t[-of data file for first algorithm specified, in binary]\n");
     printf("\t\t(default do not save)\n");
-    printf("\t[-ns no space, no text, no newlines, first algorithm]\n");
+    printf("\t[-ns no space, no text, no newlines\n");
     printf("\t\tUsed for scripting policy construction\n");
     printf("\t-se0 session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");

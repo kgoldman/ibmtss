@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
     PcrRead12_In 		in;
     PcrRead12_Out 		out;
     TPM_PCRINDEX 		pcrIndex = IMPLEMENTATION_PCR;
+    int				noSpace = FALSE;
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -77,6 +78,9 @@ int main(int argc, char *argv[])
 		printf("Missing parameter for -ha\n");
 		printUsage();
 	    }
+	}
+	else if (strcmp(argv[i],"-ns") == 0) {
+	    noSpace = TRUE;
 	}
  	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
@@ -117,8 +121,19 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	TSS_PrintAll("PCR", out.outDigest, SHA1_DIGEST_SIZE);
-	if (verbose) printf("pcrread: success\n");
+	/* machine readable format */
+	if (noSpace) {
+	    uint32_t bp;
+	    for (bp = 0 ; bp < SHA1_DIGEST_SIZE ; bp++) {
+		printf("%02x", out.outDigest[bp]);
+	    }
+	    printf("\n");
+	}
+	/* human readable format */
+	else {
+	    TSS_PrintAll("PCR", out.outDigest, SHA1_DIGEST_SIZE);
+	    if (verbose) printf("pcrread: success\n");
+	}
     }
     else {
 	const char *msg;
@@ -140,5 +155,6 @@ static void printUsage(void)
     printf("Runs TPM_PcrRead\n");
     printf("\n");
     printf("\t-ha PCR index\n");
+    printf("\t[-ns no space, no text, no newlines\n");
     exit(1);	
 }

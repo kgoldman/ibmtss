@@ -3,7 +3,7 @@
 /*		      Extend an EVENT measurement file into PCRs		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventextend.c 1247 2018-06-20 19:10:19Z kgoldman $		*/
+/*	      $Id: eventextend.c 1248 2018-06-20 20:11:40Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2018.					*/
 /*										*/
@@ -67,6 +67,7 @@ int main(int argc, char * argv[])
     int				tpm = FALSE;	/* extend into TPM */
     int				sim = FALSE;	/* extend into simulated PCRs */
     int				nospec = FALSE;	/* event log does not start with spec file */
+    int				noSpace = FALSE;
     uint32_t 			bankNum = 0;	/* PCR hash bank */
     unsigned int 		pcrNum = 0;	/* PCR number iterator */
     TPM_PCRINDEX 		pcrMax = 7;
@@ -101,6 +102,9 @@ int main(int argc, char * argv[])
 	}
 	else if (strcmp(argv[i],"-sim") == 0) {
 	    sim = TRUE;
+	}
+	else if (strcmp(argv[i],"-ns") == 0) {
+	    noSpace = TRUE;
 	}
 	else if (strcmp(argv[i],"-pcrmax") == 0) {
 	    i++;
@@ -267,11 +271,21 @@ int main(int argc, char * argv[])
 		TSS_TPM_ALG_ID_Print("algorithmId", specIdEvent.digestSizes[bankNum].algorithmId, 0);
 		for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
 		    sprintf(pcrString, "PCR %02u:", pcrNum);
-		    /* TSS_PrintAllLogLevel() with a log level of LOGLEVEL_INFO to print the byte
-		       array on one line with no length */
-		    TSS_PrintAllLogLevel(LOGLEVEL_INFO, pcrString, 1,
-					 simPcrs[bankNum][pcrNum].digest.tssmax,
-					 specIdEvent.digestSizes[bankNum].digestSize);
+		    if (!noSpace) {
+			/* TSS_PrintAllLogLevel() with a log level of LOGLEVEL_INFO to print the byte
+			   array on one line with no length */
+			TSS_PrintAllLogLevel(LOGLEVEL_INFO, pcrString, 1,
+					     simPcrs[bankNum][pcrNum].digest.tssmax,
+					     specIdEvent.digestSizes[bankNum].digestSize);
+		    }
+		    else {	/* print with no spaces */
+			uint32_t bp;
+			printf("PCR %02u: ", pcrNum);
+			for (bp = 0 ; bp < specIdEvent.digestSizes[bankNum].digestSize ; bp++) {
+			    printf("%02x", simPcrs[bankNum][pcrNum].digest.tssmax[bp]);
+			}
+			printf("\n");
+		    }
 		}
 	    }
 	    /* calculate the boot aggregate, hash of PCR 0-7 */
@@ -315,9 +329,19 @@ int main(int argc, char * argv[])
 	    }
 	    /* trace the boot aggregate */
 	    if (rc == 0) {
-		TSS_PrintAllLogLevel(LOGLEVEL_INFO, "\nboot aggregate:", 1,
-				     bootAggregates[bankNum].digest.tssmax,
-				     specIdEvent.digestSizes[bankNum].digestSize);
+		if (!noSpace) {
+		    TSS_PrintAllLogLevel(LOGLEVEL_INFO, "\nboot aggregate:", 1,
+					 bootAggregates[bankNum].digest.tssmax,
+					 specIdEvent.digestSizes[bankNum].digestSize);
+		}
+		else {	/* print with no spaces */
+		    uint32_t bp;
+		    printf("\nboot aggregate: ");
+		    for (bp = 0 ; bp < specIdEvent.digestSizes[bankNum].digestSize ; bp++) {
+			printf("%02x", bootAggregates[bankNum].digest.tssmax[bp]);
+		    }
+		    printf("\n");
+		}
 	    }
 	}
     }
@@ -351,6 +375,7 @@ static void printUsage(void)
     printf("\t[-sim calculate simulated PCRs and boot aggregate]\n");
     printf("\t[-pcrmax, with -sim, sets the highest PCR number to be used to calculate the\n"
 	   "\t\tboot aggregate (default 7)]\n");
+    printf("\t[-ns no space, no text, no newlines]\n");
     printf("\n");
    exit(-1);
 }
