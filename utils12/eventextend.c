@@ -3,9 +3,9 @@
 /*		      Extend a TPM 1.2 EVENT measurement file into PCRs		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventextend.c 1158 2018-04-17 14:41:00Z kgoldman $		*/
+/*	      $Id: eventextend.c 1247 2018-06-20 19:10:19Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.					*/
+/* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -66,11 +66,9 @@ int main(int argc, char * argv[])
     FILE 			*infile = NULL;
     int				tpm = FALSE;	/* extend into TPM */
     int				sim = FALSE;	/* extend into simulated PCRs */
-#if 0
-    uint32_t 			bankNum = 0;	/* PCR hash bank */
-#endif
     int 			pcrNum = 0;	/* PCR number iterator */
-    TPMT_HA 			simPcrs[TPM_BIOS_PCR];
+    TPM_PCRINDEX 		pcrMax = 7;
+    TPMT_HA 			simPcrs[IMPLEMENTATION_PCR];
     TPMT_HA 			bootAggregate;
     TCG_PCR_EVENT 		event;			/* TPM 1.2 event log entry */
     unsigned int 		lineNum;
@@ -96,6 +94,16 @@ int main(int argc, char * argv[])
 	}
 	else if (strcmp(argv[i],"-sim") == 0) {
 	    sim = TRUE;
+	}
+	else if (strcmp(argv[i],"-pcrmax") == 0) {
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%u", &pcrMax);
+	    }
+	    else {
+		printf("Missing parameter for -pcrmax");
+		printUsage();
+	    }
 	}
 	else if (!strcmp(argv[i], "-h")) {
 	    printUsage();
@@ -132,7 +140,7 @@ int main(int argc, char * argv[])
     /* simulated BIOS PCRs start at zero at boot */
     if ((rc == 0) && sim) {
 	bootAggregate.hashAlg = TPM_ALG_SHA1;
-	for (pcrNum = 0 ; pcrNum < TPM_BIOS_PCR ; pcrNum++) {
+	for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
 	    /* initialize each algorithm ID  */
 	    simPcrs[pcrNum].hashAlg = TPM_ALG_SHA1;
 	    memset(&simPcrs[pcrNum].digest.sha1, 0, SHA1_DIGEST_SIZE);
@@ -192,7 +200,7 @@ int main(int argc, char * argv[])
 	    char pcrString[9];	/* PCR number */
 
 	    printf("\n");
-	    for (pcrNum = 0 ; pcrNum < TPM_BIOS_PCR ; pcrNum++) {
+	    for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
 		sprintf(pcrString, "PCR %02u:", pcrNum);
 		/* TSS_PrintAllLogLevel() with a log level of LOGLEVEL_INFO to print the byte
 		   array on one line with no length */
@@ -202,15 +210,41 @@ int main(int argc, char * argv[])
 	}
 	/* calculate the boot aggregate, hash of PCR 0-7 */
 	if (rc == 0) {
+	    int length[IMPLEMENTATION_PCR];
+	    size_t j;
+	    for (j = 0 ; j < IMPLEMENTATION_PCR ; j++) {
+		if (j <= pcrMax) {	/* include PCRs up to here */
+		    length[j] = SHA1_DIGEST_SIZE;
+		}
+		else {
+		    length[j] = 0;	/* exclude PCRs after to here */
+		}
+	    }
 	    rc = TSS_Hash_Generate(&bootAggregate,
-				   SHA1_DIGEST_SIZE, &simPcrs[0].digest.sha1,
-				   SHA1_DIGEST_SIZE, &simPcrs[1].digest.sha1,
-				   SHA1_DIGEST_SIZE, &simPcrs[2].digest.sha1,
-				   SHA1_DIGEST_SIZE, &simPcrs[3].digest.sha1,
-				   SHA1_DIGEST_SIZE, &simPcrs[4].digest.sha1,
-				   SHA1_DIGEST_SIZE, &simPcrs[5].digest.sha1,
-				   SHA1_DIGEST_SIZE, &simPcrs[6].digest.sha1,
-				   SHA1_DIGEST_SIZE, &simPcrs[7].digest.sha1,
+				   length[0], &simPcrs[0].digest.sha1,
+				   length[1], &simPcrs[1].digest.sha1,
+				   length[2], &simPcrs[2].digest.sha1,
+				   length[3], &simPcrs[3].digest.sha1,
+				   length[4], &simPcrs[4].digest.sha1,
+				   length[5], &simPcrs[5].digest.sha1,
+				   length[6], &simPcrs[6].digest.sha1,
+				   length[7], &simPcrs[7].digest.sha1,
+				   length[8], &simPcrs[8].digest.sha1,
+				   length[9], &simPcrs[9].digest.sha1,
+				   length[10], &simPcrs[10].digest.sha1,
+				   length[11], &simPcrs[11].digest.sha1,
+				   length[12], &simPcrs[12].digest.sha1,
+				   length[13], &simPcrs[13].digest.sha1,
+				   length[14], &simPcrs[14].digest.sha1,
+				   length[15], &simPcrs[15].digest.sha1,
+				   length[16], &simPcrs[16].digest.sha1,
+				   length[17], &simPcrs[17].digest.sha1,
+				   length[18], &simPcrs[18].digest.sha1,
+				   length[19], &simPcrs[19].digest.sha1,
+				   length[20], &simPcrs[20].digest.sha1,
+				   length[21], &simPcrs[21].digest.sha1,
+				   length[22], &simPcrs[22].digest.sha1,
+				   length[23], &simPcrs[23].digest.sha1,
 				   0, NULL);
 	}
 	/* trace the boot aggregate */
@@ -246,6 +280,8 @@ static void printUsage(void)
     printf("\t-if <input file> is the file containing the data to be extended\n");
     printf("\t[-tpm extend TPM PCRs]\n");
     printf("\t[-sim calculate simulated PCRs and boot aggregate]\n");
+    printf("\t[-pcrmax, with -sim, sets the highest PCR number to be used to calculate the\n"
+	   "\t\tboot aggregate (default 7)]\n");
     printf("\n");
     exit(-1);
 }

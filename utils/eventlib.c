@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 1191 2018-05-01 14:53:45Z kgoldman $		*/
+/*	      $Id: eventlib.c 1247 2018-06-20 19:10:19Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -85,7 +85,7 @@ int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
 	    else {
 		printf("TSS_EVENT_Line_Read: Error, could not read pcrIndex, returned %lu\n",
 		       (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
     }
@@ -100,7 +100,7 @@ int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
 	if (readSize != 1) {
 	    printf("TSS_EVENT_Line_Read: Error, could not read eventType, returned %lu\n",
 		   (unsigned long) readSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
     /* do the endian conversion from stream to uint32_t */
@@ -114,7 +114,7 @@ int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
 	if (readSize != 1) {
 	    printf("TSS_EVENT_Line_Read: Error, could not read digest, returned %lu\n",
 		   (unsigned long)readSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* read the event data size */
@@ -124,7 +124,7 @@ int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
 	if (readSize != 1) {
 	    printf("TSS_EVENT_Line_Read: Error, could not read event data size, returned %lu\n",
 		   (unsigned long)readSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* do the endian conversion from stream to uint32_t */
@@ -136,7 +136,7 @@ int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
 	if (event->eventDataSize > sizeof(((TCG_PCR_EVENT *)NULL)->event)) {
 	    printf("TSS_EVENT_Line_Read: Error, event data length too big: %u\n",
 		   event->eventDataSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* read the event */
@@ -147,7 +147,7 @@ int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
 	if (readSize != 1) {
 	    printf("TSS_EVENT_Line_Read: Error, could not read event, returned %lu\n",
 		   (unsigned long)readSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     return rc;
@@ -213,16 +213,16 @@ TPM_RC TSS_EVENT_Line_Unmarshal(TCG_PCR_EVENT *target, BYTE **buffer, uint32_t *
    entry.
 */
 
-TPM_RC TSS_EVENT_PCR_Extend(TPMT_HA pcrs[TPM_BIOS_PCR],
+TPM_RC TSS_EVENT_PCR_Extend(TPMT_HA pcrs[IMPLEMENTATION_PCR],
 			    TCG_PCR_EVENT *event)
 {
     TPM_RC 		rc = 0;
     
     /* validate PCR number */
     if (rc == 0) {
-	if (event->pcrIndex > TPM_BIOS_PCR) {
+	if (event->pcrIndex >= IMPLEMENTATION_PCR) {
 	    printf("ERROR: TSS_EVENT_PCR_Extend: PCR number %u out of range\n", event->pcrIndex);
-	    rc = 1;
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
     /* process each event hash algorithm */
@@ -246,6 +246,9 @@ void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event)
 		 event->digest, sizeof(((TCG_PCR_EVENT *)NULL)->digest));
     TSS_PrintAll("TSS_EVENT_Line_Trace: event",
 		 event->event, event->eventDataSize);
+    if (event->eventType == EV_IPL) {	/* this event appears to be printable strings */
+	printf(" %.*s\n", event->eventDataSize, event->event);
+    }
     return;
 }
 
@@ -328,7 +331,7 @@ static TPM_RC TSS_SpecIdEventAlgorithmSize_Unmarshal(TCG_EfiSpecIdEventAlgorithm
 		printf("TSS_SpecIdEventAlgorithmSize_Unmarshal: "
 		       "Error, inconsistent digest size, algorithm %04x size %u\n",
 		       algSize->algorithmId, algSize->digestSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_BAD_PROPERTY_VALUE;
 	    }
 	}
     }
@@ -401,7 +404,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	    else {
 		printf("TSS_EVENT2_Line_Read: Error, could not read pcrIndex, returned %lu\n",
 		       (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
     }
@@ -416,7 +419,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	if (readSize != 1) {
 	    printf("TSS_EVENT2_Line_Read: Error, could not read eventType, returned %lu\n",
 		   (unsigned long)readSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* do the endian conversion from stream to uint32_t */
@@ -432,7 +435,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	if (readSize != 1) {
 	    printf("TSS_EVENT2_Line_Read: Error, could not read digest count, returned %lu\n",
 		   (unsigned long)readSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* do the endian conversion from stream to uint32_t */
@@ -444,11 +447,11 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	if (event->digests.count > maxCount) {
 	    printf("TSS_EVENT2_Line_Read: Error, digest count %u is greater than structure %u\n",
 		   event->digests.count, maxCount);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else if (event->digests.count == 0) {
 	    printf("TSS_EVENT2_Line_Read: Error, digest count is zero\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     uint32_t count;
@@ -462,7 +465,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 		printf("TSS_EVENT2_Line_Read: "
 		       "Error, could not read digest algorithm, returned %lu\n",
 		       (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
 	/* do the endian conversion of the hash algorithm from stream to uint16_t */
@@ -477,7 +480,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	    if (digestSize == 0) {
 		printf("TSS_EVENT2_Line_Read: Error, unknown digest algorithm %04x*\n",
 		       event->digests.digests[count].hashAlg);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
 	/* read the digest */
@@ -487,7 +490,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	    if (readSize != 1) {
 		printf("TSS_EVENT2_Line_Read: Error, could not read digest, returned %lu\n",
 		       (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
     }
@@ -498,7 +501,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	if (readSize != 1) {
 	    printf("TSS_EVENT2_Line_Read: Error, could not read event size, returned %lu\n",
 		   (unsigned long)readSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* do the endian conversion from stream to uint32_t */
@@ -510,7 +513,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	if (event->eventSize > sizeof(((TCG_PCR_EVENT2 *)NULL)->event)) {
 	    printf("TSS_EVENT2_Line_Read: Error, event size too big: %u\n",
 		   event->eventSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* read the event */
@@ -521,7 +524,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	if (readSize != 1) {
 	    printf("TSS_EVENT2_Line_Read: Error, could not read event, returned %lu\n",
 		   (unsigned long)readSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     return rc;
@@ -586,7 +589,7 @@ TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t
    entry.
 */
 
-TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][8],
+TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
 			     TCG_PCR_EVENT2 *event2)
 {
     TPM_RC 		rc = 0;
@@ -595,7 +598,7 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][8],
     
     /* validate PCR number */
     if (rc == 0) {
-	if (event2->pcrIndex > 7) {
+	if (event2->pcrIndex >= IMPLEMENTATION_PCR) {
 	    printf("ERROR: TSS_EVENT2_PCR_Extend: PCR number %u out of range\n", event2->pcrIndex);
 	    rc = 1;
 	}

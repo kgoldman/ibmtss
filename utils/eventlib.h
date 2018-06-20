@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*	      $Id: eventlib.h 1247 2018-06-20 19:10:19Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -48,8 +48,7 @@
 #define TPM_TSS
 #include <tss2/TPM_Types.h>
 
-#define TCG_EVENT_LEN_MAX	4096
-#define ERR_STRUCTURE  		1 /* this is not the stream for the structure to be parsed */
+#define TCG_EVENT_LEN_MAX	0x10000
 
 #define EV_PREBOOT_CERT	  			0x00
 #define EV_POST_CODE				0x01
@@ -83,8 +82,9 @@
 #define EV_EFI_HCRTM_EVENT			0x80000010 
 #define EV_EFI_VARIABLE_AUTHORITY		0x800000E0
 
-/* PCR 0-7 are the BIOS / UEFI / firmware / pre-OS PCRs */
-#define TPM_BIOS_PCR	8
+/* PCR 0-7 are the BIOS / UEFI / firmware / pre-OS PCRs, set to 10 because a Lenovo TPM 1.2 firmware
+   extends PCR 0-9 */
+#define TPM_BIOS_PCR	10
 
 /* TCG_PCR_EVENT is the TPM 1.2 SHA-1 event log entry format.  It is defined in the TCG PC Client
    Specific Implementation Specification for Conventional BIOS, where it is called
@@ -156,7 +156,7 @@ extern "C" {
     
     TPM_RC TSS_EVENT_Line_Unmarshal(TCG_PCR_EVENT *event, BYTE **buffer, uint32_t *size);
 
-    TPM_RC TSS_EVENT_PCR_Extend(TPMT_HA pcrs[TPM_BIOS_PCR],
+    TPM_RC TSS_EVENT_PCR_Extend(TPMT_HA pcrs[IMPLEMENTATION_PCR],
 				TCG_PCR_EVENT *event);
     
     void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event);
@@ -170,7 +170,7 @@ extern "C" {
 
     TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t *size);
 
-    TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][8],
+    TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
 				 TCG_PCR_EVENT2 *event2);
 
     void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event);
