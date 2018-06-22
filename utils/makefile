@@ -329,7 +329,7 @@ hmacstart:		tss2/tss.h hmacstart.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) hmacstart.o $(LNALIBS) -o hmacstart
 import:			tss2/tss.h import.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) import.o $(LNALIBS) -o import
-importpem:		tss2/tss.h importpem.o objecttemplates.o $(L $(LIBTSSUTILS)IBTSS)
+importpem:		tss2/tss.h importpem.o objecttemplates.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) importpem.o objecttemplates.o $(LNALIBS) -o importpem
 load:			tss2/tss.h load.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) load.o $(LNALIBS) -o load
