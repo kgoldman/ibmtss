@@ -3,7 +3,7 @@
 /*		      Extend an IMA measurement list into PCR 10		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: imaextend.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*	      $Id: imaextend.c 1254 2018-06-25 14:43:47Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2014, 2018.					*/
 /*										*/
@@ -82,6 +82,11 @@ int main(int argc, char * argv[])
     const char 		*infilename = NULL;
     FILE 		*infile = NULL;
     int 		littleEndian = FALSE;
+    int			sim = FALSE;			/* extend into simulated PCRs */
+    uint32_t 		bankNum = 0;			/* PCR hash bank, 0 is SHA-1, 1 is
+							   SHA-256 */
+    unsigned int 	pcrNum = 0;			/* PCR number iterator */
+    TPMT_HA 		simPcrs[IMA_PCR_BANKS][IMPLEMENTATION_PCR];
     unsigned long	beginEvent = 0;			/* default beginning of log */
     unsigned long	endEvent = 0xffffffff;		/* default end of log */
     unsigned int	loopTime = 0;			/* default no loop */
@@ -195,20 +200,40 @@ int main(int argc, char * argv[])
 	      if the event line is in range
 	    */
 	    if ((rc == 0) && (lineNum >= beginEvent) && (lineNum <= endEvent) && !endOfFile) {
+		/* debug tracing */
 		if (rc == 0) {
-		    in.pcrHandle = imaEvent.pcrIndex;		/* normally PCR 10 */
-		    /* debug tracing */
 		    if (verbose) printf("\n");
 		    printf("imaextend: line %u\n", lineNum);
 		    if (verbose) IMA_Event_Trace(&imaEvent, FALSE);
 		}
+		if (!sim) {
+		    if (rc == 0) {
+			in.pcrHandle = imaEvent.pcrIndex;		/* normally PCR 10 */
+		    }
+		    /* copy the SHA-1 digest to be extended into the SHA-1 and SHA-256 banks */
+		    if (rc == 0) {
+			rc = copyDigest(&in, &imaEvent);
+		    }	
+		    if (rc == 0) {
+			rc = TSS_Execute(tssContext,
+					 NULL, 
+					 (COMMAND_PARAMETERS *)&in,
+					 NULL,
+					 TPM_CC_PCR_Extend,
+					 TPM_RS_PW, NULL, 0,
+					 TPM_RH_NULL, NULL, 0);
+		    }
+		    if (rc == 0 && verbose) {
+			rc = pcrread(tssContext, imaEvent.pcrIndex);
+		    }
+		}
 		/* copy the SHA-1 digest to be extended */
 		if (rc == 0) {
 		    rc = copyDigest(&in, &imaEvent);
-		}	
+		}
 		if (rc == 0) {
 		    rc = TSS_Execute(tssContext,
-				     NULL, 
+				     NULL,
 				     (COMMAND_PARAMETERS *)&in,
 				     NULL,
 				     TPM_CC_PCR_Extend,
@@ -226,7 +251,13 @@ int main(int argc, char * argv[])
 	if (infile != NULL) {
 	    fclose(infile);
 	}
-	usleep(loopTime * 1000000);
+#ifdef TPM_POSIX
+	sleep(loopTime);
+#endif
+#ifdef TPM_WINDOWS
+	Sleep(loopTime * 1000);
+#endif
+
     } while ((rc == 0) && (loopTime != 0)); 		/* sleep loop */
     {
 	TPM_RC rc1 = TSS_Delete(tssContext);
@@ -258,12 +289,14 @@ static TPM_RC copyDigest(PCR_Extend_In 	*in,
     if (rc == 0) {
 	memset(zeroDigest, 0, SHA1_DIGEST_SIZE);
 	int notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
-	/* IMA has a quirk where some measurements store a zero digest in the event log, but
-	   extend ones into PCR 10 */
+	/* the SHA-256 bank has already been 0 extended, so only the first 20 bytes need be
+	   copied */
 	if (notAllZero) {
 	    memcpy((uint8_t *)&in->digests.digests[0].digest, imaEvent->digest, SHA1_DIGEST_SIZE);
 	    memcpy((uint8_t *)&in->digests.digests[1].digest, imaEvent->digest, SHA1_DIGEST_SIZE);
 	}
+	/* IMA has a quirk where some measurements store a zero digest in the event log, but
+	   extend ones into PCR 10 */
 	else {
 	    memset((uint8_t *)&in->digests.digests[0].digest, 0xff, SHA1_DIGEST_SIZE);
 	    memset((uint8_t *)&in->digests.digests[1].digest, 0xff, SHA1_DIGEST_SIZE);
