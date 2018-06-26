@@ -3,7 +3,7 @@
 /*			    TSS Primary API for TPM 2.0				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss20.c 1219 2018-05-15 21:12:32Z kgoldman $			*/
+/*	      $Id: tss20.c 1255 2018-06-26 21:18:46Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -1401,51 +1401,51 @@ static TPM_RC TSS_HmacSession_Marshal(struct TSS_HMAC_CONTEXT *source,
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = TSS_TPMI_SH_AUTH_SESSION_Marshal(&source->sessionHandle, written, buffer, size);
+	rc = TSS_TPMI_SH_AUTH_SESSION_Marshalu(&source->sessionHandle, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPMI_ALG_HASH_Marshal(&source->authHashAlg, written, buffer, size);
+	rc = TSS_TPMI_ALG_HASH_Marshalu(&source->authHashAlg, written, buffer, size);
     }
 #ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->sizeInBytes, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->sizeInBytes, written, buffer, size);
     }
 #endif
     if (rc == 0) {
-	rc = TSS_TPMT_SYM_DEF_Marshal(&source->symmetric, written, buffer, size);
+	rc = TSS_TPMT_SYM_DEF_Marshalu(&source->symmetric, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPMI_DH_ENTITY_Marshal(&source->bind, written, buffer, size);
+	rc = TSS_TPMI_DH_ENTITY_Marshalu(&source->bind, written, buffer, size);
     }   
     if (rc == 0) {
-	rc = TSS_TPM2B_NAME_Marshal(&source->bindName, written, buffer, size);
+	rc = TSS_TPM2B_NAME_Marshalu(&source->bindName, written, buffer, size);
     }
 #ifdef TPM_WINDOWS
     /* FIXME Why does a VS release build need a printf here? */
     if (tssVverbose) printf("");
 #endif
     if (rc == 0) {
-	rc = TSS_TPM2B_AUTH_Marshal(&source->bindAuthValue, written, buffer, size);
+	rc = TSS_TPM2B_AUTH_Marshalu(&source->bindAuthValue, written, buffer, size);
     }
 #ifndef TPM_TSS_NOCRYPTO
     if (rc == 0) {
-	rc = TSS_TPM2B_NONCE_Marshal(&source->nonceTPM, written, buffer, size);
+	rc = TSS_TPM2B_NONCE_Marshalu(&source->nonceTPM, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM2B_NONCE_Marshal(&source->nonceCaller, written, buffer, size);
+	rc = TSS_TPM2B_NONCE_Marshalu(&source->nonceCaller, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM2B_DIGEST_Marshal(&source->sessionKey, written, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Marshalu(&source->sessionKey, written, buffer, size);
     }
 #endif
     if (rc == 0) {
-	rc = TSS_TPM_SE_Marshal(&source->sessionType, written, buffer, size);
+	rc = TSS_TPM_SE_Marshalu(&source->sessionType, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Marshal(&source->isPasswordNeeded, written, buffer, size);
+	rc = TSS_UINT8_Marshalu(&source->isPasswordNeeded, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Marshal(&source->isAuthValueNeeded, written, buffer, size);
+	rc = TSS_UINT8_Marshalu(&source->isAuthValueNeeded, written, buffer, size);
     }  
     return rc;
 }
@@ -2170,7 +2170,7 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
     if (rc == 0) {
 	uint32_t 	size = MAX_RESPONSE_SIZE;
 	uint8_t 	*buffer1 = buffer;
-	rc = TSS_TPMT_PUBLIC_Marshal(tpmtPublic, &written, &buffer1, &size);
+	rc = TSS_TPMT_PUBLIC_Marshalu(tpmtPublic, &written, &buffer1, &size);
     }
     /* hash the public area */
     if (rc == 0) {
@@ -2404,7 +2404,7 @@ static TPM_RC TSS_NVPublic_GetName(TPM2B_NAME *name,
     if (rc == 0) {
 	uint32_t 	size = MAX_RESPONSE_SIZE;
 	uint8_t 	*buffer1 = buffer;
-	rc = TSS_TPMS_NV_PUBLIC_Marshal(nvPublic, &written, &buffer1, &size);
+	rc = TSS_TPMS_NV_PUBLIC_Marshalu(nvPublic, &written, &buffer1, &size);
     }
     /* hash the public area */
     if (rc == 0) {

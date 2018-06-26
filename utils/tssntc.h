@@ -3,7 +3,7 @@
 /*		     	Nuvoton Command Common Routines				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssntc.h 1124 2018-01-05 21:32:55Z kgoldman $		*/
+/*	      $Id: tssntc.h 1255 2018-06-26 21:18:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -63,10 +63,10 @@ extern "C" {
     TPM_RC
     NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
     TPM_RC
-    TSS_NTC2_PreConfig_In_Marshal(NTC2_PreConfig_In *source, uint16_t *written, BYTE **buffer, uint32_t *size);
+    TSS_NTC2_PreConfig_In_Marshalu(NTC2_PreConfig_In *source, uint16_t *written, BYTE **buffer, uint32_t *size);
 
     TPM_RC
-    TSS_NTC2_GetConfig_Out_Unmarshal(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
+    TSS_NTC2_GetConfig_Out_Unmarshalu(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
 
 #ifdef __cplusplus
 }

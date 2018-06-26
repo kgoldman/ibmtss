@@ -161,19 +161,19 @@ TPM_RC TSS_EVENT_Line_Marshal(TCG_PCR_EVENT *source,
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->pcrIndex, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->pcrIndex, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->eventType, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->eventType, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshal(source->digest, SHA1_DIGEST_SIZE, written, buffer, size);
+	rc = TSS_Array_Marshalu(source->digest, SHA1_DIGEST_SIZE, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->eventDataSize, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->eventDataSize, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshal(source->event, source->eventDataSize, written, buffer, size);
+	rc = TSS_Array_Marshalu(source->event, source->eventDataSize, written, buffer, size);
     }
     return rc;
 }
@@ -538,19 +538,19 @@ TPM_RC TSS_EVENT2_Line_Marshal(TCG_PCR_EVENT2 *source,
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->pcrIndex, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->pcrIndex, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->eventType, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->eventType, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPML_DIGEST_VALUES_Marshal(&source->digests, written, buffer, size);
+	rc = TSS_TPML_DIGEST_VALUES_Marshalu(&source->digests, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->eventSize, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->eventSize, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshal((uint8_t *)source->event, source->eventSize, written, buffer, size);
+	rc = TSS_Array_Marshalu((uint8_t *)source->event, source->eventSize, written, buffer, size);
     }
     return rc;
 }

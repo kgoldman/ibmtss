@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*            $Id: imalib.h 1020 2017-06-09 18:46:45Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2017					*/
+/* (c) Copyright IBM Corporation 2016, 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -50,12 +50,11 @@
 #include <tss2/TPM_Types.h>
 
 #define IMA_PCR 		10
+/* IMA currently supports only SHA-1 and SHA-256 */
+#define IMA_PCR_BANKS		2
 
-/* FIXME need better error codes */
-
-#define ERR_STRUCTURE  		1 	/* this is not the stream for the structure to be parsed */
-#define ERR_HASH_ALGORITHM	2 	/* unsupported hash algorithm */
-#define TCG_EVENT_NAME_LEN_MAX	255	/* FIXME need verification */
+/* FIXME need verification */
+#define TCG_EVENT_NAME_LEN_MAX	255
 
 #define TCG_TEMPLATE_DATA_LEN_MAX				\
 sizeof(uint32_t) +		/* hash length */		\
@@ -164,6 +163,8 @@ extern "C" {
     TPM_RC IMA_Event_Marshal(ImaEvent *source,
 			     uint16_t *written, uint8_t **buffer, uint32_t *size);
 
+    uint32_t IMA_Event_PcrExtend(TPMT_HA pcrs[IMA_PCR_BANKS][IMPLEMENTATION_PCR],
+				 ImaEvent *imaEvent);
 #if 0
     uint32_t IMA_Event_ToString(char **eventString,
 				ImaEvent *imaEvent);

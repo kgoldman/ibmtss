@@ -3,7 +3,7 @@
 /*			    Create Loaded					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createloaded.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: createloaded.c 1255 2018-06-26 21:18:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -502,7 +502,7 @@ int main(int argc, char *argv[])
 	uint32_t size = sizeof(in.inPublic.t.buffer);
 	uint8_t *buffer = in.inPublic.t.buffer;
 	if (!derived) {		/* not derivation parent */
-	    rc = TSS_TPMT_PUBLIC_Marshal(&publicArea, &written, &buffer, &size);
+	    rc = TSS_TPMT_PUBLIC_Marshalu(&publicArea, &written, &buffer, &size);
 	}
 	else {			/* derivation parent */
 	    /* The API changed from rev 142 to 146.  This is the 146 API.  It is unlikely that any
@@ -513,7 +513,7 @@ int main(int argc, char *argv[])
 	    publicArea.unique.derive.context.t.size = 0;
 	    /* sensitiveDataOrigin has to be CLEAR in a derived object */	
 	    publicArea.objectAttributes.val &= ~TPMA_OBJECT_SENSITIVEDATAORIGIN;
-	    rc = TSS_TPMT_PUBLIC_D_Marshal(&publicArea, &written, &buffer, &size);
+	    rc = TSS_TPMT_PUBLIC_D_Marshalu(&publicArea, &written, &buffer, &size);
 	}
 	in.inPublic.t.size = written;
     }

@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*            $Id: imalib.c 963 2017-03-15 20:37:25Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2017.					*/
+/* (c) Copyright IBM Corporation 2016, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -62,6 +62,7 @@
 #include <tss2/tsscryptoh.h>
 #include <tss2/tssmarshal.h>
 #include <tss2/tssprint.h>
+#include <tss2/tsserror.h>
 
 #include "imalib.h"
 
@@ -180,21 +181,23 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    else {
 		printf("ERROR: IMA_Event_ReadFile: could not read pcrIndex, returned %lu\n",
 		       (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
     }
     if (rc == 0) {
 	imaEvent->pcrIndex = IMA_Uint32_Convert((uint8_t *)&imaEvent->pcrIndex, littleEndian);
     }
+#if 0	/* In the future, IMA may use multiple PCRs */
     /* sanity check the PCR index */
     if (rc == 0) {
 	if (imaEvent->pcrIndex != IMA_PCR) {
 	    printf("ERROR: IMA_Event_ReadFile: PCR index %u not PCR %u\n",
 		   imaEvent->pcrIndex, IMA_PCR);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }	
+#endif
     /* read the IMA digest, this is hard coded to SHA-1 */
     if (rc == 0) {
 	readSize = fread(&(imaEvent->digest),
@@ -206,7 +209,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    else {
 		printf("ERROR: IMA_Event_ReadFile: could not read digest, returned %lu\n",
 		       (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
     }
@@ -221,7 +224,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    else {
 		printf("ERROR: IMA_Event_ReadFile: could not read name_len, returned %lu\n",
 		       (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
     }
@@ -233,7 +236,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	if (imaEvent->name_len > (sizeof(((ImaEvent *)NULL)->name)) -1) {
 	    printf("ERROR: IMA_Event_ReadFile: template name length too big: %u\n",
 		   imaEvent->name_len);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* read the template name */
@@ -249,7 +252,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    else {
 		printf("ERROR: IMA_Event_ReadFile: could not read template name, returned %lu\n",
 		       (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
     }
@@ -277,7 +280,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    else {
 		printf("ERROR: IMA_Event_ReadFile: could not read template_data_len, "
 		       " returned %lu\n", (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
     }
@@ -290,7 +293,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	if (imaEvent->template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
 	    printf("ERROR: IMA_Event_ReadFile: template data length too big: %u\n",
 		   imaEvent->template_data_len);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     if (rc == 0) {
@@ -299,7 +302,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    printf("ERROR: IMA_Event_ReadFile: "
 		   "could not allocate template data, size %u\n",
 		   imaEvent->template_data_len);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     if (rc == 0) {
@@ -312,7 +315,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    else {
 		printf("ERROR: IMA_Event_ReadFile: could not read template_data, "
 		       " returned %lu\n", (unsigned long)readSize);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	}
     }
@@ -350,7 +353,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	    /* bounds check the length */
 	    if (*length < sizeof(uint32_t)) {
 		printf("ERROR: IMA_Event_ReadBuffer: buffer too small for PCR index\n");
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    else {
 		imaEvent->pcrIndex = IMA_Uint32_Convert(*buffer, littleEndian);
@@ -363,7 +366,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	    if (imaEvent->pcrIndex != IMA_PCR) {
 		printf("ERROR: IMA_Event_ReadBuffer: PCR index %u not PCR %u\n",
 		       IMA_PCR, imaEvent->pcrIndex);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_BAD_PROPERTY_VALUE;
 	    }
 	}	
 	/* read the IMA digest, this is hard coded to SHA-1 */
@@ -371,7 +374,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	    /* bounds check the length */
 	    if (*length < sizeof(((ImaEvent *)NULL)->digest)) {
 		printf("ERROR: IMA_Event_ReadBuffer: buffer too small for IMA digest\n");
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    else {
 		memcpy(&(imaEvent->digest), *buffer, sizeof(((ImaEvent *)NULL)->digest));
@@ -385,7 +388,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	    if (*length < sizeof(uint32_t)) {
 		printf("ERROR: IMA_Event_ReadBuffer: "
 		       "buffer too small for IMA template name length\n");
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    else {
 		imaEvent->name_len = IMA_Uint32_Convert(*buffer, littleEndian);
@@ -399,11 +402,11 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	    if (imaEvent->name_len > TCG_EVENT_NAME_LEN_MAX) {
 		printf("ERROR: IMA_Event_ReadBuffer: Error, template name length too big: %u\n",
 		       imaEvent->name_len);
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    else if (*length < imaEvent->name_len) {
 		printf("ERROR: IMA_Event_ReadBuffer: buffer too small for template name\n");
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    else {
 		/* nul terminate first */
@@ -431,7 +434,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	    /* bounds check the length */
 	    if (*length < sizeof(uint32_t)) {
 		printf("ERROR: IMA_Event_ReadBuffer: buffer too small for template data length\n");
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    else {
 		imaEvent->template_data_len = IMA_Uint32_Convert(*buffer, littleEndian);
@@ -446,11 +449,11 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 		if (imaEvent->template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
 		    printf("ERROR: IMA_Event_ReadBuffer: template data length too big: %u\n",
 			   imaEvent->template_data_len );
-		    rc = ERR_STRUCTURE;
+		    rc = TSS_RC_INSUFFICIENT_BUFFER;
 		}
 		else if (*length < imaEvent->template_data_len) {
 		    printf("ERROR: IMA_Event_ReadBuffer: buffer too small for template data\n");
-		    rc = ERR_STRUCTURE;
+		    rc = TSS_RC_INSUFFICIENT_BUFFER;
 		}
 		else {
 		    if (rc == 0) {
@@ -459,7 +462,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 			    printf("ERROR: IMA_Event_ReadBuffer: "
 				   "could not allocate template data, size %u\n",
 				   imaEvent->template_data_len);
-			    rc = ERR_STRUCTURE;
+			    rc = TSS_RC_INSUFFICIENT_BUFFER;
 			}
 		    }
 		    if (rc == 0) {
@@ -496,7 +499,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	if (imaEvent->nameInt == IMA_UNSUPPORTED) {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: template name %s unsupported\n",
 		   imaEvent->name);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }    
     /* read the hash length, algorithm + hash */
@@ -504,7 +507,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	/* bounds check the length */
 	if (length < sizeof(uint32_t)) {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: buffer too small for hash length\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
 	    imaTemplateData->hashLength = IMA_Uint32_Convert(buffer, littleEndian);
@@ -523,7 +526,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	if (rc != 0) {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: buffer too small for hash algorithm\n"
 		   "\tor hash algorithm exceeds maximum size\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
 	    hashAlgSize = strlen(imaTemplateData->hashAlg) + 1;
@@ -544,7 +547,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	else {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: Unknown file data hash algorithm: %s\n",
 		   imaTemplateData->hashAlg);
-	    rc = 1;
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
 	}
     }
     /* consistency check hashLength vs contents */
@@ -554,7 +557,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 		   "hashLength %u inconsistent with hashAlgSize %lu and fileDataHashLength %u\n",
 		   imaTemplateData->hashLength, (unsigned long)hashAlgSize,
 		   imaTemplateData->fileDataHashLength);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* fileDataHash */
@@ -562,13 +565,13 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	/* bounds check the length */
 	if (length < imaTemplateData->fileDataHashLength) {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: buffer too small for file data hash\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else if (imaTemplateData->fileDataHashLength >
 		 sizeof(((ImaTemplateData *)NULL)->fileDataHash)) {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: "
 		   "file data hash length exceeds maximum size\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	} 
 	else {
 	    memcpy(&(imaTemplateData->fileDataHash), buffer, imaTemplateData->fileDataHashLength);
@@ -581,7 +584,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	/* bounds check the length */
 	if (length < sizeof(uint32_t)) {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: buffer too small for file name length\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
 	    imaTemplateData->fileNameLength = IMA_Uint32_Convert(buffer, littleEndian);
@@ -594,11 +597,11 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	/* bounds check the length */
 	if (length < imaTemplateData->fileNameLength) {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: buffer too small for file name\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else if (imaTemplateData->fileNameLength > (MAXPATHLEN+1)) {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: file name length exceeds maximum size\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
 	    memcpy(&(imaTemplateData->fileName), buffer, imaTemplateData->fileNameLength);
@@ -610,7 +613,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
     if (rc == 0) {
 	if (imaTemplateData->fileName[imaTemplateData->fileNameLength - 1] != '\0') {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: file name not nul terminated\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     if (imaEvent->nameInt == IMA_SIG) {
@@ -620,7 +623,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	    if (length < sizeof(uint32_t)) {
 		printf("ERROR: IMA_TemplateData_ReadBuffer: "
 		       "buffer too small for signature length\n");
-		rc = ERR_STRUCTURE;
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    else {
 		imaTemplateData->sigLength = IMA_Uint32_Convert(buffer, littleEndian);
@@ -635,7 +638,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 		    if (length < imaTemplateData->sigHeaderLength) {
 			printf("ERROR: IMA_TemplateData_ReadBuffer: "
 			       "buffer too small for signature header\n");
-			rc = ERR_STRUCTURE;
+			rc = TSS_RC_INSUFFICIENT_BUFFER;
 		    }
 		    else {
 			memcpy(&(imaTemplateData->sigHeader), buffer,
@@ -667,7 +670,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 			!goodSigSize 					/* [7][8] sig size */
 			) {
 			printf("ERROR: IMA_TemplateData_ReadBuffer: invalid sigHeader\n");
-			rc = ERR_STRUCTURE;
+			rc = TSS_RC_INSUFFICIENT_BUFFER;
 		    }
 		}
 		/* signature */
@@ -676,7 +679,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 		    if (length < imaTemplateData->signatureSize) {
 			printf("ERROR: IMA_TemplateData_ReadBuffer: "
 			       "buffer too small for signature \n");
-			rc = ERR_STRUCTURE;
+			rc = TSS_RC_INSUFFICIENT_BUFFER;
 		    }
 		    /* sanity check the signatureSize against the sigLength */
 		    else if (imaTemplateData->sigLength !=
@@ -684,7 +687,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 			      imaTemplateData->signatureSize)) {
 			printf("ERROR: IMA_TemplateData_ReadBuffer: "
 			       "sigLength inconsistent with signatureSize\n");
-			rc = ERR_STRUCTURE;
+			rc = TSS_RC_INSUFFICIENT_BUFFER;
 		    }
 		    else {
 			memcpy(&(imaTemplateData->signature), buffer,
@@ -701,7 +704,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	if (length != 0) {
 	    printf("ERROR: IMA_TemplateData_ReadBuffer: "
 		   "buffer too large (bytes remaining after unmarshaling)\n");
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }    
     return rc;
@@ -727,7 +730,7 @@ uint32_t IMA_Event_Write(ImaEvent *imaEvent,
 	if (writeSize != 1) {
 	    printf("ERROR: IMA_Event_Write: could not write pcrIndex, returned %lu\n",
 		   (unsigned long)writeSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_FILE_WRITE;
 	}
     }
     /* write the IMA digest, name length */
@@ -736,7 +739,7 @@ uint32_t IMA_Event_Write(ImaEvent *imaEvent,
 	if (writeSize != 1) {
 	    printf("ERROR: IMA_Event_Write: could not write digest, returned %lu\n",
 		   (unsigned long)writeSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_FILE_WRITE;
 	}
     }
     /* write the IMA name length */
@@ -748,7 +751,7 @@ uint32_t IMA_Event_Write(ImaEvent *imaEvent,
 	if (writeSize != 1) {
 	    printf("ERROR: IMA_Event_Write: could not write name length, returned %lu\n",
 		   (unsigned long)writeSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_FILE_WRITE;
 	}
     }
     /* write the name */
@@ -757,7 +760,7 @@ uint32_t IMA_Event_Write(ImaEvent *imaEvent,
 	if (writeSize != 1) {
 	    printf("ERROR: IMA_Event_Write: could not write name, returned %lu\n",
 		   (unsigned long)writeSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_FILE_WRITE;
 	}
     }
     /* write the template data length */
@@ -769,7 +772,7 @@ uint32_t IMA_Event_Write(ImaEvent *imaEvent,
 	if (writeSize != 1) {
 	    printf("ERROR: IMA_Event_Write: could not template data length , returned %lu\n",
 		   (unsigned long)writeSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_FILE_WRITE;
 	}
     }
     /* write the template data */
@@ -778,7 +781,7 @@ uint32_t IMA_Event_Write(ImaEvent *imaEvent,
 	if (writeSize != 1) {
 	    printf("ERROR: IMA_Event_Write: could not write template data, returned %lu\n",
 		   (unsigned long)writeSize);
-	    rc = ERR_STRUCTURE;
+	    rc = TSS_RC_FILE_WRITE;
 	}
     }
     return rc;
@@ -786,7 +789,8 @@ uint32_t IMA_Event_Write(ImaEvent *imaEvent,
 
 /* IMA_Extend() extends the event into the imaPcr.
 
-   An IMA quirk is that, if the event is all zero, all ones is extended.
+   An IMA quirk is that, if the event is all zero, all ones is extended into the SHA-1 bank.  Since
+   the SHA-256 bank currently gets the SHA-1 value zero extended, it will get 20 ff's and 12 00's.
 
    halg indicates whether to calculate the digest for the SHA-1 or SHA-256 PCR bank.  The IMA event
    log itself is always SHA-1.
@@ -822,11 +826,11 @@ uint32_t IMA_Extend(TPMT_HA *imapcr,
 	}
 	else {
 	    printf("ERROR: IMA_Extend: Unsupported hash algorithm: %04x\n", hashAlg);
-	    rc = 1;
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
 	}
     }
     if (rc == 0) {
-	notAllZero = memcmp(imaEvent->digest, zeroDigest, digestSize);
+	notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
 	imapcr->hashAlg = hashAlg;
 	if (notAllZero) {
 #if 0
@@ -952,7 +956,7 @@ static uint32_t IMA_Strn2cpy(char *dest, const uint8_t *src,
 	}
     }
     if (!done) {
-	rc = 1;
+	rc = TSS_RC_INSUFFICIENT_BUFFER;
     }
     return rc;
 }
@@ -965,27 +969,86 @@ TPM_RC IMA_Event_Marshal(ImaEvent *source,
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->pcrIndex, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->pcrIndex, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshal(source->digest, SHA1_DIGEST_SIZE, written, buffer, size);
+	rc = TSS_Array_Marshalu(source->digest, SHA1_DIGEST_SIZE, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->name_len, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->name_len, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshal((uint8_t *)source->name, source->name_len, written, buffer, size);
+	rc = TSS_Array_Marshalu((uint8_t *)source->name, source->name_len, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->template_data_len, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->template_data_len, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshal(source->template_data, source->template_data_len,
+	rc = TSS_Array_Marshalu(source->template_data, source->template_data_len,
 			       written, buffer, size);
     }
     return rc;
 }
 
+/* IMA_Event_PcrExtend() extends PCR digests with the digest from the ImaEvent event log
+   entry.
+
+   Bank 0 is SHA-1.  Bank 1 is SHA-256.
+
+   The function supports all PCRs, even though the PCRs are limited in practice.
+
+*/
+
+uint32_t IMA_Event_PcrExtend(TPMT_HA pcrs[IMA_PCR_BANKS][IMPLEMENTATION_PCR],
+			     ImaEvent *imaEvent)
+{
+    TPM_RC 		rc = 0;
+    uint8_t		eventData[SHA256_DIGEST_SIZE];
+    
+    /* validate PCR number */
+    if (rc == 0) {
+	if (imaEvent->pcrIndex > IMPLEMENTATION_PCR) {
+	    printf("ERROR: IMA_Event_PcrExtend: PCR number %u out of range\n", imaEvent->pcrIndex);
+	    rc = TSS_RC_BAD_PROPERTY;
+	}
+    }
+    /* process each event hash algorithm */
+    if (rc == 0) {
+	unsigned char 	zeroDigest[SHA1_DIGEST_SIZE];
+	memset(zeroDigest, 0, SHA1_DIGEST_SIZE);
+	int notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
+	/* for the SHA-256 zero extend */
+	memset(eventData, 0, SHA256_DIGEST_SIZE);
+	
+	/* IMA has a quirk where some measurements store a zero digest in the event log, but
+	   extend ones into PCR 10 */
+	if (notAllZero) {
+	    memcpy(eventData, imaEvent->digest, SHA1_DIGEST_SIZE);
+	}
+	else {
+	    memset(eventData, 0xff, SHA1_DIGEST_SIZE);
+	}
+    }
+    /* SHA-1 */
+    if (rc == 0) {
+	rc = TSS_Hash_Generate(&pcrs[0][imaEvent->pcrIndex],
+			       SHA1_DIGEST_SIZE,
+			       (uint8_t *)&pcrs[0][imaEvent->pcrIndex].digest,
+			       SHA1_DIGEST_SIZE,
+			       eventData,
+			       0, NULL);
+    }
+    /* SHA-256 */
+    if (rc == 0) {
+	rc = TSS_Hash_Generate(&pcrs[1][imaEvent->pcrIndex],
+			       SHA256_DIGEST_SIZE,
+			       (uint8_t *)&pcrs[1][imaEvent->pcrIndex].digest,
+			       SHA256_DIGEST_SIZE,
+			       eventData,
+			       0, NULL);
+    }
+    return rc;
+}
 
 #if 0
 /* IMA_Event_ToString() converts the ImaEvent structure to a hexascii string, big endian. */
@@ -1006,7 +1069,7 @@ uint32_t IMA_Event_ToString(char **eventString,	/* freed by caller */
 	*eventString = malloc(length);
 	if (*eventString == NULL) {
 	    printf("ERROR: IMA_Event_ToString: error allocating %lu bytes\n", length);
-	    rc = 1;
+	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
     if (rc == 0) {

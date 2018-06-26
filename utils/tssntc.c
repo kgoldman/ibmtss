@@ -3,7 +3,7 @@
 /*		     	TPM2 Nuvoton Proprietary Commands			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssntc.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*	      $Id: tssntc.c 1255 2018-06-26 21:18:46Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -66,7 +66,7 @@ TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, uint16_t *written, BYTE **b
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_Array_Marshal((BYTE *)source, sizeof(NTC2_CFG_STRUCT), written, buffer, size);
+	rc = TSS_Array_Marshalu((BYTE *)source, sizeof(NTC2_CFG_STRUCT), written, buffer, size);
     }
     return rc;
 }
@@ -87,7 +87,7 @@ NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, uint32_t *
 }
 
 TPM_RC
-TSS_NTC2_PreConfig_In_Marshal(NTC2_PreConfig_In *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+TSS_NTC2_PreConfig_In_Marshalu(NTC2_PreConfig_In *source, uint16_t *written, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
@@ -97,7 +97,7 @@ TSS_NTC2_PreConfig_In_Marshal(NTC2_PreConfig_In *source, uint16_t *written, BYTE
 }
 
 TPM_RC
-TSS_NTC2_GetConfig_Out_Unmarshal(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size)
+TSS_NTC2_GetConfig_Out_Unmarshalu(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     tag = tag;
