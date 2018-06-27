@@ -3,7 +3,7 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 1221 2018-05-16 21:10:46Z kgoldman $		*/
+/*	      $Id: ekutils.c 1256 2018-06-27 19:21:30Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2018.					*/
 /*										*/
@@ -1144,7 +1144,7 @@ uint32_t convertPemToX509(X509 **x509,				/* freed by caller */
     /* convert the platform certificate from PEM to DER */
     if (rc == 0) {
 	*x509 = PEM_read_X509(pemCertificateFile , NULL, NULL, NULL);	/* freed @1 */
-	if (x509 == NULL) {
+	if (*x509 == NULL) {
 	    printf("convertPemToX509: Cannot parse PEM certificate file %s\n",
 		   pemCertificateFilename);
 	    rc = TSS_RC_FILE_READ;
@@ -1590,7 +1590,7 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
     if (rc == 0) {
 	/* can't fail, just returns a structure member */
 	ASN1_TIME *notAfter = X509_get_notAfter(x509Certificate);
-	X509_gmtime_adj(notAfter, CERT_DURATION);	/* set to duration */
+	arc = X509_gmtime_adj(notAfter, CERT_DURATION);		/* set to duration */
 	if (arc == NULL) {
 	    printf("startCertificate: Error setting notAfter time\n");
 	    rc = TSS_RC_X509_ERROR;
@@ -1787,12 +1787,10 @@ TPM_RC addCertSignatureRoot(X509 *x509Certificate,	/* certificate to be signed *
     int			irc;		/* integer return code */
 
     /* signing key */
-    RSA 	  	*rsaSignKey;		/* OpenSSL key token */
     const EVP_MD	*digest;		/* signature digest algorithm */
     EVP_PKEY 		*evpSignkey;		/* EVP format */
 
     evpSignkey = NULL;		/* freed @1 */
-    rsaSignKey = NULL;		/* freed @2 */
 
    /* open the CA signing key file */
     FILE 	*fp = NULL;
@@ -1841,10 +1839,6 @@ TPM_RC addCertSignatureRoot(X509 *x509Certificate,	/* certificate to be signed *
     /* cleanup */
     if (evpSignkey != NULL) {
 	EVP_PKEY_free(evpSignkey);	/* @1 */
-	rsaSignKey = NULL;	/* I think freeing the EVP object implicitly frees the RSA object */
-    }
-    if (rsaSignKey != NULL) {
-	RSA_free(rsaSignKey);		/* @2 */	
     }
     return rc;
 }
