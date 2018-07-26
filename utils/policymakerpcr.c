@@ -3,7 +3,7 @@
 /*			   policymakerpcr					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymakerpcr.c 1255 2018-06-26 21:18:46Z kgoldman $	*/
+/*	      $Id: policymakerpcr.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -82,11 +82,11 @@
 #include <winsock2.h>
 #endif
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tsscryptoh.h>
-#include <tss2/tsscrypto.h>
-#include <tss2/tssmarshal.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/tssmarshal.h>
 
 static void printUsage(void);
 static void printPolicyPCR(FILE *out,

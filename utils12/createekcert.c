@@ -3,7 +3,7 @@
 /*		TPM 2.0 Attestation - Client EK and EK certificate  		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: createekcert.c 1223 2018-05-22 13:56:14Z kgoldman $		*/
+/*            $Id: createekcert.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -66,12 +66,12 @@
 
 #include "openssl/pem.h"
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsscrypto.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/Unmarshal12_fp.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal12_fp.h>
 #include "ekutils.h"
 #include "ekutils12.h"
 

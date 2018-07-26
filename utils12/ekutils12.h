@@ -3,7 +3,7 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils12.h 1192 2018-05-01 20:43:45Z kgoldman $		*/
+/*	      $Id: ekutils12.h 1258 2018-06-28 16:46:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -40,7 +40,7 @@
 #ifndef EKUTILS12_H
 #define EKUTILS12_H
 
-#include <tss2/tss.h>
+#include <ibmtss/tss.h>
 
 #ifdef __cplusplus
 extern "C" {

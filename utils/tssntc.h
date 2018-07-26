@@ -3,7 +3,7 @@
 /*		     	Nuvoton Command Common Routines				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssntc.h 1255 2018-06-26 21:18:46Z kgoldman $		*/
+/*	      $Id: tssntc.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -48,7 +48,7 @@
 #ifndef TPM_TSS
 #define TPM_TSS
 #endif
-#include <tss2/TPM_Types.h>
+#include <ibmtss/TPM_Types.h>
 #include "Commands_fp.h"
 
 #ifdef __cplusplus

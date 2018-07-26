@@ -3,7 +3,7 @@
 /*			    SetPrimaryPolicy 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: setprimarypolicy.c 1140 2018-01-22 15:13:31Z kgoldman $	*/
+/*	      $Id: setprimarypolicy.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -46,9 +46,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
 
 static void printUsage(void);
 

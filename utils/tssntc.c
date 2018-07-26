@@ -3,7 +3,7 @@
 /*		     	TPM2 Nuvoton Proprietary Commands			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssntc.c 1255 2018-06-26 21:18:46Z kgoldman $		*/
+/*	      $Id: tssntc.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -41,9 +41,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/tssprint.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/tssprint.h>
 #include "tssntc.h"
 
 /* Marshal and Unmarshal Functions */

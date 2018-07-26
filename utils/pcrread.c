@@ -3,7 +3,7 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 1248 2018-06-20 20:11:40Z kgoldman $		*/
+/*	      $Id: pcrread.c 1268 2018-07-18 17:55:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -46,10 +46,10 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 static void printPcrRead(PCR_Read_Out *out);
 static void printUsage(void);
@@ -107,6 +107,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    in.pcrSelectionIn.pcrSelections[in.pcrSelectionIn.count-1].hash = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    in.pcrSelectionIn.pcrSelections[in.pcrSelectionIn.count-1].hash = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -173,7 +176,6 @@ int main(int argc, char *argv[])
 	in.pcrSelectionIn.count = 1;
 	in.pcrSelectionIn.pcrSelections[0].hash = TPM_ALG_SHA256;
     }
-    
     if (rc == 0) {
 	uint16_t c;
 	/* Table 102 - Definition of TPML_PCR_SELECTION Structure */
@@ -207,21 +209,24 @@ int main(int argc, char *argv[])
 	}
     }
     /* first hash algorithm, in binary */
-    if ((rc == 0) && (datafilename != NULL)) {
+    if ((rc == 0) && (datafilename != NULL) && (out.pcrValues.count != 0)) {
 	rc = TSS_File_WriteBinaryFile(out.pcrValues.digests[0].t.buffer,
 				      out.pcrValues.digests[0].t.size,
 				      datafilename);
     }
     if (rc == 0) {
-	/* machine readable format, first hash algorithm */
+	/* machine readable format */
 	if (noSpace) {
+	    uint32_t count;
 	    /* TPM can return count 0 if the requested algorithm is not allocated */
 	    if (out.pcrValues.count != 0) {
-		uint32_t bp;
-		for (bp = 0 ; bp < out.pcrValues.digests[0].t.size ; bp++) {
-		    printf("%02x", out.pcrValues.digests[0].t.buffer[bp]);
+		for (count = 0 ; count < out.pcrValues.count ; count++) {
+		    uint32_t bp;
+		    for (bp = 0 ; bp < out.pcrValues.digests[count].t.size ; bp++) {
+			printf("%02x", out.pcrValues.digests[count].t.buffer[bp]);
+		    }
+		    printf("\n");
 		}
-		printf("\n");
 	    }
 	    else {
 		printf("count %u\n", out.pcrValues.count);
@@ -265,7 +270,7 @@ static void printUsage(void)
     printf("Runs TPM2_PCR_Read\n");
     printf("\n");
     printf("\t-ha pcr handle\n");
-    printf("\t-halg (sha1, sha256, sha384) (default sha256)\n");
+    printf("\t-halg (sha1, sha256, sha384, sha512) (default sha256)\n");
     printf("\t\t-halg may be specified more than once\n");
     printf("\t[-of data file for first algorithm specified, in binary]\n");
     printf("\t\t(default do not save)\n");

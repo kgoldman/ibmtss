@@ -3,7 +3,7 @@
 /*			    OIAP		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: oiap.c 1158 2018-04-17 14:41:00Z kgoldman $			*/
+/*	      $Id: oiap.c 1258 2018-06-28 16:46:10Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -46,9 +46,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
 
 static void printUsage(void);
 

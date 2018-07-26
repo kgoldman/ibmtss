@@ -3,7 +3,7 @@
 /*			    Transmit and Receive Utility			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstransmit.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: tsstransmit.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -47,8 +47,8 @@
 #ifndef TPM_NOSOCKET
 #include "tsssocket.h"
 #endif
-#include <tss2/tsserror.h>
-#include <tss2/tssprint.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssprint.h>
 
 #ifdef TPM_POSIX
 #include "tssdev.h"
@@ -60,7 +60,7 @@
 #endif
 #endif
 
-#include <tss2/tsstransmit.h>
+#include <ibmtss/tsstransmit.h>
 
 extern int tssVverbose;
 extern int tssVerbose;

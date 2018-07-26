@@ -3,7 +3,7 @@
 /*		    TPM public key TPM2B_PUBLIC to TPM2B_ECC_POINT 		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tpmpublic2eccpoint.c 1072 2017-09-11 19:55:31Z kgoldman $	*/
+/*	      $Id: tpmpublic2eccpoint.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017						*/
 /*										*/
@@ -42,11 +42,11 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tsserror.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/tssmarshal.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tssmarshal.h>
 
 static void printUsage(void);
 
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     /* read the TPM public key to a structure */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&public,
-				    (UnmarshalFunction_t)TPM2B_PUBLIC_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshal,
 				    publicKeyFilename);
     }
     if (rc == 0) {

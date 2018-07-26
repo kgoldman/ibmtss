@@ -3,7 +3,7 @@
 /*			    NV Define Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: nvdefinespace.c 1275 2018-07-23 18:37:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -46,9 +46,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
 
 static void printUsage(void);
 
@@ -132,6 +132,10 @@ int main(int argc, char *argv[])
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    nalg = TPM_ALG_SHA384;
 		    hashSize = SHA384_DIGEST_SIZE;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    nalg = TPM_ALG_SHA512;
+		    hashSize = SHA512_DIGEST_SIZE;
 		}
 		else {
 		    printf("Bad parameter %s for -nalg\n", argv[i]);
@@ -553,7 +557,7 @@ static void printUsage(void)
     printf("\t\tp sets PPWRITE, PPREAD (platform)\n");
     printf("\t[-pwdn password for NV index (default empty)]\n");
     printf("\t\tsets AUTHWRITE (if not PIN index), AUTHREAD\n");
-    printf("\t[-nalg name algorithm (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-nalg name algorithm (sha1, sha256, sha384 sha512) (default sha256)]\n");
     printf("\t[-sz data size in decimal (default 0)]\n");
     printf("\t\tIgnored for other than ordinary index\n");
     printf("\t[-ty index type (o, c, b, e, p, f) (default ordinary)]\n");

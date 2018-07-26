@@ -3,9 +3,9 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 1232 2018-05-29 17:09:12Z kgoldman $		*/
+/*	      $Id: policysigned.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -51,12 +51,12 @@
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tsscryptoh.h>
-#include <tss2/tsscrypto.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
 
 static void printUsage(void);
 static TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
@@ -214,11 +214,17 @@ int main(int argc, char *argv[])
  	else if (strcmp(argv[i],"-halg") == 0) {
 	    i++;
 	    if (i < argc) {
-		if (strcmp(argv[i],"sha256") == 0) {
+		if (strcmp(argv[i],"sha1") == 0) {
+		    halg = TPM_ALG_SHA1;
+		}
+		else if (strcmp(argv[i],"sha256") == 0) {
 		    halg = TPM_ALG_SHA256;
 		}
-		else if (strcmp(argv[i],"sha1") == 0) {
-		    halg = TPM_ALG_SHA1;
+		else if (strcmp(argv[i],"sha384") == 0) {
+		    halg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -404,11 +410,17 @@ TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
     /* map the hash algorithm to the openssl NID */
     if (rc == 0) {
 	switch (aHash->hashAlg) {
+	  case TPM_ALG_SHA1:
+	    nid = NID_sha1;
+	    break;
 	  case TPM_ALG_SHA256:
 	    nid = NID_sha256;
 	    break;
-	  case TPM_ALG_SHA1:
-	    nid = NID_sha1;
+	  case TPM_ALG_SHA384:
+	    nid = NID_sha384;
+	    break;
+	  case TPM_ALG_SHA512:
+	    nid = NID_sha512;
 	    break;
 	  default:
 	    printf("signAHash: Error, hash algorithm %04hx unsupported\n", aHash->hashAlg);
@@ -483,7 +495,7 @@ static void printUsage(void)
     printf("\t[-cp cpHash file (default none)]\n");
     printf("\t[-pref policyRef file (default none)]\n");
     printf("\t[-exp expiration in decimal (default none)]\n");
-    printf("\t[-halg (sha1, sha256) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t-sk RSA signing key file name (PEM format)\n");
     printf("\t\tUse this signing key.\n");
     printf("\t-is signature file name\n");

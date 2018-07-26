@@ -3,7 +3,7 @@
 #		Linux TPM 1.2 TSS Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefiletpm12 1217 2018-05-15 17:07:20Z kgoldman $		#
+#	      $Id: makefiletpm12 1274 2018-07-20 20:37:08Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2018						#
 # 										#
@@ -104,12 +104,12 @@ LNALIBS +=  -libmtss -lcrypto
 # shared library
 
 # versioned shared library
-LIBTSSVERSIONED=libibmtss.so.0.1
+LIBTSSVERSIONED=libibmtss.so.1.1
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
 # this is used to provide version backward-compatibility information
-LIBTSSSONAME=libibmtss.so.0
+LIBTSSSONAME=libibmtss.so.1
 
 # symbolic link to the versioned shared library
 # this allows linking to the shared library with '-libmtss' 
@@ -120,6 +120,12 @@ ifeq ($(os),Cygwin)
 else
   LIBTSS=libibmtss.so
 endif
+
+# TSS utilities shared library
+
+LIBTSSUTILSVERSIONED=libibmtssutils.so.1.1
+LIBTSSUTILSSONAME=libibmtssutils.so.1
+LIBTSSUTILS=libibmtssutils.so
 
 # executable extension
 
@@ -135,6 +141,11 @@ TSS_HEADERS=
 TSS_OBJS =	tssfile.o 		\
 		tsscryptoh.o 		\
 		tsscrypto.o
+
+TSSUTILS_OBJS = cryptoutils.o	\
+		ekutils.o	\
+		imalib.o	\
+		eventlib.o
 
 # common to all builds
 
@@ -207,6 +218,17 @@ tssccattributes12.o: $(TSS_HEADERS) tssccattributes12.c
 CommandAttributeData12.o: 	$(TSS_HEADERS) CommandAttributeData12.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) CommandAttributeData12.c
 
+# TSS utilities shared library source
+
+cryptoutils.o: 	$(TSS_HEADERS) cryptoutils.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) cryptoutils.c
+ekutils.o: 	$(TSS_HEADERS) ekutils.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) ekutils.c
+imalib.o: 	$(TSS_HEADERS) imalib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) imalib.c
+eventlib.o: 	$(TSS_HEADERS) eventlib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) eventlib.c
+
 # TSS shared library build
 
 $(LIBTSS): 	$(TSS_OBJS)
@@ -216,20 +238,31 @@ $(LIBTSS): 	$(TSS_OBJS)
 		rm -f $(LIBTSS)
 		ln -sf $(LIBTSSSONAME) $(LIBTSS)
 
+# TSS utilities shared library
+
+$(LIBTSSUTILS):	$(TSSUTILS_OBJS)
+		$(CC) $(LNFLAGS) $(LNLFLAGS) -Wl,-soname,$(LIBTSSUTILSSONAME) -o $(LIBTSSUTILSVERSIONED) $(TSSUTILS_OBJS) $(LNLLIBS)
+		rm -f $(LIBTSSSUTILSONAME)
+		ln -sf $(LIBTSSUTILSVERSIONED) $(LIBTSSUTILSSONAME)
+		rm -f $(LIBTSSUTILS)
+		ln -sf $(LIBTSSUTILSSONAME) $(LIBTSSUTILS)
+
 .PHONY:		clean
 .PRECIOUS:	%.o
 
 clean:		
-		rm -f *.o  *~ 	\
-		h*.bin		\
-		$(LIBTSSSONAME)	\
-		$(LIBTSSVERSIONED) \
+		rm -f *.o  *~ 		\
+		h*.bin			\
+		$(LIBTSSSONAME)		\
+		$(LIBTSSVERSIONED) 	\
+		$(LIBTSSUTILSSONAME) 	\
+		$(LIBTSSUTILSVERSIONED)	\
 		$(ALL)
 
 # applications are in .../utils12
 
 # for applications, not for TSS library
 
-%.o:		%.c tss2/tss.h 
+%.o:		%.c ibmtss/tss.h 
 		$(CC) $(CCFLAGS) $(CCAFLAGS) $< -o $@
 

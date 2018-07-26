@@ -3,7 +3,7 @@
 /*			     Command Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprintcmd.c 1209 2018-05-10 21:26:10Z kgoldman $		*/
+/*	      $Id: tssprintcmd.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -41,7 +41,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-#include <tss2/tssprintcmd.h>
+#include <ibmtss/tssprintcmd.h>
 
 void ActivateCredential_In_Print(ActivateCredential_In *in, unsigned int indent)
 {

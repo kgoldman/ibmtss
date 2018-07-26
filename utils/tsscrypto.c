@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
-/*	      $Id: tsscrypto.c 1219 2018-05-15 21:12:32Z kgoldman $		*/
+/*	      $Id: tsscrypto.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -58,13 +58,13 @@
 #include <openssl/rand.h>
 #include <openssl/engine.h>
 
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssprint.h>
-#include <tss2/tsserror.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/tsserror.h>
 
-#include <tss2/tsscryptoh.h>
-#include <tss2/tsscrypto.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tsscrypto.h>
 
 extern int tssVverbose;
 extern int tssVerbose;

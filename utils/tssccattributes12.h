@@ -3,7 +3,7 @@
 /*			     Command Code Attributes				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssccattributes12.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*	      $Id: tssccattributes12.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -42,7 +42,7 @@
 
 #include <stdio.h>
 
-#include <tss2/TPM_Types.h>
+#include <ibmtss/TPM_Types.h>
 #include "tssccattributes.h"
 #include "CommandAttributes.h"
 

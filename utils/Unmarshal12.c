@@ -3,7 +3,7 @@
 /*			     Parameter Unmarshaling				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Unmarshal12.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*            $Id: Unmarshal12.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -39,9 +39,9 @@
 
 #include <string.h>
 
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/tpmconstants12.h>
-#include <tss2/Unmarshal12_fp.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tpmconstants12.h>
+#include <ibmtss/Unmarshal12_fp.h>
 
 TPM_RC
 TSS_TPM_STARTUP_TYPE_Unmarshal(TPM_STARTUP_TYPE *target, BYTE **buffer, uint32_t *size)

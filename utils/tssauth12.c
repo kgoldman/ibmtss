@@ -3,7 +3,7 @@
 /*			     TPM 1.2 TSS Authorization				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth12.c 1189 2018-05-01 13:27:40Z kgoldman $		*/
+/*            $Id: tssauth12.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -52,20 +52,20 @@
 #include <winsock2.h>
 #endif
 
-#include <tss2/tsserror.h>
-#include <tss2/tssprint.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
 
-#include <tss2/tsstransmit.h>
+#include <ibmtss/tsstransmit.h>
 #include "tssproperties.h"
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tssresponsecode.h>
 
-#include <tss2/tpmtypes12.h>
-#include <tss2/tpmconstants12.h>
-#include <tss2/tssmarshal12.h>
-#include <tss2/Unmarshal12_fp.h>
+#include <ibmtss/tpmtypes12.h>
+#include <ibmtss/tpmconstants12.h>
+#include <ibmtss/tssmarshal12.h>
+#include <ibmtss/Unmarshal12_fp.h>
 
 #include "tssauth12.h"
 
@@ -288,14 +288,14 @@ TPM_RC TSS_Marshal12(TSS_AUTH_CONTEXT *tssAuthContext,
 	buffer = tssAuthContext->commandBuffer;
 	size = MAX_COMMAND_SIZE;
 	/* marshal header, preliminary tag and command size */
-	rc = TSS_UINT16_Marshal(&tag, &tssAuthContext->commandSize, &buffer, &size);
+	rc = TSS_UINT16_Marshalu(&tag, &tssAuthContext->commandSize, &buffer, &size);
     }
     if (rc == 0) {
 	uint32_t commandSize = tssAuthContext->commandSize;
-	rc = TSS_UINT32_Marshal(&commandSize, &tssAuthContext->commandSize, &buffer, &size);
+	rc = TSS_UINT32_Marshalu(&commandSize, &tssAuthContext->commandSize, &buffer, &size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&commandCode, &tssAuthContext->commandSize, &buffer, &size);
+	rc = TSS_UINT32_Marshalu(&commandCode, &tssAuthContext->commandSize, &buffer, &size);
     }    
     if (rc == 0) {
 	/* save pointer to marshaled data for test unmarshal */
@@ -473,20 +473,20 @@ TPM_RC TSS_SetCmdAuths12(TSS_AUTH_CONTEXT 	*tssAuthContext,
 	uint32_t size = MAX_COMMAND_SIZE - cpBufferSize;
 	/* marshal authHandle */
 	if (rc == 0) {
-	    rc = TSS_UINT32_Marshal(&authC[i]->sessionHandle, &written, &cpBuffer, &size); 
+	    rc = TSS_UINT32_Marshalu(&authC[i]->sessionHandle, &written, &cpBuffer, &size); 
 	}
 	/* marshal nonceOdd */
 	if (rc == 0) {
-	    rc = TSS_Array_Marshal(authC[i]->nonce, SHA1_DIGEST_SIZE,
+	    rc = TSS_Array_Marshalu(authC[i]->nonce, SHA1_DIGEST_SIZE,
 				   &written, &cpBuffer, &size); 
 	}
 	/* marshal attributes */
 	if (rc == 0) {
-	    rc = TSS_UINT8_Marshal(&authC[i]->sessionAttributes.val, &written, &cpBuffer, &size);
+	    rc = TSS_UINT8_Marshalu(&authC[i]->sessionAttributes.val, &written, &cpBuffer, &size);
 	}
 	/* marshal HMAC */
 	if (rc == 0) {
-	    rc = TSS_Array_Marshal(authC[i]->hmac, SHA1_DIGEST_SIZE,
+	    rc = TSS_Array_Marshalu(authC[i]->hmac, SHA1_DIGEST_SIZE,
 				   &written, &cpBuffer, &size); 
 	}
     }	

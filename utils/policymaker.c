@@ -3,9 +3,9 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymaker.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: policymaker.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017					*/
+/* (c) Copyright IBM Corporation 2015, 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -67,10 +67,10 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tsscryptoh.h>
-#include <tss2/tsscrypto.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tsscrypto.h>
 
 static void printUsage(void);
 static int Format_FromHexascii(unsigned char *binary,
@@ -115,6 +115,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    digest.hashAlg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    digest.hashAlg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -312,7 +315,7 @@ static void printUsage(void)
 {
     printf("policymaker\n");
     printf("\n");
-    printf("[-halg hash algorithm (sha1 sha256 sha384) (default sha256)\n");
+    printf("[-halg hash algorithm (sha1 sha256 sha384 sha512) (default sha256)\n");
     printf("[-nz do not extend starting with zeros, just hash the last line]\n");
     printf("-if input policy statements in hex ascii\n");
     printf("[-of] output file - policy hash in binary\n");

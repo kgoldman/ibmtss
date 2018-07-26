@@ -3,7 +3,7 @@
 /*			    TSS and Application Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssutils.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*		$Id: tssutils.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -49,10 +49,10 @@
 #include <winsock2.h>
 #endif
 
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsserror.h>
-#include <tss2/tssprint.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssprint.h>
 
 #define TSS_ALLOC_MAX  0x10000  /* 64k bytes */
 

@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.c 1255 2018-06-26 21:18:46Z kgoldman $		*/
+/*	      $Id: cryptoutils.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -64,12 +64,12 @@
 #endif
 
 #ifndef TPM_TSS_NOFILE
-#include <tss2/tssfile.h>
+#include <ibmtss/tssfile.h>
 #endif
-#include <tss2/tssutils.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/tsscrypto.h>
-#include <tss2/Implementation.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/Implementation.h>
 
 #include "objecttemplates.h"
 #include "cryptoutils.h"

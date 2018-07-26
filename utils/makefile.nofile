@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile for TSS without files		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.nofile 1226 2018-05-22 21:14:25Z kgoldman $		#
+#	      $Id: makefile.nofile 1274 2018-07-20 20:37:08Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2016, 2018					#
 # 										#
@@ -91,12 +91,12 @@ LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 LNALIBS +=  -libmtssutils -libmtssmin -lcrypto
 
 # versioned shared library
-LIBTSSVERSIONED=libibmtssmin.so.0.1
+LIBTSSVERSIONED=libibmtssmin.so.1.1
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
 # this is used to provide version backward-compatibility information
-LIBTSSSONAME=libibmtssmin.so.0
+LIBTSSSONAME=libibmtssmin.so.1
 
 # symbolic link to the versioned shared library
 # this allows linking to the shared library with '-libmtss' 
@@ -110,8 +110,8 @@ endif
 
 # TSS utilities shared library
 
-LIBTSSUTILSVERSIONED=libibmtssutils.so.0.1
-LIBTSSUTILSSONAME=libibmtssutils.so.0
+LIBTSSUTILSVERSIONED=libibmtssutils.so.1.1
+LIBTSSUTILSSONAME=libibmtssutils.so.1
 LIBTSSUTILS=libibmtssutils.so
 
 # executable extension
@@ -120,7 +120,7 @@ EXE =
 
 ALL = signapp writeapp
 
-TSS_HEADERS = tss2/tssfile.h
+TSS_HEADERS = ibmtss/tssfile.h
 
 # default TSS library
 
@@ -234,13 +234,13 @@ clean:
 
 # applications
 
-signapp:		tss2/tss.h signapp.o $(LIBTSS) $(LIBTSSUTILS)
+signapp:		ibmtss/tss.h signapp.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o $(LNALIBS) -o signapp
-writeapp:		tss2/tss.h writeapp.o $(LIBTSS) $(LIBTSSUTILS) 
+writeapp:		ibmtss/tss.h writeapp.o $(LIBTSS) $(LIBTSSUTILS) 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o $(LNALIBS) -o writeapp
 
 # for applications, not for TSS library
 
-%.o:		%.c tss2/tss.h 
+%.o:		%.c ibmtss/tss.h 
 		$(CC) $(CCFLAGS) $(CCAFLAGS) $< -o $@
 

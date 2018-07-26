@@ -3,9 +3,9 @@
 /*		TPM 2.0 Attestation - Client EK and EK certificate  		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: createekcert.c 1204 2018-05-09 19:36:24Z kgoldman $		*/
+/*            $Id: createekcert.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2017.					*/
+/* (c) Copyright IBM Corporation 2016, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -45,13 +45,13 @@
 
    Steps implemented:
 
-   Create NV Index if not already provisioned.
-
    Create a primary key using the default IWG template
    
    Create a certificate using the CA key cakey.pem
 
-   Write the certificate to NV.  Assumes the nv index has been defined and is of sufficient size.
+   Create NV Index if not already provisioned.
+
+   Write the certificate to NV.
 */
 
 #include <stdio.h>
@@ -61,10 +61,10 @@
 
 #include "openssl/pem.h"
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsscrypto.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsscrypto.h>
 #include "ekutils.h"
 
 /* local function prototypes */
@@ -471,12 +471,12 @@ static void printUsage(void)
     printf("createekcert -alg ecc -cakey cakeyecc.pem -capwd rrrr -caalg ec -v\n");
     printf("\n");
     printf("\t[-pwdp platform hierarchy password (default empty)]\n");
-    printf("-cakey CA PEM key file name\n");
-    printf("[-capwd CA PEM key password (default empty)]\n");
-    printf("[-caalg CA key algorithm (rsa or ec) (default rsa)]\n");
-    printf("[-alg (rsa or ecc certificate) (default rsa)]\n");
-    printf("[-noflush - do not flush the primary key]\n");
-    printf("[-of - DER certificate output file name]\n");
+    printf("\t-cakey CA PEM key file name\n");
+    printf("\t[-capwd CA PEM key password (default empty)]\n");
+    printf("\t[-caalg CA key algorithm (rsa or ec) (default rsa)]\n");
+    printf("\t[-alg (rsa or ecc certificate) (default rsa)]\n");
+    printf("\t[-noflush - do not flush the primary key]\n");
+    printf("\t[-of - DER certificate output file name]\n");
     printf("\n");
     printf("Currently:\n");
     printf("\n");

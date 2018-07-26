@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.c 1255 2018-06-26 21:18:46Z kgoldman $		*/
+/*	      $Id: tssmarshal.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -39,10 +39,10 @@
 
 #include <string.h>
 
-#include <tss2/tssmarshal.h>
-#include <tss2/tsserror.h>
-#include <tss2/tssprint.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 /* This file holds:
 

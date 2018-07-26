@@ -3,7 +3,7 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 1256 2018-06-27 19:21:30Z kgoldman $		*/
+/*	      $Id: ekutils.c 1268 2018-07-18 17:55:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2018.					*/
 /*										*/
@@ -56,11 +56,11 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssutils.h>
-#include <tss2/tsscrypto.h>
-#include <tss2/tssprint.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 #include "cryptoutils.h"
 #include "ekutils.h"
@@ -564,6 +564,15 @@ TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
 		rc = TSS_RC_FILE_READ;
 	    } 
 	}
+	if ((rc == 0) && verbose) {
+	    X509_NAME *x509Name;
+	    char *subject = NULL;
+	    x509Name = X509_get_subject_name(caCert[i]);
+	    subject = X509_NAME_oneline(x509Name, NULL, 0);
+	    printf("getCaStore: subject %u: %s\n", i, subject);
+	    free(subject);
+	}
+
 	/* add the CA X509 certificate to the certificate store */
 	if (rc == 0) {
 	    X509_STORE_add_cert(*caStore, caCert[i]);    

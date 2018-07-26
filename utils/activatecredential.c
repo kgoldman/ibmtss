@@ -3,7 +3,7 @@
 /*			    ActivateCredential					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: activatecredential.c 1072 2017-09-11 19:55:31Z kgoldman $	*/
+/*	      $Id: activatecredential.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -46,11 +46,11 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 static void printUsage(void);
 
@@ -252,13 +252,13 @@ int main(int argc, char *argv[])
     /* read the credential */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.credentialBlob,
-				    (UnmarshalFunction_t)TPM2B_ID_OBJECT_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_ID_OBJECT_Unmarshal,
 				    inputCredentialFilename);
     }
     /* read the secret */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.secret,
-				    (UnmarshalFunction_t)TPM2B_ENCRYPTED_SECRET_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_ENCRYPTED_SECRET_Unmarshal,
 				    secretFilename);
     }
     /* Start a TSS context */

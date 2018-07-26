@@ -3,7 +3,7 @@
 /*			     Cause the SW TPM to reboot				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tpminit.c 1165 2018-04-17 19:53:59Z kgoldman $		*/
+/*	      $Id: tpminit.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 20018.						*/
 /*										*/
@@ -41,9 +41,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tpmstructures12.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tpmstructures12.h>
 
 /* local prototypes */
 static void printUsage(void);

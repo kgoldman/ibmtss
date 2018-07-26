@@ -3,7 +3,7 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth20.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*            $Id: tssauth20.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.					*/
 /*										*/
@@ -42,7 +42,7 @@
 #ifndef TSS_AUTH20_H
 #define TSS_AUTH20_H
 
-#include <tss2/tss.h>
+#include <ibmtss/tss.h>
 #include "tssccattributes.h"
 
 TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,

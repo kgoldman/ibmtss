@@ -3,7 +3,7 @@
 /*			     Structure Print and Scan Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 1212 2018-05-11 20:05:25Z kgoldman $		*/
+/*	      $Id: tssprint.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -42,11 +42,11 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/tsserror.h>
-#include <tss2/tssutils.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssutils.h>
 
-#include <tss2/tssprint.h>
+#include <ibmtss/tssprint.h>
 
 extern int tssVerbose;
 

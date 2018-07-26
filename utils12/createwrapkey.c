@@ -42,12 +42,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsscryptoh.h>
-#include <tss2/tpmstructures12.h>
-#include <tss2/tssmarshal12.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tpmstructures12.h>
+#include <ibmtss/tssmarshal12.h>
 
 static void printUsage(void);
 

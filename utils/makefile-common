@@ -4,7 +4,7 @@
 # TPM2 Library and Utilities makefile - Common to TPM 1.2 and 2.0 variations	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile-common 1221 2018-05-16 21:10:46Z kgoldman $		#
+#	      $Id: makefile-common 1257 2018-06-27 20:52:08Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014, 2018					#
 # 										#
@@ -67,19 +67,20 @@ TSS_HEADERS += 					\
 		tssdev.h  			\
 		tsssocket.h  			\
 		fail.h				\
-		tss2/tss.h			\
-		tss2/tsscryptoh.h		\
-		tss2/tsscrypto.h		\
-		tss2/tsserror.h			\
-		tss2/tssfile.h			\
-		tss2/tssmarshal.h		\
-		tss2/tssprint.h			\
-		tss2/tssprintcmd.h		\
+		ibmtss/tss.h			\
+		ibmtss/tsscryptoh.h		\
+		ibmtss/tsscrypto.h		\
+		ibmtss/tsserror.h		\
+		ibmtss/tssfile.h		\
+		ibmtss/tssmarshal.h		\
+		ibmtss/tssprint.h		\
+		ibmtss/tssprintcmd.h		\
 		tssproperties.h			\
-		tss2/tsstransmit.h		\
-		tss2/tssresponsecode.h		\
-		tss2/tssutils.h			\
-		tss2/Unmarshal_fp.h
+		ibmtss/tsstransmit.h		\
+		ibmtss/tssresponsecode.h	\
+		ibmtss/tssutils.h		\
+		ibmtss/Unmarshal_fp.h		\
+		ibmtss/Implementation.h
 
 # TSS shared library object files
 

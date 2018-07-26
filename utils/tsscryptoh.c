@@ -55,13 +55,13 @@
 #include <openssl/rand.h>
 #include <openssl/engine.h>
 
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssprint.h>
-#include <tss2/tsserror.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/tsserror.h>
 
-#include <tss2/tsscryptoh.h>
-#include <tss2/tsscrypto.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tsscrypto.h>
 
 extern int tssVverbose;
 extern int tssVerbose;
@@ -296,10 +296,10 @@ uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
       case TPM_ALG_SHA384:
 	size = SHA384_DIGEST_SIZE;
 	break;
-#if 0
       case TPM_ALG_SHA512:
 	size = SHA512_DIGEST_SIZE;
 	break;
+#if 0
       case TPM_ALG_SM3_256:
 	size = SM3_256_DIGEST_SIZE;
 	break;

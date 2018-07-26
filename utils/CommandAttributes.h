@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: CommandAttributes.h 1157 2018-04-17 14:09:56Z kgoldman $	*/
+/*            $Id: CommandAttributes.h 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -64,7 +64,7 @@
 #ifndef COMMANDATTRIBUTES_H
 #define COMMANDATTRIBUTES_H
 
-#include <tss2/TPM_Types.h>
+#include <ibmtss/TPM_Types.h>
 
 /* kgold stub until next version of the spec */
 

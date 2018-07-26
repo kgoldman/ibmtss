@@ -3,9 +3,9 @@
 /*			    StartAuthSession	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: startauthsession.c 1140 2018-01-22 15:13:31Z kgoldman $	*/
+/*	      $Id: startauthsession.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -46,9 +46,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
 
 static void printUsage(void);
 
@@ -96,6 +96,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -286,7 +289,7 @@ static void printUsage(void)
     printf("\t\th HMAC session\n");
     printf("\t\tp Policy session\n");
     printf("\t\tt Trial policy session\n");
-    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-hs salt handle (default TPM_RH_NULL)]\n");
     printf("\t[-bi bind handle (default TPM_RH_NULL)]\n");
     printf("\t[-pwdb bind password for bind handle (default empty)]\n");

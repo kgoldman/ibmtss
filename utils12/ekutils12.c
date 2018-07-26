@@ -3,7 +3,7 @@
 /*			TPM 1.2 EK Index Parsing Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils12.c 1231 2018-05-25 17:49:20Z kgoldman $		*/
+/*	      $Id: ekutils12.c 1283 2018-07-25 19:46:20Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -46,13 +46,13 @@
 #include <openssl/pem.h>
 #include <openssl/x509.h>
 
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssutils.h>
-#include <tss2/tsscrypto.h>
-#include <tss2/tssprint.h>
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/Unmarshal12_fp.h>
-#include <tss2/tssmarshal.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/Unmarshal12_fp.h>
+#include <ibmtss/tssmarshal.h>
 
 #include "cryptoutils.h"
 #include "ekutils12.h"
@@ -102,6 +102,10 @@ TPM_RC readNvBufferMax12(TSS_CONTEXT *tssContext,
 		       (sizeof(TPM_TAG) + sizeof(uint32_t) + sizeof(TPM_RESULT) +
 			sizeof(uint32_t) +
 			sizeof(TPM_NONCE) + sizeof(uint8_t) + sizeof(TPM_AUTHDATA));
+	/* the Infineon TPM 1.2 fails with the optimum value 1280-55 = 1225 */
+	if (*nvBufferMax > 512) {
+	    *nvBufferMax = 512;
+	}
 	if (verbose) printf("readNvBufferMax12: nvBufferMax: %u\n", *nvBufferMax);
     }
     return rc;
@@ -270,7 +274,8 @@ TPM_RC getIndexContents12(TSS_CONTEXT *tssContext,
 	}
     }	
     if (rc == 0) {
-	if (verbose) TSS_PrintAll("getIndexContents12: certificate", out.data, out.dataSize);
+	if (verbose) TSS_PrintAll("getIndexContents12: certificate",
+				  *ekCertificate, *ekCertLength);
     }
     return rc;
 }

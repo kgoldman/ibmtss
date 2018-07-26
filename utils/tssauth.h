@@ -3,7 +3,7 @@
 /*			     TSS Authorization 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.h 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*            $Id: tssauth.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -42,7 +42,7 @@
 #ifndef TSS_AUTH_H
 #define TSS_AUTH_H
 
-#include <tss2/tss.h>
+#include <ibmtss/tss.h>
 #include "tssccattributes.h"
 
 /* Generic functions to marshal and unmarshal Part 3 ordinal command and response parameters */

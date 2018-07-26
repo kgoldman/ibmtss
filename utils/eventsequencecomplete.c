@@ -3,9 +3,9 @@
 /*			    EventSequenceComplete				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventsequencecomplete.c 1098 2017-11-27 23:07:26Z kgoldman $	*/
+/*	      $Id: eventsequencecomplete.c 1271 2018-07-19 15:18:02Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -46,9 +46,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
 
 static void printUsage(void);
 
@@ -64,9 +64,14 @@ int main(int argc, char *argv[])
     TPMI_DH_PCR 		pcrHandle = TPM_RH_NULL;
     TPMI_DH_OBJECT		sequenceHandle = 0;
     const char			*inFilename = NULL;
-    const char			*outFilename1 = NULL;
-    const char			*outFilename2 = NULL;
-    const char			*outFilename3 = NULL;
+    const char			*outFilename1 = NULL;	/* for sha1 */
+    const char			*outFilename2 = NULL;	/* for sha256 */
+    const char			*outFilename3 = NULL;	/* for sha384 */
+    const char			*outFilename5 = NULL;	/* for sha512 */
+    int				process1 = FALSE;	/* these catch the case */
+    int				process2 = FALSE;	/* where an output file was */
+    int				process3 = FALSE;	/* specified but the TPM did */
+    int				process5 = FALSE;	/* not return the algorithm */
     const char			*sequencePassword = NULL; 
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
@@ -123,6 +128,7 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		outFilename1 = argv[i];
+		process1 = TRUE;
 	    } else {
 		printf("-of1 option needs a value\n");
 		printUsage();
@@ -132,6 +138,7 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		outFilename2 = argv[i];
+		process2 = TRUE;
 	    } else {
 		printf("-of2 option needs a value\n");
 		printUsage();
@@ -141,8 +148,19 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		outFilename3 = argv[i];
+		process3 = TRUE;
 	    } else {
 		printf("-of3 option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i], "-of5")  == 0) {
+	    i++;
+	    if (i < argc) {
+		outFilename5 = argv[i];
+		process5 = TRUE;
+	    } else {
+		printf("-of5 option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -283,6 +301,7 @@ int main(int argc, char *argv[])
 		    rc = TSS_File_WriteBinaryFile((uint8_t *)&out.results.digests[c].digest.sha1,
 						  SHA1_DIGEST_SIZE,
 						  outFilename1); 
+		    process1 = FALSE;
 		}
 		break;
 	      case TPM_ALG_SHA256:
@@ -294,6 +313,7 @@ int main(int argc, char *argv[])
 		    rc = TSS_File_WriteBinaryFile((uint8_t *)&out.results.digests[c].digest.sha256,
 						  SHA256_DIGEST_SIZE,
 						  outFilename2); 
+		    process2 = FALSE;
 		}
 		break;
 	      case TPM_ALG_SHA384:
@@ -305,6 +325,19 @@ int main(int argc, char *argv[])
 		    rc = TSS_File_WriteBinaryFile((uint8_t *)&out.results.digests[c].digest.sha384,
 						  SHA384_DIGEST_SIZE,
 						  outFilename3); 
+		    process3 = FALSE;
+		}
+		break;
+	      case TPM_ALG_SHA512:
+		if (verbose) printf("Hash algorithm SHA-512\n");
+		if (verbose) TSS_PrintAll("Digest",
+					  (uint8_t *)&out.results.digests[c].digest.sha512,
+					  SHA512_DIGEST_SIZE);
+		if (outFilename5 != NULL) {
+		    rc = TSS_File_WriteBinaryFile((uint8_t *)&out.results.digests[c].digest.sha512,
+						  SHA512_DIGEST_SIZE,
+						  outFilename5); 
+		    process5 = FALSE;
 		}
 		break;
 	      default:
@@ -321,6 +354,24 @@ int main(int argc, char *argv[])
 	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
+    }
+    if (rc == 0) {
+	if (process1) {
+	    printf("-of1 specified but TPM did not return SHA-1\n");
+	    rc = EXIT_FAILURE;
+	}
+	if (process2) {
+	    printf("-of2 specified but TPM did not return SHA-256\n");
+	    rc = EXIT_FAILURE;
+	}
+	if (process3) {
+	    printf("-of3 specified but TPM did not return SHA-384\n");
+	    rc = EXIT_FAILURE;
+	}
+	if (process5) {
+	    printf("-of5 specified but TPM did not return SHA-512\n");
+	    rc = EXIT_FAILURE;
+	}
     }
     return rc;
 }
@@ -339,6 +390,7 @@ static void printUsage(void)
     printf("\t[-of1 sha1 output digest file (default do not save)]\n");
     printf("\t[-of2 sha256 output digest file (default do not save)]\n");
     printf("\t[-of3 sha384 output digest file (default do not save)]\n");
+    printf("\t[-of5 sha512 output digest file (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t\t01 continue\n");

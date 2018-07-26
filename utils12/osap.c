@@ -3,7 +3,7 @@
 /*			    OSAP		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: osap.c 1177 2018-04-24 13:54:19Z kgoldman $			*/
+/*	      $Id: osap.c 1258 2018-06-28 16:46:10Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -46,12 +46,12 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
+#include <ibmtss/tss.h>
 #if 0
-#include <tss2/tss12.h>
+#include <ibmtss/tss12.h>
 #endif
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
 
 static void printUsage(void);
 

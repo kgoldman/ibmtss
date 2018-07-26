@@ -3,7 +3,7 @@
 /*                              	                                   	*/
 /*                           Written by Ken Goldman                             */
 /*                     IBM Thomas J. Watson Research Center                     */
-/*            $Id: Commands12.c 1189 2018-05-01 13:27:40Z kgoldman $         	*/
+/*            $Id: Commands12.c 1257 2018-06-27 20:52:08Z kgoldman $         	*/
 /*                                                                              */
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -38,10 +38,10 @@
 /********************************************************************************/
 
 #include "Commands12_fp.h"
-#include <tss2/Parameters.h>
+#include <ibmtss/Parameters.h>
 
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/Unmarshal12_fp.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/Unmarshal12_fp.h>
 
 COMMAND_PARAMETERS in;
 RESPONSE_PARAMETERS out;

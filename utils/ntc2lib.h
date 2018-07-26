@@ -3,7 +3,7 @@
 /*	     	TPM2 Novoton Proprietary Command Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2lib.h 1055 2017-08-08 20:30:09Z kgoldman $		*/
+/*	      $Id: ntc2lib.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -45,8 +45,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/TPM_Types.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/TPM_Types.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 /* default values for System P8 I2C */
 

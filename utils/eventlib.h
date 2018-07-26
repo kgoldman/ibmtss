@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.h 1247 2018-06-20 19:10:19Z kgoldman $		*/
+/*	      $Id: eventlib.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -46,7 +46,7 @@
 #include <stdint.h>
 
 #define TPM_TSS
-#include <tss2/TPM_Types.h>
+#include <ibmtss/TPM_Types.h>
 
 #define TCG_EVENT_LEN_MAX	0x10000
 

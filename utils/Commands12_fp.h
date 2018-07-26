@@ -3,7 +3,7 @@
 /*                              	                                        */
 /*                           Written by Ken Goldman                             */
 /*                     IBM Thomas J. Watson Research Center                     */
-/*            $Id: Commands12_fp.h 1189 2018-05-01 13:27:40Z kgoldman $         */
+/*            $Id: Commands12_fp.h 1257 2018-06-27 20:52:08Z kgoldman $         */
 /*                                                                              */
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -40,8 +40,8 @@
 #ifndef COMMANDS12_FP_H
 #define COMMANDS12_FP_H
 
-#include <tss2/TPM_Types.h>
-#include <tss2/Parameters12.h>
+#include <ibmtss/TPM_Types.h>
+#include <ibmtss/Parameters12.h>
 
 TPM_RC
 ActivateIdentity_In_Unmarshal(ActivateIdentity_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);

@@ -3,9 +3,9 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 1157 2018-04-17 14:09:56Z kgoldman $			*/
+/*	      $Id: sign.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -48,13 +48,13 @@
 
 #include <openssl/rsa.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/tsscryptoh.h>
-#include <tss2/tsscrypto.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 #include "cryptoutils.h"
 
@@ -126,6 +126,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -351,7 +354,7 @@ int main(int argc, char *argv[])
 	}
 	else {
 	    rc = TSS_File_ReadStructure(&in.validation,
-					(UnmarshalFunction_t)TPMT_TK_HASHCHECK_Unmarshal,
+					(UnmarshalFunction_t)TSS_TPMT_TK_HASHCHECK_Unmarshal,
 					ticketFilename);
 	}
     }
@@ -389,7 +392,7 @@ int main(int argc, char *argv[])
 	RSA         	*rsaPubKey = NULL;
 	if (rc == 0) {
 	    rc = TSS_File_ReadStructure(&public,
-					(UnmarshalFunction_t)TPM2B_PUBLIC_Unmarshal,
+					(UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshal,
 					publicKeyFilename);
 	}
 	/* construct the OpenSSL RSA public key token */
@@ -442,7 +445,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-hk key handle\n");
     printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-rsa (default)]\n");
     printf("\t\t[-scheme (default rsassa)]\n");
     printf("\t\t\trsassa\n");

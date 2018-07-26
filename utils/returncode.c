@@ -3,7 +3,7 @@
 /*			Return Code Hex to String     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: returncode.c 1221 2018-05-16 21:10:46Z kgoldman $		*/
+/*	      $Id: returncode.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -41,8 +41,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssresponsecode.h>
 
 static void printUsage(void);
 

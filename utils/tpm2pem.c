@@ -3,7 +3,7 @@
 /*		    TPM public key TPM2B_PUBLIC to PEM 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tpm2pem.c 1065 2017-08-25 19:19:50Z kgoldman $		*/
+/*	      $Id: tpm2pem.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017					*/
 /*										*/
@@ -48,12 +48,12 @@
 #include <openssl/pem.h>
 #include <openssl/bn.h>
 
-/* #include <tss2/tss.h> */
-#include <tss2/tsserror.h>
-#include <tss2/tssutils.h>
-#include <tss2/tsscrypto.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/Unmarshal_fp.h>
+/* #include <ibmtss/tss.h> */
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 #include "cryptoutils.h"
 
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     /* read the TPM public key to a structure */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&public,
-				    (UnmarshalFunction_t)TPM2B_PUBLIC_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshal,
 				    publicKeyFilename);
     }
     /* convert to PEM format and write file */

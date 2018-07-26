@@ -3,9 +3,9 @@
 /*			    Hmac						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hmac.c 1140 2018-01-22 15:13:31Z kgoldman $			*/
+/*	      $Id: hmac.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -46,9 +46,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
 
 static void printUsage(void);
 static void printHmac(HMAC_Out *out);
@@ -113,6 +113,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -340,7 +343,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-hk key handle\n");
     printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t-if input file to be HMACed\n");
     printf("\t-ic data string to be HMACed\n");
     printf("\t[-os hmac file name (default do not save)]\n");

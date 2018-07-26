@@ -3,7 +3,7 @@
 #		Linux TPM2 Makefile Sample for Fedora Installed rpms		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.sample 1221 2018-05-16 21:10:46Z kgoldman $		#
+#	      $Id: makefile.sample 1258 2018-06-28 16:46:10Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014, 2018					#
 # 										#
@@ -47,13 +47,13 @@ CCFLAGS = 	-DTPM_POSIX \
 		-Wall  -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
 		-ggdb -O0 -c 			\
 		-DTPM_TPM20			\
-		-I/usr/include/tss2
+		-I/usr/include/ibmtss
 
 # for shared library
 
 LNFLAGS = 	-DTPM_POSIX		\
 		-ggdb 			\
-		-libmtss -lcrypto
+		-libmtss -libmtssutils -lcrypto
 
 # default build target
 
@@ -177,221 +177,221 @@ clean:
 
 # applications
 
-activatecredential:	activatecredential.o
+activatecredential:	ibmtss/tss.h activatecredential.o
 			$(CC) $(LNFLAGS) activatecredential.o -o activatecredential
 eventextend:		eventextend.o eventlib.o
 			$(CC) $(LNFLAGS) eventextend.o eventlib.o -o eventextend
 imaextend:		imaextend.o imalib.o
 			$(CC) $(LNFLAGS) imaextend.o imalib.o -o imaextend
-certify:		certify.o
+certify:		ibmtss/tss.h certify.o
 			$(CC) $(LNFLAGS) certify.o -o certify
-certifycreation:	certifycreation.o
+certifycreation:	ibmtss/tss.h certifycreation.o
 			$(CC) $(LNFLAGS) certifycreation.o -o certifycreation
-changeeps:		changeeps.o
+changeeps:		ibmtss/tss.h changeeps.o
 			$(CC) $(LNFLAGS) changeeps.o -o changeeps
-changepps:		changepps.o
+changepps:		ibmtss/tss.h changepps.o
 			$(CC) $(LNFLAGS) changepps.o -o changepps
-clear:			clear.o
+clear:			ibmtss/tss.h clear.o
 			$(CC) $(LNFLAGS) clear.o -o clear
-clearcontrol:		clearcontrol.o
+clearcontrol:		ibmtss/tss.h clearcontrol.o
 			$(CC) $(LNFLAGS) clearcontrol.o -o clearcontrol
-clockrateadjust:	clockrateadjust.o
+clockrateadjust:	ibmtss/tss.h clockrateadjust.o
 			$(CC) $(LNFLAGS) clockrateadjust.o -o clockrateadjust
-clockset:		clockset.o
+clockset:		ibmtss/tss.h clockset.o
 			$(CC) $(LNFLAGS) clockset.o -o clockset
-commit:			commit.o
+commit:			ibmtss/tss.h commit.o
 			$(CC) $(LNFLAGS) commit.o -o commit
-contextload:		contextload.o
+contextload:		ibmtss/tss.h contextload.o
 			$(CC) $(LNFLAGS) contextload.o -o contextload
-contextsave:		contextsave.o
+contextsave:		ibmtss/tss.h contextsave.o
 			$(CC) $(LNFLAGS) contextsave.o -o contextsave
-create:			create.o 
+create:			ibmtss/tss.h create.o 
 			$(CC) $(LNFLAGS) create.o -o create
-createloaded:		createloaded.o 
+createloaded:		ibmtss/tss.h createloaded.o 
 			$(CC) $(LNFLAGS) createloaded.o -o createloaded
-createprimary:		createprimary.o 
+createprimary:		ibmtss/tss.h createprimary.o 
 			$(CC) $(LNFLAGS) createprimary.o -o createprimary
-dictionaryattacklockreset:		dictionaryattacklockreset.o
-			$(CC) $(LNFLAGS) dictionaryattacklockreset.o -o dictionaryattacklockreset
-dictionaryattackparameters:		dictionaryattackparameters.o
+dictionaryattacklockreset:		ibmtss/tss.h dictionaryattacklockreset.o
+			$(CC) $(LNFLAGS) dictionaryattacklibmtss/tss.h ockreset.o -o dictionaryattacklockreset
+dictionaryattackparameters:		ibmtss/tss.h dictionaryattackparameters.o
 			$(CC) $(LNFLAGS) dictionaryattackparameters.o -o dictionaryattackparameters
-duplicate:		duplicate.o
+duplicate:		ibmtss/tss.h duplicate.o
 			$(CC) $(LNFLAGS) duplicate.o -o duplicate 
-eccparameters:		eccparameters.o
+eccparameters:		ibmtss/tss.h eccparameters.o
 			$(CC) $(LNFLAGS) eccparameters.o -o eccparameters 
-ecephemeral:		ecephemeral.o
+ecephemeral:		ibmtss/tss.h ecephemeral.o
 			$(CC) $(LNFLAGS) ecephemeral.o -o ecephemeral 
-encryptdecrypt:		encryptdecrypt.o
+encryptdecrypt:		ibmtss/tss.h encryptdecrypt.o
 			$(CC) $(LNFLAGS) encryptdecrypt.o -o encryptdecrypt	
-eventsequencecomplete:	eventsequencecomplete.o
+eventsequencecomplete:	ibmtss/tss.h eventsequencecomplete.o
 			$(CC) $(LNFLAGS) eventsequencecomplete.o -o eventsequencecomplete	
-evictcontrol:		evictcontrol.o
+evictcontrol:		ibmtss/tss.h evictcontrol.o
 			$(CC) $(LNFLAGS) evictcontrol.o -o evictcontrol	
-flushcontext:		flushcontext.o
+flushcontext:		ibmtss/tss.h flushcontext.o
 			$(CC) $(LNFLAGS) flushcontext.o -o flushcontext
-getcommandauditdigest:	getcommandauditdigest.o
+getcommandauditdigest:	ibmtss/tss.h getcommandauditdigest.o
 			$(CC) $(LNFLAGS) getcommandauditdigest.o -o getcommandauditdigest
-getcapability:		getcapability.o
+getcapability:		ibmtss/tss.h getcapability.o
 			$(CC) $(LNFLAGS) getcapability.o -o getcapability
-getrandom:		getrandom.o
+getrandom:		ibmtss/tss.h getrandom.o
 			$(CC) $(LNFLAGS) getrandom.o -o getrandom
-gettestresult:		gettestresult.o
+gettestresult:		ibmtss/tss.h gettestresult.o
 			$(CC) $(LNFLAGS) gettestresult.o -o gettestresult
-getsessionauditdigest:	getsessionauditdigest.o
+getsessionauditdigest:	ibmtss/tss.h getsessionauditdigest.o
 			$(CC) $(LNFLAGS) getsessionauditdigest.o -o getsessionauditdigest
-gettime:		gettime.o
+gettime:		ibmtss/tss.h gettime.o
 			$(CC) $(LNFLAGS) gettime.o -o gettime
-hashsequencestart:	hashsequencestart.o
+hashsequencestart:	ibmtss/tss.h hashsequencestart.o
 			$(CC) $(LNFLAGS) hashsequencestart.o -o hashsequencestart
-hash:			hash.o
+hash:			ibmtss/tss.h hash.o
 			$(CC) $(LNFLAGS) hash.o -o hash
-hierarchycontrol:	hierarchycontrol.o
+hierarchycontrol:	ibmtss/tss.h hierarchycontrol.o
 			$(CC) $(LNFLAGS) hierarchycontrol.o -o hierarchycontrol
-hierarchychangeauth:	hierarchychangeauth.o
+hierarchychangeauth:	ibmtss/tss.h hierarchychangeauth.o
 			$(CC) $(LNFLAGS) hierarchychangeauth.o -o hierarchychangeauth
-hmac:			hmac.o
+hmac:			ibmtss/tss.h hmac.o
 			$(CC) $(LNFLAGS) hmac.o -o hmac
-hmacstart:		hmacstart.o
+hmacstart:		ibmtss/tss.h hmacstart.o
 			$(CC) $(LNFLAGS) hmacstart.o -o hmacstart
-import:			import.o
+import:			ibmtss/tss.h import.o
 			$(CC) $(LNFLAGS) import.o -o import
-load:			load.o
+load:			ibmtss/tss.h load.o
 			$(CC) $(LNFLAGS) load.o -o load
-loadexternal:		loadexternal.o
+loadexternal:		ibmtss/tss.h loadexternal.o
 			$(CC) $(LNFLAGS) loadexternal.o -o loadexternal
-makecredential:		makecredential.o
+makecredential:		ibmtss/tss.h makecredential.o
 			$(CC) $(LNFLAGS) makecredential.o -o makecredential
-nvcertify:		nvcertify.o
+nvcertify:		ibmtss/tss.h nvcertify.o
 			$(CC) $(LNFLAGS) nvcertify.o -o nvcertify
-nvchangeauth:		nvchangeauth.o
+nvchangeauth:		ibmtss/tss.h nvchangeauth.o
 			$(CC) $(LNFLAGS) nvchangeauth.o -o nvchangeauth
-nvdefinespace:		nvdefinespace.o
+nvdefinespace:		ibmtss/tss.h nvdefinespace.o
 			$(CC) $(LNFLAGS) nvdefinespace.o -o nvdefinespace
-nvextend:		nvextend.o
+nvextend:		ibmtss/tss.h nvextend.o
 			$(CC) $(LNFLAGS) nvextend.o -o nvextend
-nvglobalwritelock:	nvglobalwritelock.o
+nvglobalwritelock:	ibmtss/tss.h nvglobalwritelock.o
 			$(CC) $(LNFLAGS) nvglobalwritelock.o -o nvglobalwritelock
-nvincrement:		nvincrement.o
+nvincrement:		ibmtss/tss.h nvincrement.o
 			$(CC) $(LNFLAGS) nvincrement.o -o nvincrement
-nvread:			nvread.o 
+nvread:			ibmtss/tss.h nvread.o 
 			$(CC) $(LNFLAGS) nvread.o -o nvread
-nvreadlock:		nvreadlock.o
+nvreadlock:		ibmtss/tss.h nvreadlock.o
 			$(CC) $(LNFLAGS) nvreadlock.o -o nvreadlock
-nvreadpublic:		nvreadpublic.o
+nvreadpublic:		ibmtss/tss.h nvreadpublic.o
 			$(CC) $(LNFLAGS) nvreadpublic.o -o nvreadpublic
-nvsetbits:		nvsetbits.o
+nvsetbits:		ibmtss/tss.h nvsetbits.o
 			$(CC) $(LNFLAGS) nvsetbits.o -o nvsetbits
-nvundefinespace:	nvundefinespace.o
+nvundefinespace:	ibmtss/tss.h nvundefinespace.o
 			$(CC) $(LNFLAGS) nvundefinespace.o -o nvundefinespace
-nvundefinespacespecial:	nvundefinespacespecial.o
+nvundefinespacespecial:	ibmtss/tss.h nvundefinespacespecial.o
 			$(CC) $(LNFLAGS) nvundefinespacespecial.o -o nvundefinespacespecial
-nvwrite:		nvwrite.o 
+nvwrite:		ibmtss/tss.h nvwrite.o 
 			$(CC) $(LNFLAGS) nvwrite.o -o nvwrite
-nvwritelock:		nvwritelock.o
+nvwritelock:		ibmtss/tss.h nvwritelock.o
 			$(CC) $(LNFLAGS) nvwritelock.o -o nvwritelock
-objectchangeauth:	objectchangeauth.o
+objectchangeauth:	ibmtss/tss.h objectchangeauth.o
 			$(CC) $(LNFLAGS) objectchangeauth.o -o objectchangeauth
-pcrallocate: 		pcrallocate.o
+pcrallocate: 		ibmtss/tss.h pcrallocate.o
 			$(CC) $(LNFLAGS) pcrallocate.o -o pcrallocate
-pcrevent: 		pcrevent.o
+pcrevent: 		ibmtss/tss.h pcrevent.o
 			$(CC) $(LNFLAGS) pcrevent.o -o pcrevent
-pcrextend: 		pcrextend.o
+pcrextend: 		ibmtss/tss.h pcrextend.o
 			$(CC) $(LNFLAGS) pcrextend.o -o pcrextend
-pcrread: 		pcrread.o
+pcrread: 		ibmtss/tss.h pcrread.o
 			$(CC) $(LNFLAGS) pcrread.o -o pcrread
-pcrreset: 		pcrreset.o
+pcrreset: 		ibmtss/tss.h pcrreset.o
 			$(CC) $(LNFLAGS) pcrreset.o -o pcrreset
-policyauthorize:	policyauthorize.o
+policyauthorize:	ibmtss/tss.h policyauthorize.o
 			$(CC) $(LNFLAGS) policyauthorize.o -o policyauthorize
-policyauthvalue:	policyauthvalue.o
+policyauthvalue:	ibmtss/tss.h policyauthvalue.o
 			$(CC) $(LNFLAGS) policyauthvalue.o -o policyauthvalue
-policycommandcode:	policycommandcode.o
+policycommandcode:	ibmtss/tss.h policycommandcode.o
 			$(CC) $(LNFLAGS) policycommandcode.o -o policycommandcode
-policycphash:		policycphash.o
+policycphash:		ibmtss/tss.h policycphash.o
 			$(CC) $(LNFLAGS) policycphash.o -o policycphash
-policynamehash:		tss2/tss.h policynamehash.o
+policynamehash:		ibmtss/tss.h tss2/tss.h policynamehash.o
 			$(CC) $(LNFLAGS) policynamehash.o -o policynamehash
-policycountertimer :	policycountertimer.o
+policycountertimer :	ibmtss/tss.h policycountertimer.o
 			$(CC) $(LNFLAGS) policycountertimer.o -o policycountertimer
-policyduplicationselect:	tss2/tss.h policyduplicationselect.o $(LIBTSS)
+policyduplicationselect:	ibmtss/tss.h policyduplicationselect.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyduplicationselect.o $(LNALIBS) -o policyduplicationselect
-policygetdigest:	policygetdigest.o
+policygetdigest:	ibmtss/tss.h policygetdigest.o
 			$(CC) $(LNFLAGS) policygetdigest.o -o policygetdigest
-policymaker:		policymaker.o
+policymaker:		ibmtss/tss.h policymaker.o
 			$(CC) $(LNFLAGS) policymaker.o -o policymaker
-policymakerpcr:		policymakerpcr.o
+policymakerpcr:		ibmtss/tss.h policymakerpcr.o
 			$(CC) $(LNFLAGS) policymakerpcr.o -o policymakerpcr
-policynv:		policynv.o
+policynv:		ibmtss/tss.h policynv.o
 			$(CC) $(LNFLAGS) policynv.o -o policynv
-policyauthorizenv:	policyauthorizenv.o
+policyauthorizenv:	ibmtss/tss.h policyauthorizenv.o
 			$(CC) $(LNFLAGS) policyauthorizenv.o -o policyauthorizenv
-policynvwritten:	policynvwritten.o
+policynvwritten:	ibmtss/tss.h policynvwritten.o
 			$(CC) $(LNFLAGS) policynvwritten.o -o policynvwritten
-policyor:		policyor.o
+policyor:		ibmtss/tss.h policyor.o
 			$(CC) $(LNFLAGS) policyor.o -o policyor
-policypassword:		policypassword.o
+policypassword:		ibmtss/tss.h policypassword.o
 			$(CC) $(LNFLAGS) policypassword.o -o policypassword
-policypcr:		policypcr.o
+policypcr:		ibmtss/tss.h policypcr.o
 			$(CC) $(LNFLAGS) policypcr.o -o policypcr
-policyrestart:		policyrestart.o
+policyrestart:		ibmtss/tss.h policyrestart.o
 			$(CC) $(LNFLAGS) policyrestart.o -o policyrestart
-policysigned:		policysigned.o
+policysigned:		ibmtss/tss.h policysigned.o
 			$(CC) $(LNFLAGS) policysigned.o -o policysigned
-policysecret:		policysecret.o
+policysecret:		ibmtss/tss.h policysecret.o
 			$(CC) $(LNFLAGS) policysecret.o -o policysecret
-policytemplate:		policytemplate.o
+policytemplate:		ibmtss/tss.h policytemplate.o
 			$(CC) $(LNFLAGS) policytemplate.o -o policytemplate
-policyticket:		policyticket.o
+policyticket:		ibmtss/tss.h policyticket.o
 			$(CC) $(LNFLAGS) policyticket.o -o policyticket
-quote:			quote.o
+quote:			ibmtss/tss.h quote.o
 			$(CC) $(LNFLAGS) quote.o -o quote
-powerup:		powerup.o
+powerup:		ibmtss/tss.h powerup.o
 			$(CC) $(LNFLAGS) powerup.o -o powerup
-readclock:		readclock.o
+readclock:		ibmtss/tss.h readclock.o
 			$(CC) $(LNFLAGS) readclock.o -o readclock
-readpublic:		readpublic.o 
+readpublic:		ibmtss/tss.h readpublic.o 
 			$(CC) $(LNFLAGS) readpublic.o -o readpublic
-returncode:		returncode.o
+returncode:		ibmtss/tss.h returncode.o
 			$(CC) $(LNFLAGS) returncode.o -o returncode
-rewrap:			rewrap.o
+rewrap:			ibmtss/tss.h rewrap.o
 			$(CC) $(LNFLAGS) rewrap.o -o rewrap
-rsadecrypt: 		rsadecrypt.o
+rsadecrypt: 		ibmtss/tss.h rsadecrypt.o
 			$(CC) $(LNFLAGS) rsadecrypt.o -o rsadecrypt
-rsaencrypt: 		rsaencrypt.o
+rsaencrypt: 		ibmtss/tss.h rsaencrypt.o
 			$(CC) $(LNFLAGS) rsaencrypt.o -o rsaencrypt
-sequenceupdate:		sequenceupdate.o
+sequenceupdate:		ibmtss/tss.h sequenceupdate.o
 			$(CC) $(LNFLAGS) sequenceupdate.o -o sequenceupdate
-sequencecomplete:	sequencecomplete.o
+sequencecomplete:	ibmtss/tss.h sequencecomplete.o
 			$(CC) $(LNFLAGS) sequencecomplete.o -o sequencecomplete
-setprimarypolicy:	setprimarypolicy.o
+setprimarypolicy:	ibmtss/tss.h setprimarypolicy.o
 			$(CC) $(LNFLAGS) setprimarypolicy.o -o setprimarypolicy
-shutdown:		shutdown.o
+shutdown:		ibmtss/tss.h shutdown.o
 			$(CC) $(LNFLAGS) shutdown.o -o shutdown
-sign:			sign.o cryptoutils.o
+sign:			ibmtss/tss.h sign.o cryptoutils.o
 			$(CC) $(LNFLAGS) sign.o -o sign
-startauthsession:	startauthsession.o
+startauthsession:	ibmtss/tss.h startauthsession.o
 			$(CC) $(LNFLAGS) startauthsession.o -o startauthsession
-startup:		startup.o
+startup:		ibmtss/tss.h startup.o
 			$(CC) $(LNFLAGS) startup.o -o startup
-stirrandom:		stirrandom.o
+stirrandom:		ibmtss/tss.h stirrandom.o
 			$(CC) $(LNFLAGS) stirrandom.o -o stirrandom
-unseal:			unseal.o
+unseal:			ibmtss/tss.h unseal.o
 			$(CC) $(LNFLAGS) unseal.o -o unseal
-verifysignature:	verifysignature.o 
+verifysignature:	ibmtss/tss.h verifysignature.o 
 			$(CC) $(LNFLAGS) verifysignature.o -o verifysignature
-signapp:		signapp.o
+signapp:		ibmtss/tss.h signapp.o
 			$(CC) $(LNFLAGS) signapp.o -o signapp
-writeapp:		writeapp.o
+writeapp:		ibmtss/tss.h writeapp.o
 			$(CC) $(LNFLAGS) writeapp.o -o writeapp
-createek:		createek.o ekutils.o
+createek:		ibmtss/tss.h createek.o ekutils.o
 			$(CC) $(LNFLAGS) createek.o -o createek		
-tpm2pem:		tpm2pem.o cryptoutils.o
+tpm2pem:		ibmtss/tss.h tpm2pem.o cryptoutils.o
 			$(CC) $(LNFLAGS) tpm2pem.o -o tpm2pem		
-tpmpublic2eccpoint:	tpmpublic2eccpoint.o
+tpmpublic2eccpoint:	ibmtss/tss.h tpmpublic2eccpoint.o
 			$(CC) $(LNFLAGS) tpmpublic2eccpoint.o -o tpmpublic2eccpoint
 
 # object files
 
-%.o:		%.c
+%.o:		%.c ibmtss/tss.h 
 		$(CC) $(CCFLAGS) $< -o $@
 

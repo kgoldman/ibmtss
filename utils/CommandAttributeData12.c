@@ -3,7 +3,7 @@
 /*			  Command Attributes Table for TPM 1.2			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	$Id: CommandAttributeData12.c 1189 2018-05-01 13:27:40Z kgoldman $	*/
+/*	$Id: CommandAttributeData12.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -60,7 +60,7 @@
 /********************************************************************************/
 
 
-#include <tss2/tpmconstants12.h>
+#include <ibmtss/tpmconstants12.h>
 
 #include "CommandAttributes.h"
 #if defined COMPRESSED_LISTS

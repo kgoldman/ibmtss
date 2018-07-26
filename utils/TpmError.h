@@ -66,7 +66,7 @@
 #ifndef _TPM_ERROR_H
 #define _TPM_ERROR_H
 
-#include <tss2/TpmBuildSwitches.h>
+#include <ibmtss/TpmBuildSwitches.h>
 
 #define     FATAL_ERROR_ALLOCATION              (1)
 #define     FATAL_ERROR_DIVIDE_ZERO             (2)

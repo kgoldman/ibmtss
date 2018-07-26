@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Platform.h 827 2016-11-18 20:45:01Z kgoldman $		*/
+/*            $Id: Platform.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -68,10 +68,10 @@
 
 // C.8.1.	Includes and Defines
 
-#include <tss2/BaseTypes.h>
+#include <ibmtss/BaseTypes.h>
 #include "stdint.h"
 #include "TpmError.h"
-#include <tss2/TpmBuildSwitches.h>
+#include <ibmtss/TpmBuildSwitches.h>
 
 // C.8.2.	Power Functions
 // C.8.2.1.	_plat__Signal_PowerOn

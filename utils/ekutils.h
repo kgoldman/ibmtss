@@ -3,7 +3,7 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.h 1219 2018-05-15 21:12:32Z kgoldman $		*/
+/*	      $Id: ekutils.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -44,7 +44,7 @@
 #include <openssl/x509v3.h>
 #include <openssl/bn.h>
 
-#include <tss2/tss.h>
+#include <ibmtss/tss.h>
 
 /* legacy TCG IWG NV indexes */
 

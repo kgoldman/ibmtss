@@ -42,7 +42,7 @@
 
 #include <stdio.h>
 
-#include <tss2/TPM_Types.h>
+#include <ibmtss/TPM_Types.h>
 #include "CommandAttributes.h"
 
 typedef uint16_t COMMAND_INDEX;

@@ -3,7 +3,7 @@
 /*		Socket Transmit and Receive Utilities  				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsssocket.h 1015 2017-06-07 13:16:34Z kgoldman $		*/
+/*	      $Id: tsssocket.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015.						*/
 /*										*/
@@ -44,7 +44,7 @@
 
 #include <stdint.h>
 
-#include <tss2/tss.h>
+#include <ibmtss/tss.h>
 
 #ifdef __cplusplus
 extern "C" {

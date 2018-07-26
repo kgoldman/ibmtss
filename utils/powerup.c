@@ -3,7 +3,7 @@
 /*			    Simulator Power up	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: powerup.c 1072 2017-09-11 19:55:31Z kgoldman $		*/
+/*	      $Id: powerup.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -46,9 +46,9 @@
 #include <winsock2.h>		/* for simulator startup */
 #endif
 
-#include <tss2/tss.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsstransmit.h>	/* for simulator power up */
+#include <ibmtss/tss.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsstransmit.h>	/* for simulator power up */
 
 static void printUsage(void);
 

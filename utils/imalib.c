@@ -58,11 +58,11 @@
 #include <openssl/sha.h>
 #include <openssl/engine.h>
 
-#include <tss2/TPM_Types.h>
-#include <tss2/tsscryptoh.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/tssprint.h>
-#include <tss2/tsserror.h>
+#include <ibmtss/TPM_Types.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/tsserror.h>
 
 #include "imalib.h"
 

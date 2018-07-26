@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Commands.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*            $Id: Commands.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -62,9 +62,9 @@
 /* rev 119 */
 
 #include "Commands_fp.h"
-#include <tss2/Parameters.h>
+#include <ibmtss/Parameters.h>
 
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 COMMAND_PARAMETERS in;
 RESPONSE_PARAMETERS out;

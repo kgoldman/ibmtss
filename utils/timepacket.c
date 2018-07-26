@@ -3,7 +3,7 @@
 /*			   Time a TPM Command					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: timepacket.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: timepacket.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -51,10 +51,10 @@
 
 #include <openssl/rand.h>
 
-#include <tss2/tss.h>
-#include <tss2/tsstransmit.h>
-#include <tss2/tssfile.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tsstransmit.h>
+#include <ibmtss/tssfile.h>
+#include <ibmtss/tssresponsecode.h>
 
 static void printUsage(void);
 

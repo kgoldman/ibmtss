@@ -3,7 +3,7 @@
 /*			    TSS Primary API for TPM 1.2				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss12.c 1187 2018-04-30 17:07:08Z kgoldman $			*/
+/*	      $Id: tss12.c 1258 2018-06-28 16:46:10Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -50,17 +50,17 @@
 #endif
 
 #include "tssauth.h"
-#include <tss2/tss.h>
+#include <ibmtss/tss.h>
 #include "tssproperties.h"
-#include <tss2/tsstransmit.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/tsscrypto.h>
-#include <tss2/tsscryptoh.h>
-#include <tss2/tssprintcmd.h>
-#include <tss2/tpmconstants12.h>
+#include <ibmtss/tsstransmit.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tssprintcmd.h>
+#include <ibmtss/tpmconstants12.h>
 #include "tss12.h"
 #include "tssauth12.h"
 
@@ -672,22 +672,22 @@ static TPM_RC TSS_HmacSession12_Marshal(TSS_HMAC12_CONTEXT *source,
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->authHandle, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->authHandle, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshal(source->nonceEven, SHA1_DIGEST_SIZE, written, buffer,  size);
+	rc = TSS_Array_Marshalu(source->nonceEven, SHA1_DIGEST_SIZE, written, buffer,  size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshal(source->nonceEvenOSAP, SHA1_DIGEST_SIZE, written, buffer,  size);
+	rc = TSS_Array_Marshalu(source->nonceEvenOSAP, SHA1_DIGEST_SIZE, written, buffer,  size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshal((uint8_t *)&source->sharedSecret.digest, SHA1_DIGEST_SIZE, written, buffer,  size);
+	rc = TSS_Array_Marshalu((uint8_t *)&source->sharedSecret.digest, SHA1_DIGEST_SIZE, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Marshal(&source->entityType, written, buffer, size);
+	rc = TSS_UINT16_Marshalu(&source->entityType, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Marshal(&source->entityValue, written, buffer, size);
+	rc = TSS_UINT32_Marshalu(&source->entityValue, written, buffer, size);
     }
     return rc;
 }

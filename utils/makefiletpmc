@@ -3,7 +3,7 @@
 #		Linux TPM 1.2 TSS and TPM 2.0 TSS and Utilities Makefile	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefiletpmc 1221 2018-05-16 21:10:46Z kgoldman $		#
+#	      $Id: makefiletpmc 1274 2018-07-20 20:37:08Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2018						#
 # 										#
@@ -106,12 +106,12 @@ LNALIBS +=  -libmtssutils -libmtss -lcrypto
 # shared library
 
 # versioned shared library
-LIBTSSVERSIONED=libibmtss.so.0.1
+LIBTSSVERSIONED=libibmtss.so.1.1
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
 # this is used to provide version backward-compatibility information
-LIBTSSSONAME=libibmtss.so.0
+LIBTSSSONAME=libibmtss.so.1
 
 # symbolic link to the versioned shared library
 # this allows linking to the shared library with '-libmtss' 
@@ -125,8 +125,8 @@ endif
 
 # TSS utilities shared library
 
-LIBTSSUTILSVERSIONED=libibmtssutils.so.0.1
-LIBTSSUTILSSONAME=libibmtssutils.so.0
+LIBTSSUTILSVERSIONED=libibmtssutils.so.1.1
+LIBTSSUTILSSONAME=libibmtssutils.so.1
 LIBTSSUTILS=libibmtssutils.so
 
 # executable extension
@@ -272,217 +272,217 @@ clean:
 
 # applications
 
-activatecredential:	tss2/tss.h activatecredential.o $(LIBTSS) $(LIBTSSUTILS)
+activatecredential:	ibmtss/tss.h activatecredential.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) activatecredential.o $(LNALIBS) -o activatecredential
 eventextend:		eventextend.o eventlib.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o eventlib.o $(LNALIBS) -o eventextend
 imaextend:		imaextend.o imalib.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o imalib.o $(LNALIBS) -o imaextend
-certify:		tss2/tss.h certify.o $(LIBTSS) $(LIBTSSUTILS)
+certify:		ibmtss/tss.h certify.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) certify.o $(LNALIBS) -o certify
-certifycreation:	tss2/tss.h certifycreation.o $(LIBTSS) $(LIBTSSUTILS)
+certifycreation:	ibmtss/tss.h certifycreation.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) certifycreation.o $(LNALIBS) -o certifycreation
-changeeps:		tss2/tss.h changeeps.o $(LIBTSS) $(LIBTSSUTILS)
+changeeps:		ibmtss/tss.h changeeps.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) changeeps.o $(LNALIBS) -o changeeps
-changepps:		tss2/tss.h changepps.o $(LIBTSS) $(LIBTSSUTILS)
+changepps:		ibmtss/tss.h changepps.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) changepps.o $(LNALIBS) -o changepps
-clear:			tss2/tss.h clear.o $(LIBTSS) $(LIBTSSUTILS)
+clear:			ibmtss/tss.h clear.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) clear.o $(LNALIBS) -o clear
-clearcontrol:		tss2/tss.h clearcontrol.o $(LIBTSS) $(LIBTSSUTILS)
+clearcontrol:		ibmtss/tss.h clearcontrol.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) clearcontrol.o $(LNALIBS) -o clearcontrol
-clockrateadjust:	tss2/tss.h clockrateadjust.o $(LIBTSS) $(LIBTSSUTILS)
+clockrateadjust:	ibmtss/tss.h clockrateadjust.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) clockrateadjust.o $(LNALIBS) -o clockrateadjust
-clockset:		tss2/tss.h clockset.o $(LIBTSS) $(LIBTSSUTILS)
+clockset:		ibmtss/tss.h clockset.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) clockset.o $(LNALIBS) -o clockset
-commit:			tss2/tss.h commit.o $(LIBTSS) $(LIBTSSUTILS)
+commit:			ibmtss/tss.h commit.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) commit.o $(LNALIBS) -o commit
-contextload:		tss2/tss.h contextload.o $(LIBTSS) $(LIBTSSUTILS)
+contextload:		ibmtss/tss.h contextload.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextload.o $(LNALIBS) -o contextload
-contextsave:		tss2/tss.h contextsave.o $(LIBTSS) $(LIBTSSUTILS)
+contextsave:		ibmtss/tss.h contextsave.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextsave.o $(LNALIBS) -o contextsave
-create:			tss2/tss.h create.o objecttemplates.o  $(LIBTSS) $(LIBTSSUTILS)
+create:			ibmtss/tss.h create.o objecttemplates.o  $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o objecttemplates.o $(LNALIBS) -o create
-createloaded:		tss2/tss.h createloaded.o objecttemplates.o  $(LIBTSS) $(LIBTTSSUTILS)
+createloaded:		ibmtss/tss.h createloaded.o objecttemplates.o  $(LIBTSS) $(LIBTTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createloaded.o objecttemplates.o $(LNALIBS) -o createloaded
-createprimary:		tss2/tss.h createprimary.o objecttemplates.o $(LIBTSS) $(LIBTSSUTILS)
+createprimary:		ibmtss/tss.h createprimary.o objecttemplates.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o objecttemplates.o $(LNALIBS) -o createprimary
-dictionaryattacklockreset:		tss2/tss.h dictionaryattacklockreset.o $(LIBTSS) $(LIBTSSUTILS)
+dictionaryattacklockreset:		ibmtss/tss.h dictionaryattacklockreset.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) dictionaryattacklockreset.o $(LNALIBS) -o dictionaryattacklockreset
-dictionaryattackparameters:		tss2/tss.h dictionaryattackparameters.o $(LIBTSS) $(LIBTSSUTILS)
+dictionaryattackparameters:		ibmtss/tss.h dictionaryattackparameters.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) dictionaryattackparameters.o $(LNALIBS) -o dictionaryattackparameters
-duplicate:		tss2/tss.h duplicate.o $(LIBTSS) $(LIBTSSUTILS)
+duplicate:		ibmtss/tss.h duplicate.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) duplicate.o $(LNALIBS) -o duplicate 
-eccparameters:		tss2/tss.h eccparameters.o $(LIBTSS) $(LIBTSSUTILS)
+eccparameters:		ibmtss/tss.h eccparameters.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) eccparameters.o $(LNALIBS) -o eccparameters 
-ecephemeral:		tss2/tss.h ecephemeral.o $(LIBTSS) $(LIBTSSUTILS)
+ecephemeral:		ibmtss/tss.h ecephemeral.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ecephemeral.o $(LNALIBS) -o ecephemeral 
-encryptdecrypt:		tss2/tss.h encryptdecrypt.o $(LIBTSS) $(LIBTSSUTILS)
+encryptdecrypt:		ibmtss/tss.h encryptdecrypt.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) encryptdecrypt.o $(LNALIBS) -o encryptdecrypt	
-eventsequencecomplete:	tss2/tss.h eventsequencecomplete.o $(LIBTSS) $(LIBTSSUTILS)
+eventsequencecomplete:	ibmtss/tss.h eventsequencecomplete.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) eventsequencecomplete.o $(LNALIBS) -o eventsequencecomplete	
-evictcontrol:		tss2/tss.h evictcontrol.o $(LIBTSS) $(LIBTSSUTILS)
+evictcontrol:		ibmtss/tss.h evictcontrol.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) evictcontrol.o $(LNALIBS) -o evictcontrol	
-flushcontext:		tss2/tss.h flushcontext.o $(LIBTSS) $(LIBTSSUTILS)
+flushcontext:		ibmtss/tss.h flushcontext.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) flushcontext.o $(LNALIBS) -o flushcontext
-getcommandauditdigest:	tss2/tss.h getcommandauditdigest.o $(LIBTSS) $(LIBTSSUTILS)
+getcommandauditdigest:	ibmtss/tss.h getcommandauditdigest.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getcommandauditdigest.o $(LNALIBS) -o getcommandauditdigest
-getcapability:		tss2/tss.h getcapability.o $(LIBTSS) $(LIBTSSUTILS)
+getcapability:		ibmtss/tss.h getcapability.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getcapability.o $(LNALIBS) -o getcapability
-getrandom:		tss2/tss.h getrandom.o $(LIBTSS) $(LIBTSSUTILS)
+getrandom:		ibmtss/tss.h getrandom.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getrandom.o $(LNALIBS) -o getrandom
-gettestresult:		tss2/tss.h gettestresult.o $(LIBTSS) $(LIBTSSUTILS)
+gettestresult:		ibmtss/tss.h gettestresult.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) gettestresult.o $(LNALIBS) -o gettestresult
-getsessionauditdigest:	tss2/tss.h getsessionauditdigest.o $(LIBTSS) $(LIBTSSUTILS)
+getsessionauditdigest:	ibmtss/tss.h getsessionauditdigest.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getsessionauditdigest.o $(LNALIBS) -o getsessionauditdigest
-gettime:		tss2/tss.h gettime.o $(LIBTSS) $(LIBTSSUTILS)
+gettime:		ibmtss/tss.h gettime.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) gettime.o $(LNALIBS) -o gettime
-hashsequencestart:	tss2/tss.h hashsequencestart.o $(LIBTSS) $(LIBTSSUTILS)
+hashsequencestart:	ibmtss/tss.h hashsequencestart.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) hashsequencestart.o $(LNALIBS) -o hashsequencestart
-hash:			tss2/tss.h hash.o $(LIBTSS) $(LIBTSSUTILS)
+hash:			ibmtss/tss.h hash.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) hash.o $(LNALIBS) -o hash
-hierarchycontrol:	tss2/tss.h hierarchycontrol.o $(LIBTSS) $(LIBTSSUTILS)
+hierarchycontrol:	ibmtss/tss.h hierarchycontrol.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) hierarchycontrol.o $(LNALIBS) -o hierarchycontrol
-hierarchychangeauth:	tss2/tss.h hierarchychangeauth.o $(LIBTSS) $(LIBTSSUTILS)
+hierarchychangeauth:	ibmtss/tss.h hierarchychangeauth.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) hierarchychangeauth.o $(LNALIBS) -o hierarchychangeauth
-hmac:			tss2/tss.h hmac.o $(LIBTSS) $(LIBTSSUTILS)
+hmac:			ibmtss/tss.h hmac.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) hmac.o $(LNALIBS) -o hmac
-hmacstart:		tss2/tss.h hmacstart.o $(LIBTSS) $(LIBTSSUTILS)
+hmacstart:		ibmtss/tss.h hmacstart.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) hmacstart.o $(LNALIBS) -o hmacstart
-import:			tss2/tss.h import.o $(LIBTSS) $(LIBTSSUTILS)
+import:			ibmtss/tss.h import.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) import.o $(LNALIBS) -o import
-importpem:		tss2/tss.h importpem.o objecttemplates.o $(LIBTSS) $(LIBTSSUTILS)
+importpem:		ibmtss/tss.h importpem.o objecttemplates.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) importpem.o objecttemplates.o $(LNALIBS) -o importpem
-load:			tss2/tss.h load.o $(LIBTSS) $(LIBTSSUTILS)
+load:			ibmtss/tss.h load.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) load.o $(LNALIBS) -o load
-loadexternal:		tss2/tss.h loadexternal.o  $(LIBTSS) $(LIBTSSUTILS)
+loadexternal:		ibmtss/tss.h loadexternal.o  $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) loadexternal.o $(LNALIBS) -o loadexternal
-makecredential:		tss2/tss.h makecredential.o $(LIBTSS) $(LIBTSSUTILS)
+makecredential:		ibmtss/tss.h makecredential.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) makecredential.o $(LNALIBS) -o makecredential
-nvcertify:		tss2/tss.h nvcertify.o $(LIBTSS) $(LIBTSSUTILS)
+nvcertify:		ibmtss/tss.h nvcertify.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvcertify.o $(LNALIBS) -o nvcertify
-nvchangeauth:		tss2/tss.h nvchangeauth.o $(LIBTSS) $(LIBTSSUTILS)
+nvchangeauth:		ibmtss/tss.h nvchangeauth.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvchangeauth.o $(LNALIBS) -o nvchangeauth
-nvdefinespace:		tss2/tss.h nvdefinespace.o $(LIBTSS) $(LIBTSSUTILS)
+nvdefinespace:		ibmtss/tss.h nvdefinespace.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvdefinespace.o $(LNALIBS) -o nvdefinespace
-nvextend:		tss2/tss.h nvextend.o $(LIBTSS) $(LIBTSSUTILS)
+nvextend:		ibmtss/tss.h nvextend.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvextend.o $(LNALIBS) -o nvextend
-nvglobalwritelock:	tss2/tss.h nvglobalwritelock.o $(LIBTSS) $(LIBTSSUTILS)
+nvglobalwritelock:	ibmtss/tss.h nvglobalwritelock.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvglobalwritelock.o $(LNALIBS) -o nvglobalwritelock
-nvincrement:		tss2/tss.h nvincrement.o $(LIBTSS) $(LIBTSSUTILS)
+nvincrement:		ibmtss/tss.h nvincrement.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvincrement.o $(LNALIBS) -o nvincrement
-nvread:			tss2/tss.h nvread.o $(LIB $(LIBTSSUTILS)TSS)
+nvread:			ibmtss/tss.h nvread.o $(LIB $(LIBTSSUTILS)TSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvread.o $(LNALIBS) -o nvread
-nvreadlock:		tss2/tss.h nvreadlock.o $(LIBTSS) $(LIBTSSUTILS)
+nvreadlock:		ibmtss/tss.h nvreadlock.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadlock.o $(LNALIBS) -o nvreadlock
-nvreadpublic:		tss2/tss.h nvreadpublic.o $(LIBTSS) $(LIBTSSUTILS)
+nvreadpublic:		ibmtss/tss.h nvreadpublic.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadpublic.o $(LNALIBS) -o nvreadpublic
-nvsetbits:		tss2/tss.h nvsetbits.o $(LIBTSS) $(LIBTSSUTILS)
+nvsetbits:		ibmtss/tss.h nvsetbits.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvsetbits.o $(LNALIBS) -o nvsetbits
-nvundefinespace:	tss2/tss.h nvundefinespace.o $(LIBTSS) $(LIBTSSUTILS)
+nvundefinespace:	ibmtss/tss.h nvundefinespace.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespace.o $(LNALIBS) -o nvundefinespace
-nvundefinespacespecial:	tss2/tss.h nvundefinespacespecial.o $(LIBTSS) $(LIBTSSUTILS)
+nvundefinespacespecial:	ibmtss/tss.h nvundefinespacespecial.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvundefinespacespecial.o $(LNALIBS) -o nvundefinespacespecial
-nvwrite:		tss2/tss.h nvwrite.o $(LIBTSS) $(LIBTSSUTILS)
+nvwrite:		ibmtss/tss.h nvwrite.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwrite.o $(LNALIBS) -o nvwrite
-nvwritelock:		tss2/tss.h nvwritelock.o $(LIBTSS) $(LIBTSSUTILS)
+nvwritelock:		ibmtss/tss.h nvwritelock.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwritelock.o $(LNALIBS) -o nvwritelock
-objectchangeauth:	tss2/tss.h objectchangeauth.o $(LIBTSS) $(LIBTSSUTILS)
+objectchangeauth:	ibmtss/tss.h objectchangeauth.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) objectchangeauth.o $(LNALIBS) -o objectchangeauth
-pcrallocate: 		tss2/tss.h pcrallocate.o $(LIBTSS) $(LIBTSSUTILS)
+pcrallocate: 		ibmtss/tss.h pcrallocate.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrallocate.o $(LNALIBS) -o pcrallocate
-pcrevent: 		tss2/tss.h pcrevent.o $(LIBTSS) $(LIBTSSUTILS)
+pcrevent: 		ibmtss/tss.h pcrevent.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrevent.o $(LNALIBS) -o pcrevent
-pcrextend: 		tss2/tss.h pcrextend.o $(LIBTSS) $(LIBTSSUTILS)
+pcrextend: 		ibmtss/tss.h pcrextend.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrextend.o $(LNALIBS) -o pcrextend
-pcrread: 		tss2/tss.h pcrread.o $(LIBTSS) $(LIBTSSUTILS)
+pcrread: 		ibmtss/tss.h pcrread.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrread.o $(LNALIBS) -o pcrread
-pcrreset: 		tss2/tss.h pcrreset.o $(LIBTSS) $(LIBTSSUTILS)
+pcrreset: 		ibmtss/tss.h pcrreset.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) pcrreset.o $(LNALIBS) -o pcrreset
-policyauthorize:	tss2/tss.h policyauthorize.o $(LIBTSS) $(LIBTSSUTILS)
+policyauthorize:	ibmtss/tss.h policyauthorize.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthorize.o $(LNALIBS) -o policyauthorize
-policyauthvalue:	tss2/tss.h policyauthvalue.o $(LIBTSS) $(LIBTSSUTILS)
+policyauthvalue:	ibmtss/tss.h policyauthvalue.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthvalue.o $(LNALIBS) -o policyauthvalue
-policycommandcode:	tss2/tss.h policycommandcode.o $(LIBTSS) $(LIBTSSUTILS)
+policycommandcode:	ibmtss/tss.h policycommandcode.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycommandcode.o $(LNALIBS) -o policycommandcode
-policycphash:		tss2/tss.h policycphash.o $(LIBTSS) $(LIBTSSUTILS)
+policycphash:		ibmtss/tss.h policycphash.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycphash.o $(LNALIBS) -o policycphash
-policynamehash:		tss2/tss.h policynamehash.o $(LIBTSS) $(LIBTSSUTILS)
+policynamehash:		ibmtss/tss.h policynamehash.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynamehash.o $(LNALIBS) -o policynamehash
-policycountertimer:	tss2/tss.h policycountertimer.o $(LIBTSS) $(LIBTSSUTILS)
+policycountertimer:	ibmtss/tss.h policycountertimer.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycountertimer.o $(LNALIBS) -o policycountertimer
-policyduplicationselect:	tss2/tss.h policyduplicationselect.o $(LIBTSS) $(LIBTSSUTILS)
+policyduplicationselect:	ibmtss/tss.h policyduplicationselect.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyduplicationselect.o $(LNALIBS) -o policyduplicationselect
-policygetdigest:	tss2/tss.h policygetdigest.o $(LIBTSS) $(LIBTSSUTILS)
+policygetdigest:	ibmtss/tss.h policygetdigest.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policygetdigest.o $(LNALIBS) -o policygetdigest
-policymaker:		tss2/tss.h policymaker.o $(LIBTSS) $(LIBTSSUTILS)
+policymaker:		ibmtss/tss.h policymaker.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policymaker.o $(LNALIBS) -o policymaker
-policymakerpcr:		tss2/tss.h policymakerpcr.o $(LIBTSS) $(LIBTSSUTILS)
+policymakerpcr:		ibmtss/tss.h policymakerpcr.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policymakerpcr.o $(LNALIBS) -o policymakerpcr
-policyauthorizenv:	tss2/tss.h policyauthorizenv.o $(LIBTSS) $(LIBTSSUTILS)
+policyauthorizenv:	ibmtss/tss.h policyauthorizenv.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthorizenv.o $(LNALIBS) -o policyauthorizenv
-policynv:		tss2/tss.h policynv.o $(LIBTSS) $(LIBTSSUTILS)
+policynv:		ibmtss/tss.h policynv.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynv.o $(LNALIBS) -o policynv
-policynvwritten:	tss2/tss.h policynvwritten.o $(LIBTSS) $(LIBTSSUTILS)
+policynvwritten:	ibmtss/tss.h policynvwritten.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynvwritten.o $(LNALIBS) -o policynvwritten
-policyor:		tss2/tss.h policyor.o $(LIBTSS) $(LIBTSSUTILS)
+policyor:		ibmtss/tss.h policyor.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyor.o $(LNALIBS) -o policyor
-policypassword:		tss2/tss.h policypassword.o $(LIBTSS) $(LIBTSSUTILS)
+policypassword:		ibmtss/tss.h policypassword.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policypassword.o $(LNALIBS) -o policypassword
-policypcr:		tss2/tss.h policypcr.o $(LIBTSS) $(LIBTSSUTILS)
+policypcr:		ibmtss/tss.h policypcr.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policypcr.o $(LNALIBS) -o policypcr
-policyrestart:		tss2/tss.h policyrestart.o $(LIBTSS) $(LIBTSSUTILS)
+policyrestart:		ibmtss/tss.h policyrestart.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyrestart.o $(LNALIBS) -o policyrestart
-policysigned:		tss2/tss.h policysigned.o $(LIBTSS) $(LIBTSSUTILS)
+policysigned:		ibmtss/tss.h policysigned.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policysigned.o $(LNALIBS) -o policysigned
-policysecret:		tss2/tss.h policysecret.o $(LIBTSS) $(LIBTSSUTILS)
+policysecret:		ibmtss/tss.h policysecret.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policysecret.o $(LNALIBS) -o policysecret
-policytemplate:		tss2/tss.h policytemplate.o $(LIBTSS) $(LIBTSSUTILS)
+policytemplate:		ibmtss/tss.h policytemplate.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policytemplate.o $(LNALIBS) -o policytemplate
-policyticket:		tss2/tss.h policyticket.o $(LIBTSS) $(LIBTSSUTILS)
+policyticket:		ibmtss/tss.h policyticket.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyticket.o $(LNALIBS) -o policyticket
-quote:			tss2/tss.h quote.o $(LIBTSS) $(LIBTSSUTILS)
+quote:			ibmtss/tss.h quote.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) quote.o $(LNALIBS) -o quote
-powerup:		tss2/tss.h powerup.o $(LIBTSS) $(LIBTSSUTILS)
+powerup:		ibmtss/tss.h powerup.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) powerup.o $(LNALIBS) -o powerup
-readclock:		tss2/tss.h readclock.o $(LIBTSS) $(LIBTSSUTILS)
+readclock:		ibmtss/tss.h readclock.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) readclock.o $(LNALIBS) -o readclock
-readpublic:		tss2/tss.h readpublic.o $(LIBTSS) $(LIBTSSUTILS)
+readpublic:		ibmtss/tss.h readpublic.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) readpublic.o $(LNALIBS) -o readpublic
-returncode:		tss2/tss.h returncode.o $(LIBTSS) $(LIBTSSUTILS)
+returncode:		ibmtss/tss.h returncode.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) returncode.o $(LNALIBS) -o returncode
-rewrap:			tss2/tss.h rewrap.o $(LIBTSS) $(LIBTSSUTILS)
+rewrap:			ibmtss/tss.h rewrap.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) rewrap.o $(LNALIBS) -o rewrap
-rsadecrypt: 		tss2/tss.h rsadecrypt.o $(LIBTSS) $(LIBTSSUTILS)
+rsadecrypt: 		ibmtss/tss.h rsadecrypt.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) rsadecrypt.o $(LNALIBS) -o rsadecrypt
-rsaencrypt: 		tss2/tss.h rsaencrypt.o $(LIBTSS) $(LIBTSSUTILS)
+rsaencrypt: 		ibmtss/tss.h rsaencrypt.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) rsaencrypt.o $(LNALIBS) -o rsaencrypt
-sequenceupdate:		tss2/tss.h sequenceupdate.o $(LIBTSS) $(LIBTSSUTILS)
+sequenceupdate:		ibmtss/tss.h sequenceupdate.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) sequenceupdate.o $(LNALIBS) -o sequenceupdate
-sequencecomplete:	tss2/tss.h sequencecomplete.o $(LIBTSS) $(LIBTSSUTILS)
+sequencecomplete:	ibmtss/tss.h sequencecomplete.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) sequencecomplete.o $(LNALIBS) -o sequencecomplete
-setprimarypolicy:	tss2/tss.h setprimarypolicy.o $(LIBTSS) $(LIBTSSUTILS)
+setprimarypolicy:	ibmtss/tss.h setprimarypolicy.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) setprimarypolicy.o $(LNALIBS) -o setprimarypolicy
-shutdown:		tss2/tss.h shutdown.o $(LIBTSS) $(LIBTSSUTILS)
+shutdown:		ibmtss/tss.h shutdown.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) shutdown.o $(LNALIBS) -o shutdown
-sign:			tss2/tss.h sign.o $(LIBTSS) $(LIBTSSUTILS)
+sign:			ibmtss/tss.h sign.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) sign.o $(LNALIBS) -o sign
-startauthsession:	tss2/tss.h startauthsession.o $(LIBTSS) $(LIBTSSUTILS)
+startauthsession:	ibmtss/tss.h startauthsession.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) startauthsession.o $(LNALIBS) -o startauthsession
-startup:		tss2/tss.h startup.o $(LIBTSS) $(LIBTSSUTILS)
+startup:		ibmtss/tss.h startup.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) startup.o $(LNALIBS) -o startup
-stirrandom:		tss2/tss.h stirrandom.o $(LIBTSS) $(LIBTSSUTILS)
+stirrandom:		ibmtss/tss.h stirrandom.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) stirrandom.o $(LNALIBS) -o stirrandom
-unseal:			tss2/tss.h unseal.o $(LIBTSS) $(LIBTSSUTILS)
+unseal:			ibmtss/tss.h unseal.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) unseal.o $(LNALIBS) -o unseal
-verifysignature:	tss2/tss.h verifysignature.o $(LIBTSS) $(LIBTSSUTILS)
+verifysignature:	ibmtss/tss.h verifysignature.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) verifysignature.o $(LNALIBS) -o verifysignature
-zgen2phase:		tss2/tss.h zgen2phase.o $(LIBTSS) $(LIBTSSUTILS)
+zgen2phase:		ibmtss/tss.h zgen2phase.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) zgen2phase.o $(LNALIBS) -o zgen2phase
-signapp:		tss2/tss.h signapp.o $(LIBTSS) $(LIBTSSUTILS)
+signapp:		ibmtss/tss.h signapp.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o $(LNALIBS) -o signapp
-writeapp:		tss2/tss.h writeapp.o $(LIBTSS) $(LIBTSSUTILS)
+writeapp:		ibmtss/tss.h writeapp.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o $(LNALIBS) -o writeapp
-timepacket:		tss2/tss.h timepacket.o $(LIBTSS) $(LIBTSSUTILS)
+timepacket:		ibmtss/tss.h timepacket.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) timepacket.o $(LNALIBS) -o timepacket
 createek:		createek.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createek.o $(LNALIBS) -o createek
@@ -501,6 +501,6 @@ ntc2lockconfig:		ntc2lockconfig.o $(LIBTSS) $(LIBTSSUTILS)
 
 # for applications, not for TSS library
 
-%.o:		%.c tss2/tss.h 
+%.o:		%.c ibmtss/tss.h 
 		$(CC) $(CCFLAGS) $(CCAFLAGS) $< -o $@
 

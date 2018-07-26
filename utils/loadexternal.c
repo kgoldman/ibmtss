@@ -3,9 +3,9 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 1219 2018-05-15 21:12:32Z kgoldman $		*/
+/*	      $Id: loadexternal.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017					*/
+/* (c) Copyright IBM Corporation 2015, 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -61,10 +61,10 @@
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/Unmarshal_fp.h>
 #include "objecttemplates.h"
 #include "cryptoutils.h"
 #include "ekutils.h"
@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
     const char			*keyPassword = NULL;
     int				userWithAuth = TRUE;
     unsigned int		inputCount = 0;
+    int				noSpace = FALSE;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
     unsigned int		sessionAttributes0 = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
@@ -133,6 +134,9 @@ int main(int argc, char *argv[])
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
 		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
+		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
@@ -155,6 +159,9 @@ int main(int argc, char *argv[])
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    nalg = TPM_ALG_SHA384;
 		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    nalg = TPM_ALG_SHA512;
+		}
 		else {
 		    printf("Bad parameter %s for -nalg\n", argv[i]);
 		    printUsage();
@@ -172,22 +179,33 @@ int main(int argc, char *argv[])
 	    algPublic = TPM_ALG_ECC;
 	}
 	else if (strcmp(argv[i],"-scheme") == 0) {
-            i++;
-	    if (i < argc) {
-		if (strcmp(argv[i],"rsassa") == 0) {
-		    scheme = TPM_ALG_RSASSA;
+	    if (keyType == TYPE_SI) {
+		i++;
+		if (i < argc) {
+		    if (strcmp(argv[i],"rsassa") == 0) {
+			scheme = TPM_ALG_RSASSA;
+		    }
+		    else if (strcmp(argv[i],"rsapss") == 0) {
+			scheme = TPM_ALG_RSAPSS;
+		    }
+		    else {
+			printf("Bad parameter %s for -scheme\n", argv[i]);
+			printUsage();
+		    }
 		}
-		else if (strcmp(argv[i],"rsapss") == 0) {
-		    scheme = TPM_ALG_RSAPSS;
-		}
-		else {
-		    printf("Bad parameter %s for -scheme\n", argv[i]);
-		    printUsage();
-		}
+	    }
+	    else {
+		printf("-scheme can only be specified for signing key\n");
+		printUsage();
 	    }
         }
 	else if (strcmp(argv[i], "-st") == 0) {
 	    keyType = TYPE_ST;
+	    scheme = TPM_ALG_NULL;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-den") == 0) {
+	    keyType = TYPE_DEN;
 	    scheme = TPM_ALG_NULL;
 	    keyTypeSpecified++;
 	}
@@ -240,6 +258,9 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-uwa") == 0) {
 	    userWithAuth = FALSE;
+	}
+	else if (strcmp(argv[i],"-ns") == 0) {
+	    noSpace = TRUE;
 	}
 	else if (strcmp(argv[i],"-se0") == 0) {
 	    i++;
@@ -360,7 +381,7 @@ int main(int argc, char *argv[])
 	/* TPM format key, output from create */
 	if (publicKeyFilename != NULL) {
 	    rc = TSS_File_ReadStructure(&in.inPublic,
-					(UnmarshalFunction_t)TPM2B_PUBLIC_Unmarshal,
+					(UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshal,
 					publicKeyFilename);
 	}
 	/* PEM format, output from e.g. openssl, readpublic, createprimary, create */
@@ -455,6 +476,13 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	printf("Handle %08x\n", out.objectHandle);
+	if (noSpace) {
+	    unsigned int b;
+	    for (b = 0 ; b < out.name.t.size ; b++) {
+		printf("%02x", out.name.t.name[b]);
+	    }
+	    printf("\n");
+	}
 	if (verbose) printf("loadexternal: success\n");
     }
     else {
@@ -477,8 +505,8 @@ static void printUsage(void)
     printf("Runs TPM2_LoadExternal\n");
     printf("\n");
     printf("\t[-hi hierarchy (e, o, p, n) (default NULL)]\n");
-    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
-    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[Asymmetric Key Algorithm]\n");
     printf("\t\t-rsa (default)\n");
     printf("\t\t-ecc\n");
@@ -492,6 +520,9 @@ static void printUsage(void)
     printf("\t\t\trsassa\n");
     printf("\t\t\trsapss\n");
     printf("\t[-st storage (default NULL scheme)]\n");
+    printf("\t[-den decryption, (unrestricted, RSA and EC NULL scheme)\n");
+    printf("\t[-ns additionally print Name in hex ascii on one line]\n");
+    printf("\t\tUseful to paste into policy\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
     printf("\t\t01 continue\n");

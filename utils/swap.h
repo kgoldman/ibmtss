@@ -3,7 +3,7 @@
 /*			     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: swap.h 819 2016-11-16 23:25:56Z kgoldman $			*/
+/*            $Id: swap.h 1257 2018-06-27 20:52:08Z kgoldman $			*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -65,7 +65,7 @@
 
 #ifndef _SWAP_H
 #define _SWAP_H
-#include <tss2/Implementation.h>
+#include <ibmtss/Implementation.h>
 
 #if    NO_AUTO_ALIGN == YES || LITTLE_ENDIAN_TPM == YES
 

@@ -3,7 +3,7 @@
 /*		      Extend an IMA measurement list into PCR 10		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: imaextend.c 1254 2018-06-25 14:43:47Z kgoldman $		*/
+/*	      $Id: imaextend.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2014, 2018.					*/
 /*										*/
@@ -57,8 +57,9 @@
 
 #include <openssl/err.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsscryptoh.h>
 
 #include "imalib.h"
 
@@ -105,6 +106,9 @@ int main(int argc, char * argv[])
 		printUsage();
 		exit(2);
 	    }
+	}
+	else if (strcmp(argv[i],"-sim") == 0) {
+	    sim = TRUE;
 	}
 	else if (strcmp(argv[i],"-le") == 0) {
 	    littleEndian = TRUE; 
@@ -156,23 +160,37 @@ int main(int argc, char * argv[])
 	printf("Missing -if argument\n");
 	printUsage();
     }
-     /* Start a TSS context */
-    if (rc == 0) {
-	rc = TSS_Create(&tssContext);
-    }
-    if (rc == 0) {
-	uint32_t algs;				/* hash algorithm iterator */
-	in.digests.count = 2;			/* extend SHA-1 and SHA-256 banks */
-	in.digests.digests[0].hashAlg = TPM_ALG_SHA1;
-	in.digests.digests[1].hashAlg = TPM_ALG_SHA256;
-	/* IMA zero extends into the SHA-256 bank */
-	for (algs = 0 ; algs < in.digests.count ; algs++) {
-	    memset((uint8_t *)&in.digests.digests[algs].digest, 0, sizeof(TPMU_HA));
+    if (!sim) {
+	/* Start a TSS context */
+	if (rc == 0) {
+	    rc = TSS_Create(&tssContext);
+	}
+	if (rc == 0) {
+	    uint32_t algs;				/* hash algorithm iterator */
+	    in.digests.count = 2;			/* extend SHA-1 and SHA-256 banks */
+	    in.digests.digests[0].hashAlg = TPM_ALG_SHA1;
+	    in.digests.digests[1].hashAlg = TPM_ALG_SHA256;
+	    /* IMA zero extends into the SHA-256 bank */
+	    for (algs = 0 ; algs < in.digests.count ; algs++) {
+		memset((uint8_t *)&in.digests.digests[algs].digest, 0, sizeof(TPMU_HA));
+	    }
+	}
+	if ((rc == 0) && verbose) {
+	    printf("Initial PCR 10 value\n");
+	    rc = pcrread(tssContext, 10);
 	}
     }
-    if ((rc == 0) && verbose) {
-	printf("Initial PCR 10 value\n");
-	rc = pcrread(tssContext, 10);
+    else {	/* sim TRUE */
+	/* simulated PCRs start at zero at boot */
+	if (rc == 0) {
+	    for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
+		/* initialize each algorithm ID */
+		simPcrs[0][pcrNum].hashAlg = TPM_ALG_SHA1;
+		simPcrs[1][pcrNum].hashAlg = TPM_ALG_SHA256;
+		memset(&simPcrs[0][pcrNum].digest.tssmax, 0, SHA1_DIGEST_SIZE);
+		memset(&simPcrs[1][pcrNum].digest.tssmax, 0, SHA256_DIGEST_SIZE);
+	    }
+	}
     }
     ImaEvent imaEvent;
     unsigned int lineNum;
@@ -227,21 +245,8 @@ int main(int argc, char * argv[])
 			rc = pcrread(tssContext, imaEvent.pcrIndex);
 		    }
 		}
-		/* copy the SHA-1 digest to be extended */
-		if (rc == 0) {
-		    rc = copyDigest(&in, &imaEvent);
-		}
-		if (rc == 0) {
-		    rc = TSS_Execute(tssContext,
-				     NULL,
-				     (COMMAND_PARAMETERS *)&in,
-				     NULL,
-				     TPM_CC_PCR_Extend,
-				     TPM_RS_PW, NULL, 0,
-				     TPM_RH_NULL, NULL, 0);
-		}
-		if (rc == 0 && verbose) {
-		    rc = pcrread(tssContext, imaEvent.pcrIndex);
+		else {		/* sim */
+		    rc = IMA_Event_PcrExtend(simPcrs, &imaEvent);
 		}
 	    }	/* for each IMA event in range */
 	    IMA_Event_Free(&imaEvent);
@@ -259,10 +264,25 @@ int main(int argc, char * argv[])
 #endif
 
     } while ((rc == 0) && (loopTime != 0)); 		/* sleep loop */
-    {
+    if (!sim) {
 	TPM_RC rc1 = TSS_Delete(tssContext);
 	if (rc == 0) {
 	    rc = rc1;
+	}
+    }
+    else {	/* sim */
+	for (bankNum = 0 ; (rc == 0) && (bankNum < IMA_PCR_BANKS) ; bankNum++) {
+	    TSS_TPM_ALG_ID_Print("algorithmId", simPcrs[bankNum][0].hashAlg, 0);
+	    for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
+	        char pcrString[9];	/* PCR number */
+		sprintf(pcrString, "PCR %02u:", pcrNum);
+		/* TSS_PrintAllLogLevel() with a log level of LOGLEVEL_INFO to print the byte
+		   array on one line with no length */
+		uint16_t digestSize = TSS_GetDigestSize(simPcrs[bankNum][pcrNum].hashAlg);
+		TSS_PrintAllLogLevel(LOGLEVEL_INFO, pcrString, 1,
+				     simPcrs[bankNum ][pcrNum].digest.tssmax,
+				     digestSize);
+	    }
 	}
     }
     if (rc == 0) {
@@ -357,10 +377,15 @@ static void printUsage(void)
     printf("Runs TPM2_PCR_Extend to Extends a SHA-1 IMA measurement file (binary) into TPM PCRs\n");
     printf("The IMA measurement is directly extended into the SHA-1 bank, and a zero padded\n");
     printf("measurement is extended into the SHA-256 bank\n");
+    printf("\n");
     printf("This handles the case where a zero measurement extends ones into the IMA PCR\n");
+    printf("\n");
+    printf("If -sim is specified, TPM PCRs are not extended.  Rather, imaextend extends into\n");
+    printf("simluated PCRs and traces the result.\n");
     printf("\n");
     printf("\t-if IMA event log file name\n");
     printf("\t[-le input file is little endian (default big endian)]\n");
+    printf("\t[-sim calculate simulated PCRs]\n");
     printf("\t[-b beginning entry (default 0, beginning of log)]\n");
     printf("\t\tA beginning entry after the end of the log becomes a noop\n");
     printf("\t[-e ending entry (default end of log)]\n");

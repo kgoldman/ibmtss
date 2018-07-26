@@ -3,7 +3,7 @@
 /*			   RSA_Decrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsadecrypt.c 1194 2018-05-02 15:07:19Z kgoldman $		*/
+/*	      $Id: rsadecrypt.c 1275 2018-07-23 18:37:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -46,11 +46,11 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/tsscryptoh.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/tsscryptoh.h>
 
 static void printRsaDecrypt(RSA_Decrypt_Out *out);
 static TPM_RC padData(uint8_t 		**buffer,
@@ -120,6 +120,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -oid\n", argv[i]);
@@ -341,6 +344,7 @@ static TPM_RC padData(uint8_t 			**buffer,
     const uint8_t	sha1Oid[] = {SHA1_DER};
     const uint8_t	sha256Oid[] = {SHA256_DER};
     const uint8_t	sha384Oid[] = {SHA384_DER};
+    const uint8_t	sha512Oid[] = {SHA512_DER};
     
     /* check that the original buffer length matches the hash algorithm */
     if (rc == 0) {
@@ -378,6 +382,10 @@ static TPM_RC padData(uint8_t 			**buffer,
 	    oid = sha384Oid;
 	    oidSize = SHA384_DER_SIZE;
 	    break;
+	  case TPM_ALG_SHA512:
+	    oid = sha512Oid;
+	    oidSize = SHA512_DER_SIZE;
+	    break;
 	  default:
 	    printf("padData: Unsupported hash algorithm %04x\n", halg);
 	    rc = TPM_RC_HASH;
@@ -414,7 +422,7 @@ static void printUsage(void)
     printf("\t-pwdk password for key (default empty)\n");
     printf("\t-ie encrypt file name\n");
     printf("\t-od decrypt file name (default do not save)\n");
-    printf("\t[-oid (sha1, sha256, sha384) optionally add OID and PKCS1 padding\n");
+    printf("\t[-oid (sha1, sha256, sha384 sha512) optionally add OID and PKCS1 padding\n");
     printf("\t\tto the encrypt data (demo of signing with arbitrary OID)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

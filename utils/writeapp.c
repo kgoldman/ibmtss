@@ -3,7 +3,7 @@
 /*			    NV Write Application				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: writeapp.c 1212 2018-05-11 20:05:25Z kgoldman $		*/
+/*	      $Id: writeapp.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -69,9 +69,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssutils.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssutils.h>
 #include "ekutils.h"
 #include "cryptoutils.h"
 

@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*	      $Id: tssproperties.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -44,12 +44,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <tss2/tss.h>
-#include <tss2/tsstransmit.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tsstransmit.h>
 #ifndef TPM_TSS_NOCRYPTO
-#include <tss2/tsscrypto.h>
+#include <ibmtss/tsscrypto.h>
 #endif
-#include <tss2/tssprint.h>
+#include <ibmtss/tssprint.h>
 
 #include "tssproperties.h"
 

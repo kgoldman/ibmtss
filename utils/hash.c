@@ -3,9 +3,9 @@
 /*			    Hash						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hash.c 1140 2018-01-22 15:13:31Z kgoldman $			*/
+/*	      $Id: hash.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017					*/
+/* (c) Copyright IBM Corporation 2015, 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -46,10 +46,10 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
 
 static void printUsage(void);
 static void printHash(Hash_Out *out);
@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     const char 			*inString = NULL;
     const char			*hashFilename = NULL;
     const char			*ticketFilename = NULL;
+    int				noSpace = FALSE;
  
     size_t 			length = 0;
     uint8_t			*buffer = NULL;	/* for the free */
@@ -100,6 +101,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -150,6 +154,9 @@ int main(int argc, char *argv[])
 		printf("-tk option needs a value\n");
 		printUsage();
 	    }
+	}
+	else if (strcmp(argv[i],"-ns") == 0) {
+	    noSpace = TRUE;
 	}
  	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
@@ -258,6 +265,13 @@ int main(int argc, char *argv[])
     free(buffer);
     if (rc == 0) {
 	if (verbose) printHash(&out);
+	if (noSpace) {
+	    uint32_t bp;
+	    for (bp = 0 ; bp < out.outHash.t.size ; bp++) {
+		printf("%02x", out.outHash.t.buffer[bp]);
+	    }
+	    printf("\n");
+	}
 	if (verbose) printf("hash: success\n");
     }
     else {
@@ -286,9 +300,10 @@ static void printUsage(void)
     printf("\n");
     printf("\t[-hi hierarchy (e, o, p, n) (default null)]\n");
     printf("\t\te endorsement, o owner, p platform, n null\n");
-    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t-if input file to be hashed\n");
     printf("\t-ic data string to be hashed\n");
+    printf("\t[-ns no space, no text, no newlines]\n");
     printf("\t[-oh hash file name (default do not save)]\n");
     printf("\t[-tk ticket file name (default do not save)]\n");
     exit(1);	

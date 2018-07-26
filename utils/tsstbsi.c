@@ -3,7 +3,7 @@
 /*	Windows 7,8,10 Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstbsi.c 1157 2018-04-17 14:09:56Z kgoldman $ 		*/
+/*	      $Id: tsstbsi.c 1257 2018-06-27 20:52:08Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -69,10 +69,10 @@
 #include <windows.h>
 #include <specstrings.h>
 
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssprint.h>
-#include <tss2/tsserror.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/Unmarshal_fp.h>
 #include "tssproperties.h"
 
 #include "tsstbsi.h"

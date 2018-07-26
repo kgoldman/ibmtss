@@ -3,7 +3,7 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 1247 2018-06-20 19:10:19Z kgoldman $		*/
+/*	      $Id: eventlib.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -41,11 +41,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <tss2/tssprint.h>
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/tsscryptoh.h>
-#include <tss2/tsscrypto.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tsscrypto.h>
 
 #include "eventlib.h"
 

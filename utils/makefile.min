@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile for minimal TSS			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.min 1217 2018-05-15 17:07:20Z kgoldman $		#
+#	      $Id: makefile.min 1257 2018-06-27 20:52:08Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2016, 2018					#
 # 										#
@@ -94,7 +94,7 @@ LIBTSS=libibmtssmin.so
 # 
 
 ALL = $(LIBTSS)
-#TSS_HEADERS = tss2/tssfile.h
+#TSS_HEADERS = ibmtss/tssfile.h
 
 # default TSS library
 
@@ -172,18 +172,18 @@ clean:
 
 # applications
 
-signapp:		tss2/tss.h signapp.o ekutils.o cryptoutils.o tsscryptoh.o tsscrypto.o $(LIBTSS) 
+signapp:		ibmtss/tss.h signapp.o ekutils.o cryptoutils.o tsscryptoh.o tsscrypto.o $(LIBTSS) 
 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o \
 			ekutils.o cryptoutils.o tsscryptoh.o tsscrypto.o $(LNALIBS) -o signapp
 
-writeapp:		tss2/tss.h writeapp.o ekutils.o cryptoutils.o tsscryptoh.o tsscrypto.o $(LIBTSS) 
+writeapp:		ibmtss/tss.h writeapp.o ekutils.o cryptoutils.o tsscryptoh.o tsscrypto.o $(LIBTSS) 
 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o \
 			cryptoutils.o ekutils.o tsscryptoh.o tsscrypto.o $(LNALIBS) -o writeapp
 
 # for applications, not for TSS library
 
-%.o:		%.c tss2/tss.h 
+%.o:		%.c ibmtss/tss.h 
 		$(CC) $(CCFLAGS) $(CCAFLAGS) $< -o $@
 

@@ -3,7 +3,7 @@
 /*			    TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss.c 1157 2018-04-17 14:09:56Z kgoldman $			*/
+/*	      $Id: tss.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -49,18 +49,18 @@
 #include <winsock2.h>
 #endif
 
-#include <tss2/tss.h>
+#include <ibmtss/tss.h>
 #include "tssproperties.h"
-#include <tss2/tsstransmit.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tsstransmit.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
 #ifndef TPM_TSS_NOCRYPTO
-#include <tss2/tsscrypto.h>
-#include <tss2/tsscryptoh.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/tsscryptoh.h>
 #endif
-#include <tss2/tssprintcmd.h>
+#include <ibmtss/tssprintcmd.h>
 #ifdef TPM_TPM20
 #include "tss20.h"
 #endif

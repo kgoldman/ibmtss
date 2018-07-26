@@ -3,7 +3,7 @@
 /*			    TSS Primary API for TPM 2.0				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss20.c 1255 2018-06-26 21:18:46Z kgoldman $			*/
+/*	      $Id: tss20.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -51,19 +51,19 @@
 
 #include "tssauth.h"
 #include "tssauth20.h"
-#include <tss2/tss.h>
+#include <ibmtss/tss.h>
 #include "tssproperties.h"
-#include <tss2/tsstransmit.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tsstransmit.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
 #include "tssccattributes.h"
 #ifndef TPM_TSS_NOCRYPTO
-#include <tss2/tsscrypto.h>
-#include <tss2/tsscryptoh.h>
+#include <ibmtss/tsscrypto.h>
+#include <ibmtss/tsscryptoh.h>
 #endif
-#include <tss2/tssprintcmd.h>
+#include <ibmtss/tssprintcmd.h>
 #include "tss20.h"
 
 /* Files:

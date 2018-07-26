@@ -39,7 +39,7 @@
 
 #include <string.h>
 
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 /* The functions with the TSS_ prefix are preferred.  They use an unsigned size.  The functions
    without the prefix are deprecated.  */

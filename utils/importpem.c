@@ -3,9 +3,9 @@
 /*			   Import a PEM RSA keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 1219 2018-05-15 21:12:32Z kgoldman $		*/
+/*	      $Id: importpem.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2017					*/
+/* (c) Copyright IBM Corporation 2016, 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,11 +52,11 @@
 
 #include <openssl/pem.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 #include "cryptoutils.h"
 #include "objecttemplates.h"
@@ -138,22 +138,33 @@ int main(int argc, char *argv[])
 	    scheme = TPM_ALG_ECDSA;
 	}
 	else if (strcmp(argv[i],"-scheme") == 0) {
-            i++;
-	    if (i < argc) {
-		if (strcmp(argv[i],"rsassa") == 0) {
-		    scheme = TPM_ALG_RSASSA;
+	    if (keyType == TYPE_SI) {
+		i++;
+		if (i < argc) {
+		    if (strcmp(argv[i],"rsassa") == 0) {
+			scheme = TPM_ALG_RSASSA;
+		    }
+		    else if (strcmp(argv[i],"rsapss") == 0) {
+			scheme = TPM_ALG_RSAPSS;
+		    }
+		    else {
+			printf("Bad parameter %s for -scheme\n", argv[i]);
+			printUsage();
+		    }
 		}
-		else if (strcmp(argv[i],"rsapss") == 0) {
-		    scheme = TPM_ALG_RSAPSS;
-		}
-		else {
-		    printf("Bad parameter %s for -scheme\n", argv[i]);
-		    printUsage();
-		}
+	    }
+	    else {
+		printf("-scheme can only be specified for signing key\n");
+		printUsage();
 	    }
         }
 	else if (strcmp(argv[i], "-st") == 0) {
 	    keyType = TYPE_ST;
+	    scheme = TPM_ALG_NULL;
+	    keyTypeSpecified++;
+	}
+	else if (strcmp(argv[i], "-den") == 0) {
+	    keyType = TYPE_DEN;
 	    scheme = TPM_ALG_NULL;
 	    keyTypeSpecified++;
 	}
@@ -213,6 +224,9 @@ int main(int argc, char *argv[])
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
 		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
+		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
@@ -234,6 +248,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    nalg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    nalg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -nalg\n", argv[i]);
@@ -455,11 +472,12 @@ static void printUsage(void)
     printf("\t\t\trsassa\n");
     printf("\t\t\trsapss\n");
     printf("\t[-st storage (default NULL scheme)]\n");
+    printf("\t[-den decryption, (unrestricted, RSA and EC NULL scheme)\n");
     printf("\t[-pwdk password for key (default empty)]\n");
     printf("\t-opu public area file name\n");
     printf("\t-opr private area file name\n");
-    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
-    printf("\t[-halg scheme hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-halg scheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-pol policy file (default empty)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");

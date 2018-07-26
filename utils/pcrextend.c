@@ -3,9 +3,9 @@
 /*			   PCR_Extend 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrextend.c 1140 2018-01-22 15:13:31Z kgoldman $		*/
+/*	      $Id: pcrextend.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -46,10 +46,10 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 static void printUsage(void);
 
@@ -109,6 +109,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    in.digests.digests[in.digests.count-1].hashAlg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    in.digests.digests[in.digests.count-1].hashAlg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -256,7 +259,7 @@ static void printUsage(void)
     printf("Runs TPM2_PCR_Extend\n");
     printf("\n");
     printf("\t-ha pcr handle\n");
-    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t\t-halg may be specified more than once\n");
     printf("\n");
     printf("\t-ic data string, 0 pad appended to halg length\n");

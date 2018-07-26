@@ -3,7 +3,7 @@
 /*			    TPM 1.2 NV_ReadValue				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadvalue.c 1192 2018-05-01 20:43:45Z kgoldman $		*/
+/*	      $Id: nvreadvalue.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -44,13 +44,13 @@
 
 #include <openssl/x509.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsscryptoh.h>
-#include <tss2/tpmstructures12.h>
-#include <tss2/tssmarshal12.h>
-#include <tss2/Unmarshal12_fp.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tpmstructures12.h>
+#include <ibmtss/tssmarshal12.h>
+#include <ibmtss/Unmarshal12_fp.h>
 #include "ekutils12.h"
 
 static void printUsage(void);

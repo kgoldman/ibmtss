@@ -3,7 +3,7 @@
 /*		      Extend an EVENT measurement file into PCRs		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventextend.c 1248 2018-06-20 20:11:40Z kgoldman $		*/
+/*	      $Id: eventextend.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2018.					*/
 /*										*/
@@ -45,9 +45,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsscryptoh.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsscryptoh.h>
 
 #include "eventlib.h"
 

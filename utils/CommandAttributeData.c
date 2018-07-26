@@ -3,7 +3,7 @@
 /*			  Command Attributes Table   				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: CommandAttributeData.c 1157 2018-04-17 14:09:56Z kgoldman $	*/
+/*            $Id: CommandAttributeData.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -64,7 +64,7 @@
 // 9.3	CommandAttributeData.c
 
 #ifdef TPM_TPM12
-#include <tss2/tpmconstants12.h>
+#include <ibmtss/tpmconstants12.h>
 #endif
 
 #include "CommandAttributes.h"

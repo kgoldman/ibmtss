@@ -3,7 +3,7 @@
 /*			    TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssfile.c 1219 2018-05-15 21:12:32Z kgoldman $		*/
+/*		$Id: tssfile.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -42,10 +42,10 @@
 #include <string.h>
 #include <errno.h>
 
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsserror.h>
-#include <tss2/tssprint.h>
-#include <tss2/tssfile.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/tssfile.h>
 
 extern int tssVerbose;
 extern int tssVverbose;

@@ -3,7 +3,7 @@
 /*			    CertifyCreation					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: certifycreation.c 1140 2018-01-22 15:13:31Z kgoldman $	*/
+/*	      $Id: certifycreation.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -46,11 +46,11 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/Unmarshal_fp.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 static void printUsage(void);
 static void printSignature(CertifyCreation_Out *out);
@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
     const char			*qualifyingDataFilename = NULL;
     const char			*ticketFilename = NULL;
     const char			*creationHashFilename = NULL;
+    unsigned char 		*buffer = NULL;
+    size_t 			length;
     int				useRsa = 1;
     TPMS_ATTEST 		tpmsAttest;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
@@ -298,6 +300,10 @@ int main(int argc, char *argv[])
 	printf("Missing ticket parameter -tk\n");
 	printUsage();
     }
+    if (creationHashFilename == NULL) {
+	printf("Missing creation hash file parameter -ch\n");
+	printUsage();
+    }
     if (rc == 0) {
 	/* Handle of key that will perform certifying */
 	in.objectHandle = objectHandle;
@@ -333,10 +339,8 @@ int main(int argc, char *argv[])
 				    ticketFilename);
     }
     /* creationHash */
-    unsigned char 		*buffer = NULL;
-    size_t 			length;
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&buffer ,     /* freed @1 */
+	rc = TSS_File_ReadBinaryFile(&buffer,	/* freed @1 */
 				     &length,
 				     creationHashFilename);
     }

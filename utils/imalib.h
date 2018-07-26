@@ -47,7 +47,7 @@
 
 #include <sys/param.h>
 
-#include <tss2/TPM_Types.h>
+#include <ibmtss/TPM_Types.h>
 
 #define IMA_PCR 		10
 /* IMA currently supports only SHA-1 and SHA-256 */

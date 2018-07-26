@@ -3,9 +3,9 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 1079 2017-10-04 20:13:43Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2017.					*/
+/* (c) Copyright IBM Corporation 2016, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -47,10 +47,10 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tssmarshal.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tssmarshal.h>
 
 #include "objecttemplates.h"
 
@@ -546,7 +546,7 @@ void printUsageTemplate(void)
     printf("\t[-pol policy file (default empty)]\n");
     printf("\t[-uwa userWithAuth attribute clear (default set)]\n");
     printf("\n");
-    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
-    printf("\t[-halg scheme hash algorithm (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-halg scheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
     return;	
 }

@@ -3,7 +3,7 @@
 /*			    NV ReadPublic					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadpublic.c 1145 2018-02-06 20:41:50Z kgoldman $		*/
+/*	      $Id: nvreadpublic.c 1275 2018-07-23 18:37:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -54,10 +54,10 @@
 #include <winsock2.h>
 #endif
 
-#include <tss2/tss.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsscrypto.h>
+#include <ibmtss/tss.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsscrypto.h>
 
 static void printUsage(void);
 
@@ -106,6 +106,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    nalg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    nalg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -nalg\n", argv[i]);
@@ -298,7 +301,8 @@ static void printUsage(void)
     printf("Runs TPM2_NV_ReadPublic\n");
     printf("\n");
     printf("\t-ha NV index handle\n");
-    printf("\t[-nalg expected name hash algorithm (sha1, sha256, sha384) (default no check)]\n");
+    printf("\t[-nalg expected name hash algorithm (sha1, sha256, sha384 sha512)\n"
+	   "\t\t(default no check)]\n");
     printf("\t[-ns additionally print Name in hex ascii on one line]\n");
     printf("\t\tUseful to paste into policy\n");
     printf("\n");

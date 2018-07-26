@@ -3,7 +3,7 @@
 /*			   Socket Transmit and Receive Utilities		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsssocket.c 1197 2018-05-03 21:06:26Z kgoldman $		*/
+/*	      $Id: tsssocket.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -62,12 +62,12 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/tssresponsecode.h>
-#include <tss2/tsserror.h>
-#include <tss2/tssprint.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssprint.h>
 #include "tssproperties.h"
-#include <tss2/tsstransmit.h>
+#include <ibmtss/tsstransmit.h>
 
 #include "tsssocket.h"
 

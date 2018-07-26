@@ -3,7 +3,7 @@
 /*		Common TPM 1.2 and TPM 2.0 TSS Authorization 			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.c 1157 2018-04-17 14:09:56Z kgoldman $		*/
+/*            $Id: tssauth.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -52,14 +52,14 @@
 #include <winsock2.h>
 #endif
 
-#include <tss2/tsserror.h>
-#include <tss2/tssprint.h>
-#include <tss2/tssutils.h>
-#include <tss2/tssmarshal.h>
-#include <tss2/Unmarshal_fp.h>
-#include <tss2/tsstransmit.h>
+#include <ibmtss/tsserror.h>
+#include <ibmtss/tssprint.h>
+#include <ibmtss/tssutils.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tsstransmit.h>
 #include "tssproperties.h"
-#include <tss2/tssresponsecode.h>
+#include <ibmtss/tssresponsecode.h>
 
 #include "tssauth.h"
 
