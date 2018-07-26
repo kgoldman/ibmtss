@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testsign.sh 1209 2018-05-10 21:26:10Z kgoldman $		#
+#		$Id: testsign.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -48,7 +48,7 @@ echo ""
 # loop over unrestricted hash algorithms
 
 echo "Load the RSA signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Create an RSA key pair in PEM format using openssl"
@@ -59,7 +59,7 @@ echo "Convert key pair to plaintext DER format"
 
 openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
 
     for SCHEME in rsassa rsapss
@@ -114,7 +114,7 @@ echo "ECC Signing key"
 echo ""
 
 echo "Load the ECC signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Create an ECC key pair in PEM format using openssl"
@@ -125,7 +125,7 @@ echo "Convert key pair to plaintext DER format"
 
 openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
 
     echo "Sign a digest - $HALG"
@@ -178,7 +178,7 @@ echo "Create primary signing key - RSA 80000001"
 ${PREFIX}createprimary -si -opu tmppub.bin -opem tmppub.pem -pwdk sig > run.out
 checkSuccess $?
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
     
     echo "Sign a digest - $HALG"
@@ -223,7 +223,7 @@ echo "Create primary signing key - ECC 80000001"
 ${PREFIX}createprimary -si -opu tmppub.bin -opem tmppub.pem -ecc nistp256 -pwdk sig > run.out
 checkSuccess $?
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
     
     echo "Sign a digest - $HALG"

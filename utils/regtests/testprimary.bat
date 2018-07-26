@@ -3,7 +3,7 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: testprimary.bat 480 2015-12-29 22:41:45Z kgoldman $	#
+REM		$Id: testprimary.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
 REM										#
 REM (c) Copyright IBM Corporation 2015						#
 REM 										#
@@ -45,7 +45,7 @@ echo "Primary key - CreatePrimary"
 echo ""
 
 echo "Create a primary storage key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk pps > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
@@ -57,13 +57,13 @@ IF !ERRORLEVEL! NEQ 0 (
   )
 
 echo "Create a storage key under the primary key"
-%TPM_EXE_PATH%create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sto > run.out
+%TPM_EXE_PATH%create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
 
 echo "Load the storage key under the primary key"
-%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
@@ -81,7 +81,7 @@ IF !ERRORLEVEL! NEQ 0 (
   )
 
 echo "Load the storage key under the primary key - should fail"
-%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! EQU 0 (
   exit /B 1
   )
@@ -93,19 +93,19 @@ echo ""
 REM no unique 
 
 echo "Create a primary storage key with no unique field"
-%TPM_EXE_PATH%createprimary -hi p -pwdk pps > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
 
 echo "Create a storage key under the primary key"
-%TPM_EXE_PATH%create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sto > run.out
+%TPM_EXE_PATH%create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
 
 echo "Load the storage key under the primary key"
-%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
@@ -126,13 +126,13 @@ REM empty unique
 
 echo "Create a primary storage key with no unique field"
 touch empty.bin
-%TPM_EXE_PATH%createprimary -hi p -pwdk pps -iu empty.bin > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto -iu empty.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
 
 echo "Load the original storage key under the primary key with empty unique field"
-%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
@@ -157,25 +157,25 @@ REM unique
 
 echo "Create a primary storage key with unique field"
 touch empty.bin
-%TPM_EXE_PATH%createprimary -hi p -pwdk pps -iu policies/aaa > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto -iu policies/aaa > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
 
 echo "Load the original storage key under the primary key - should fail"
-%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! EQU 0 (
   exit /B 1
   )
 
 echo "Create a storage key under the primary key"
-%TPM_EXE_PATH%create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sto > run.out
+%TPM_EXE_PATH%create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
 
 echo "Load the storage key under the primary key"
-%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
@@ -195,13 +195,13 @@ IF !ERRORLEVEL! NEQ 0 (
 REM same unique
 
 echo "Create a primary storage key with same unique field"
-%TPM_EXE_PATH%createprimary -hi p -pwdk pps -iu policies/aaa > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto -iu policies/aaa > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
 
 echo "Load the previous storage key under the primary key"
-%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )

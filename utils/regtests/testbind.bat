@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #	$Id: testbind.bat 875 2016-12-19 17:09:00Z kgoldman $			#
+REM #	$Id: testbind.bat 1278 2018-07-23 21:20:42Z kgoldman $			#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -50,13 +50,13 @@ echo "Bind session to Primary Key"
 echo ""
 
 echo "Bind session bound to primary key at 80000000"
-%TPM_EXE_PATH%startauthsession -se h -bi 80000000 -pwdb pps > run.out
+%TPM_EXE_PATH%startauthsession -se h -bi 80000000 -pwdb sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Create storage key using that bind session, same object 80000000"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 1 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -80,7 +80,7 @@ echo "Bind session bound to second primary key at 80000001, correct password"
        )
 
 echo "Create storage key using that bind session, different object 80000000"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 1 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 1 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -104,7 +104,7 @@ echo "Bind session bound to primary key at 80000000, wrong password"
        )
 
 echo "Create storage key using that bind session, same object 80000000 - should fail"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 0 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 0 > run.out
     IF !ERRORLEVEL! EQU 0 (
        exit /B 1
        )
@@ -144,7 +144,7 @@ echo "Create storage key using that bind session, wrong password - should fail"
        )
 
 echo "Create storage key using that bind session"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 0 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 0 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -156,7 +156,7 @@ echo "Bind session bound to platform hierarchy, wrong password"
        )
 
 echo "Create storage key using that bind session - should fail"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 0 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 0 > run.out
     IF !ERRORLEVEL! EQU 0 (
        exit /B 1
        )
@@ -229,7 +229,7 @@ echo "NV Read HMAC using bind session, wrong password does not matter"
        )
 
 echo "Create storage key using that bind session"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 0 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 0 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -247,7 +247,7 @@ echo ""
 for %%M in (xor aes) do (
 
     echo "Start an HMAC auth session with %%M encryption and bind to primary key at 80000000"
-    %TPM_EXE_PATH%startauthsession -se h -sym %%M -bi 80000000 -pwdb pps > run.out
+    %TPM_EXE_PATH%startauthsession -se h -sym %%M -bi 80000000 -pwdb sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -265,7 +265,7 @@ for %%M in (xor aes) do (
        )
 
     echo "Load the key, with %%M encryption"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps -se0 02000000 61 > run.out
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto -se0 02000000 61 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -303,13 +303,13 @@ for %%M in (xor aes) do (
         )
 
     echo "Create storage key using bind session, different object"
-    %TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdk 222 -pwdp pps -opr tmppriv.bin -opu tmppub.bin -se0 02000000 61 > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdk 222 -pwdp sto -opr tmppriv.bin -opu tmppub.bin -se0 02000000 61 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
     echo "Load the key, with %%M encryption"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps -se0 02000000 61 > run.out
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto -se0 02000000 61 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -345,13 +345,13 @@ IF !ERRORLEVEL! EQU 0 (
     )
 
 echo "Create storage key using bind session, different object"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdk 222 -pwdp pps -opr tmppriv.bin -opu tmppub.bin -se0 02000000 61 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdk 222 -pwdp sto -opr tmppriv.bin -opu tmppub.bin -se0 02000000 61 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
    )
 
 echo "Load the key, with xor encryption"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps -se0 02000000 61 > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto -se0 02000000 61 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
    )
@@ -385,13 +385,13 @@ IF !ERRORLEVEL! EQU 0 (
     )
 
 echo "Create storage key using bind session, different object"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdk 222 -pwdp pps -opr tmppriv.bin -opu tmppub.bin -se0 02000000 61 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdk 222 -pwdp sto -opr tmppriv.bin -opu tmppub.bin -se0 02000000 61 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
    )
 
 echo "Load the key, with aes encryption"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps -se0 02000000 61 > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto -se0 02000000 61 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
    )
@@ -413,19 +413,19 @@ echo "PolicyAuthValue and bind to different object, command encryption"
 echo ""
 
 echo "Create a signing key under the primary key - policy command code - sign, auth"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccsign-auth.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccsign-auth.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
 echo "Start a policy session, bind to primary key"
-%TPM_EXE_PATH%startauthsession -se p -bi 80000000 -pwdb pps > run.out
+%TPM_EXE_PATH%startauthsession -se p -bi 80000000 -pwdb sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -471,13 +471,13 @@ echo "PolicyAuthValue and bind to same object, command encryption"
 echo ""
 
 echo "Create a signing key under the primary key - policy command code - sign, auth"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccsign-auth.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccsign-auth.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -529,19 +529,19 @@ echo "PolicyAuthValue and bind to different object, response encryption"
 echo ""
 
 echo "Create a storage key under the primary key - policy command code - create, auth"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp pps -pwdk sto -pol policies/policycccreate-auth.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp sto -pwdk sto -pol policies/policycccreate-auth.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
 echo "Load the storage key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmpspriv.bin -ipu tmpspub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmpspriv.bin -ipu tmpspub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
 echo "Start a policy session, bind to primary key"
-%TPM_EXE_PATH%startauthsession -se p -bi 80000000 -pwdb pps > run.out
+%TPM_EXE_PATH%startauthsession -se p -bi 80000000 -pwdb sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -593,13 +593,13 @@ echo "PolicyAuthValue and bind to same object, response encryption"
 echo ""
 
 echo "Create a storage key under the primary key - policy command code - create, auth"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp pps -pwdk sto -pol policies/policycccreate-auth.bin  > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp sto -pwdk sto -pol policies/policycccreate-auth.bin  > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
 echo "Load the storage key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmpspriv.bin -ipu tmpspub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmpspriv.bin -ipu tmpspub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )

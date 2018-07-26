@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testaes.bat 797 2016-11-11 22:57:11Z kgoldman $		#
+REM #		$Id: testaes.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -54,7 +54,7 @@ for %%S in ("" "-se0 02000000 1") do (
 
 
     echo "Load the symmetric cipher key under the primary key %%~S"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr despriv.bin -ipu despub.bin -pwdp pps %%~S > run.out
+    %TPM_EXE_PATH%load -hp 80000000 -ipr despriv.bin -ipu despub.bin -pwdp sto %%~S > run.out
     IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
     )

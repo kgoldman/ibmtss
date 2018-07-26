@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testbind.sh 990 2017-04-19 13:31:24Z kgoldman $			#
+#	$Id: testbind.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -50,11 +50,11 @@ echo "Bind session to Primary Key"
 echo ""
 
 echo "Bind session bound to primary key at 80000000"
-${PREFIX}startauthsession -se h -bi 80000000 -pwdb pps > run.out
+${PREFIX}startauthsession -se h -bi 80000000 -pwdb sto > run.out
 checkSuccess $?
 
 echo "Create storage key using that bind session, same object 80000000"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 1 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 1 > run.out
 checkSuccess $?
 
 echo "Create storage key using that bind session, same object 80000000, wrong password does not matter"
@@ -70,7 +70,7 @@ ${PREFIX}startauthsession -se h -bi 80000001 -pwdb 000 > run.out
 checkSuccess $?
 
 echo "Create storage key using that bind session, different object 80000000"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 1 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 1 > run.out
 checkSuccess $?
 
 echo "Create storage key using that bind session, different object 80000000, wrong password - should fail"
@@ -86,7 +86,7 @@ ${PREFIX}startauthsession -se h -bi 80000000 -pwdb xxx > run.out
 checkSuccess $?
 
 echo "Create storage key using that bind session, same object 80000000 - should fail"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 0 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 0 > run.out
 checkFailure $?
 
 echo "Flush the failing session"
@@ -114,7 +114,7 @@ ${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp xxx -pwdk 222 -se0 02000000 0
 checkFailure $?
 
 echo "Create storage key using that bind session"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 0 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 0 > run.out
 checkSuccess $?
 
 echo "Bind session bound to platform hierarchy, wrong password"
@@ -122,7 +122,7 @@ ${PREFIX}startauthsession -se h -bi 4000000c -pwdb xxx > run.out
 checkSuccess $?
 
 echo "Create storage key using that bind session - should fail"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 0 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 0 > run.out
 checkFailure $?
 
 echo "Change platform hierarchy auth back to null"
@@ -173,7 +173,7 @@ ${PREFIX}nvread -ha 01000000 -pwdn xxx -sz 3 -se0 02000000 1 > run.out
 checkSuccess $?
 
 echo "Create storage key using that bind session"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk 222 -se0 02000000 0 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk 222 -se0 02000000 0 > run.out
 checkSuccess $?
 
 echo "NV Undefine Space"
@@ -189,7 +189,7 @@ for MODE0 in xor aes
 do
 
     echo "Start an HMAC auth session with $MODE0 encryption and bind to primary key at 80000000"
-    ${PREFIX}startauthsession -se h -sym $MODE0 -bi 80000000 -pwdb pps > run.out
+    ${PREFIX}startauthsession -se h -sym $MODE0 -bi 80000000 -pwdb sto > run.out
     checkSuccess $?
 
     echo "Create storage key using bind session, same object, wrong password"
@@ -201,7 +201,7 @@ do
     checkSuccess $?
 
     echo "Load the key, with $MODE0 encryption"
-    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps -se0 02000000 61 > run.out
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto -se0 02000000 61 > run.out
     checkSuccess $?
 
     echo "Flush the sealed object"
@@ -231,11 +231,11 @@ do
     checkFailure $?
 
     echo "Create storage key using bind session, different object"
-    ${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdk 222 -pwdp pps -opr tmppriv.bin -opu tmppub.bin -se0 02000000 61 > run.out
+    ${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdk 222 -pwdp sto -opr tmppriv.bin -opu tmppub.bin -se0 02000000 61 > run.out
     checkSuccess $?
 
     echo "Load the key, with $MODE0 encryption"
-    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps -se0 02000000 61 > run.out
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto -se0 02000000 61 > run.out
     checkSuccess $?
 
     echo "Flush the sealed object"
@@ -253,15 +253,15 @@ echo "PolicyAuthValue and bind to different object, command encryption"
 echo ""
 
 echo "Create a signing key under the primary key - policy command code - sign, auth"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccsign-auth.bin > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccsign-auth.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a policy session, bind to primary key"
-${PREFIX}startauthsession -se p -bi 80000000 -pwdb pps > run.out
+${PREFIX}startauthsession -se p -bi 80000000 -pwdb sto > run.out
 checkSuccess $?
 
 echo "Policy command code - sign"
@@ -293,11 +293,11 @@ echo "PolicyAuthValue and bind to same object, command encryption"
 echo ""
 
 echo "Create a signing key under the primary key - policy command code - sign, auth"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccsign-auth.bin > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccsign-auth.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a policy session"
@@ -340,15 +340,15 @@ echo ""
 # 49 0c 8a ed 14 bb 8f 86 fc 5a 54 ef 0c d3 90 44 
 
 echo "Create a storage key under the primary key - policy command code - create, auth"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp pps -pwdk sto -pol policies/policycccreate-auth.bin > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp sto -pwdk sto -pol policies/policycccreate-auth.bin > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key"
-${PREFIX}load -hp 80000000 -ipr tmpspriv.bin -ipu tmpspub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmpspriv.bin -ipu tmpspub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a policy session, bind to primary key"
-${PREFIX}startauthsession -se p -bi 80000000 -pwdb pps > run.out
+${PREFIX}startauthsession -se p -bi 80000000 -pwdb sto > run.out
 checkSuccess $?
 
 echo "Policy command code - create"
@@ -384,11 +384,11 @@ echo "PolicyAuthValue and bind to same object, response encryption"
 echo ""
 
 echo "Create a storage key under the primary key - policy command code - create, auth"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp pps -pwdk sto -pol policies/policycccreate-auth.bin > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpspriv.bin -opu tmpspub.bin -pwdp sto -pwdk sto -pol policies/policycccreate-auth.bin > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key"
-${PREFIX}load -hp 80000000 -ipr tmpspriv.bin -ipu tmpspub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmpspriv.bin -ipu tmpspub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a policy session, bind to storage key"

@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testunseal.sh 1214 2018-05-14 20:44:25Z kgoldman $			#
+#	$Id: testunseal.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -46,11 +46,11 @@ echo "Seal and Unseal to Password"
 echo ""
 
 echo "Create a sealed data object"
-${PREFIX}create -hp 80000000 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin > run.out
+${PREFIX}create -hp 80000000 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin > run.out
 checkSuccess $?
 
 echo "Load the sealed data object"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Unseal the data blob"
@@ -97,11 +97,11 @@ ${PREFIX}hierarchychangeauth -hi p -pwdn ppp > run.out
 checkSuccess $?
 
 echo "Create a sealed data object with policysecret platform auth under primary key"
-${PREFIX}create -hp 80000000 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin -pol policies/policysecretp.bin > run.out
+${PREFIX}create -hp 80000000 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policysecretp.bin > run.out
 checkSuccess $?
 
 echo "Load the sealed data object under primary key"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a policy session"
@@ -136,42 +136,48 @@ echo "Flush the policy session"
 ${PREFIX}flushcontext -ha 03000000 > run.out
 checkSuccess $?
 
-# SHA-1
-
 # extend of aaa + 0 pad to digest length
-# 1d 47 f6 8a ce d5 15 f7 79 73 71 b5 54 e3 2d 47 
-# 98 1a a0 a0 
-
-# paste that with no white space to file policypcr16aaasha1.txt
-
+# pcrreset -ha 16
+# pcrextend -ha 16 -halg sha1 -halg sha256 -halg sha384 -halg sha512 -ic aaa
+# pcrread   -ha 16 -halg sha1 -halg sha256 -halg sha384 -halg sha512 -ns
+#
+# 1d47f68aced515f7797371b554e32d47981aa0a0
+# c2119764d11613bf07b7e204c35f93732b4ae336b4354ebc16e8d0c3963ebebb
+# 292963e31c34c272bdea27154094af9250ad97d9e7446b836d3a737c90ca47df2c399021cedd00853ef08497c5a42384
+# 7fe1e4cf015293136bf130183039b6a646ea008b75afd0f8466a9bfe531af8ada867a65828cfce486077529e54f1830aa49ab780562baea49c67a87334ffe778
+#
+# paste that with no white space to file policypcr16aaasha1.txt, etc.
+#
 # create AND term for policy PCR, PCR 16
-# > policymakerpcr -halg sha1 -bm 10000 -if policies/policypcr16aaasha1.txt -v -pr -of policies/policypcr.txt
-# 0000017f00000001000403000001cbf1e9f771d215a017e17979cfd7184f4b674a4d
+# and then convert to binary policy
 
+# > policymakerpcr -halg sha1   -bm 10000 -if policies/policypcr16aaasha1.txt   -v -pr -of policies/policypcr.txt
+# 0000017f00000001000403000001cbf1e9f771d215a017e17979cfd7184f4b674a4d
 # convert to binary policy
-# > policymaker -halg sha1 -if policies/policypcr.txt -of policies/policypcr16aaasha1.bin -pr -v
+# > policymaker -halg sha1   -if policies/policypcr.txt -of policies/policypcr16aaasha1.bin -pr -v
 # 12 b6 dd 16 43 82 ca e4 5d 0e d0 7f 9e 51 d1 63 
 # a4 24 f5 f2 
 
-# SHA-256
-
-# extend of aaa + 0 pad to digest length
-# > pcrextend -ha 16 -if policies/aaa
-
-# read the PCR 16 value back
-# > pcrread -ha 16 -ns
-# c2119764d11613bf07b7e204c35f93732b4ae336b4354ebc16e8d0c3963ebebb
-
-# paste that with no white space to file policypcr16aaasha256.txt
-
-# create AND term for policy PCR, PCR 16
-# > policymakerpcr -bm 10000 -if policies/policypcr16aaasha256.txt -v -pr -of policies/policypcr.txt
+# > policymakerpcr -halg sha256 -bm 10000 -if policies/policypcr16aaasha256.txt -v -pr -of policies/policypcr.txt
 # 0000017f00000001000b030000012c28901f71751debfba3f3b5bf3be9c54b8b2f8c1411f2c117a0e838ee4e6c13
-
-# convert to binary policy
-# > policymaker -if policies/policypcr.txt -of policies/policypcr16aaasha256.bin -pr -v
+# > policymaker -halg sha256 -if policies/policypcr.txt -of policies/policypcr16aaasha256.bin -pr -v
 # 76 44 f6 11 ea 10 d7 60 da b9 36 c3 95 1e 1d 85 
 # ec db 84 ce 9a 79 03 dd e1 c7 e0 a2 d9 09 a0 13 
+
+# > policymakerpcr -halg sha384 -bm 10000 -if policies/policypcr16aaasha384.txt -v -pr -of policies/policypcr.txt
+# 0000017f00000001000c0300000132edb1c501cb0af4f958c9d7f04a8f3122c1025067e3832a5137234ee0d875e9fa99d8d400ca4a37fe13a6f53aeb4932
+# > policymaker -halg sha384 -if policies/policypcr.txt -of policies/policypcr16aaasha384.bin -pr -v
+# ea aa 8b 90 d2 69 b6 31 c0 85 91 e4 bf 29 a3 12 
+# 87 04 f2 18 4c 02 ee 83 6a fb c4 c6 7f 28 c1 7f 
+# 86 ea 22 b7 00 3d 06 fc b4 57 a3 b5 c4 f7 3c 95 
+
+# > policymakerpcr -halg sha512 -bm 10000 -if policies/policypcr16aaasha512.txt -v -pr -of policies/policypcr.txt
+# 0000017f00000001000d03000001ea5218788d9d3a79e6f58608e321880aeb33e2282a3a0a87fb5b8868e7c6b3eedb9b66019409d8ea52d77e0dbfee5822c10ad0de3fd5cc776813a60423a7531f
+# policymaker -halg sha512 -if policies/policypcr.txt -of policies/policypcr16aaasha512.bin -pr -v
+# 1a 57 25 8d 99 64 d8 74 f0 85 0f 2c 8d 70 41 cc 
+# be 21 c2 0f df 7e 07 e6 b1 99 ea 05 66 46 b7 fb 
+# 23 55 77 4b 96 7e ab e2 65 db 5a 52 82 08 9c af 
+# 3c c0 10 e4 99 36 5d ec 7f 0d 3e 6d 2a 62 6d 2e 
 
 # sealed blob    80000001
 # policy session 03000000
@@ -180,15 +186,15 @@ echo ""
 echo "Seal and Unseal to PCRs"
 echo ""
 
-for HALG in "sha1" "sha256"
+for HALG in ${ITERATE_ALGS}
 do
 
     echo "Create a sealed data object ${HALG}"
-    ${PREFIX}create -hp 80000000 -nalg ${HALG} -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin -pol policies/policypcr16aaa${HALG}.bin > run.out
+    ${PREFIX}create -hp 80000000 -nalg ${HALG} -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr16aaa${HALG}.bin > run.out
     checkSuccess $?
 
     echo "Load the sealed data object"
-    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
     checkSuccess $?
 
     echo "Start a policy session ${HALG}"
@@ -253,15 +259,15 @@ for ALG in "" "ecc"
 do 
 
     echo "Create a sealed data object S1 under the primary key P1 80000000"
-    ${PREFIX}create -hp 80000000 -bl -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sea -if msg.bin -pol policies/policyccduplicate.bin > run.out
+    ${PREFIX}create -hp 80000000 -bl -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policyccduplicate.bin > run.out
     checkSuccess $?
 
     echo "Load the sealed data object S1 at 80000001"
-    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
     checkSuccess $?
 
     echo "Load the ${ALG} storage key K1 80000002"
-    ${PREFIX}load -hp 80000000 -ipr store${ALG}priv.bin -ipu store${ALG}pub.bin -pwdp pps > run.out
+    ${PREFIX}load -hp 80000000 -ipr store${ALG}priv.bin -ipu store${ALG}pub.bin -pwdp sto > run.out
     checkSuccess $?
 
     echo "Start a policy session 03000000"

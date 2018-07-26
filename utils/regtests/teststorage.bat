@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: teststorage.bat 1059 2017-08-14 19:53:38Z kgoldman $	#
+REM #		$Id: teststorage.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2017					#
+REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -40,7 +40,7 @@ REM ############################################################################
 
 setlocal enableDelayedExpansion
 
-REM Primary storage key at 80000000 password pps
+REM Primary storage key at 80000000 password sto
 REM storage key at 80000001 password sto
 
 echo ""
@@ -48,7 +48,7 @@ echo "RSA Storage key"
 echo ""
 
 echo "Load RSA the storage key 80000001 under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -59,7 +59,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-for %%N in (sha1 sha256 sha384) do (
+for %%N in (%ITERATE_ALGS%) do (
 
     for %%S in ("" "-se0 02000000 1") do (
 
@@ -124,12 +124,12 @@ echo "ECC Storage key"
 echo ""
 
 echo "Load ECC the storage key 80000001 under the primary key 80000000"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storeeccpriv.bin -ipu storeeccpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storeeccpriv.bin -ipu storeeccpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-for %%N in (sha1 sha256 sha384) do (
+for %%N in (%ITERATE_ALGS%) do (
 
     for %%S in ("" "-se0 02000000 1") do (
 

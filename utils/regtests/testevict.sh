@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testevict.sh 979 2017-04-04 17:57:18Z kgoldman $		#
+#		$Id: testevict.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -46,11 +46,11 @@ echo "Evict Control"
 echo ""
 
 echo "Create an unrestricted signing key"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig > run.out
 checkSuccess $?
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Make the signing key persistent"

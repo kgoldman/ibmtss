@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 1209 2018-05-10 21:26:10Z kgoldman $		#
+#		$Id: testdup.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -75,19 +75,19 @@ for ALG in "" "ecc"
 do
     for ENC in "" "-salg aes -ik tmprnd.bin"
     do 
-	for HALG in sha1 sha256 sha384
+	for HALG in ${ITERATE_ALGS}
 	do
 
 	    echo "Create a signing key K2 under the primary key, with policy"
-	    ${PREFIX}create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccduplicate.bin > run.out
+	    ${PREFIX}create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccduplicate.bin > run.out
 	    checkSuccess $?
 
 	    echo "Load the ${ALG} storage key K1 80000001"
-	    ${PREFIX}load -hp 80000000 -ipr store${ALG}priv.bin -ipu store${ALG}pub.bin -pwdp pps > run.out
+	    ${PREFIX}load -hp 80000000 -ipr store${ALG}priv.bin -ipu store${ALG}pub.bin -pwdp sto > run.out
 	    checkSuccess $?
 
 	    echo "Load the signing key K2 80000002"
-	    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+	    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 	    checkSuccess $?
 
 	    echo "Sign a digest, $HALG"
@@ -183,11 +183,11 @@ ${PREFIX}duplicate -ho 80000001 -hp 80000000 -od tmpdup.bin -oss tmpss.bin -se0 
 checkSuccess $?
 
 echo "Import K2 under storage key"
-${PREFIX}import -hp 80000000 -pwdp pps -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin -opr tmppriv.bin > run.out
+${PREFIX}import -hp 80000000 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin -opr tmppriv.bin > run.out
 checkSuccess $?
 
 echo "Load the duplicated signing key K2 80000002"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Sign a digest"
@@ -207,11 +207,15 @@ ${PREFIX}flushcontext -ha 03000000 > run.out
 checkSuccess $?
 
 echo ""
-echo "Import PEM RSA"
+echo "Import PEM RSA signing key under RSA and ECC storage key"
 echo ""
 
 echo "generate the signing key with openssl"
 openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048
+
+echo "load the ECC storage key"
+${PREFIX}load -hp 80000000 -pwdp sto -ipr storeeccpriv.bin -ipu storeeccpub.bin > run.out
+checkSuccess $?
 
 echo "Start an HMAC auth session"
 ${PREFIX}startauthsession -se h > run.out
@@ -219,34 +223,38 @@ checkSuccess $?
 
 for SESS in "" "-se0 02000000 1"
 do
-    for HALG in sha1 sha256 sha384
+    for HALG in ${ITERATE_ALGS}
     do
 
-	echo "Import the signing key under the primary key ${HALG}"
-	${PREFIX}importpem -hp 80000000 -pwdp pps -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
-	checkSuccess $?
+	for PARENT in 80000000 80000001
+	do
 
-	echo "Load the TPM signing key"
-	${PREFIX}load -hp 80000000 -pwdp pps -ipu tmppub.bin -ipr tmppriv.bin > run.out
-	checkSuccess $?
+		echo "Import the signing key under the parent key ${PARENT} ${HALG}"
+		${PREFIX}importpem -hp ${PARENT} -pwdp sto -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
+		checkSuccess $?
 
-	echo "Sign the message ${HALG} ${SESS}"
-	${PREFIX}sign -hk 80000001 -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
-	checkSuccess $?
+		echo "Load the TPM signing key"
+		${PREFIX}load -hp ${PARENT} -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+		checkSuccess $?
 
-	echo "Verify the signature ${HALG}"
-	${PREFIX}verifysignature -hk 80000001 -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
-	checkSuccess $?
+		echo "Sign the message ${HALG} ${SESS}"
+		${PREFIX}sign -hk 80000002 -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
+		checkSuccess $?
 
-	echo "Flush the signing key"
-	${PREFIX}flushcontext -ha 80000001 > run.out
-	checkSuccess $?
+		echo "Verify the signature ${HALG}"
+		${PREFIX}verifysignature -hk 80000002 -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
+		checkSuccess $?
 
+		echo "Flush the signing key"
+		${PREFIX}flushcontext -ha 80000002 > run.out
+		checkSuccess $?
+
+	done
     done
 done
 
 echo ""
-echo "Import PEM EC "
+echo "Import PEM EC signing key under RSA and ECC storage key"
 echo ""
 
 echo "generate the signing key with openssl"
@@ -254,31 +262,39 @@ openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout 
 
 for SESS in "" "-se0 02000000 1"
 do
-    for HALG in sha1 sha256 sha384
+    for HALG in ${ITERATE_ALGS}
     do
 
-	echo "Import the signing key under the primary key ${HALG}"
-	${PREFIX}importpem -hp 80000000 -pwdp pps -ipem tmpecprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
-	checkSuccess $?
+	for PARENT in 80000000 80000001
+	do
 
-	echo "Load the TPM signing key"
-	${PREFIX}load -hp 80000000 -pwdp pps -ipu tmppub.bin -ipr tmppriv.bin > run.out
-	checkSuccess $?
+	    echo "Import the signing key under the parent key ${PARENT} ${HALG}"
+	    ${PREFIX}importpem -hp ${PARENT} -pwdp sto -ipem tmpecprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
+	    checkSuccess $?
 
-	echo "Sign the message ${HALG} ${SESS}"
-	${PREFIX}sign -hk 80000001 -ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
-	checkSuccess $?
+	    echo "Load the TPM signing key"
+	    ${PREFIX}load -hp ${PARENT} -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+	    checkSuccess $?
 
-	echo "Verify the signature ${HALG}"
-	${PREFIX}verifysignature -hk 80000001 -ecc -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
-	checkSuccess $?
+	    echo "Sign the message ${HALG} ${SESS}"
+	    ${PREFIX}sign -hk 80000002 -ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
+	    checkSuccess $?
 
-	echo "Flush the signing key"
-	${PREFIX}flushcontext -ha 80000001 > run.out
-	checkSuccess $?
+	    echo "Verify the signature ${HALG}"
+	    ${PREFIX}verifysignature -hk 80000002 -ecc -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
+	    checkSuccess $?
 
+	    echo "Flush the signing key"
+	    ${PREFIX}flushcontext -ha 80000002 > run.out
+	    checkSuccess $?
+
+	done
     done
 done
+
+echo "Flush the ECC storage key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
 
 echo "Flush the auth session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
@@ -297,7 +313,7 @@ echo ""
 # at TPM 1, duplicate object to K1 outer wrapper, AES wrapper
 
 echo "Create a storage key K2"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpk2priv.bin -opu tmpk2pub.bin -pwdp pps -pwdk k2 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpk2priv.bin -opu tmpk2pub.bin -pwdp sto -pwdk k2 > run.out
 checkSuccess $?
 
 echo "Load the storage key K1 80000001 public key "
@@ -305,11 +321,11 @@ ${PREFIX}loadexternal -hi p -ipu storepub.bin > run.out
 checkSuccess $?
 
 echo "Create a signing key O1 with policy"
-${PREFIX}create -hp 80000000 -si -opr tmpsignpriv.bin -opu tmpsignpub.bin -pwdp pps -pwdk sig -pol policies/policyccduplicate.bin > run.out
+${PREFIX}create -hp 80000000 -si -opr tmpsignpriv.bin -opu tmpsignpub.bin -pwdp sto -pwdk sig -pol policies/policyccduplicate.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key O1 80000002 under the primary key"
-${PREFIX}load -hp 80000000 -ipr tmpsignpriv.bin -ipu tmpsignpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmpsignpriv.bin -ipu tmpsignpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Save the signing key O1 name"
@@ -346,7 +362,7 @@ checkSuccess $?
 # at TPM 2
 
 echo "Load storage key K1 80000001 public and private key"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Load storage key K2 80000002 public key"
@@ -368,7 +384,7 @@ checkSuccess $?
 # at TPM 3
 
 echo "Load storage key K2 80000001 public key"
-${PREFIX}load -hp 80000000 -ipr tmpk2priv.bin -ipu tmpk2pub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmpk2priv.bin -ipu tmpk2pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Import rewraped O1 to K2"

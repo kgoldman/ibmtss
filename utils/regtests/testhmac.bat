@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testhmac.bat 820 2016-11-16 23:35:35Z kgoldman $		#
+REM #		$Id: testhmac.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -55,12 +55,12 @@ REM loaded HMAC key 80000001
 REM primary HMAC key 80000001
 REM sequence object 80000002
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
 
     for %%S in ("" "-se0 02000000 1") do (
 
     	echo "Load the %%H keyed hash key under the primary key"
-    	%TPM_EXE_PATH%load -hp 80000000 -ipr khpriv%%H.bin -ipu khpub%%H.bin -pwdp pps > run.out
+    	%TPM_EXE_PATH%load -hp 80000000 -ipr khpriv%%H.bin -ipu khpub%%H.bin -pwdp sto > run.out
     	IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
     	)
@@ -113,7 +113,7 @@ for %%H in (sha1 sha256 sha384) do (
 	   exit /B 1
 	)
 
-	echo "Create primary HMAC key - $HALG"
+	echo "Create primary HMAC key - %%H"
 	%TPM_EXE_PATH%createprimary -kh -halg %%H -pwdk khp > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
@@ -161,7 +161,7 @@ echo ""
 echo "Hash"
 echo ""
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
 
     for %%S in ("" "-se0 02000000 1") do (
 
@@ -230,7 +230,7 @@ echo "Sign with ticket"
 echo ""
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrpriv.bin -ipu signrpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrpriv.bin -ipu signrpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -260,7 +260,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Sign a digest with a restricted signing key and ticket - should fail"
-%TPM_EXE_PATH%sign -hk 80000001 -halg $HALG -if msg.bin -tk tkt.bin -os sig.bin -pwdk sig  > run.out
+%TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if msg.bin -tk tkt.bin -os sig.bin -pwdk sig  > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
@@ -314,7 +314,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Sign a digest with a restricted signing key and ticket - should fail"
-%TPM_EXE_PATH%sign -hk 80000001 -halg $HALG -if msg.bin -tk tkt.bin -os sig.bin -pwdk sig  > run.out
+%TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if msg.bin -tk tkt.bin -os sig.bin -pwdk sig  > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )

@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testecc.sh 1066 2017-08-28 20:48:00Z kgoldman $			#
+#	$Id: testecc.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -60,7 +60,7 @@ do
     do
 
 	echo "Create ${ATTR} for curve ${CURVE}"
-	${PREFIX}create -hp 80000000 -pwdp pps ${ATTR} -ecc ${CURVE} > run.out
+	${PREFIX}create -hp 80000000 -pwdp sto ${ATTR} -ecc ${CURVE} > run.out
 	checkSuccess $?
 
     done
@@ -86,11 +86,11 @@ do
     do
 
 	echo "Create a $KEYTYPE ECDAA signing key under the primary key"
-	${PREFIX}create -hp 80000000 -ecc bnp256 $KEYTYPE -nalg sha256 -halg sha256 -kt f -kt p -opr tmprpriv.bin -opu tmprpub.bin -pwdp pps -pwdk siga > run.out
+	${PREFIX}create -hp 80000000 -ecc bnp256 $KEYTYPE -nalg sha256 -halg sha256 -kt f -kt p -opr tmprpriv.bin -opu tmprpub.bin -pwdp sto -pwdk siga > run.out
 	checkSuccess $?
 
 	echo "Load the signing key 80000001 under the primary key 80000000"
-	${PREFIX}load -hp 80000000 -ipr tmprpriv.bin -ipu tmprpub.bin -pwdp pps > run.out
+	${PREFIX}load -hp 80000000 -ipr tmprpriv.bin -ipu tmprpub.bin -pwdp sto > run.out
 	checkSuccess $?
 
     	#${PREFIX}getcapability -cap 1 -pr 80000001
@@ -217,7 +217,7 @@ checkSuccess $?
 # two-phase operation involving ecephemeral and zgen2phase
 
 echo "Create decryption key for curve nistp256"
-${PREFIX}create -hp 80000000 -pwdp pps -den -ecc nistp256 -opu QsBpub.bin > run.out
+${PREFIX}create -hp 80000000 -pwdp sto -den -ecc nistp256 -opu QsBpub.bin > run.out
 checkSuccess $?
 
 echo "EC Ephemeral for curve nistp256"
@@ -233,11 +233,11 @@ checkSuccess $?
 # produced by a create commamnd using another TPM
 
 echo "Create decryption key for curve nistp256"
-${PREFIX}create -hp 80000000 -pwdp pps -den -ecc nistp256 -opr QsApriv.bin -opu QsApub.bin > run.out
+${PREFIX}create -hp 80000000 -pwdp sto -den -ecc nistp256 -opr QsApriv.bin -opu QsApub.bin > run.out
 checkSuccess $?
 
 echo "Load the decryption key under the primary key, 80000001"
-${PREFIX}load -hp 80000000 -ipr QsApriv.bin -ipu QsApub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr QsApriv.bin -ipu QsApub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "EC Ephemeral for curve nistp256"

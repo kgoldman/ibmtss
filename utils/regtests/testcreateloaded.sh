@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testcreateloaded.sh 1112 2017-12-13 21:55:26Z kgoldman $		#
+#	$Id: testcreateloaded.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -99,7 +99,7 @@ echo "CreateLoaded Child Key"
 echo ""
 
 echo "CreateLoaded child storage key at 80000001, parent 80000000"
-${PREFIX}createloaded -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk ppp -opu tmpppub.bin -opr tmpppriv.bin > run.out
+${PREFIX}createloaded -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk ppp -opu tmpppub.bin -opr tmpppriv.bin > run.out
 checkSuccess $?
 
 echo "Create a signing key under the child storage key 80000001"
@@ -119,7 +119,7 @@ ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo "Reload the createloaded child storage key at 80000001, parent 80000000"
-${PREFIX}load -hp 80000000 -ipr tmpppriv.bin -ipu tmpppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmpppriv.bin -ipu tmpppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Reload the child signing key at 80000002 under the child storage key 80000001"
@@ -139,11 +139,11 @@ echo "CreateLoaded Derived Key"
 echo ""
 
 echo "Create a derivation parent under the primary key"
-${PREFIX}create -hp 80000000 -dp -opr tmpdppriv.bin -opu tmpdppub.bin -pwdp pps -pwdk dp > run.out
+${PREFIX}create -hp 80000000 -dp -opr tmpdppriv.bin -opu tmpdppub.bin -pwdp sto -pwdk dp > run.out
 checkSuccess $?
 
 echo "Load the derivation parent to 80000001"
-${PREFIX}load -hp 80000000 -ipr tmpdppriv.bin -ipu tmpdppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmpdppriv.bin -ipu tmpdppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Create an EC signing key 80000002 under the derivation parent key"

@@ -448,9 +448,8 @@
 #define  TPM_ALG_SHA384              (TPM_ALG_ID)(ALG_SHA384_VALUE)
 #endif
 #define  ALG_SHA512_VALUE            0x000D
-#if defined ALG_SHA512 && ALG_SHA512 == YES
 #define  TPM_ALG_SHA512              (TPM_ALG_ID)(ALG_SHA512_VALUE)
-#endif
+
 #define  ALG_NULL_VALUE              0x0010
 #define  TPM_ALG_NULL                (TPM_ALG_ID)(ALG_NULL_VALUE)
 #define  ALG_SM3_256_VALUE           0x0012
@@ -1483,27 +1482,10 @@ typedef  UINT32             TPM_CC;
     (LIBRARY_COMMAND_ARRAY_SIZE + VENDOR_COMMAND_ARRAY_SIZE)
 
     
-#define MAX_HASH_BLOCK_SIZE  (						\
-			      MAX(ALG_SHA1 * SHA1_BLOCK_SIZE,		\
-				  MAX(ALG_SHA256 * SHA256_BLOCK_SIZE,	\
-				      MAX(ALG_SHA384 * SHA384_BLOCK_SIZE, \
-					  MAX(ALG_SM3_256 * SM3_256_BLOCK_SIZE, \
-					      MAX(ALG_SHA512 * SHA512_BLOCK_SIZE, \
-						  0 ))))))
+#define MAX_HASH_BLOCK_SIZE  128	/* SHA-384 */
+#define MAX_DIGEST_SIZE      48		/* SHA-384 */
 
-#define MAX_DIGEST_SIZE      (						\
-			      MAX(ALG_SHA1 * SHA1_DIGEST_SIZE,		\
-				  MAX(ALG_SHA256 * SHA256_DIGEST_SIZE,	\
-				      MAX(ALG_SHA384 * SHA384_DIGEST_SIZE, \
-					  MAX(ALG_SM3_256 * SM3_256_DIGEST_SIZE, \
-					      MAX(ALG_SHA512 * SHA512_DIGEST_SIZE, \
-						  0 ))))))
-
-#if MAX_DIGEST_SIZE == 0 || MAX_HASH_BLOCK_SIZE == 0
-#error "Hash data not valid"
-#endif
-
-#define HASH_COUNT (ALG_SHA1+ALG_SHA256+ALG_SHA384+ALG_SM3_256+ALG_SHA512)
+#define HASH_COUNT 		3	/* 3 PCR banks */
 
 TPM2B_TYPE(MAX_HASH_BLOCK, MAX_HASH_BLOCK_SIZE);
 

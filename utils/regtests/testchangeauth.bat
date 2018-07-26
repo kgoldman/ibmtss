@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testchangeauth.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testchangeauth.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -49,7 +49,7 @@ for %%B in ("" "-bi 80000001 -pwdb sig") do (
     for %%S in ("" "-se0 02000000 1") do (
 
 	echo "Load the signing key under the primary key"
-	%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+	%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	   )
@@ -67,7 +67,7 @@ for %%B in ("" "-bi 80000001 -pwdb sig") do (
 	   )
 
 	echo "Load the signing key with the changed auth %%~S"
-	%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu signpub.bin -pwdp pps %%~S > run.out
+	%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu signpub.bin -pwdp sto %%~S > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	   )

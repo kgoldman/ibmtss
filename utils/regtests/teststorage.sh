@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: teststorage.sh 1059 2017-08-14 19:53:38Z kgoldman $		#
+#	$Id: teststorage.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -41,7 +41,7 @@
 #										#
 #################################################################################
 
-# Primary storage key at 80000000 password pps
+# Primary storage key at 80000000 password sto
 # storage key at 80000001 password sto
 
 echo ""
@@ -49,14 +49,14 @@ echo "RSA Storage key"
 echo ""
 
 echo "Load RSA the storage key 80000001 under the primary key 80000000"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an HMAC auth session"
 ${PREFIX}startauthsession -se h > run.out
 checkSuccess $?
 
-for NALG in "sha1" "sha256" "sha384"
+for NALG in ${ITERATE_ALGS}
 do
 
     for SESS in "" "-se0 02000000 1"
@@ -105,10 +105,10 @@ echo "ECC Storage key"
 echo ""
 
 echo "Load ECC the storage key 80000001 under the primary key 80000000"
-${PREFIX}load -hp 80000000 -ipr storeeccpriv.bin -ipu storeeccpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr storeeccpriv.bin -ipu storeeccpub.bin -pwdp sto > run.out
 checkSuccess $?
 
-for NALG in "sha1" "sha256" "sha384"
+for NALG in ${ITERATE_ALGS}
 do
 
     for SESS in "" "-se0 02000000 1"

@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testhmac.sh 990 2017-04-19 13:31:24Z kgoldman $		#
+#		$Id: testhmac.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -54,14 +54,14 @@ checkSuccess $?
 # primary HMAC key 80000001
 # sequence object 80000002
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
 
     for SESS in "" "-se0 02000000 1"
     do
 
 	echo "Load the ${HALG} keyed hash key under the primary key"
-	${PREFIX}load -hp 80000000 -ipr khpriv${HALG}.bin -ipu khpub${HALG}.bin -pwdp pps > run.out
+	${PREFIX}load -hp 80000000 -ipr khpriv${HALG}.bin -ipu khpub${HALG}.bin -pwdp sto > run.out
 	checkSuccess $?
 
 	echo "HMAC ${HALG} using the keyed hash key, message from file ${SESS}"
@@ -131,7 +131,7 @@ echo ""
 echo "Hash"
 echo ""
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
 
     for SESS in "" "-se0 02000000 1"
@@ -184,7 +184,7 @@ echo "Sign with ticket"
 echo ""
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signrpriv.bin -ipu signrpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signrpriv.bin -ipu signrpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Hash and create ticket"
@@ -204,7 +204,7 @@ ${PREFIX}hash -hi p -halg sha256 -if policies/msgtpmgen.bin -oh sig.bin -tk tkt.
 checkSuccess $?
 
 echo "Sign a digest with a restricted signing key and ticket - should fail"
-${PREFIX}sign -hk 80000001 -halg $HALG -if msg.bin -tk tkt.bin -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 80000001 -halg sha256 -if msg.bin -tk tkt.bin -os sig.bin -pwdk sig > run.out
 checkFailure $?
 
 echo "Hash sequence start"
@@ -220,7 +220,7 @@ ${PREFIX}sequencecomplete -hi p -hs 80000002 -pwds aaa -of tmp.bin -tk tkt.bin >
 checkSuccess $?
 
 echo "Sign a digest with a restricted signing key and no ticket - should fail"
-${PREFIX}sign -hk 80000001 -halg  sha256 -if msg.bin -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 80000001 -halg sha256 -if msg.bin -os sig.bin -pwdk sig > run.out
 checkFailure $?
 
 echo "Sign a digest with a restricted signing key and ticket"
@@ -240,7 +240,7 @@ ${PREFIX}sequencecomplete -hi p -hs 80000002 -pwds aaa -of tmp.bin -tk tkt.bin >
 checkSuccess $?
 
 echo "Sign a digest with a restricted signing key and ticket - should fail"
-${PREFIX}sign -hk 80000001 -halg $HALG -if msg.bin -tk tkt.bin -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 80000001 -halg sha256 -if msg.bin -tk tkt.bin -os sig.bin -pwdk sig > run.out
 checkFailure $?
 
 echo "Flush the signing key"

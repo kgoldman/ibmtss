@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsalt.bat 1069 2017-08-29 17:11:32Z kgoldman $		#
+REM #		$Id: testsalt.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2017					#
+REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -46,20 +46,20 @@ echo ""
 
 for %%A in ("-rsa" "-ecc nistp256") do (
 
-    for %%H in (sha1 sha256 sha384) do (
+    for %%H in (%ITERATE_ALGS%) do (
 
 	REM In general a storage key can be used.  A decryption key is
 	REM used here because the hash algorithm doesn't have to match
 	REM that of the parent.
 
     	echo "Create a %%A %%H storage key under the primary key "
-	%TPM_EXE_PATH%create -hp 80000000 -nalg %%H -halg %%H %%~A -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 222 > run.out
+	%TPM_EXE_PATH%create -hp 80000000 -nalg %%H -halg %%H %%~A -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 222 > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
 	
 	echo "Load the %%A storage key 80000001 under the primary key"
-	%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+	%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
@@ -71,7 +71,7 @@ for %%A in ("-rsa" "-ecc nistp256") do (
 	)
 	
 	echo "Create a signing key using the salt"
-	%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+	%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
@@ -98,7 +98,7 @@ echo "Convert key pair to plaintext DER format"
 openssl rsa -inform pem -outform der -in tmpkeypairrsa.pem -out tmpkeypairrsa.der -passin pass:rrrr > run.out
 openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
 
     echo "Load the RSA openssl key pair in the NULL hierarchy 80000001 - %%H"
     %TPM_EXE_PATH%loadexternal -halg %%H -st -ider tmpkeypairrsa.der > run.out
@@ -113,7 +113,7 @@ for %%H in (sha1 sha256 sha384) do (
     )
 
     echo "Create a signing key using the salt"
-    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -126,7 +126,7 @@ for %%H in (sha1 sha256 sha384) do (
 
 )
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
 
     echo "Load the ECC openssl key pair in the NULL hierarchy 80000001 - %%H"
     %TPM_EXE_PATH%loadexternal -ecc -halg %%H -st -ider tmpkeypairecc.der > run.out
@@ -141,7 +141,7 @@ for %%H in (sha1 sha256 sha384) do (
     )
 
     echo "Create a signing key using the salt"
-    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -157,7 +157,7 @@ echo ""
 echo "Salt Session - CreatePrimary storage key"
 echo ""
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
     
     echo "Create a primary storage key - %%H"
     %TPM_EXE_PATH%createprimary -nalg %%H -hi p > run.out
@@ -172,7 +172,7 @@ for %%H in (sha1 sha256 sha384) do (
     )
 
     echo "Create a signing key using the salt"
-    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -189,7 +189,7 @@ echo ""
 echo "Salt Session - CreatePrimary RSA key"
 echo ""
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
     
     echo "Create a primary RSA key - %%H"
     %TPM_EXE_PATH%createprimary -nalg %%H -halg %%H -hi p -deo > run.out
@@ -227,7 +227,7 @@ echo "Salt Session - EvictControl"
 echo ""
 
 echo "Load the storage key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -245,7 +245,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a signing key using the salt"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -267,7 +267,7 @@ echo "Salt Session - ContextSave and ContextLoad"
 echo ""
 
 echo "Load the storage key at 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -297,7 +297,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a signing key using the salt"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -313,7 +313,7 @@ echo "Salt Audit Session - PCR Read, Read Public, NV Read Public"
 echo ""
 
 echo "Load the storage key at 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

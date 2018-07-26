@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #	$Id: testcreateloaded.bat 1114 2017-12-13 22:32:14Z kgoldman $		#
+REM #	$Id: testcreateloaded.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
@@ -117,7 +117,7 @@ echo "CreateLoaded Child Key"
 echo ""
 
 echo "CreateLoaded child storage key at 80000001, parent 80000000"
-%TPM_EXE_PATH%createloaded -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk ppp  -opu tmpppub.bin -opr tmpppriv.bin > run.out
+%TPM_EXE_PATH%createloaded -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk ppp  -opu tmpppub.bin -opr tmpppriv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -147,7 +147,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Reload the createloaded child storage key at 80000001, parent 80000000"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmpppriv.bin -ipu tmpppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmpppriv.bin -ipu tmpppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -175,13 +175,13 @@ echo "CreateLoaded Derived Key"
 echo ""
 
 echo "Create a derivation parent under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -dp -opr tmpdppriv.bin -opu tmpdppub.bin -pwdp pps -pwdk dp > run.out
+%TPM_EXE_PATH%create -hp 80000000 -dp -opr tmpdppriv.bin -opu tmpdppub.bin -pwdp sto -pwdk dp > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the derivation parent to 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmpdppriv.bin -ipu tmpdppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmpdppriv.bin -ipu tmpdppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

@@ -140,6 +140,9 @@ int main(int argc, char *argv[])
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
 		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
+		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
@@ -161,6 +164,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    palg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    palg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -palg\n", argv[i]);
@@ -417,8 +423,8 @@ static void printUsage(void)
     printf("\t-hp pcr handle (may be specified more than once)\n");
     printf("\t-hk quoting key handle\n");
     printf("\t[-pwdk password for quoting key (default empty)]\n");
-    printf("\t[-halg for signing (sha1, sha256, sha384) (default sha256)]\n");
-    printf("\t[-palg for PCR bank selection (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg for signing (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-palg for PCR bank selection (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-salg signature algorithm (rsa, ecc) (default rsa)]\n");
     printf("\t[-qd qualifying data file name]\n");
     printf("\t[-os quote signature file name (default do not save)]\n");

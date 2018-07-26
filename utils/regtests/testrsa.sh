@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testrsa.sh 1209 2018-05-10 21:26:10Z kgoldman $			#
+#	$Id: testrsa.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -46,7 +46,7 @@ echo "RSA decryption key"
 echo ""
 
 echo "Load the decryption key under the primary key"
-${PREFIX}load -hp 80000000 -ipr derpriv.bin -ipu derpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr derpriv.bin -ipu derpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "RSA encrypt with the encryption key"
@@ -71,13 +71,13 @@ echo "RSA decryption key to sign with OID"
 echo ""
 
 echo "Load the RSA decryption key"
-${PREFIX}load -hp 80000000 -ipu derpub.bin -ipr derpriv.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipu derpub.bin -ipr derpriv.bin -pwdp sto > run.out
 checkSuccess $?
 
-HALG=("sha1" "sha256" "sha384")
-HSIZ=("20" "32" "48")
+HALG=(${ITERATE_ALGS})
+HSIZ=("20" "32" "48" "64")
 
-for ((i = 0 ; i < 3 ; i++))
+for ((i = 0 ; i < 4 ; i++))
 do
 
     echo "Decrypt/Sign with a caller specified OID - ${HALG[i]}"
@@ -99,9 +99,104 @@ echo "Flush the RSA signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
+echo ""
+echo "Import PEM RSA encryption key"
+echo ""
+
+echo "generate the signing key with openssl"
+openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048
+
+echo "Start an HMAC auth session"
+${PREFIX}startauthsession -se h > run.out
+checkSuccess $?
+
+for SESS in "" "-se0 02000000 1"
+do
+
+    echo "Import the encryption key under the primary key"
+    ${PREFIX}importpem -hp 80000000 -den -pwdp sto -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin > run.out
+    checkSuccess $?
+
+    echo "Load the TPM encryption key"
+    ${PREFIX}load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+    checkSuccess $?
+
+    echo "Sign the message ${SESS} - should fail"
+    ${PREFIX}sign -hk 80000001 -pwdk rrrr -if policies/aaa -os tmpsig.bin ${SESS} > run.out
+    checkFailure $?
+
+    echo "RSA encrypt with the encryption key"
+    ${PREFIX}rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+    checkSuccess $?
+
+    echo "RSA decrypt with the decryption key ${SESS}"
+    ${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin ${SESS} > run.out
+    checkSuccess $?
+
+    echo "Verify the decrypt result"
+    tail -c 3 dec.bin > tmp.bin
+    diff policies/aaa tmp.bin
+    checkSuccess $?
+
+    echo "Flush the encryption key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+echo "Flush the session"
+${PREFIX}flushcontext -ha 02000000 > run.out
+checkSuccess $?
+
+echo ""
+echo "Loadexternal DER encryption key"
+echo ""
+
+echo "generate the signing key with openssl"
+openssl genrsa -out tmpkeypair.pem -aes256 -passout pass:rrrr 2048
+
+echo "Convert key pair to plaintext DER format"
+
+openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
+
+echo "Start an HMAC auth session"
+${PREFIX}startauthsession -se h > run.out
+checkSuccess $?
+
+for SESS in "" "-se0 02000000 1"
+do
+
+    echo "Load the openssl key pair in the NULL hierarchy 80000001"
+    ${PREFIX}loadexternal -den -ider tmpkeypair.der -pwdk rrrr > run.out
+    checkSuccess $?
+
+    echo "RSA encrypt with the encryption key"
+    ${PREFIX}rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+    checkSuccess $?
+
+    echo "RSA decrypt with the decryption key ${SESS}"
+    ${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin ${SESS} > run.out
+    checkSuccess $?
+
+    echo "Verify the decrypt result"
+    tail -c 3 dec.bin > tmp.bin
+    diff policies/aaa tmp.bin
+    checkSuccess $?
+
+    echo "Flush the encryption key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+echo "Flush the session"
+${PREFIX}flushcontext -ha 02000000 > run.out
+checkSuccess $?
+
 rm -f tmpmsg.bin
 rm -f tmpdig.bin
 rm -f tmpsig.bin
+rm -f tmpprivkey.pem
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 02000000

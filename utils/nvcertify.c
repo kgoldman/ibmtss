@@ -139,6 +139,9 @@ int main(int argc, char *argv[])
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
 		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
+		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
@@ -407,7 +410,7 @@ static void printUsage(void)
     printf("\t[-pwdn password for NV index (default empty)]\n");
     printf("\t-hk certifying key handle\n");
     printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-salg signature algorithm (rsa, ecc) (default rsa)]\n");
     printf("\t-sz data size\n");
     printf("\t[-off offset (default 0)]\n");

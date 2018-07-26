@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testencsession.sh 1209 2018-05-10 21:26:10Z kgoldman $	#
+#		$Id: testencsession.sh 1277 2018-07-23 20:30:23Z kgoldman $	#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -53,7 +53,7 @@ echo "Parameter Encryption - Basic"
 echo ""
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 for MODE0 in xor aes
@@ -130,7 +130,7 @@ ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo "Create a signing key, policy command code certify"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policycccertify.bin > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policycccertify.bin > run.out
 checkSuccess $?
 
 echo ""
@@ -138,7 +138,7 @@ echo "Salt encrypt and decrypt HMAC sessions"
 echo ""
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an auth session"
@@ -183,7 +183,7 @@ echo "Bind encrypt and decrypt HMAC sessions"
 echo ""
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an auth session"
@@ -234,7 +234,7 @@ echo "Salt encrypt and decrypt policy sessions"
 echo ""
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an auth session"
@@ -287,7 +287,7 @@ echo "Bind encrypt and decrypt policy sessions"
 echo ""
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an auth session"

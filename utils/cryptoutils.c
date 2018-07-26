@@ -1430,6 +1430,10 @@ TPM_RC verifyRSASignatureFromRSA(unsigned char *message,
 	    nid = NID_sha384;
 	    md = EVP_sha384();
 	    break;
+	  case TPM_ALG_SHA512:
+	    nid = NID_sha512;
+	    md = EVP_sha512();
+	    break;
 	  default:
 	    printf("verifyRSASignatureFromRSA: Unknown hash algorithm %04x\n", halg);
 	    rc = TSS_RC_BAD_HASH_ALGORITHM;

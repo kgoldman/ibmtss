@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testecc.bat 1090 2017-10-30 16:28:38Z kgoldman $		#
+REM #		$Id: testecc.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
@@ -59,7 +59,7 @@ for %%C in (bnp256 nistp256 nistp384) do (
     for %%A in (-si -sir) do (
 
 	echo "Create %%A for curve %%C"
-	%TPM_EXE_PATH%create -hp 80000000 -pwdp pps %%A -ecc %%C > run.out
+	%TPM_EXE_PATH%create -hp 80000000 -pwdp sto %%A -ecc %%C > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	    exit /B 1
 	)
@@ -88,13 +88,13 @@ for %%K in ("-dau" "-dar") do (
     for %%S in ("" "-se0 02000000 1") do (
 
 	echo "Create a %%~K ECDAA signing key under the primary key"
-	%TPM_EXE_PATH%create -hp 80000000 -ecc bnp256 %%~K -nalg sha256 -halg sha256 -kt f -kt p -opr tmprpriv.bin -opu tmprpub.bin -pwdp pps -pwdk siga > run.out
+	%TPM_EXE_PATH%create -hp 80000000 -ecc bnp256 %%~K -nalg sha256 -halg sha256 -kt f -kt p -opr tmprpriv.bin -opu tmprpub.bin -pwdp sto -pwdk siga > run.out
     	IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
     	)
 
 	echo "Load the signing key 80000001 under the primary key 80000000"
-	%TPM_EXE_PATH%load -hp 80000000 -ipr tmprpriv.bin -ipu tmprpub.bin -pwdp pps > run.out
+	%TPM_EXE_PATH%load -hp 80000000 -ipr tmprpriv.bin -ipu tmprpub.bin -pwdp sto > run.out
     	IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
     	)
@@ -246,7 +246,7 @@ REM pair and ephemeral for use in demonstrating (on the local side) a
 REM two-phase operation involving ecephemeral and zgen2phase
 
 echo "Create decryption key for curve nistp256"
-%TPM_EXE_PATH%create -hp 80000000 -pwdp pps -den -ecc nistp256 -opu QsBpub.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -den -ecc nistp256 -opu QsBpub.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -266,13 +266,13 @@ REM created by ecephemeral on B side QsBpub.bin is presumed in a form
 REM produced by a create commamnd using another TPM
 
 echo "Create decryption key for curve nistp256"
-%TPM_EXE_PATH%create -hp 80000000 -pwdp pps -den -ecc nistp256 -opr QsApriv.bin -opu QsApub.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -den -ecc nistp256 -opr QsApriv.bin -opu QsApub.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the decryption key under the primary key, 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr QsApriv.bin -ipu QsApub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr QsApriv.bin -ipu QsApub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -289,7 +289,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Execute zgen2phase for curve ${CURVE}"
+echo "Execute zgen2phase for curve nistp256"
 %TPM_EXE_PATH%zgen2phase -hk 80000001 -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1

@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: reg.sh 1143 2018-01-31 20:02:55Z stefanb $			#
+#	$Id: reg.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2014						#
+# (c) Copyright IBM Corporation 2014 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -66,6 +66,11 @@ PREFIX=./
 # The rpm release prefixes all the utility names with tss, so PREFIX is set to tss
 
 # PREFIX=tss
+
+# hash algorithms to be used for testing
+
+export ITERATE_ALGS="sha1 sha256 sha384 sha512"
+export BAD_ITERATE_ALGS="sha256 sha384 sha512 sha1"
 
 printUsage ()
 {
@@ -198,11 +203,19 @@ cleanup()
     rm -f zero.bin
 }
 
+initprimary()
+{
+    echo "Create a platform primary storage key"
+    ${PREFIX}createprimary -hi p -pwdk sto -tk pritk.bin -ch prich.bin > run.out
+    checkSuccess $?
+}
+
 export -f checkSuccess
 export -f checkWarning
 export -f checkFailure
 export WARN
 export PREFIX
+export -f initprimary
 
 # example for running scripts with encrypted sessions, see TPM_SESSION_ENCKEY=getrandom below
 export TPM_SESSION_ENCKEY

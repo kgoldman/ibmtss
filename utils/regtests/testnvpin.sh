@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testnvpin.sh 1143 2018-01-31 20:02:55Z stefanb $		#
+#		$Id: testnvpin.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2016						#
+# (c) Copyright IBM Corporation 2016 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -525,7 +525,7 @@ ${PREFIX}flushcontext -ha 03000000 > run.out > run.out
 checkSuccess $?
 
 echo "Recreate the primary key"
-${PREFIX}createprimary -hi p -pwdk pps > run.out
+${PREFIX}createprimary -hi p -pwdk sto > run.out
 checkSuccess $?
 
 echo ""

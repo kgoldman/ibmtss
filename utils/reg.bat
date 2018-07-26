@@ -5,9 +5,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: reg.bat 1048 2017-07-20 20:28:26Z kgoldman $		#
+REM #		$Id: reg.bat 1276 2018-07-23 19:25:13Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -58,6 +58,9 @@ if defined soc (
       set mssim=1
    )
 )
+
+set ITERATE_ALGS=sha1 sha256 sha384 sha512
+set BAD_ITERATE_ALGS=sha256 sha384 sha512 sha1
 
 if defined mssim (
    call regtests\inittpm.bat
@@ -156,19 +159,19 @@ IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
- call regtests\testsign.bat
- IF !ERRORLEVEL! NEQ 0 (
-    echo ""
-    echo "Failed testsign.bat"
-    exit /B 1
- )
-
- call regtests\testnv.bat
- IF !ERRORLEVEL! NEQ 0 (
+call regtests\testsign.bat
+IF !ERRORLEVEL! NEQ 0 (
    echo ""
-   echo "Failed testnv.bat"
+   echo "Failed testsign.bat"
    exit /B 1
- )
+)
+
+call regtests\testnv.bat
+IF !ERRORLEVEL! NEQ 0 (
+  echo ""
+  echo "Failed testnv.bat"
+  exit /B 1
+)
 
 call regtests\testnvpin.bat
  IF !ERRORLEVEL! NEQ 0 (
@@ -349,3 +352,5 @@ rm -f zero.bin
 
 echo ""
 echo "Success"
+
+exit /B 0

@@ -3,7 +3,7 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: testhmacsession.bat 1008 2017-05-12 16:21:24Z kgoldman $	#
+REM		$Id: testhmacsession.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
 REM										#
 REM (c) Copyright IBM Corporation 2015, 2017					#
 REM 										#
@@ -51,19 +51,19 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a storage key under the primary key - continue true"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk sto -se0 02000000 1 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk sto -se0 02000000 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
 echo "Create a storage key under the primary key - continue false"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk sto -se0 02000000 0 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk sto -se0 02000000 0 > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
 echo "Create a storage key under the primary key - should fail"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk sto -se0 02000000 0 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk sto -se0 02000000 0 > run.out
 IF !ERRORLEVEL! EQU 0 (
   exit /B 1
 )
@@ -73,13 +73,13 @@ echo "User with Auth Clear"
 echo ""
 
 echo "Create a signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )

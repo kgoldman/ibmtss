@@ -7,9 +7,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy138.sh 1209 2018-05-10 21:26:10Z kgoldman $	#
+#		$Id: testpolicy138.sh 1277 2018-07-23 20:30:23Z kgoldman $	#
 #										#
-# (c) Copyright IBM Corporation 2016						#
+# (c) Copyright IBM Corporation 2016 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -70,11 +70,11 @@ ${PREFIX}startauthsession -se p > run.out
 checkSuccess $?
 
 echo "Create a signing key, policyauthnv"
-${PREFIX}create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyauthorizenv.bin > run.out
+${PREFIX}create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyauthorizenv.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "NV Define Space"

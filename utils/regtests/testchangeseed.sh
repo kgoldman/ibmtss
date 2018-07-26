@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testchangeseed.sh 979 2017-04-04 17:57:18Z kgoldman $	#
+#		$Id: testchangeseed.sh 1277 2018-07-23 20:30:23Z kgoldman $	#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#

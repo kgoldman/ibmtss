@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testattest.sh 979 2017-04-04 17:57:18Z kgoldman $			#
+#	$Id: testattest.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -50,11 +50,11 @@ echo ""
 # 80000002 ECC signing key
 
 echo "Load the RSA signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Load the ECC signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "NV Define Space"
@@ -75,7 +75,7 @@ checkSuccess $?
 
 for SESS in "" "-se0 02000000 1"
 do
-    for HALG in sha1 sha256 sha384
+    for HALG in ${ITERATE_ALGS}
     do
 
 	for SALG in rsa ecc
@@ -159,12 +159,12 @@ echo "Audit with one session"
 echo ""
 
 echo "Load the audit signing key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 for BIND in "" "-bi 80000001 -pwdb sig"
 do
-    for HALG in sha1 sha256 sha384
+    for HALG in ${ITERATE_ALGS}
     do
 
 	echo "Start an HMAC auth session ${HALG} ${BIND}"
@@ -207,7 +207,7 @@ echo "Audit with HMAC and audit sessions"
 echo ""
 
 echo "Load the audit signing key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an HMAC auth session"
@@ -217,7 +217,7 @@ checkSuccess $?
 for SESS in "" "-se0 02000000 1"
 do
 
-    for HALG in sha1 sha256 sha384
+    for HALG in ${ITERATE_ALGS}
     do
 
 	echo "Start an audit session ${HALG}"
@@ -256,7 +256,7 @@ echo "Certify Creation"
 echo ""
 
 echo "Load the RSA signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Certify the creation data for the primary key 80000000"
@@ -268,7 +268,7 @@ ${PREFIX}verifysignature -hk 80000001 -if tmp.bin -is sig.bin > run.out
 checkSuccess $?
 
 echo "Load the RSA storage key under the primary key"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Certify the creation data for the storage key 80000002"

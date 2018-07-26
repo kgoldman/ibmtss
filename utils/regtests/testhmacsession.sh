@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testhmacsession.sh 1008 2017-05-12 16:21:24Z kgoldman $	#
+#		$Id: testhmacsession.sh 1277 2018-07-23 20:30:23Z kgoldman $	#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -50,15 +50,15 @@ ${PREFIX}startauthsession -se h > run.out
 checkSuccess $?
 
 echo "Create a storage key under the primary key - continue true"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk sto -se0 02000000 1 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk sto -se0 02000000 1 > run.out
 checkSuccess $?
 
 echo "Create a storage key under the primary key - continue false"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk sto -se0 02000000 0 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk sto -se0 02000000 0 > run.out
 checkSuccess $?
 
 echo "Create a storage key under the primary key - should fail"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp pps -pwdk sto -se0 02000000 0 > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pwdp sto -pwdk sto -se0 02000000 0 > run.out
 checkFailure $?
 
 echo ""
@@ -66,11 +66,11 @@ echo "User with Auth Clear"
 echo ""
 
 echo "Create a signing key under the primary key"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp pps > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an HMAC auth session"

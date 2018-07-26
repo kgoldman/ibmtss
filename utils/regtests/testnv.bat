@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testnv.bat 1211 2018-05-10 22:08:49Z kgoldman $		#
+REM #		$Id: testnv.bat 1276 2018-07-23 19:25:13Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015 - 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -54,8 +54,8 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-set NALG=sha1 sha256 sha384
-set BADNALG=sha256 sha384 sha1
+set NALG=%ITERATE_ALGS%
+set BADNALG=%BAD_ITERATE_ALGS%
 
 set i=0
 for %%N in (!NALG!) do set /A i+=1 & set NALG[!i!]=%%N
@@ -268,8 +268,8 @@ IF !ERRORLEVEL! NEQ 0 (
 
 for %%S in ("" "-se0 02000000 1") do (
 
-    set SZ=20 32 48
-    set HALG=sha1 sha256 sha384
+    set SZ=20 32 48 64
+    set HALG=%ITERATE_ALGS%
 
     set i=0
     for %%a in (!SZ!) do set /A i+=1 & set SZ[!i!]=%%a

@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testattest.bat 593 2016-05-18 15:04:15Z kgoldman $		#
+REM #		$Id: testattest.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -45,13 +45,13 @@ echo "Attestation"
 echo ""
 
 echo "Load the RSA signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the ECC signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -82,7 +82,7 @@ IF !ERRORLEVEL! NEQ 0 (
 
 for %%S in ("" "-se0 02000000 1") do (
 
-    for %%H in (sha1 sha256 sha384) do (
+    for %%H in (%ITERATE_ALGS%) do (
 
     	for %%A in (rsa ecc) do (
 
@@ -192,14 +192,14 @@ echo "Audit with one session"
 echo ""
 
 echo "Load the audit signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 for %%B in ("" "-bi 80000001 -pwdb sig") do (
 
-    for %%H in (sha1 sha256 sha384) do (
+    for %%H in (%ITERATE_ALGS%) do (
     
 
     echo "Start an HMAC auth session %%H %%~B"
@@ -256,7 +256,7 @@ echo "Audit with HMAC and audit sessions"
 echo ""
 
 echo "Load the audit signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -269,7 +269,7 @@ IF !ERRORLEVEL! NEQ 0 (
 
 for %%S in ("" "-se0 02000000 1") do (
 
-    for %%H in (sha1 sha256 sha384) do (
+    for %%H in (%ITERATE_ALGS%) do (
 
        echo "Start an audit session %%H"
        %TPM_EXE_PATH%startauthsession -se h -halg %%H > run.out

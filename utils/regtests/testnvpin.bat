@@ -3,7 +3,7 @@ REM #										    #
 REM #			TPM2 regression test					    #
 REM #			     Written by Ken Goldman				    #
 REM #		       IBM Thomas J. Watson Research Center			    #
-REM #		$Id: testnvpin.bat 974 2017-03-20 19:20:10Z kgoldman $		#
+REM #		$Id: testnvpin.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										    #
 REM # (c) Copyright IBM Corporation 2016					    #
 REM # 										    #
@@ -727,7 +727,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Recreate the primary key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk pps > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

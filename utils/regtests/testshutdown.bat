@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testshutdown.bat 948 2017-02-28 21:21:38Z kgoldman $	#
+REM #		$Id: testshutdown.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
@@ -75,7 +75,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -171,13 +171,13 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Load the signing key - should fail, primary key missing"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! EQU 0 (
     exit /B 1
 )
 
 echo "Create a platform primary storage key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk pps > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -189,7 +189,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Load the signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -235,7 +235,7 @@ echo "TPM Restart (state/clear) - hibernate"
 echo ""
 
 echo "Load the signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -325,7 +325,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Recreate a platform primary storage key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk pps > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -371,7 +371,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Recreate a platform primary storage key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk pps > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

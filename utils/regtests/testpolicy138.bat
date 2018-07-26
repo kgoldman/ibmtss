@@ -70,13 +70,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a signing key, policyauthnv"
-%TPM_EXE_PATH%create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyauthorizenv.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyauthorizenv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

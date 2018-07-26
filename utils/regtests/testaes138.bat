@@ -53,7 +53,7 @@ IF !ERRORLEVEL! NEQ 0 (
 for %%S in ("" "-se0 02000000 1") do (
 
     echo "Load the symmetric cipher key under the primary key %%~S"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr despriv.bin -ipu despub.bin -pwdp pps %%~S > run.out
+    %TPM_EXE_PATH%load -hp 80000000 -ipr despriv.bin -ipu despub.bin -pwdp sto %%~S > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

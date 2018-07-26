@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testpolicy.bat 1213 2018-05-11 20:45:02Z kgoldman $	#
+REM #		$Id: testpolicy.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
@@ -51,13 +51,13 @@ echo "Policy Command Code"
 echo ""
 
 echo "Create a signing key under the primary key - policy command code - sign"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccsign.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccsign.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -175,13 +175,13 @@ echo "Policy Command Code and Policy Password / Authvalue"
 echo ""
 
 echo "Create a signing key under the primary key - policy command code - sign, auth"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccsign-auth.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccsign-auth.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -277,13 +277,13 @@ for %%C in (policypassword policyauthvalue) do (
 
 
     echo "Create a signing key under the primary key - policy command code - sign, auth"
-    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccsign-auth.bin > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccsign-auth.bin > run.out
         IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
     echo "Load the signing key under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
         IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -319,13 +319,13 @@ for %%C in (policypassword policyauthvalue) do (
        )
 
     echo "Create a signing key under the primary key - policy command code - sign"
-    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccsign.bin > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccsign.bin > run.out
         IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
 
     echo "Load the signing key under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
         IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
        )
@@ -368,42 +368,52 @@ REM # sign a test message msg.bin
 REM # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 REM #
 REM # create the policy:
-REM # after loadexternal, get the name from readpublic -ho 80000001 -ns
+REM # use loadexternal -ns to get the name
 REM 
 REM # sha1
-REM # 00 04 42 34 c2 4f c1 b9 de 66 93 a6 24 53 41 7d 
-REM # 27 34 d7 53 8f 6f 
-REM 
+REM # 00044234c24fc1b9de6693a62453417d2734d7538f6f
 REM # sha256
-REM # 00 0b 64 ac 92 1a 03 5c 72 b3 aa 55 ba 7d b8 b5 
-REM # 99 f1 72 6f 52 ec 2f 68 20 42 fc 0e 0d 29 fa e8 
-REM # 17 99 
+REM # 000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+REM # sha384
+REM # 000ca8bfb42e75b4c22b366b372cd9994bafe8558aa182cf12c258406d197dab63ac46f5a5255b1deb2993a4e9fc92b1e26c
+REM # sha512
+REM # 000d0c36b2a951eccc7e3e12d03175a71304dc747f222a02af8fa2ac8b594ef973518d20b9a5452d0849e325710f587d8a55082e7ae321173619bc12122f3ad71466
 REM 
 REM # 00000160 plus the above name as text, add a blank line for empty policyRef
-REM # to create policies/policysigned%%H.txt
+REM # to create policies/policysigned$HALG.txt
 REM #
 REM # 0000016000044234c24fc1b9de6693a62453417d2734d7538f6f
 REM # 00000160000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+REM # 00000160000ca8bfb42e75b4c22b366b372cd9994bafe8558aa182cf12c258406d197dab63ac46f5a5255b1deb2993a4e9fc92b1e26c
+REM # 00000160000d0c36b2a951eccc7e3e12d03175a71304dc747f222a02af8fa2ac8b594ef973518d20b9a5452d0849e325710f587d8a55082e7ae321173619bc12122f3ad71466
 REM #
-REM # makes sha256 policy by default, policy digest algorithm is separate from Name and signature hash algorithm
+REM # use sha256 policies, policymaker default (policy session digest
+REM # algorithm is separate from Name and signature hash algorithm)
 REM #
-REM # > policymaker -if policies/policysigned%%H.txt -of policies/policysigned%%H.bin -pr
+REM # > policymaker -if policies/policysigned$HALG.txt -of policies/policysigned$HALG.bin -pr
 REM #
+REM # sha1
 REM # 9d 81 7a 4e e0 76 eb b5 cf ee c1 82 05 cc 4c 01 
 REM # b3 a0 5e 59 a9 b9 65 a1 59 af 1e cd 3d bf 54 fb 
-REM #
+REM # sha256
 REM # de bf 9d fa 3c 98 08 0b f1 7d d1 d0 7b 54 fd e1 
 REM # 07 93 7f e5 40 50 9e 70 96 aa 73 27 53 b3 83 31 
+REM # sha384
+REM # 45 c5 da 90 76 92 3a 70 03 6f df 56 ea e7 df db 
+REM # 41 e2 01 75 24 49 54 94 66 93 6b c4 fc 88 ab 5c 
+REM # sha512
+REM # cd 34 96 08 39 ea 40 88 5e fa 7f 37 8b a7 21 f1 
+REM # 78 6d 52 bb 93 47 9c 73 45 88 3c dc 1f 09 06 6f 
 REM #
 REM # 80000000 primary key
 REM # 80000001 verification public key
 REM # 80000002 signing key with policy
 REM # 03000000 policy session
 
-for %%H in (sha1 sha256) do (
+for %%H in (%ITERATE_ALGS%) do (
 
     echo "Load external just the public part of PEM at 80000001 - %%H"
-    %TPM_EXE_PATH%loadexternal -halg %%H -nalg %%H -ipem policies/rsapubkey.pem > run.out
+    %TPM_EXE_PATH%loadexternal -halg %%H -nalg %%H -ipem policies/rsapubkey.pem -ns > run.out
     IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
     )
@@ -418,13 +428,13 @@ for %%H in (sha1 sha256) do (
     )
 
     echo "Create a signing key under the primary key - policy signed - %%H"
-    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysigned%%H.bin > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policysigned%%H.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
     )
 
     echo "Load the signing key under the primary key at 80000002"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
     )
@@ -447,7 +457,7 @@ for %%H in (sha1 sha256) do (
     exit /B 1
     )
 
-    echo "Get policy digest, should be f877 ..."
+    echo "Get policy digest"
     %TPM_EXE_PATH%policygetdigest -ha 03000000 -of tmppol.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
@@ -553,13 +563,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a signing key under the primary key - policy secret using platform auth"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysecretp.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policysecretp.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -680,13 +690,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a signing key under the primary key - policy secret NV auth"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policysecretnv.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policysecretnv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -753,13 +763,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a signing key under the primary key - policy secret of object 80000001"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -uwa -pol policies/policysecretsha256.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -uwa -pol policies/policysecretsha256.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key under the primary key 80000002"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -846,7 +856,7 @@ REM # 46 d4 8c 7e 17 0a 71 ca 9e 1f c7 e1 77 e5 7b 53
 REM # 75 df c4 3a 44 c9 65 4b 18 97 ce b1 92 e0 21 50 
 
 echo "Create a signing key with policy authorize"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyauthorize.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyauthorize.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -858,7 +868,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1005,13 +1015,13 @@ REM # 6d 38 49 38 e1 d5 8b 56 71 92 55 94 3f 06 69 66
 REM # b6 fa 2c 23 
 
 echo "Create a signing key with policy PCR no select"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -nalg sha1 -pol policies/policypcrbm0.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha1 -pol policies/policypcrbm0.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1089,13 +1099,13 @@ echo "Policy PCR"
 echo ""
 
 echo "Create a signing key with policy PCR PCR 16 zero"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -nalg sha1 -pol policies/policypcr.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha1 -pol policies/policypcr.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1700,7 +1710,7 @@ echo "Sign aHash with openssl 3700 0a91 ..."
 openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out sig.bin policies/nvwriteahashb.bin > run.out
 echo ""
 
-echo "Policy signed, signature generated externally - $HALG"
+echo "Policy signed, signature generated externally"
 %TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -halg sha256 -cp policies/nvwritecphashb.bin -is sig.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -1850,25 +1860,25 @@ REM # 80000002 SI signing key, duplicate from SK to NP
 REM # 03000000 policy session
 
 echo "Import the new parent storage key NP under the primary key"
-%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -st -pwdk rrrr -opu tmpstpub.bin -opr tmpstpriv.bin -halg sha256 > run.out
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -st -pwdk rrrr -opu tmpstpub.bin -opr tmpstpriv.bin -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 	
 echo "Load the new parent TPM storage key NP at 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpstpub.bin -ipr tmpstpriv.bin > run.out
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipu tmpstpub.bin -ipr tmpstpriv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Import a signing key SI under the primary key 80000000, with policy duplication select"
-%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policydupsel-no.bin > run.out
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policydupsel-no.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key SI at 80000002"
-%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1969,13 +1979,13 @@ REM # 80000002 SI signing key, duplicate from SK to NP
 REM # 03000000 policy session
 
 echo "Import a signing key SI under the primary key 80000000, with policy authorize"
-%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key SI at 80000002"
-%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2050,7 +2060,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the original signing key SI at 80000002"
-%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2136,13 +2146,13 @@ REM # 80000002 Authorizing public key
 REM # 03000000 policy session
 
 echo "Import a signing key SI under the primary key 80000000, with policy authorize"
-%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key SI at 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2329,13 +2339,13 @@ echo "PolicyOR"
 echo ""
 
 echo "Create an unrestricted signing key, policy command code sign or quote"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyor.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyor.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: inittpm.sh 1148 2018-02-09 14:59:16Z kgoldman $		#
+#		$Id: inittpm.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -56,3 +56,16 @@ checkSuccess $?
 echo "Get Test Result"
 ${PREFIX}gettestresult > run.out
 checkSuccess $?
+
+echo "Allocate initial SHA-1, SHA-256, SHA-384 SHA-512 PCRs"
+${PREFIX}pcrallocate +sha1 +sha256 +sha384 +sha512 > run.out
+checkSuccess $?
+    
+echo "Power cycle"
+${PREFIX}powerup > run.out
+checkSuccess $?
+
+echo "Startup"
+${PREFIX}startup -c > run.out
+checkSuccess $?
+

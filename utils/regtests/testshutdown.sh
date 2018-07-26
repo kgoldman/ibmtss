@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testshutdown.sh 948 2017-02-28 21:21:38Z kgoldman $		#
+#	$Id: testshutdown.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -66,7 +66,7 @@ ${PREFIX}contextsave -ha 02000001 -of tmp.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Context save the signing key"
@@ -130,11 +130,11 @@ ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -se0 02000000 1 >
 checkFailure $?
 
 echo "Load the signing key - should fail, primary key missing"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkFailure $?
 
 echo "Create a platform primary storage key"
-${PREFIX}createprimary -hi p -pwdk pps > run.out
+${PREFIX}createprimary -hi p -pwdk sto > run.out
 checkSuccess $?
 
 echo "Signing Key Self Certify - should fail, signing key missing"
@@ -142,7 +142,7 @@ ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -se0 02000000 1 >
 checkFailure $?
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Signing Key Self Certify - should fail, session missing"
@@ -174,7 +174,7 @@ echo "TPM Restart (state/clear) - hibernate"
 echo ""
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Context save the signing key"
@@ -234,7 +234,7 @@ ${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
 checkSuccess $?
 
 echo "Recreate a platform primary storage key"
-${PREFIX}createprimary -hi p -pwdk pps > run.out
+${PREFIX}createprimary -hi p -pwdk sto > run.out
 checkSuccess $?
 
 echo ""
@@ -266,7 +266,7 @@ ${PREFIX}contextload -if tmp.bin > run.out
 checkFailure $?
 
 echo "Recreate a platform primary storage key"
-${PREFIX}createprimary -hi p -pwdk pps > run.out
+${PREFIX}createprimary -hi p -pwdk sto > run.out
 checkSuccess $?
 
 # cleanup 

@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testnv.sh 1209 2018-05-10 21:26:10Z kgoldman $		#
+#		$Id: testnv.sh 1276 2018-07-23 19:25:13Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -53,10 +53,10 @@ echo "Start an HMAC auth session"
 ${PREFIX}startauthsession -se h > run.out
 checkSuccess $?
 
-NALG=(sha1 sha256 sha384)
-BADNALG=(sha256 sha384 sha1)
+NALG=(${ITERATE_ALGS})
+BADNALG=(${BAD_ITERATE_ALGS})
 
-for ((i = 0 ; i < 3; i++))
+for ((i = 0 ; i < 4; i++))
 do
 
     for SESS in "" "-se0 02000000 1"
@@ -197,6 +197,10 @@ echo "Flush the auth session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
 
+# The test data was created using policymaker with a text file 616161
+# (three a's).  pcrexted cannot be used because it zero extends the
+# input to the hash size
+
 echo ""
 echo "NV Extend Index"
 echo ""
@@ -208,10 +212,10 @@ checkSuccess $?
 for SESS in "" "-se0 02000000 1"
 do
 
-    SZ=(20 32 48)
-    HALG=(sha1 sha256 sha384)
+    SZ=(20 32 48 64)
+    HALG=(${ITERATE_ALGS})
 
-    for ((i = 0 ; i < 3; i++))
+    for ((i = 0 ; i < 4; i++))
     do
 
 	echo "NV Define Space ${HALG[$i]}"

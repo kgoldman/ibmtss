@@ -8,7 +8,7 @@
 #		       IBM Thomas J. Watson Research Center			#
 #	$Id: testcredential.sh 328 2015-06-09 18:26:00Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015						#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -57,15 +57,15 @@ ${PREFIX}getrandom -by 32 -of tmpcredin.bin > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key, 80000001"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Create a restricted signing key under the primary key"
-${PREFIX}create -hp 80000000 -sir -kt f -kt p -opr tmprpriv.bin -opu tmprpub.bin -pwdp pps -pwdk sig -pol policies/policyccactivate.bin > run.out
+${PREFIX}create -hp 80000000 -sir -kt f -kt p -opr tmprpriv.bin -opu tmprpub.bin -pwdp sto -pwdk sig -pol policies/policyccactivate.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key under the primary key, 80000002"
-${PREFIX}load -hp 80000000 -ipr tmprpriv.bin -ipu tmprpub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr tmprpriv.bin -ipu tmprpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Encrypt the credential using makecredential"

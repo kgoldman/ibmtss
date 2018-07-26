@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testchangeauth.sh 979 2017-04-04 17:57:18Z kgoldman $ 		#
+#	$Id: testchangeauth.sh 1277 2018-07-23 20:30:23Z kgoldman $ 		#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -52,7 +52,7 @@ do
     do
 
 	echo "Load the signing key under the primary key"
-	${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+	${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 	checkSuccess $?
 
 	echo "Start an HMAC session ${BIND}"
@@ -64,7 +64,7 @@ do
 	checkSuccess $?
 
 	echo "Load the signing key with the changed auth ${SESS}"
-	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu signpub.bin -pwdp pps ${SESS} > run.out
+	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu signpub.bin -pwdp sto ${SESS} > run.out
 	checkSuccess $?
 
 	echo "Sign a digest with the original key ${SESS}"

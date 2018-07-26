@@ -1,11 +1,11 @@
 /********************************************************************************/
 /*										*/
-/*			   policymaker						*/
+/*			   policymakerpcr					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymakerpcr.c 1140 2018-01-22 15:13:31Z kgoldman $	*/
+/*	      $Id: policymakerpcr.c 1255 2018-06-26 21:18:46Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -46,7 +46,7 @@
 
    a byte mask, totally big endian, e.g. 010000 is PCR 16 
 
-   a file with lines in hexascii representing PCRs, e.g., the output of pcrread with white space
+   a file with lines in hexascii representing PCRs, e.g., the output of pcrread -ns
    removed
 
    This assumes that the byte mask and PCR value file are consistent.
@@ -59,11 +59,11 @@
 
    Example: 
 
-   policymakerpcr -bm 010000 -if policies/policypcr16aaasha1.txt -v -pr -of policies/policypcr.txt
+   policymakerpcr -halg sha1 -bm 010000 -if policies/policypcr16aaasha1.txt -v -pr -of policies/policypcr.txt
 
    Where policypcr16aaasha1.txt is represents the SHA-1 value of PCR 16
    
-   1d47f68aced515f7797371b554e32d47981aa0a0
+   e.g., 1d47f68aced515f7797371b554e32d47981aa0a0
 */
 
 #include <stdio.h>
@@ -123,18 +123,21 @@ int main(int argc, char *argv[])
     /* command line defaults */
     digest.hashAlg = TPM_ALG_SHA256;
 
-    ERR_load_crypto_strings ();
-    OpenSSL_add_all_algorithms ();
-
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-halg") == 0) {
 	    i++;
 	    if (i < argc) {
-		if (strcmp(argv[i],"sha256") == 0) {
+		if (strcmp(argv[i],"sha1") == 0) {
+		    digest.hashAlg = TPM_ALG_SHA1;
+		}
+		else if (strcmp(argv[i],"sha256") == 0) {
 		    digest.hashAlg = TPM_ALG_SHA256;
 		}
-		else if (strcmp(argv[i],"sha1") == 0) {
-		    digest.hashAlg = TPM_ALG_SHA1;
+		else if (strcmp(argv[i],"sha384") == 0) {
+		    digest.hashAlg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    digest.hashAlg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -419,7 +422,7 @@ static void printUsage(void)
     printf("\n");
     printf("Assumes that the byte mask and PCR values are consistent\n");
     printf("\n");
-    printf("[-halg hash algorithm  (sha1 sha256 sha384) (default sha256)]\n");
+    printf("[-halg hash algorithm  (sha1 sha256 sha384 sha512) (default sha256)]\n");
     printf("-bm pcr byte mask in hex, big endian\n");
     printf("\te.g. 010000 selects PCR 16\n");
     printf("\te.g. ffffff selects all 24 PCRs\n");

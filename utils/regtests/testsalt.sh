@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testsalt.sh 1060 2017-08-15 14:47:27Z kgoldman $			#
+#	$Id: testsalt.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2017					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -47,7 +47,7 @@ echo ""
 
 for ASY in "-rsa" "-ecc nistp256"
 do
-    for HALG in sha1 sha256 sha384
+    for HALG in ${ITERATE_ALGS}
     do
 
 	# In general a storage key can be used.  A decryption key is
@@ -55,11 +55,11 @@ do
 	# that of the parent.
 
 	echo "Create a ${ASY} ${HALG} storage key under the primary key "
-	${PREFIX}create -hp 80000000 -nalg ${HALG} -halg ${HALG} ${ASY} -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 222 > run.out
+	${PREFIX}create -hp 80000000 -nalg ${HALG} -halg ${HALG} ${ASY} -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 222 > run.out
 	checkSuccess $?
 
 	echo "Load the ${ASY} storage key 80000001 under the primary key"
-	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 	checkSuccess $?
 
 	echo "Start a ${ASY} salted HMAC auth session"
@@ -67,7 +67,7 @@ do
 	checkSuccess $?
 
 	echo "Create a signing key using the salt"
-	${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+	${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
 	checkSuccess $?
 
 	echo "Flush the storage key"
@@ -91,7 +91,7 @@ echo "Convert key pair to plaintext DER format"
 openssl rsa -inform pem -outform der -in tmpkeypairrsa.pem -out tmpkeypairrsa.der -passin pass:rrrr > run.out
 openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
 
     echo "Load the RSA openssl key pair in the NULL hierarchy 80000001 - ${HALG}"
@@ -103,7 +103,7 @@ do
     checkSuccess $?
 
     echo "Create a signing key using the salt"
-    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
     checkSuccess $?
 
     echo "Flush the storage key"
@@ -112,7 +112,7 @@ do
 
 done
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
 
     echo "Load the ECC openssl key pair in the NULL hierarchy 80000001 - ${HALG}"
@@ -124,7 +124,7 @@ do
     checkSuccess $?
 
     echo "Create a signing key using the salt"
-    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
     checkSuccess $?
 
     echo "Flush the storage key"
@@ -137,7 +137,7 @@ echo ""
 echo "Salt Session - CreatePrimary storage key"
 echo ""
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
     
     echo "Create a primary storage key - $HALG"
@@ -149,7 +149,7 @@ do
     checkSuccess $?
 
     echo "Create a signing key using the salt"
-    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
     checkSuccess $?
 
     echo "Flush the storage key"
@@ -162,7 +162,7 @@ echo ""
 echo "Salt Session - CreatePrimary RSA key"
 echo ""
 
-for HALG in sha1 sha256 sha384
+for HALG in ${ITERATE_ALGS}
 do
     
     echo "Create a primary RSA key - $HALG"
@@ -192,7 +192,7 @@ echo "Salt Session - EvictControl"
 echo ""
 
 echo "Load the storage key"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Make the storage key persistent"
@@ -204,7 +204,7 @@ ${PREFIX}startauthsession -se h -hs 81800000 > run.out
 checkSuccess $?
 
 echo "Create a signing key using the salt"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
 checkSuccess $?
 
 echo "Flush the storage key from transient memory"
@@ -220,7 +220,7 @@ echo "Salt Session - ContextSave and ContextLoad"
 echo ""
 
 echo "Load the storage key at 80000001"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Save context for the key at 80000001"
@@ -240,7 +240,7 @@ ${PREFIX}startauthsession -se h -hs 80000001 > run.out
 checkSuccess $?
 
 echo "Create a signing key using the salt"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk 333 -se0 02000000 0 > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
 checkSuccess $?
 
 echo "Flush the context loaded key"
@@ -252,7 +252,7 @@ echo "Salt Audit Session - PCR Read, Read Public, NV Read Public"
 echo ""
 
 echo "Load the storage key at 80000001"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a salted HMAC auth session"

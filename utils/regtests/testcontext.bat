@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testcontext.bat 1048 2017-07-20 20:28:26Z kgoldman $	#
+REM #		$Id: testcontext.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2017					#
 REM # 										#
@@ -51,7 +51,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps -se0 02000000 1 > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto -se0 02000000 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -145,7 +145,7 @@ echo "Context Public Key for Salt"
 echo ""
 
 echo "Load the storage key at 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -175,7 +175,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the signing key under the primary key at 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -215,7 +215,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the signing key at 80000002 under the primary key at 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )

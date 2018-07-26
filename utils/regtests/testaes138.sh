@@ -8,7 +8,7 @@
 #		       IBM Thomas J. Watson Research Center			#
 #	$Id: testaes.sh 714 2016-08-11 21:46:03Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -53,7 +53,7 @@ for SESS in "" "-se0 02000000 1"
 do
 
     echo "Load the symmetric cipher key under the primary key ${SESS}"
-    ${PREFIX}load -hp 80000000 -ipr despriv.bin -ipu despub.bin -pwdp pps ${SESS} > run.out
+    ${PREFIX}load -hp 80000000 -ipr despriv.bin -ipu despub.bin -pwdp sto ${SESS} > run.out
     checkSuccess $?
 
     echo "Encrypt using the symmetric cipher key ${SESS}"

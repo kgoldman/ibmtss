@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsign.bat 1209 2018-05-10 21:26:10Z kgoldman $		#
+REM #		$Id: testsign.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2017					#
+REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -47,7 +47,7 @@ echo ""
 REM # loop over unrestricted hash algorithms
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -60,7 +60,7 @@ echo "Convert key pair to plaintext DER format"
 
 openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
     for %%S in (rsassa rsapss) do (
 
 	    echo "Sign a digest - %%H"
@@ -138,12 +138,12 @@ echo "Convert key pair to plaintext DER format"
 openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
 
 echo "Load the ECC signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
 
     echo "Sign a digest - %%H"
     %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
@@ -216,7 +216,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
     
     echo "Sign a digest - %%H"
     %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu tmppub.bin > run.out
@@ -279,7 +279,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-for %%H in (sha1 sha256 sha384) do (
+for %%H in (%ITERATE_ALGS%) do (
     
     echo "Sign a digest - %%H"
     %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 

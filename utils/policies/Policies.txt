@@ -3,7 +3,7 @@
 #			TPM2 regression test Directory of files			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: Policies.txt 1207 2018-05-09 21:48:26Z kgoldman $		#
+#		$Id: Policies.txt 1275 2018-07-23 18:37:45Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2018					#
 # 										#
@@ -67,8 +67,10 @@ policynvnv.txt				policy nv has name and args
 policyor.txt				policy command code sign | quote
 policypcr.txt				policy pcr intermediate file
 policypcr0.txt				20 zeros
-policypcr16aaasha1.txt			sha1 PCR 16 extend of aaa
+policypcr16aaasha1.txt			sha1   PCR 16 extend of aaa
 policypcr16aaasha256.txt		sha256 PCR 16 extend of aaa
+policypcr16aaasha384.txt		sha384 PCR 16 extend of aaa
+policypcr16aaasha512.txt		sha512 PCR 16 extend of aaa
 policysecretnv.txt			policy secret using nv index
 policysecretnvpf.txt			policy secret using NV PIN fail index
 policysecretnvpp.txt			policy secret using NV PIN pass index
@@ -76,6 +78,8 @@ policysecretp.txt			policy secret using platform auth
 policysecretsha256.txt			policy secret using loaded object
 policysignedsha1.txt			policy signed using pubkey.pem Name
 policysignedsha256.txt			policy signed using pubkey.pem Name
+policysignedsha384.txt			policy signed using pubkey.pem Name
+policysignedsha512.txt			policy signed using pubkey.pem Name
 policytemplate.txt			template hash input to policytemplatehash
 policytemplatehash.txt			policy template for signing key
 policywrittenset.txt			policy nv written with written set
@@ -110,6 +114,11 @@ sha384aaa.bin		sha384 of aaa
 sha384extaaa.bin	sha384 extend of aaa
 sha384exthaaa.bin	sha384 extend of hash of aaa
 sha384extaaa0.bin	sha384 extend of aaa zero padded
+
+sha512aaa.bin		sha512 of aaa
+sha512extaaa.bin	sha512 extend of aaa
+sha512exthaaa.bin	sha512 extend of hash of aaa
+sha512extaaa0.bin	sha512 extend of aaa zero padded
 
 zero4.bin		4 bytes of zero (e.g., just expiration data for policysigned)
 zero8.bin		8 bytes of zero

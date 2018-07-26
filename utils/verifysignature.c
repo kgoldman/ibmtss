@@ -137,6 +137,9 @@ int main(int argc, char *argv[])
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
 		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    halg = TPM_ALG_SHA512;
+		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
@@ -296,7 +299,8 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (doHash) {
 	    if (rc == 0) {
-		if (verbose) printf("verifysignature: Hashing message file %s\n", messageFilename);
+		if (verbose) printf("verifysignature: Hashing message file %s with halg %04x\n",
+				    messageFilename, halg);
 		digest.hashAlg = halg;
 		sizeInBytes = TSS_GetDigestSize(digest.hashAlg);
 		rc = TSS_Hash_Generate(&digest,
@@ -304,7 +308,7 @@ int main(int argc, char *argv[])
 				       0, NULL);
 	    }
 	    if (rc == 0) {
-		if (verbose) printf("verifysignature: Hashing message\n");
+		if (verbose) printf("verifysignature: Copying hash\n");
 		/* digest to be verified */
 		in.digest.t.size = sizeInBytes;
 		memcpy(&in.digest.t.buffer, (uint8_t *)&digest.digest, sizeInBytes);
@@ -440,7 +444,7 @@ static void printUsage(void)
     printf("\t[-hk key handle]\n");
     printf("\t[-ipem public key PEM format file name to verify signature]\n");
     printf("\t\tOne of -hk, -ipem must be specified\n");
-    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-halg (sha1, sha256, sha384 sha512) (default sha256)]\n");
     printf("\t[asymmetric key algorithm]\n");
     printf("\t\t[-rsa (default)]\n");
     printf("\t\t[-ecc curve (P256)]\n");

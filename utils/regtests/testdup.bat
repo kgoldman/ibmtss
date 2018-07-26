@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 1209 2018-05-10 21:26:10Z kgoldman $		#
+REM #		$Id: testdup.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2017					#
+REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -70,22 +70,22 @@ for %%A in ("" "ecc") do (
     
     for %%E in ("" "-salg aes -ik tmprnd.bin") do (
 
-    	for %%H in (sha1 sha256 sha384) do (
+    	for %%H in (%ITERATE_ALGS%) do (
 
 	    echo "Create a signing key K2 under the primary key, with policy"
-	    %TPM_EXE_PATH%create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sig -pol policies/policyccduplicate.bin > run.out
+	    %TPM_EXE_PATH%create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccduplicate.bin > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
 
 	    echo "Load the %%~A storage key K1"
-	    %TPM_EXE_PATH%load -hp 80000000 -ipr store%%~Apriv.bin -ipu store%%~Apub.bin -pwdp pps > run.out
+	    %TPM_EXE_PATH%load -hp 80000000 -ipr store%%~Apriv.bin -ipu store%%~Apub.bin -pwdp sto > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
 
 	    echo "Load the signing key K2"
-	    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+	    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
@@ -224,13 +224,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Import K2 under storage key"
-%TPM_EXE_PATH%import -hp 80000000 -pwdp pps -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin -opr tmppriv.bin > run.out
+%TPM_EXE_PATH%import -hp 80000000 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin -opr tmppriv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
 
 echo "Load the duplicated signing key K2 80000002"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -260,11 +260,17 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo ""
-echo "Import PEM RSA"
+echo "Import PEM RSA signing key under RSA and ECC storage key"
 echo ""
 
 echo "generate the signing key with openssl"
 openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048
+
+echo "load the ECC storage key"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipr storeeccpriv.bin -ipu storeeccpub.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
 
 echo "Start an HMAC auth session"
 %TPM_EXE_PATH%startauthsession -se h > run.out
@@ -273,81 +279,92 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 for %%S in ("" "-se0 02000000 1") do (
-    for %%H in (sha1 sha256 sha384) do (
+    for %%H in (%ITERATE_ALGS%) do (
+        for %%P in (80000000 80000001) do (
 
-	echo "Import the signing key under the primary key %%H"
-	%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
+	    echo "Import the signing key under the parent key %%P %%H"
+	    %TPM_EXE_PATH%importpem -hp %%P -pwdp sto -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Load the TPM signing key"
+	    %TPM_EXE_PATH%load -hp  %%P -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Sign the message %%H  %%~S"
+	    %TPM_EXE_PATH%sign -hk 80000002 -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H  %%~S > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Verify the signature %%H"
+	    %TPM_EXE_PATH%verifysignature -hk 80000002 -if policies/aaa -is tmpsig.bin -halg %%H > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
+	    echo "Flush the signing key"
+	    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
 	)
-
-	echo "Load the TPM signing key"
-	%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmppub.bin -ipr tmppriv.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Sign the message %%H  %%~S"
-	%TPM_EXE_PATH%sign -hk 80000001 -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H  %%~S > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Verify the signature %%H"
-	%TPM_EXE_PATH%verifysignature -hk 80000001 -if policies/aaa -is tmpsig.bin -halg %%H > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-	echo "Flush the signing key"
-	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
-
-   )
+    )
 )
 
 echo ""
-echo "Import PEM EC "
+echo "Import PEM EC signing key under RSA and ECC storage key"
 echo ""
 
 echo "generate the signing key with openssl"
 openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem
 
 for %%S in ("" "-se0 02000000 1") do (
-    for %%H in (sha1 sha256 sha384) do (
+    for %%H in (%ITERATE_ALGS%) do (
+        for %%P in (80000000 80000001) do (
 
-	echo "Import the signing key under the primary key %%H"
-	%TPM_EXE_PATH%importpem -hp 80000000 -pwdp pps -ipem tmpecprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
+	    echo "Import the signing key under the parent key %%P %%H"
+	    %TPM_EXE_PATH%importpem -hp %%P -pwdp sto -ipem tmpecprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
 
-	echo "Load the TPM signing key"
-	%TPM_EXE_PATH%load -hp 80000000 -pwdp pps -ipu tmppub.bin -ipr tmppriv.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
+	    echo "Load the TPM signing key"
+	    %TPM_EXE_PATH%load -hp %%P -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
 
-	echo "Sign the message %%H %%~S"
-	%TPM_EXE_PATH%sign -hk 80000001 -ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H %%~S > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
+	    echo "Sign the message %%H %%~S"
+	    %TPM_EXE_PATH%sign -hk 80000002 -ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H %%~S > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
 
-	echo "Verify the signature %%H"
-	%TPM_EXE_PATH%verifysignature -hk 80000001 -ecc -if policies/aaa -is tmpsig.bin -halg %%H > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
-	)
+	    echo "Verify the signature %%H"
+	    %TPM_EXE_PATH%verifysignature -hk 80000002 -ecc -if policies/aaa -is tmpsig.bin -halg %%H > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
 
-	echo "Flush the signing key"
-	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	    exit /B 1
+	    echo "Flush the signing key"
+	    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	        exit /B 1
+	    )
+
 	)
-   )
+    )
+)
+
+echo "Flush the ECC storage key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
 )
 
 echo "Flush the auth session"
@@ -369,7 +386,7 @@ REM 03000000 policy session for duplicate
 REM at TPM 1, duplicate object to K1 outer wrapper, AES wrapper
 
 echo "Create a storage key K2"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr tmpk2priv.bin -opu tmpk2pub.bin -pwdp pps -pwdk k2 > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr tmpk2priv.bin -opu tmpk2pub.bin -pwdp sto -pwdk k2 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -381,13 +398,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a signing key O1 with policy"
-%TPM_EXE_PATH%create -hp 80000000 -si -opr tmpsignpriv.bin -opu tmpsignpub.bin -pwdp pps -pwdk sig -pol policies/policyccduplicate.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -opr tmpsignpriv.bin -opu tmpsignpub.bin -pwdp sto -pwdk sig -pol policies/policyccduplicate.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load the signing key O1 80000002 under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmpsignpriv.bin -ipu tmpsignpub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmpsignpriv.bin -ipu tmpsignpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -440,7 +457,7 @@ IF !ERRORLEVEL! NEQ 0 (
 REM at TPM 2
 
 echo "Load storage key K1 80000001 public and private key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -472,7 +489,7 @@ IF !ERRORLEVEL! NEQ 0 (
 REM at TPM 3
 
 echo "Load storage key K2 80000001 public key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr tmpk2priv.bin -ipu tmpk2pub.bin -pwdp pps > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr tmpk2priv.bin -ipu tmpk2pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -708,7 +725,9 @@ REM # A real target would not have access to tmpaeskeysrc.bin for the compare
 
     echo "Flush the policy session"
     %TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
-    checkSuccess $?
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
 
 )
 

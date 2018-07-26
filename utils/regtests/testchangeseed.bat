@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testchangeseed.bat 480 2015-12-29 22:41:45Z kgoldman $		#
+REM #		$Id: testchangeseed.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015-2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -50,7 +50,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Change PPS, no password"
+echo "Change STO, no password"
 %TPM_EXE_PATH%changepps > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1

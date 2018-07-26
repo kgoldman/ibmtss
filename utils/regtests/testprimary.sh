@@ -6,9 +6,9 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testprimary.sh 990 2017-04-19 13:31:24Z kgoldman $			#
+#	$Id: testprimary.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -46,7 +46,7 @@ echo "Primary key - CreatePrimary"
 echo ""
 
 echo "Create a primary storage key"
-${PREFIX}createprimary -hi p -pwdk pps > run.out
+${PREFIX}createprimary -hi p -pwdk sto > run.out
 checkSuccess $?
 
 echo "Read the public part"
@@ -54,11 +54,11 @@ ${PREFIX}readpublic -ho 80000001 > run.out
 checkSuccess $?
 
 echo "Create a storage key under the primary key"
-${PREFIX}create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sto > run.out
+${PREFIX}create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sto > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key"
-${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Flush the storage key"
@@ -70,7 +70,7 @@ ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key - should fail"
-${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkFailure $?
 
 echo ""
@@ -80,15 +80,15 @@ echo ""
 # no unique 
 
 echo "Create a primary storage key with no unique field"
-${PREFIX}createprimary -hi p -pwdk pps > run.out
+${PREFIX}createprimary -hi p -pwdk sto > run.out
 checkSuccess $?
 
 echo "Create a storage key under the primary key"
-${PREFIX}create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sto > run.out
+${PREFIX}create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sto > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key"
-${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Flush the storage key"
@@ -103,11 +103,11 @@ checkSuccess $?
 
 echo "Create a primary storage key with empty unique field"
 touch empty.bin
-${PREFIX}createprimary -hi p -pwdk pps -iu empty.bin > run.out
+${PREFIX}createprimary -hi p -pwdk sto -iu empty.bin > run.out
 checkSuccess $?
 
 echo "Load the original storage key under the primary key with empty unique field"
-${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Flush the storage key"
@@ -126,19 +126,19 @@ echo ""
 
 echo "Create a primary storage key with unique field"
 touch empty.bin
-${PREFIX}createprimary -hi p -pwdk pps -iu policies/aaa > run.out
+${PREFIX}createprimary -hi p -pwdk sto -iu policies/aaa > run.out
 checkSuccess $?
 
 echo "Load the original storage key under the primary key - should fail"
-${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkFailure $?
 
 echo "Create a storage key under the primary key"
-${PREFIX}create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp pps -pwdk sto > run.out
+${PREFIX}create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sto > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key"
-${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Flush the storage key"
@@ -152,11 +152,11 @@ checkSuccess $?
 # same unique
 
 echo "Create a primary storage key with same unique field"
-${PREFIX}createprimary -hi p -pwdk pps -iu policies/aaa > run.out
+${PREFIX}createprimary -hi p -pwdk sto -iu policies/aaa > run.out
 checkSuccess $?
 
 echo "Load the previous storage key under the primary key"
-${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp pps > run.out
+${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Flush the storage key"
