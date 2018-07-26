@@ -19,7 +19,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "load", "load\load.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "loadexternal", "loadexternal\loadexternal.vcxproj", "{ABB0B1A5-1B3D-44D1-8382-FA4BB5FDC37C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tss", "tss\tss.vcxproj", "{5C11AF70-45A6-4888-A66A-C0A70302BD89}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ibmtss", "tss\tss.vcxproj", "{5C11AF70-45A6-4888-A66A-C0A70302BD89}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "verifysignature", "verifysignature\verifysignature.vcxproj", "{D25746E2-59E2-4365-A25F-C924E773B965}"
 EndProject
@@ -216,6 +216,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "policyduplicationselect", "policyduplicationselect\policyduplicationselect.vcxproj", "{35453517-E41C-4507-BFB6-9D4BCAAB986D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "policynamehash", "policynamehash\policynamehash.vcxproj", "{C71DCE69-67E6-4EFC-9AF4-BD7C20FFAD89}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "eventextend", "eventextend\eventextend.vcxproj", "{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1297,6 +1299,16 @@ Global
 		{C71DCE69-67E6-4EFC-9AF4-BD7C20FFAD89}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{C71DCE69-67E6-4EFC-9AF4-BD7C20FFAD89}.Release|Win32.ActiveCfg = Release|Win32
 		{C71DCE69-67E6-4EFC-9AF4-BD7C20FFAD89}.Release|Win32.Build.0 = Release|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Debug|Win32.Build.0 = Debug|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Release|Any CPU.ActiveCfg = Release|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Release|Win32.ActiveCfg = Release|Win32
+		{725DCEBE-1DD3-4011-87D4-AE8B023B77D9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
