@@ -3,7 +3,7 @@
 /*			     Parameter Unmarshaling				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Unmarshal12_fp.h 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*            $Id: Unmarshal12_fp.h 1285 2018-07-27 18:33:41Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -49,46 +49,46 @@ extern "C" {
 #endif
 
     TPM_RC
-    TSS_TPM_STARTUP_TYPE_Unmarshal(TPM_STARTUP_TYPE *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_STARTUP_TYPE_Unmarshalu(TPM_STARTUP_TYPE *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_VERSION_Unmarshal(TPM_VERSION *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_VERSION_Unmarshalu(TPM_VERSION *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_TAG_Unmarshal(TPM_TAG *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_TAG_Unmarshalu(TPM_TAG *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_PCR_SELECTION_Unmarshal(TPM_PCR_SELECTION *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_PCR_SELECTION_Unmarshalu(TPM_PCR_SELECTION *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM4B_TPM_PCR_INFO_LONG_Unmarshal(TPM_PCR_INFO_LONG *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM4B_TPM_PCR_INFO_LONG_Unmarshalu(TPM_PCR_INFO_LONG *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_PCR_INFO_LONG_Unmarshal(TPM_PCR_INFO_LONG *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_PCR_INFO_LONG_Unmarshalu(TPM_PCR_INFO_LONG *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_PCR_INFO_SHORT_Unmarshal(TPM_PCR_INFO_SHORT *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_PCR_INFO_SHORT_Unmarshalu(TPM_PCR_INFO_SHORT *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_SYMMETRIC_KEY_Unmarshal(TPM_SYMMETRIC_KEY *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_SYMMETRIC_KEY_Unmarshalu(TPM_SYMMETRIC_KEY *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_RSA_KEY_PARMS_Unmarshal(TPM_RSA_KEY_PARMS *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_RSA_KEY_PARMS_Unmarshalu(TPM_RSA_KEY_PARMS *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPMU_PARMS_Unmarshal(TPMU_PARMS *target, BYTE **buffer, uint32_t *size, uint32_t selector);
+    TSS_TPMU_PARMS_Unmarshalu(TPMU_PARMS *target, BYTE **buffer, uint32_t *size, uint32_t selector);
     TPM_RC
-    TSS_TPM4B_TPMU_PARMS_Unmarshal(TPMU_PARMS *target, BYTE **buffer, uint32_t *size, uint32_t selector);
+    TSS_TPM4B_TPMU_PARMS_Unmarshalu(TPMU_PARMS *target, BYTE **buffer, uint32_t *size, uint32_t selector);
     TPM_RC
-    TSS_TPM_KEY_PARMS_Unmarshal(TPM_KEY_PARMS *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_KEY_PARMS_Unmarshalu(TPM_KEY_PARMS *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_KEY12_Unmarshal(TPM_KEY12 *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_KEY12_Unmarshalu(TPM_KEY12 *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_STORE_PUBKEY_Unmarshal(TPM_STORE_PUBKEY *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_STORE_PUBKEY_Unmarshalu(TPM_STORE_PUBKEY *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_PUBKEY_Unmarshal(TPM_PUBKEY *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_PUBKEY_Unmarshalu(TPM_PUBKEY *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_NV_ATTRIBUTES_Unmarshal(TPM_NV_ATTRIBUTES *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_NV_ATTRIBUTES_Unmarshalu(TPM_NV_ATTRIBUTES *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_NV_DATA_PUBLIC_Unmarshal(TPM_NV_DATA_PUBLIC *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_NV_DATA_PUBLIC_Unmarshalu(TPM_NV_DATA_PUBLIC *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_CAP_VERSION_INFO_Unmarshal(TPM_CAP_VERSION_INFO *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_CAP_VERSION_INFO_Unmarshalu(TPM_CAP_VERSION_INFO *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_DA_INFO_Unmarshal(TPM_DA_INFO *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_DA_INFO_Unmarshalu(TPM_DA_INFO *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_DA_INFO_LIMITED_Unmarshal(TPM_DA_INFO_LIMITED *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_DA_INFO_LIMITED_Unmarshalu(TPM_DA_INFO_LIMITED *target, BYTE **buffer, uint32_t *size);
     TPM_RC
-    TSS_TPM_DA_ACTION_TYPE_Unmarshal(TPM_DA_ACTION_TYPE *target, BYTE **buffer, uint32_t *size);
+    TSS_TPM_DA_ACTION_TYPE_Unmarshalu(TPM_DA_ACTION_TYPE *target, BYTE **buffer, uint32_t *size);
 
 #endif

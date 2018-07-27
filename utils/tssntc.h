@@ -3,9 +3,9 @@
 /*		     	Nuvoton Command Common Routines				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssntc.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: tssntc.h 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -56,18 +56,27 @@ extern "C" {
 #endif
 
     TPM_RC
-    NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, uint32_t *size);
+    TSS_NTC2_CFG_STRUCT_Unmarshalu(NTC2_CFG_STRUCT *target, BYTE **buffer, uint32_t *size);
     TPM_RC
     TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, uint16_t *written, BYTE **buffer, uint32_t *size);
-
     TPM_RC
-    NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
+    TSS_NTC2_PreConfig_In_Unmarshalu(NTC2_PreConfig_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
     TPM_RC
     TSS_NTC2_PreConfig_In_Marshalu(NTC2_PreConfig_In *source, uint16_t *written, BYTE **buffer, uint32_t *size);
-
     TPM_RC
     TSS_NTC2_GetConfig_Out_Unmarshalu(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
 
+    /* These functions are deprecated.  They were adapted from the TPM side, but the signed size
+    caused static analysis tool warnings. */
+
+    TPM_RC
+    NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, INT32 *size);
+    TPM_RC
+    NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[]);
+    TPM_RC
+    TSS_NTC2_GetConfig_Out_Unmarshal(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
+
+    
 #ifdef __cplusplus
 }
 #endif

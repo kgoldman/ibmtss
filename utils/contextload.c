@@ -3,7 +3,7 @@
 /*			   ContextLoad 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: contextload.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: contextload.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.context,
-				    (UnmarshalFunction_t)TSS_TPMS_CONTEXT_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPMS_CONTEXT_Unmarshalu,
 				    contextFilename);
     }
     /* Start a TSS context */

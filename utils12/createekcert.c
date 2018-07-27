@@ -3,7 +3,7 @@
 /*		TPM 2.0 Attestation - Client EK and EK certificate  		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: createekcert.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*            $Id: createekcert.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
     TPM_PUBKEY 	ekPubkey;			/* TPM_PUBKEY EK */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&ekPubkey,
-				    (UnmarshalFunction_t)TSS_TPM_PUBKEY_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM_PUBKEY_Unmarshalu,
 				    ekPubkeyFilename);
     }
     TPMT_PUBLIC 	tpmtPublicOut;		/* primary key public part */
@@ -328,7 +328,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 	nvWriteIn.data[2] = 0x00;		/* TCG_FULL_CERT	0 */
 	nvWriteIn.data[5] = 0x10;		/* TCG_TAG_PCCLIENT_FULL_CERT	1002h */
 	nvWriteIn.data[6] = 0x02;
-	TSS_UINT16_Marshal(&certLength16, &written, &buffer, NULL);
+	TSS_UINT16_Marshalu(&certLength16, &written, &buffer, NULL);
 	nvWriteIn.dataSize = 7;
 	if (verbose) printf("storeEkCertificate: writing header %u bytes at offset %u to %08x\n",
 			    nvWriteIn.dataSize, nvWriteIn.offset, nvIndex);

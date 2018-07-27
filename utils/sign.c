@@ -3,7 +3,7 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
+/*	      $Id: sign.c 1285 2018-07-27 18:33:41Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
 	else if (scheme == TPM_ALG_ECDAA) {
 	    in.inScheme.details.ecdaa.hashAlg = halg;
 	    rc = TSS_File_ReadStructure(&in.inScheme.details.ecdaa.count, 
-					(UnmarshalFunction_t)TSS_UINT16_Unmarshal,
+					(UnmarshalFunction_t)TSS_UINT16_Unmarshalu,
 					counterFilename);
 	}
 	else {	/* scheme TPM_ALG_ECDSA */
@@ -354,7 +354,7 @@ int main(int argc, char *argv[])
 	}
 	else {
 	    rc = TSS_File_ReadStructure(&in.validation,
-					(UnmarshalFunction_t)TSS_TPMT_TK_HASHCHECK_Unmarshal,
+					(UnmarshalFunction_t)TSS_TPMT_TK_HASHCHECK_Unmarshalu,
 					ticketFilename);
 	}
     }
@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
 	RSA         	*rsaPubKey = NULL;
 	if (rc == 0) {
 	    rc = TSS_File_ReadStructure(&public,
-					(UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshal,
+					(UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshalu,
 					publicKeyFilename);
 	}
 	/* construct the OpenSSL RSA public key token */

@@ -3,7 +3,7 @@
 /*			    TPM 1.2 Make EK Blob				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: makeekblob.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*	      $Id: makeekblob.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -193,7 +193,7 @@ int main(int argc, char * argv[])
 	uint32_t size = sizeof(b1Blob.blob);	/* max size */
 	b1Blob.ekType = TPM_EK_TYPE_ACTIVATE;
 	b1Blob.blobSize = 0;
-	rc = TSS_TPM_EK_BLOB_ACTIVATE_Marshal(&a1Activate, &written, &buffer, &size);
+	rc = TSS_TPM_EK_BLOB_ACTIVATE_Marshalu(&a1Activate, &written, &buffer, &size);
 	b1Blob.blobSize = written;
     }
     /* marshal the TPM_EK_BLOB */
@@ -201,7 +201,7 @@ int main(int argc, char * argv[])
 	uint16_t written = 0;
 	uint8_t *buffer = decBlob;
 	uint32_t size = sizeof(decBlob);	/* max size */
-	rc = TSS_TPM_EK_BLOB_Marshal(&b1Blob, &written, &buffer, &size);
+	rc = TSS_TPM_EK_BLOB_Marshalu(&b1Blob, &written, &buffer, &size);
 	decBlobLength = written;
     }
     if (rc == 0) {
@@ -213,7 +213,7 @@ int main(int argc, char * argv[])
     /* read the EK TPM_PUBKEY */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&ekPubkey,
-				    (UnmarshalFunction_t)TSS_TPM_PUBKEY_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM_PUBKEY_Unmarshalu,
 				    ekPubkeyFilename);
     }
     /* sanity check, should always pass for TPM 1.2 */

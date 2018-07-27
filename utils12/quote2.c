@@ -3,7 +3,7 @@
 /*			    TPM 1.2 Quote2					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: quote2.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*	      $Id: quote2.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -237,14 +237,14 @@ int main(int argc, char * argv[])
 	    rc = TSS_Structure_Marshal(&q1Buffer,	/* freed @1 */
 				       &q1Written,
 				       &q1,
-				       (MarshalFunction_t)TSS_TPM_QUOTE_INFO2_Marshal);
+				       (MarshalFunction_t)TSS_TPM_QUOTE_INFO2_Marshalu);
 	}
 	/* construct marshaled TPM_CAP_VERSION_INFO */
 	if (rc == 0) {
 	    rc = TSS_Structure_Marshal(&vBuffer,	/* freed @2 */
 				       &vWritten,
 				       &out.versionInfo,
-				       (MarshalFunction_t)TSS_TPM_CAP_VERSION_INFO_Marshal);
+				       (MarshalFunction_t)TSS_TPM_CAP_VERSION_INFO_Marshalu);
 	}
 	/* recalculate the signed hash */
 	if (rc == 0) {
@@ -257,7 +257,7 @@ int main(int argc, char * argv[])
 	/* get the signing (quote public) key */
 	if (rc == 0) {
 	    rc = TSS_File_ReadStructure(&quoteKey,
-					(UnmarshalFunction_t)TSS_TPM_KEY12_Unmarshal,
+					(UnmarshalFunction_t)TSS_TPM_KEY12_Unmarshalu,
 					keyFilename);
 	}
 	/* construct the OpenSSL RSA public key token */

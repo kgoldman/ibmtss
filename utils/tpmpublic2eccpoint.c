@@ -3,7 +3,7 @@
 /*		    TPM public key TPM2B_PUBLIC to TPM2B_ECC_POINT 		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tpmpublic2eccpoint.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: tpmpublic2eccpoint.c 1287 2018-07-30 13:34:27Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017						*/
 /*										*/
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     /* read the TPM public key to a structure */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&public,
-				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshalu,
 				    publicKeyFilename);
     }
     if (rc == 0) {
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 	eccPoint2b.point = public.publicArea.unique.ecc;
 	/* TSS_TPM2B_ECC_POINT_Marshal() fills in the redundant TPM2B_ECC_POINT size */
 	rc = TSS_File_WriteStructure(&eccPoint2b,
-				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshalu,
 				     pointFilename);
 	
     }

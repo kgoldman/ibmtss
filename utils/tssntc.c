@@ -3,7 +3,7 @@
 /*		     	TPM2 Nuvoton Proprietary Commands			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssntc.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: tssntc.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -49,14 +49,14 @@
 /* Marshal and Unmarshal Functions */
 
 TPM_RC
-NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, uint32_t *size)
+TSS_NTC2_CFG_STRUCT_Unmarshalu(NTC2_CFG_STRUCT *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
     /* assumes that the NTC2_CFG_STRUCT structure are all uint8_t so that there are no endian
        issues */
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_Array_Unmarshal((BYTE *)target, sizeof(NTC2_CFG_STRUCT), buffer, size);
+	rc = TSS_Array_Unmarshalu((BYTE *)target, sizeof(NTC2_CFG_STRUCT), buffer, size);
     }
     return rc;
 }
@@ -72,13 +72,13 @@ TSS_NTC2_CFG_STRUCT_Marshal(NTC2_CFG_STRUCT *source, uint16_t *written, BYTE **b
 }
 
 TPM_RC
-NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
+TSS_NTC2_PreConfig_In_Unmarshalu(NTC2_PreConfig_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = NTC2_CFG_STRUCT_Unmarshal(&target->preConfig, buffer, size);	
+	rc = TSS_NTC2_CFG_STRUCT_Unmarshalu(&target->preConfig, buffer, size);	
 	if (rc != TPM_RC_SUCCESS) {	
 	    rc += RC_NTC2_PreConfig_preConfig;
 	}
@@ -103,8 +103,26 @@ TSS_NTC2_GetConfig_Out_Unmarshalu(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE *
     tag = tag;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = NTC2_CFG_STRUCT_Unmarshal(&target->preConfig, buffer, size);
+	rc = TSS_NTC2_CFG_STRUCT_Unmarshalu(&target->preConfig, buffer, size);
     }
     return rc;
 }
 
+/* These functions are deprecated.  They were adapted from the TPM side, but the signed size
+   caused static analysis tool warnings. */
+    
+TPM_RC
+NTC2_CFG_STRUCT_Unmarshal(NTC2_CFG_STRUCT *target, BYTE **buffer, INT32 *size)
+{
+    return TSS_NTC2_CFG_STRUCT_Unmarshalu(target, buffer, (uint32_t *)size);
+}
+TPM_RC
+NTC2_PreConfig_In_Unmarshal(NTC2_PreConfig_In *target, BYTE **buffer, INT32 *size, TPM_HANDLE handles[])
+{
+    return TSS_NTC2_PreConfig_In_Unmarshalu(target, buffer, (uint32_t *)size, handles);
+}
+TPM_RC
+TSS_NTC2_GetConfig_Out_Unmarshal(NTC2_GetConfig_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size)
+{
+    return TSS_NTC2_GetConfig_Out_Unmarshalu(target, tag, buffer, (uint32_t *)size);
+}

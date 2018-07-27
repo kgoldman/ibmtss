@@ -1,11 +1,11 @@
 /********************************************************************************/
 /*										*/
-/*			   Import a PEM RSA keypair 				*/
+/*			   Import a PEM keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: importpem.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2018					*/
+/* (c) Copyright IBM Corporation 2016 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -459,7 +459,7 @@ static void printUsage(void)
     printf("\n");
     printf("importpem\n");
     printf("\n");
-    printf("Runs TPM2_Import for a PEM signing key\n");
+    printf("Runs TPM2_Import for a PEM key\n");
     printf("\n");
     printf("\t-hp parent handle\n");
     printf("\t[-pwdp password for parent (default empty)]\n");

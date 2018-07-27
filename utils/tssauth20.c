@@ -3,7 +3,7 @@
 /*			     TPM 2.0 TSS Authorization				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth20.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*            $Id: tssauth20.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -627,7 +627,7 @@ static const MARSHAL_TABLE marshalTable [] = {
     {NTC2_CC_PreConfig,"NTC2_CC_PreConfig",
      (MarshalInFunction_t)TSS_NTC2_PreConfig_In_Marshalu,
      NULL,
-     (UnmarshalInFunction_t)NTC2_PreConfig_In_Unmarshal},
+     (UnmarshalInFunction_t)TSS_NTC2_PreConfig_In_Unmarshalu},
      
     {NTC2_CC_LockPreConfig,"NTC2_CC_LockPreConfig",
      NULL,
@@ -769,7 +769,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
 	uint16_t written;		/* dummy */
 	uint32_t commandSize = tssAuthContext->commandSize;
 	buffer = tssAuthContext->commandBuffer + sizeof(TPMI_ST_COMMAND_TAG);
-	TSS_UINT32_Marshal(&commandSize, &written, &buffer, NULL);
+	TSS_UINT32_Marshalu(&commandSize, &written, &buffer, NULL);
     }
     /* record the interim cpBuffer and cpBufferSize before adding authorizations */
     if (rc == 0) {
@@ -810,7 +810,7 @@ TPM_RC TSS_Unmarshal(TSS_AUTH_CONTEXT *tssAuthContext,
 		   unmarshal */
 		buffer = tssAuthContext->responseBuffer;
 		size = tssAuthContext->responseSize;
-		rc = TSS_TPM_ST_Unmarshal(&tag, &buffer, &size);
+		rc = TSS_TPM_ST_Unmarshalu(&tag, &buffer, &size);
 	    }
 	    if (rc == 0) {
 		/* move the buffer and size past the header */
@@ -866,7 +866,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
     while ((rc == 0) && !done){
 	authCommand = va_arg(ap, TPMS_AUTH_COMMAND *);
 	if (authCommand != NULL) {
-	    rc = TSS_TPMS_AUTH_COMMAND_Marshal(authCommand, &authorizationSize, NULL, NULL);
+	    rc = TSS_TPMS_AUTH_COMMAND_Marshalu(authCommand, &authorizationSize, NULL, NULL);
 	}
 	else {
 	    done = TRUE;
@@ -880,7 +880,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	    uint16_t written = 0;		/* dummy */
 	    TPMI_ST_COMMAND_TAG tag = TPM_ST_SESSIONS;
 	    buffer = tssAuthContext->commandBuffer;
-	    TSS_TPMI_ST_COMMAND_TAG_Marshal(&tag, &written, &buffer, NULL);
+	    TSS_TPMI_ST_COMMAND_TAG_Marshalu(&tag, &written, &buffer, NULL);
 	}
 	/* get cpBuffer, command parameters */
 	if (rc == 0) {
@@ -909,7 +909,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	if (rc == 0) {
 	    uint32_t authorizationSize32 = authorizationSize;
 	    uint16_t written;		/* dummy */
-	    TSS_UINT32_Marshal(&authorizationSize32, &written, &cpBuffer, NULL);
+	    TSS_UINT32_Marshalu(&authorizationSize32, &written, &cpBuffer, NULL);
 	}
 	/* marshal the command authorization areas */
 	done = FALSE;
@@ -918,7 +918,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	while ((rc == 0) && !done){
 	    authCommand = va_arg(ap, TPMS_AUTH_COMMAND *);
 	    if (authCommand != NULL) {
-		rc = TSS_TPMS_AUTH_COMMAND_Marshal(authCommand, &authorizationSize, &cpBuffer, NULL);
+		rc = TSS_TPMS_AUTH_COMMAND_Marshalu(authCommand, &authorizationSize, &cpBuffer, NULL);
 		tssAuthContext->authCount++; /* count the number of authorizations for the
 						response */
 	    }
@@ -937,7 +937,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	    /* back fill the correct commandSize */
 	    buffer = tssAuthContext->commandBuffer + sizeof(TPMI_ST_COMMAND_TAG);
 	    commandSize = tssAuthContext->commandSize;
-	    TSS_UINT32_Marshal(&commandSize, &written, &buffer, NULL);
+	    TSS_UINT32_Marshalu(&commandSize, &written, &buffer, NULL);
 	}
     }
     return rc;
@@ -968,7 +968,7 @@ TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
     if (rc == 0) {
 	size = tssAuthContext->responseSize;
   	buffer = tssAuthContext->responseBuffer;
-	rc = TSS_TPM_ST_Unmarshal(&tag, &buffer, &size);
+	rc = TSS_TPM_ST_Unmarshalu(&tag, &buffer, &size);
     }
     /* check that the tag indicates that there are sessions */
     if ((rc == 0) && (tag == TPM_ST_SESSIONS)) {
@@ -978,7 +978,7 @@ TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 				  (sizeof(TPM_HANDLE) * tssAuthContext->responseHandleCount);
 	    buffer = tssAuthContext->responseBuffer + offsetSize;
 	    size = tssAuthContext->responseSize - offsetSize;
-	    rc = TSS_UINT32_Unmarshal(&parameterSize, &buffer, &size);
+	    rc = TSS_UINT32_Unmarshalu(&parameterSize, &buffer, &size);
 	}
 	if (rc == 0) {
 	    if (parameterSize > (uint32_t)size) {
@@ -998,7 +998,7 @@ TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	while ((rc == 0) && !done){
 	    authResponse = va_arg(ap, TPMS_AUTH_RESPONSE *);
 	    if (authResponse != NULL) {
-		rc = TSS_TPMS_AUTH_RESPONSE_Unmarshal(authResponse, &buffer, &size);
+		rc = TSS_TPMS_AUTH_RESPONSE_Unmarshalu(authResponse, &buffer, &size);
 		authCount++;
 	    }
 	    else {
@@ -1130,7 +1130,7 @@ TPM_RC TSS_GetCommandHandle(TSS_AUTH_CONTEXT *tssAuthContext,
 		 sizeof(TPMI_ST_COMMAND_TAG) + sizeof (uint32_t) + sizeof(TPM_CC) +
 		 (sizeof(TPM_HANDLE) * index);
 	size = sizeof(TPM_HANDLE);
-	rc = TSS_TPM_HANDLE_Unmarshal(commandHandle, &buffer, &size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(commandHandle, &buffer, &size);
     }
     return rc;
 }
@@ -1159,7 +1159,7 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
 
 	size = tssAuthContext->responseSize;
   	buffer = tssAuthContext->responseBuffer;
-	rc = TSS_TPM_ST_Unmarshal(&tag, &buffer, &size);	/* does value checking */
+	rc = TSS_TPM_ST_Unmarshalu(&tag, &buffer, &size);	/* does value checking */
     }
     /* no sessions -> no parameterSize */
     if (tag == TPM_ST_NO_SESSIONS) {
@@ -1189,7 +1189,7 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
 	if (rc == 0) {
 	    size = tssAuthContext->responseSize - offsetSize;
 	    buffer = tssAuthContext->responseBuffer + offsetSize;
-	    rc = TSS_UINT32_Unmarshal(&parameterSize, &buffer, &size);
+	    rc = TSS_UINT32_Unmarshalu(&parameterSize, &buffer, &size);
 	}
 	if (rc == 0) {
 	    offsetSize += sizeof(uint32_t);

@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
 	uint32_t size = IMPLEMENTATION_PCR * MAX_DIGEST_SIZE;
 	pcrLength = 0;
 	for (pc = 0 ; (rc == 0) && (pc < pcrCount) ; pc++) {
-	    rc = TSS_Array_Marshal((uint8_t *)&pcr[pc], sizeInBytes, &pcrLength, &buffer, &size);
+	    rc = TSS_Array_Marshalu((uint8_t *)&pcr[pc], sizeInBytes, &pcrLength, &buffer, &size);
 	}
     }
     /* hash the marshaled PCR array */

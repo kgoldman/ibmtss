@@ -3,7 +3,7 @@
 /*			   Import		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: import.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: import.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.objectPublic,
-				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshalu,
 				    objectPublicFilename);
     }
     if (rc == 0) {

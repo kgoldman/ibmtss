@@ -3,7 +3,7 @@
 /*			    NV_Certify						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvcertify.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: nvcertify.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -373,7 +373,7 @@ int main(int argc, char *argv[])
 	TPMS_ATTEST 		tpmsAttest;
 	uint8_t *tmpBuffer = out.certifyInfo.t.attestationData;
 	uint32_t tmpSize = out.certifyInfo.t.size;
-	rc = TSS_TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
+	rc = TSS_TPMS_ATTEST_Unmarshalu(&tpmsAttest, &tmpBuffer, &tmpSize);
 	if (verbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
     }
     if (rc == 0) {

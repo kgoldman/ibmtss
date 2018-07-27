@@ -3,7 +3,7 @@
 /*			    TPM 1.2 Load Key 2					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadkey2.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*	      $Id: loadkey2.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -169,7 +169,7 @@ int main(int argc, char * argv[])
     }
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.inKey,
-				    (UnmarshalFunction_t)TSS_TPM_KEY12_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM_KEY12_Unmarshalu,
 				    keyFilename);
     }
     if (rc == 0) {

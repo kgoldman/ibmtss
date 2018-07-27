@@ -3,7 +3,7 @@
 /*			    TSS Primary API for TPM 1.2				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss12.c 1258 2018-06-28 16:46:10Z kgoldman $			*/
+/*	      $Id: tss12.c 1285 2018-07-27 18:33:41Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -700,22 +700,22 @@ static TPM_RC TSS_HmacSession12_Unmarshal(TSS_HMAC12_CONTEXT *target,
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->authHandle, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->authHandle, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->nonceEven, SHA1_DIGEST_SIZE, buffer, size);
+	rc = TSS_Array_Unmarshalu(target->nonceEven, SHA1_DIGEST_SIZE, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->nonceEvenOSAP, SHA1_DIGEST_SIZE, buffer, size);
+	rc = TSS_Array_Unmarshalu(target->nonceEvenOSAP, SHA1_DIGEST_SIZE, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal((uint8_t *)&target->sharedSecret.digest, SHA1_DIGEST_SIZE, buffer, size);
+	rc = TSS_Array_Unmarshalu((uint8_t *)&target->sharedSecret.digest, SHA1_DIGEST_SIZE, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->entityType, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->entityType, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->entityValue, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->entityValue, buffer, size);
     }
     return rc;
 }

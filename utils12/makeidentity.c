@@ -3,7 +3,7 @@
 /*			    TPM 1.2 Make Identity				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: makeidentity.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*	      $Id: makeidentity.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -243,13 +243,13 @@ int main(int argc, char * argv[])
     /* save the TPM_KEY12 key */
     if ((rc == 0) && (keyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.idKey,
-				     (MarshalFunction_t)TSS_TPM_KEY12_Marshal,
+				     (MarshalFunction_t)TSS_TPM_KEY12_Marshalu,
 				     keyFilename);
     }
     /* save the TPM_PUBKEY key from the TPM_KEY12 idKey */
     if ((rc == 0) && (pubkeyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.idKey,
-				     (MarshalFunction_t)TSS_TPM_KEY12_PUBKEY_Marshal,
+				     (MarshalFunction_t)TSS_TPM_KEY12_PUBKEY_Marshalu,
 				     pubkeyFilename);
     }
     if (rc == 0) {

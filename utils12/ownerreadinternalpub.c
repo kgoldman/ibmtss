@@ -3,7 +3,7 @@
 /*			    TPM 1.2 OwnerReadInternalPub			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ownerreadinternalpub.c 1258 2018-06-28 16:46:10Z kgoldman $	*/
+/*	      $Id: ownerreadinternalpub.c 1286 2018-07-27 19:20:16Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -171,7 +171,7 @@ int main(int argc, char * argv[])
     /* save the TPM_PUBKEY key */
     if ((rc == 0) && (pubkeyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.publicPortion,
-				     (MarshalFunction_t)TSS_TPM_PUBKEY_Marshal,
+				     (MarshalFunction_t)TSS_TPM_PUBKEY_Marshalu,
 				     pubkeyFilename);
     }
     if (rc == 0) {

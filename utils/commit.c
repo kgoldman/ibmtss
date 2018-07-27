@@ -3,7 +3,7 @@
 /*			    Commit						*/
 /*	     		Written by Bill Martin 					*/
 /*                 Green Hills Integrity Software Services 			*/
-/*	      $Id: commit.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: commit.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -270,7 +270,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (dataFilename != NULL) {
 	    rc = TSS_File_ReadStructure(&in.P1,
-					(UnmarshalFunction_t)TSS_TPM2B_ECC_POINT_Unmarshal,
+					(UnmarshalFunction_t)TSS_TPM2B_ECC_POINT_Unmarshalu,
 					dataFilename);
 	}
 	else {

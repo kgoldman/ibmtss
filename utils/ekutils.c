@@ -3,7 +3,7 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 1268 2018-07-18 17:55:10Z kgoldman $		*/
+/*	      $Id: ekutils.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2018.					*/
 /*										*/
@@ -775,7 +775,7 @@ TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	tmpData = data;		/* temps because unmarshal moves the pointers */
 	tmpDataSize = dataSize;
-	rc = TSS_TPMT_PUBLIC_Unmarshal(tpmtPublic, &tmpData, &tmpDataSize, YES);
+	rc = TSS_TPMT_PUBLIC_Unmarshalu(tpmtPublic, &tmpData, &tmpDataSize, YES);
     }
     /* optional tracing */
     if (rc == 0) {

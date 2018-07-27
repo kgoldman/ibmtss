@@ -3,7 +3,7 @@
 /*			    ZGen_2Phase						*/
 /*	     		Written by Ken Goldman 					*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: zgen2phase.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: zgen2phase.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -271,17 +271,17 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.inQsB,
-				    (UnmarshalFunction_t)TSS_TPM2B_ECC_POINT_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_ECC_POINT_Unmarshalu,
 				    qsbFilename);
     }
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.inQeB,
-				    (UnmarshalFunction_t)TSS_TPM2B_ECC_POINT_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_ECC_POINT_Unmarshalu,
 				    qebFilename);
     }
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.counter, 
-				    (UnmarshalFunction_t)TSS_UINT16_Unmarshal,
+				    (UnmarshalFunction_t)TSS_UINT16_Unmarshalu,
 				    counterFilename);
     }
     /* Start a TSS context */

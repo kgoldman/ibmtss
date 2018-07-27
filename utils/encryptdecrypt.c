@@ -3,7 +3,7 @@
 /*			   EncryptDecrypt					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: encryptdecrypt.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: encryptdecrypt.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -302,13 +302,13 @@ int main(int argc, char *argv[])
     }
     if ((rc == 0) && (outFilename != NULL)) {
 	written = 0;
-	rc = TSS_TPM2B_MAX_BUFFER_Marshal(&out.outData, &written, NULL, NULL);
+	rc = TSS_TPM2B_MAX_BUFFER_Marshalu(&out.outData, &written, NULL, NULL);
     }
     if ((rc == 0) && (outFilename != NULL)) {
 	buffer = realloc(buffer, written);
 	buffer1 = buffer;
 	written = 0;
-	rc = TSS_TPM2B_MAX_BUFFER_Marshal(&out.outData, &written, &buffer1, NULL);
+	rc = TSS_TPM2B_MAX_BUFFER_Marshalu(&out.outData, &written, &buffer1, NULL);
     }    
     if ((rc == 0) && (outFilename != NULL)) {
 	rc = TSS_File_WriteBinaryFile(buffer + sizeof(uint16_t),

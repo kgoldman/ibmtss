@@ -3,7 +3,7 @@
 /*			TPM 1.2 EK Index Parsing Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils12.c 1283 2018-07-25 19:46:20Z kgoldman $		*/
+/*	      $Id: ekutils12.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -77,7 +77,7 @@ TPM_RC readNvBufferMax12(TSS_CONTEXT *tssContext,
 	in.capArea = TPM_CAP_PROPERTY;
 	in.subCapSize = sizeof(uint32_t);
 	scap32 = TPM_CAP_PROP_INPUT_BUFFER;
-	TSS_UINT32_Marshal(&scap32, &written, &buffer, NULL);
+	TSS_UINT32_Marshalu(&scap32, &written, &buffer, NULL);
     }
     if (rc == 0) {
 	rc = TSS_Execute(tssContext,
@@ -129,7 +129,7 @@ TPM_RC getIndexSize12(TSS_CONTEXT *tssContext,
 	in.capArea = TPM_CAP_NV_INDEX;
 	in.subCapSize = sizeof(uint32_t);
 	scap32 = nvIndex;
-	TSS_UINT32_Marshal(&scap32, &written, &buffer, NULL);
+	TSS_UINT32_Marshalu(&scap32, &written, &buffer, NULL);
     }
     /* call TSS to execute the command */
     if (rc == 0) {
@@ -151,7 +151,7 @@ TPM_RC getIndexSize12(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	uint8_t 	*buffer = out.resp;
 	uint32_t 	size = out.respSize;
-	rc = TSS_TPM_NV_DATA_PUBLIC_Unmarshal(&ndp, &buffer, &size);
+	rc = TSS_TPM_NV_DATA_PUBLIC_Unmarshalu(&ndp, &buffer, &size);
     }
     if (rc == 0) {	/* FIXME range check */
 	*dataSize = ndp.dataSize;

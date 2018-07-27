@@ -3,7 +3,7 @@
 /*			    CertifyCreation					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: certifycreation.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: certifycreation.c 1285 2018-07-27 18:33:41Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
     /* creationTicket */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.creationTicket,
-				    (UnmarshalFunction_t)TSS_TPMT_TK_CREATION_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPMT_TK_CREATION_Unmarshalu,
 				    ticketFilename);
     }
     /* creationHash */
@@ -380,7 +380,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	uint8_t *tmpBuffer = out.certifyInfo.t.attestationData;
 	uint32_t tmpSize = out.certifyInfo.t.size;
-	rc = TSS_TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
+	rc = TSS_TPMS_ATTEST_Unmarshalu(&tpmsAttest, &tmpBuffer, &tmpSize);
     }
     if (rc == 0) {
 	int match;

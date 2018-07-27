@@ -3,7 +3,7 @@
 /*			    TPM 1.2 Sign					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*	      $Id: sign.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -214,7 +214,7 @@ int main(int argc, char * argv[])
 	/* get the signing key */
 	if (rc == 0) {
 	    rc = TSS_File_ReadStructure(&signingKey,
-					(UnmarshalFunction_t)TSS_TPM_KEY12_Unmarshal,
+					(UnmarshalFunction_t)TSS_TPM_KEY12_Unmarshalu,
 					keyFilename);
 	}
 	/* construct the OpenSSL RSA public key token */

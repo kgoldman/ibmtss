@@ -3,7 +3,7 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: loadexternal.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018					*/
 /*										*/
@@ -381,7 +381,7 @@ int main(int argc, char *argv[])
 	/* TPM format key, output from create */
 	if (publicKeyFilename != NULL) {
 	    rc = TSS_File_ReadStructure(&in.inPublic,
-					(UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshal,
+					(UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshalu,
 					publicKeyFilename);
 	}
 	/* PEM format, output from e.g. openssl, readpublic, createprimary, create */

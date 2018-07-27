@@ -3,7 +3,7 @@
 /*			   Socket Transmit and Receive Utilities		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsssocket.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: tsssocket.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -455,7 +455,7 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
 	bufferPtr += sizeof(TPM_ST);
 	
 	size = sizeof(uint32_t);		/* dummy for call */
-	rc = TSS_UINT32_Unmarshal(&responseSize, &bufferPtr, &size);
+	rc = TSS_UINT32_Unmarshalu(&responseSize, &bufferPtr, &size);
 	*length = responseSize;			/* returned length */
 
 	/* check the response size, see TSS_CONTEXT structure */
@@ -495,7 +495,7 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
 	/* skip to responseCode */
 	bufferPtr = buffer + sizeof(TPM_ST) + sizeof(uint32_t);
 	size = sizeof(TPM_RC);		/* dummy for call */
-	rc = TSS_UINT32_Unmarshal(&responseCode, &bufferPtr, &size);
+	rc = TSS_UINT32_Unmarshalu(&responseCode, &bufferPtr, &size);
     }
     /* if there is no other (receive or unmarshal) error, return the TPM response code */
     if (rc == 0) {

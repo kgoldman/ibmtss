@@ -264,13 +264,13 @@ int main(int argc, char * argv[])
     /* save the TPM_KEY12 key */
     if ((rc == 0) && (keyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.wrappedKey,
-				     (MarshalFunction_t)TSS_TPM_KEY12_Marshal,
+				     (MarshalFunction_t)TSS_TPM_KEY12_Marshalu,
 				     keyFilename);
     }
     /* save the TPM_PUBKEY key from the TPM_KEY12 idKey */
     if ((rc == 0) && (pubkeyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.wrappedKey,
-				     (MarshalFunction_t)TSS_TPM_KEY12_PUBKEY_Marshal,
+				     (MarshalFunction_t)TSS_TPM_KEY12_PUBKEY_Marshalu,
 				     pubkeyFilename);
     }
     if (rc == 0) {

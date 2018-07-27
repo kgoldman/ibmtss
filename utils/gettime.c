@@ -3,7 +3,7 @@
 /*			    GetTime						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: gettime.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: gettime.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	uint8_t *tmpBuffer = out.timeInfo.t.attestationData;
 	uint32_t tmpSize = out.timeInfo.t.size;
-	rc = TSS_TPMS_ATTEST_Unmarshal(&tpmsAttest, &tmpBuffer, &tmpSize);
+	rc = TSS_TPMS_ATTEST_Unmarshalu(&tpmsAttest, &tmpBuffer, &tmpSize);
 	if (verbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
     }
     if (rc == 0) {

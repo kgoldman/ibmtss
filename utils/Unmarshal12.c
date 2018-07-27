@@ -3,7 +3,7 @@
 /*			     Parameter Unmarshaling				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Unmarshal12.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*            $Id: Unmarshal12.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017					*/
 /*										*/
@@ -44,12 +44,12 @@
 #include <ibmtss/Unmarshal12_fp.h>
 
 TPM_RC
-TSS_TPM_STARTUP_TYPE_Unmarshal(TPM_STARTUP_TYPE *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_STARTUP_TYPE_Unmarshalu(TPM_STARTUP_TYPE *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_UINT16_Unmarshal(target, buffer, size);  
+	rc = TSS_UINT16_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -68,20 +68,20 @@ TSS_TPM_STARTUP_TYPE_Unmarshal(TPM_STARTUP_TYPE *target, BYTE **buffer, uint32_t
 
 
 TPM_RC
-TSS_TPM_VERSION_Unmarshal(TPM_VERSION *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_VERSION_Unmarshalu(TPM_VERSION *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->major, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->major, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->minor, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->minor, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->revMajor, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->revMajor, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->revMinor, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->revMinor, buffer, size);
     }
     return rc;
 }
@@ -89,12 +89,12 @@ TSS_TPM_VERSION_Unmarshal(TPM_VERSION *target, BYTE **buffer, uint32_t *size)
 /* 6.0 */
 
 TPM_RC
-TSS_TPM_TAG_Unmarshal(TPM_TAG *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_TAG_Unmarshalu(TPM_TAG *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_UINT16_Unmarshal(target, buffer, size);  
+	rc = TSS_UINT16_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -112,11 +112,11 @@ TSS_TPM_TAG_Unmarshal(TPM_TAG *target, BYTE **buffer, uint32_t *size)
 /* 8.0 */
 
 TPM_RC
-TSS_TPM_PCR_SELECTION_Unmarshal(TPM_PCR_SELECTION *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_PCR_SELECTION_Unmarshalu(TPM_PCR_SELECTION *target, BYTE **buffer, uint32_t *size)
 { 
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->sizeOfSelect, buffer, size);   
+	rc = TSS_UINT16_Unmarshalu(&target->sizeOfSelect, buffer, size);   
     }
     if (rc == 0) {
 	if (target->sizeOfSelect > sizeof(target->pcrSelect)) {
@@ -124,19 +124,19 @@ TSS_TPM_PCR_SELECTION_Unmarshal(TPM_PCR_SELECTION *target, BYTE **buffer, uint32
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->pcrSelect, target->sizeOfSelect, buffer, size);
+	rc = TSS_Array_Unmarshalu(target->pcrSelect, target->sizeOfSelect, buffer, size);
     }
     return rc;
 }
 
 TPM_RC
-TSS_TPM4B_TPM_PCR_INFO_LONG_Unmarshal(TPM_PCR_INFO_LONG *target, BYTE **buffer, uint32_t *size)
+TSS_TPM4B_TPM_PCR_INFO_LONG_Unmarshalu(TPM_PCR_INFO_LONG *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     uint32_t sizeRead32;
     uint32_t startSize;
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&sizeRead32, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&sizeRead32, buffer, size);
     }
     if (rc == 0) {
 	if (sizeRead32 == 0) {
@@ -147,7 +147,7 @@ TSS_TPM4B_TPM_PCR_INFO_LONG_Unmarshal(TPM_PCR_INFO_LONG *target, BYTE **buffer, 
 	startSize = *size;
     }
     if (rc == 0) {
-	rc = TSS_TPM_PCR_INFO_LONG_Unmarshal(target, buffer, size);
+	rc = TSS_TPM_PCR_INFO_LONG_Unmarshalu(target, buffer, size);
     }
     if (rc == 0) {
 	if (sizeRead32 != startSize - *size) {
@@ -158,45 +158,45 @@ TSS_TPM4B_TPM_PCR_INFO_LONG_Unmarshal(TPM_PCR_INFO_LONG *target, BYTE **buffer, 
 }
 
 TPM_RC
-TSS_TPM_PCR_INFO_LONG_Unmarshal(TPM_PCR_INFO_LONG *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_PCR_INFO_LONG_Unmarshalu(TPM_PCR_INFO_LONG *target, BYTE **buffer, uint32_t *size)
 { 
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->tag, buffer, size);                      
+	rc = TSS_UINT16_Unmarshalu(&target->tag, buffer, size);                      
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->localityAtCreation, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->localityAtCreation, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->localityAtRelease, buffer, size);   
+	rc = TSS_UINT8_Unmarshalu(&target->localityAtRelease, buffer, size);   
     }
     if (rc == 0) {
-	rc = TSS_TPM_PCR_SELECTION_Unmarshal(&target->creationPCRSelection, buffer, size); 
+	rc = TSS_TPM_PCR_SELECTION_Unmarshalu(&target->creationPCRSelection, buffer, size); 
     }
     if (rc == 0) {
-	rc = TSS_TPM_PCR_SELECTION_Unmarshal(&target->releasePCRSelection, buffer, size); 
+	rc = TSS_TPM_PCR_SELECTION_Unmarshalu(&target->releasePCRSelection, buffer, size); 
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->digestAtCreation, SHA1_DIGEST_SIZE, buffer, size);
+	rc = TSS_Array_Unmarshalu(target->digestAtCreation, SHA1_DIGEST_SIZE, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->digestAtRelease, SHA1_DIGEST_SIZE, buffer, size); 
+	rc = TSS_Array_Unmarshalu(target->digestAtRelease, SHA1_DIGEST_SIZE, buffer, size); 
     }
     return rc;
 }
 
 TPM_RC
-TSS_TPM_PCR_INFO_SHORT_Unmarshal(TPM_PCR_INFO_SHORT *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_PCR_INFO_SHORT_Unmarshalu(TPM_PCR_INFO_SHORT *target, BYTE **buffer, uint32_t *size)
 { 
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_TPM_PCR_SELECTION_Unmarshal(&target->pcrSelection, buffer, size); 
+	rc = TSS_TPM_PCR_SELECTION_Unmarshalu(&target->pcrSelection, buffer, size); 
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->localityAtRelease, buffer, size);   
+	rc = TSS_UINT8_Unmarshalu(&target->localityAtRelease, buffer, size);   
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->digestAtRelease, SHA1_DIGEST_SIZE, buffer, size); 
+	rc = TSS_Array_Unmarshalu(target->digestAtRelease, SHA1_DIGEST_SIZE, buffer, size); 
     }
     return rc;
 }
@@ -204,17 +204,17 @@ TSS_TPM_PCR_INFO_SHORT_Unmarshal(TPM_PCR_INFO_SHORT *target, BYTE **buffer, uint
 /* 9.0 */
 
 TPM_RC
-TSS_TPM_SYMMETRIC_KEY_Unmarshal(TPM_SYMMETRIC_KEY *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_SYMMETRIC_KEY_Unmarshalu(TPM_SYMMETRIC_KEY *target, BYTE **buffer, uint32_t *size)
 { 
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->algId, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->algId, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->encScheme, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->encScheme, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->size, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->size, buffer, size);
     }
     if (rc == 0) {
 	if (target->size > sizeof(target->data)) {
@@ -222,7 +222,7 @@ TSS_TPM_SYMMETRIC_KEY_Unmarshal(TPM_SYMMETRIC_KEY *target, BYTE **buffer, uint32
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->data, target->size, buffer, size); 
+	rc = TSS_Array_Unmarshalu(target->data, target->size, buffer, size); 
     }
     return rc;
 }
@@ -230,17 +230,17 @@ TSS_TPM_SYMMETRIC_KEY_Unmarshal(TPM_SYMMETRIC_KEY *target, BYTE **buffer, uint32
 /* 10.0 */
 
 TPM_RC
-TSS_TPM_RSA_KEY_PARMS_Unmarshal(TPM_RSA_KEY_PARMS *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_RSA_KEY_PARMS_Unmarshalu(TPM_RSA_KEY_PARMS *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->keyLength, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->keyLength, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->numPrimes, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->numPrimes, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->exponentSize, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->exponentSize, buffer, size);
     }
     if (rc == 0) {
 	if (target->exponentSize > sizeof(target->exponent)) {
@@ -248,18 +248,18 @@ TSS_TPM_RSA_KEY_PARMS_Unmarshal(TPM_RSA_KEY_PARMS *target, BYTE **buffer, uint32
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->exponent, target->exponentSize, buffer, size);
+	rc = TSS_Array_Unmarshalu(target->exponent, target->exponentSize, buffer, size);
     }
     return rc;
 }
 
 TPM_RC
-TSS_TPMU_PARMS_Unmarshal(TPMU_PARMS *target, BYTE **buffer, uint32_t *size, uint32_t selector)
+TSS_TPMU_PARMS_Unmarshalu(TPMU_PARMS *target, BYTE **buffer, uint32_t *size, uint32_t selector)
 {
     TPM_RC rc = 0;
     switch (selector) {
       case TPM_ALG_RSA:		/* A structure of type TPM_RSA_KEY_PARMS */
-	rc = TSS_TPM_RSA_KEY_PARMS_Unmarshal(&target->rsaParms, buffer, size);
+	rc = TSS_TPM_RSA_KEY_PARMS_Unmarshalu(&target->rsaParms, buffer, size);
 	break;
       case TPM_ALG_AES128:	/* A structure of type TPM_SYMMETRIC_KEY_PARMS */
 	/* not implemented yet */
@@ -270,13 +270,13 @@ TSS_TPMU_PARMS_Unmarshal(TPMU_PARMS *target, BYTE **buffer, uint32_t *size, uint
 }
 
 TPM_RC
-TSS_TPM4B_TPMU_PARMS_Unmarshal(TPMU_PARMS *target, BYTE **buffer, uint32_t *size, uint32_t selector)
+TSS_TPM4B_TPMU_PARMS_Unmarshalu(TPMU_PARMS *target, BYTE **buffer, uint32_t *size, uint32_t selector)
 {
     TPM_RC rc = 0;
     uint32_t sizeRead32;
     uint32_t startSize;
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&sizeRead32, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&sizeRead32, buffer, size);
     }
     if (rc == 0) {
 	if (sizeRead32 == 0) {
@@ -287,7 +287,7 @@ TSS_TPM4B_TPMU_PARMS_Unmarshal(TPMU_PARMS *target, BYTE **buffer, uint32_t *size
 	startSize = *size;
     }
     if (rc == 0) {
-	rc = TSS_TPMU_PARMS_Unmarshal(target, buffer, size, selector);
+	rc = TSS_TPMU_PARMS_Unmarshalu(target, buffer, size, selector);
     }
     if (rc == 0) {
 	if (sizeRead32 != startSize - *size) {
@@ -298,64 +298,64 @@ TSS_TPM4B_TPMU_PARMS_Unmarshal(TPMU_PARMS *target, BYTE **buffer, uint32_t *size
 }
 
 TPM_RC
-TSS_TPM_KEY_PARMS_Unmarshal(TPM_KEY_PARMS *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_KEY_PARMS_Unmarshalu(TPM_KEY_PARMS *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->algorithmID, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->algorithmID, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->encScheme, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->encScheme, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->sigScheme, buffer, size); 
+	rc = TSS_UINT16_Unmarshalu(&target->sigScheme, buffer, size); 
     }
     if (rc == 0) {
-	rc = TSS_TPM4B_TPMU_PARMS_Unmarshal(&target->parms, buffer, size, target->algorithmID);	
+	rc = TSS_TPM4B_TPMU_PARMS_Unmarshalu(&target->parms, buffer, size, target->algorithmID);	
     }
     return rc;
 }
 
 TPM_RC
-TSS_TPM_KEY12_Unmarshal(TPM_KEY12 *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_KEY12_Unmarshalu(TPM_KEY12 *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->tag, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->tag, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->fill, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->fill, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->keyUsage, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->keyUsage, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->keyFlags, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->keyFlags, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->authDataUsage, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->authDataUsage, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM_KEY_PARMS_Unmarshal(&target->algorithmParms, buffer, size);
+	rc = TSS_TPM_KEY_PARMS_Unmarshalu(&target->algorithmParms, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM4B_TPM_PCR_INFO_LONG_Unmarshal(&target->PCRInfo, buffer, size);
+	rc = TSS_TPM4B_TPM_PCR_INFO_LONG_Unmarshalu(&target->PCRInfo, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM_STORE_PUBKEY_Unmarshal(&target->pubKey, buffer, size);
+	rc = TSS_TPM_STORE_PUBKEY_Unmarshalu(&target->pubKey, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM_STORE_PUBKEY_Unmarshal(&target->encData, buffer, size);
+	rc = TSS_TPM_STORE_PUBKEY_Unmarshalu(&target->encData, buffer, size);
     }
     return rc;
 }
 
 TPM_RC
-TSS_TPM_STORE_PUBKEY_Unmarshal(TPM_STORE_PUBKEY *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_STORE_PUBKEY_Unmarshalu(TPM_STORE_PUBKEY *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->keyLength, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->keyLength, buffer, size);
     }
     if (rc == 0) {
 	if (target->keyLength > sizeof(target->key)) {
@@ -363,20 +363,20 @@ TSS_TPM_STORE_PUBKEY_Unmarshal(TPM_STORE_PUBKEY *target, BYTE **buffer, uint32_t
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->key, target->keyLength, buffer, size);
+	rc = TSS_Array_Unmarshalu(target->key, target->keyLength, buffer, size);
     }
     return rc;
 }						  
 
 TPM_RC
-TSS_TPM_PUBKEY_Unmarshal(TPM_PUBKEY *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_PUBKEY_Unmarshalu(TPM_PUBKEY *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_TPM_KEY_PARMS_Unmarshal(&target->algorithmParms, buffer, size); 
+	rc = TSS_TPM_KEY_PARMS_Unmarshalu(&target->algorithmParms, buffer, size); 
     }
     if (rc == 0) {
-	rc = TSS_TPM_STORE_PUBKEY_Unmarshal(&target->pubKey, buffer, size);
+	rc = TSS_TPM_STORE_PUBKEY_Unmarshalu(&target->pubKey, buffer, size);
     }
     return rc;
 }
@@ -384,48 +384,48 @@ TSS_TPM_PUBKEY_Unmarshal(TPM_PUBKEY *target, BYTE **buffer, uint32_t *size)
 /* 19 */
 
 TPM_RC
-TSS_TPM_NV_ATTRIBUTES_Unmarshal(TPM_NV_ATTRIBUTES *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_NV_ATTRIBUTES_Unmarshalu(TPM_NV_ATTRIBUTES *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->tag, buffer, size);                      
+	rc = TSS_UINT16_Unmarshalu(&target->tag, buffer, size);                      
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->attributes, buffer, size);                      
+	rc = TSS_UINT32_Unmarshalu(&target->attributes, buffer, size);                      
     }
     return rc;
 }
 
 TPM_RC
-TSS_TPM_NV_DATA_PUBLIC_Unmarshal(TPM_NV_DATA_PUBLIC *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_NV_DATA_PUBLIC_Unmarshalu(TPM_NV_DATA_PUBLIC *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->tag, buffer, size);                      
+	rc = TSS_UINT16_Unmarshalu(&target->tag, buffer, size);                      
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->nvIndex, buffer, size);                      
+	rc = TSS_UINT32_Unmarshalu(&target->nvIndex, buffer, size);                      
     }
     if (rc == 0) {
-	rc = TSS_TPM_PCR_INFO_SHORT_Unmarshal(&target->pcrInfoRead, buffer, size); 
+	rc = TSS_TPM_PCR_INFO_SHORT_Unmarshalu(&target->pcrInfoRead, buffer, size); 
     }
     if (rc == 0) {
-	rc = TSS_TPM_PCR_INFO_SHORT_Unmarshal(&target->pcrInfoWrite, buffer, size);
+	rc = TSS_TPM_PCR_INFO_SHORT_Unmarshalu(&target->pcrInfoWrite, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM_NV_ATTRIBUTES_Unmarshal(&target->permission, buffer, size);
+	rc = TSS_TPM_NV_ATTRIBUTES_Unmarshalu(&target->permission, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->bReadSTClear, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->bReadSTClear, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->bWriteSTClear, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->bWriteSTClear, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->bWriteDefine, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->bWriteDefine, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->dataSize, buffer, size);                      
+	rc = TSS_UINT32_Unmarshalu(&target->dataSize, buffer, size);                      
     }
     return rc;
 }						  
@@ -433,26 +433,26 @@ TSS_TPM_NV_DATA_PUBLIC_Unmarshal(TPM_NV_DATA_PUBLIC *target, BYTE **buffer, uint
 /* 21 */
 
 TPM_RC
-TSS_TPM_CAP_VERSION_INFO_Unmarshal(TPM_CAP_VERSION_INFO *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_CAP_VERSION_INFO_Unmarshalu(TPM_CAP_VERSION_INFO *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->tag, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->tag, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM_VERSION_Unmarshal(&target->version, buffer, size);
+	rc = TSS_TPM_VERSION_Unmarshalu(&target->version, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->specLevel, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->specLevel, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->errataRev, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->errataRev, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->tpmVendorID, sizeof(target->tpmVendorID), buffer, size);
+	rc = TSS_Array_Unmarshalu(target->tpmVendorID, sizeof(target->tpmVendorID), buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->vendorSpecificSize, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->vendorSpecificSize, buffer, size);
     }
     if (rc == 0) {
 	if (target->vendorSpecificSize > sizeof(target->vendorSpecific)) {
@@ -460,35 +460,35 @@ TSS_TPM_CAP_VERSION_INFO_Unmarshal(TPM_CAP_VERSION_INFO *target, BYTE **buffer, 
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->vendorSpecific, target->vendorSpecificSize, buffer, size);
+	rc = TSS_Array_Unmarshalu(target->vendorSpecific, target->vendorSpecificSize, buffer, size);
     }
     return rc;
 }						  
 
 TPM_RC
-TSS_TPM_DA_INFO_Unmarshal(TPM_DA_INFO *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_DA_INFO_Unmarshalu(TPM_DA_INFO *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->tag, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->tag, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->state, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->state, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->currentCount, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->currentCount, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->thresholdCount, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->thresholdCount, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM_DA_ACTION_TYPE_Unmarshal(&target->actionAtThreshold, buffer, size);
+	rc = TSS_TPM_DA_ACTION_TYPE_Unmarshalu(&target->actionAtThreshold, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->actionDependValue, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->actionDependValue, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->vendorDataSize, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->vendorDataSize, buffer, size);
     }
     if (rc == 0) {
 	if (target->vendorDataSize > sizeof(target->vendorData)) {
@@ -496,26 +496,26 @@ TSS_TPM_DA_INFO_Unmarshal(TPM_DA_INFO *target, BYTE **buffer, uint32_t *size)
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->vendorData, target->vendorDataSize , buffer, size);
+	rc = TSS_Array_Unmarshalu(target->vendorData, target->vendorDataSize , buffer, size);
     }
     return rc;
 }						  
 
 TPM_RC
-TSS_TPM_DA_INFO_LIMITED_Unmarshal(TPM_DA_INFO_LIMITED *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_DA_INFO_LIMITED_Unmarshalu(TPM_DA_INFO_LIMITED *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->tag, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->tag, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->state, buffer, size);
+	rc = TSS_UINT8_Unmarshalu(&target->state, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM_DA_ACTION_TYPE_Unmarshal(&target->actionAtThreshold, buffer, size);
+	rc = TSS_TPM_DA_ACTION_TYPE_Unmarshalu(&target->actionAtThreshold, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->vendorDataSize, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->vendorDataSize, buffer, size);
     }
     if (rc == 0) {
 	if (target->vendorDataSize > sizeof(target->vendorData)) {
@@ -523,20 +523,20 @@ TSS_TPM_DA_INFO_LIMITED_Unmarshal(TPM_DA_INFO_LIMITED *target, BYTE **buffer, ui
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->vendorData, target->vendorDataSize , buffer, size);
+	rc = TSS_Array_Unmarshalu(target->vendorData, target->vendorDataSize , buffer, size);
     }
     return rc;
 }						  
 
 TPM_RC
-TSS_TPM_DA_ACTION_TYPE_Unmarshal(TPM_DA_ACTION_TYPE *target, BYTE **buffer, uint32_t *size)
+TSS_TPM_DA_ACTION_TYPE_Unmarshalu(TPM_DA_ACTION_TYPE *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->tag, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(&target->tag, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->actions, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(&target->actions, buffer, size);
     }
     return rc;
 }

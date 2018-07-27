@@ -3,7 +3,7 @@
 /*			    TPM 1.2 GetCapability				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*	      $Id: getcapability.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -210,16 +210,16 @@ int main(int argc, char * argv[])
 	    /* marshal a TPM_SELECT_SIZE */
 	    uint8_t b01 = 0x01;
 	    uint8_t b02 = 0x02;
-	    TSS_UINT8_Marshal(&b01, &written, &buffer, NULL);	/* major */
-	    TSS_UINT8_Marshal(&b02, &written, &buffer, NULL);	/* minor */
-	    TSS_UINT16_Marshal(&scap16, &written, &buffer, NULL);
+	    TSS_UINT8_Marshalu(&b01, &written, &buffer, NULL);	/* major */
+	    TSS_UINT8_Marshalu(&b02, &written, &buffer, NULL);	/* minor */
+	    TSS_UINT16_Marshalu(&scap16, &written, &buffer, NULL);
 	    in.subCapSize = sizeof(TPM_SELECT_SIZE);
 	}
 	else if (in.subCapSize == 2) {
-	    TSS_UINT16_Marshal(&scap16, &written, &buffer, NULL);
+	    TSS_UINT16_Marshalu(&scap16, &written, &buffer, NULL);
 	}
 	else if (in.subCapSize == 4) {
-	    TSS_UINT32_Marshal(&scap32, &written, &buffer, NULL);
+	    TSS_UINT32_Marshalu(&scap32, &written, &buffer, NULL);
 	}
 	rc = TSS_Execute(tssContext,
 			 (RESPONSE_PARAMETERS *)&out,
@@ -735,7 +735,7 @@ static TPM_RC responseNvIndex(GetCapability12_In *in, GetCapability12_Out *out)
     in = in;
 
     if (rc == 0) {
-	rc = TSS_TPM_NV_DATA_PUBLIC_Unmarshal(&ndp, &buffer, &size);
+	rc = TSS_TPM_NV_DATA_PUBLIC_Unmarshalu(&ndp, &buffer, &size);
     }
     if (rc == 0) {
 	printf("\tnvIndex               : %08X\n", ndp.nvIndex);
@@ -781,7 +781,7 @@ static TPM_RC responseDaLogic(GetCapability12_In *in, GetCapability12_Out *out)
     if (rc == 0) {
 	buffer = out->resp;
 	size = out->respSize;
-	rc = TSS_UINT16_Unmarshal(&tag, &buffer, &size);
+	rc = TSS_UINT16_Unmarshalu(&tag, &buffer, &size);
     }
     if (rc == 0) {
 	buffer = out->resp;
@@ -791,7 +791,7 @@ static TPM_RC responseDaLogic(GetCapability12_In *in, GetCapability12_Out *out)
 	      {
 		  TPM_DA_INFO da;
 		  if (rc == 0) {
-		      rc = TSS_TPM_DA_INFO_Unmarshal(&da, &buffer, &size);
+		      rc = TSS_TPM_DA_INFO_Unmarshalu(&da, &buffer, &size);
 		  }
 		  if (rc == 0) {
 		      printf("\tTPM_DA_STATE %s\n", da.state ? "inactive" : "active");
@@ -818,7 +818,7 @@ static TPM_RC responseDaLogic(GetCapability12_In *in, GetCapability12_Out *out)
 	      {
 		  TPM_DA_INFO_LIMITED da;
 		  if (rc == 0) {
-		      rc = TSS_TPM_DA_INFO_LIMITED_Unmarshal(&da, &buffer, &size);
+		      rc = TSS_TPM_DA_INFO_LIMITED_Unmarshalu(&da, &buffer, &size);
 		  }
 		  if (rc == 0) {
 		      printf("\tTPM_DA_STATE %s\n", da.state ? "inactive" : "active");
@@ -856,7 +856,7 @@ static TPM_RC responseVersionVal(GetCapability12_In *in, GetCapability12_Out *ou
     if (rc == 0) {
 	uint8_t *buffer = out->resp;
 	uint32_t size = out->respSize;
-	rc = TSS_TPM_CAP_VERSION_INFO_Unmarshal(&vi, &buffer, &size);
+	rc = TSS_TPM_CAP_VERSION_INFO_Unmarshalu(&vi, &buffer, &size);
     }
     if (rc == 0) {
 	printf("\tmajor %02x\n", vi.version.major);

@@ -3,7 +3,7 @@
 /*                              	                                   	*/
 /*                           Written by Ken Goldman                             */
 /*                     IBM Thomas J. Watson Research Center                     */
-/*            $Id: Commands12.c 1257 2018-06-27 20:52:08Z kgoldman $         	*/
+/*            $Id: Commands12.c 1285 2018-07-27 18:33:41Z kgoldman $         	*/
 /*                                                                              */
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -60,7 +60,7 @@ ActivateIdentity_In_Unmarshal(ActivateIdentity_In *target, BYTE **buffer, uint32
 	target->idKeyHandle = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->blobSize, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->blobSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
@@ -71,7 +71,7 @@ ActivateIdentity_In_Unmarshal(ActivateIdentity_In *target, BYTE **buffer, uint32
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->blob, target->blobSize, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->blob, target->blobSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
@@ -86,13 +86,13 @@ CreateEndorsementKeyPair_In_Unmarshal(CreateEndorsementKeyPair_In *target, BYTE 
     handles = handles;
 
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->antiReplay, TPM_NONCE_SIZE, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->antiReplay, TPM_NONCE_SIZE, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_TPM_KEY_PARMS_Unmarshal(&target->keyInfo, buffer, size);	
+	rc = TSS_TPM_KEY_PARMS_Unmarshalu(&target->keyInfo, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
@@ -109,19 +109,19 @@ CreateWrapKey_In_Unmarshal(CreateWrapKey_In *target, BYTE **buffer, uint32_t *si
 	target->parentHandle = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->dataUsageAuth, SHA1_DIGEST_SIZE, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->dataUsageAuth, SHA1_DIGEST_SIZE, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->dataMigrationAuth, SHA1_DIGEST_SIZE, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->dataMigrationAuth, SHA1_DIGEST_SIZE, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
     }
     if (rc == 0) {
-    	rc = TSS_TPM_KEY12_Unmarshal(&target->keyInfo, buffer, size);
+    	rc = TSS_TPM_KEY12_Unmarshalu(&target->keyInfo, buffer, size);
     	if (rc != 0) {
     	    rc += (TPM_RC_P + TPM_RC_3);
     	}
@@ -137,7 +137,7 @@ Extend_In_Unmarshal(Extend_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE
 	target->pcrNum = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->inDigest, SHA1_DIGEST_SIZE, buffer, size);
+	rc = TSS_Array_Unmarshalu(target->inDigest, SHA1_DIGEST_SIZE, buffer, size);
     	if (rc != 0) {
     	    rc += (TPM_RC_P + TPM_RC_1);
     	}
@@ -153,7 +153,7 @@ FlushSpecific_In_Unmarshal(FlushSpecific_In *target, BYTE **buffer, uint32_t *si
 	target->handle = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->resourceType, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->resourceType, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
@@ -167,13 +167,13 @@ GetCapability12_In_Unmarshal(GetCapability12_In *target, BYTE **buffer, uint32_t
     TPM_RC rc = 0;
     handles = handles;
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->capArea, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->capArea, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->subCapSize, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->subCapSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
@@ -184,7 +184,7 @@ GetCapability12_In_Unmarshal(GetCapability12_In *target, BYTE **buffer, uint32_t
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->subCap, target->subCapSize, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->subCap, target->subCapSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_3);
 	}
@@ -201,7 +201,7 @@ LoadKey2_In_Unmarshal(LoadKey2_In *target, BYTE **buffer, uint32_t *size, TPM_HA
 	target->parentHandle = handles[0];
     }
     if (rc == 0) {
-    	rc = TSS_TPM_KEY12_Unmarshal(&target->inKey, buffer, size);
+    	rc = TSS_TPM_KEY12_Unmarshalu(&target->inKey, buffer, size);
     	if (rc != 0) {
     	    rc += (TPM_RC_P + TPM_RC_1);
     	}
@@ -216,19 +216,19 @@ MakeIdentity_In_Unmarshal(MakeIdentity_In *target, BYTE **buffer, uint32_t *size
     handles = handles;
 
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->identityAuth, SHA1_DIGEST_SIZE, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->identityAuth, SHA1_DIGEST_SIZE, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->labelPrivCADigest, SHA1_DIGEST_SIZE, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->labelPrivCADigest, SHA1_DIGEST_SIZE, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
     }
     if (rc == 0) {
-    	rc = TSS_TPM_KEY12_Unmarshal(&target->idKeyParams, buffer, size);
+    	rc = TSS_TPM_KEY12_Unmarshalu(&target->idKeyParams, buffer, size);
     	if (rc != 0) {
     	    rc += (TPM_RC_P + TPM_RC_3);
     	}
@@ -243,13 +243,13 @@ NV_DefineSpace12_In_Unmarshal(NV_DefineSpace12_In *target, BYTE **buffer, uint32
     handles = handles;
 
     if (rc == 0) {
-	rc = TSS_TPM_NV_DATA_PUBLIC_Unmarshal(&target->pubInfo, buffer, size);	
+	rc = TSS_TPM_NV_DATA_PUBLIC_Unmarshalu(&target->pubInfo, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->encAuth, SHA1_DIGEST_SIZE, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->encAuth, SHA1_DIGEST_SIZE, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
@@ -266,13 +266,13 @@ NV_ReadValueAuth_In_Unmarshal(NV_ReadValueAuth_In *target, BYTE **buffer, uint32
 	target->nvIndex = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->offset, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->offset, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->dataSize, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->dataSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
@@ -289,13 +289,13 @@ NV_ReadValue_In_Unmarshal(NV_ReadValue_In *target, BYTE **buffer, uint32_t *size
 	target->nvIndex = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->offset, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->offset, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->dataSize, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->dataSize, buffer, size);	
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
@@ -312,13 +312,13 @@ NV_WriteValue_In_Unmarshal(NV_WriteValue_In *target, BYTE **buffer, uint32_t *si
 	target->nvIndex = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->offset, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->offset, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->dataSize, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->dataSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
@@ -329,7 +329,7 @@ NV_WriteValue_In_Unmarshal(NV_WriteValue_In *target, BYTE **buffer, uint32_t *si
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->data, target->dataSize, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->data, target->dataSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_3);
 	}
@@ -346,13 +346,13 @@ NV_WriteValueAuth_In_Unmarshal(NV_WriteValueAuth_In *target, BYTE **buffer, uint
 	target->nvIndex = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->offset, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->offset, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->dataSize, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->dataSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
@@ -363,7 +363,7 @@ NV_WriteValueAuth_In_Unmarshal(NV_WriteValueAuth_In *target, BYTE **buffer, uint
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->data, target->dataSize, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->data, target->dataSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_3);
 	}
@@ -378,19 +378,19 @@ OSAP_In_Unmarshal(OSAP_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE han
     handles = handles;
 
     if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->entityType, buffer, size);	
+	rc = TSS_UINT16_Unmarshalu(&target->entityType, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->entityValue, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->entityValue, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->nonceOddOSAP, SHA1_DIGEST_SIZE, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->nonceOddOSAP, SHA1_DIGEST_SIZE, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_3);
 	}
@@ -405,7 +405,7 @@ OwnerSetDisable_In_Unmarshal(OwnerSetDisable_In *target, BYTE **buffer, uint32_t
     handles = handles;
 
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->disableState, buffer, size);	
+	rc = TSS_UINT8_Unmarshalu(&target->disableState, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
@@ -419,7 +419,7 @@ OwnerReadInternalPub_In_Unmarshal(OwnerReadInternalPub_In *target, BYTE **buffer
     TPM_RC rc = 0;
     handles = handles;
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->keyHandle , buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->keyHandle , buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
@@ -447,7 +447,7 @@ PCR_Reset12_In_Unmarshal(PCR_Reset12_In *target, BYTE **buffer, uint32_t *size, 
     handles = handles;
 
     if (rc == 0) {
-    	rc = TSS_TPM_PCR_SELECTION_Unmarshal(&target->pcrSelection, buffer, size);
+    	rc = TSS_TPM_PCR_SELECTION_Unmarshalu(&target->pcrSelection, buffer, size);
     	if (rc != 0) {
     	    rc += (TPM_RC_P + TPM_RC_1);
     	}
@@ -464,19 +464,19 @@ Quote2_In_Unmarshal(Quote2_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE
 	target->keyHandle = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->externalData, SHA1_DIGEST_SIZE, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->externalData, SHA1_DIGEST_SIZE, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
     if (rc == 0) {
-	rc = TSS_TPM_PCR_SELECTION_Unmarshal(&target->targetPCR, buffer, size);	
+	rc = TSS_TPM_PCR_SELECTION_Unmarshalu(&target->targetPCR, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
     }
     if (rc == 0) {
-	rc = TSS_UINT8_Unmarshal(&target->addVersion, buffer, size);	
+	rc = TSS_UINT8_Unmarshalu(&target->addVersion, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_3);
 	}
@@ -491,7 +491,7 @@ ReadPubek_In_Unmarshal(ReadPubek_In *target, BYTE **buffer, uint32_t *size, TPM_
     handles = handles;
 
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->antiReplay, TPM_NONCE_SIZE, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->antiReplay, TPM_NONCE_SIZE, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
@@ -508,7 +508,7 @@ Sign12_In_Unmarshal(Sign12_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE
 	target->keyHandle = handles[0];
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->areaToSignSize, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->areaToSignSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
@@ -519,7 +519,7 @@ Sign12_In_Unmarshal(Sign12_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->areaToSign, target->areaToSignSize, buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->areaToSign, target->areaToSignSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
@@ -534,7 +534,7 @@ Startup12_In_Unmarshal(Startup12_In *target, BYTE **buffer, uint32_t *size, TPM_
     handles = handles;
 
     if (rc == 0) {
-	rc = TSS_TPM_STARTUP_TYPE_Unmarshal(&target->startupType, buffer, size);	
+	rc = TSS_TPM_STARTUP_TYPE_Unmarshalu(&target->startupType, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
@@ -549,13 +549,13 @@ TakeOwnership_In_Unmarshal(TakeOwnership_In *target, BYTE **buffer, uint32_t *si
     handles = handles;
 
    if (rc == 0) {
-	rc = TSS_UINT16_Unmarshal(&target->protocolID, buffer, size);	
+	rc = TSS_UINT16_Unmarshalu(&target->protocolID, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_1);
 	}
     }
    if (rc == 0) {
-       rc = TSS_UINT32_Unmarshal(&target->encOwnerAuthSize, buffer, size);	
+       rc = TSS_UINT32_Unmarshalu(&target->encOwnerAuthSize, buffer, size);
        if (rc != 0) {	
 	   rc += (TPM_RC_P + TPM_RC_1);
        }
@@ -566,13 +566,13 @@ TakeOwnership_In_Unmarshal(TakeOwnership_In *target, BYTE **buffer, uint32_t *si
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->encOwnerAuth, target->encOwnerAuthSize , buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->encOwnerAuth, target->encOwnerAuthSize , buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_2);
 	}
     }
     if (rc == 0) {
-	rc = TSS_UINT32_Unmarshal(&target->encSrkAuthSize, buffer, size);	
+	rc = TSS_UINT32_Unmarshalu(&target->encSrkAuthSize, buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_3);
 	}
@@ -583,13 +583,13 @@ TakeOwnership_In_Unmarshal(TakeOwnership_In *target, BYTE **buffer, uint32_t *si
 	}
     }    
     if (rc == 0) {
-	rc = TSS_Array_Unmarshal(target->encSrkAuth, target->encSrkAuthSize , buffer, size);	
+	rc = TSS_Array_Unmarshalu(target->encSrkAuth, target->encSrkAuthSize , buffer, size);
 	if (rc != 0) {	
 	    rc += (TPM_RC_P + TPM_RC_4);
 	}
     }
     if (rc == 0) {
-    	rc = TSS_TPM_KEY12_Unmarshal(&target->srkParams, buffer, size);
+    	rc = TSS_TPM_KEY12_Unmarshalu(&target->srkParams, buffer, size);
     	if (rc != 0) {
     	    rc += (TPM_RC_P + TPM_RC_5);
     	}

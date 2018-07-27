@@ -3,7 +3,7 @@
 /*			     Structure Print and Scan Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: tssprint.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -1423,7 +1423,7 @@ void TSS_TPM2B_ATTEST_Print(TPM2B_ATTEST *source, unsigned int indent)
     if (rc == 0) {
 	buffer = source->t.attestationData;
 	size = source->t.size;
-	rc = TSS_TPMS_ATTEST_Unmarshal(&attests, &buffer, &size);
+	rc = TSS_TPMS_ATTEST_Unmarshalu(&attests, &buffer, &size);
     }
     if (rc == 0) {
 	TSS_TPMS_ATTEST_Print(&attests, indent+2);

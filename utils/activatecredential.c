@@ -3,7 +3,7 @@
 /*			    ActivateCredential					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: activatecredential.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: activatecredential.c 1285 2018-07-27 18:33:41Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -252,13 +252,13 @@ int main(int argc, char *argv[])
     /* read the credential */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.credentialBlob,
-				    (UnmarshalFunction_t)TSS_TPM2B_ID_OBJECT_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_ID_OBJECT_Unmarshalu,
 				    inputCredentialFilename);
     }
     /* read the secret */
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.secret,
-				    (UnmarshalFunction_t)TSS_TPM2B_ENCRYPTED_SECRET_Unmarshal,
+				    (UnmarshalFunction_t)TSS_TPM2B_ENCRYPTED_SECRET_Unmarshalu,
 				    secretFilename);
     }
     /* Start a TSS context */

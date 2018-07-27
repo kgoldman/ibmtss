@@ -3,7 +3,7 @@
 /*	Windows 7,8,10 Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstbsi.c 1257 2018-06-27 20:52:08Z kgoldman $ 		*/
+/*	      $Id: tsstbsi.c 1285 2018-07-27 18:33:41Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -226,7 +226,7 @@ static uint32_t TSS_Tbsi_SubmitCommand(TBS_HCONTEXT hContext,
 
 	bufferPtr = responseBuffer + sizeof(TPM_ST) + sizeof(uint32_t);		/* skip to responseCode */
 	size = sizeof(TPM_RC);		/* dummy for call */
-	rc = TSS_UINT32_Unmarshal(&responseCode, &bufferPtr, &size);
+	rc = TSS_UINT32_Unmarshalu(&responseCode, &bufferPtr, &size);
     }
     if (rc == 0) {
 	rc = responseCode;
