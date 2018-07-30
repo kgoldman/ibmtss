@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: tssmarshal.h 1289 2018-07-30 16:31:47Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -901,6 +901,8 @@ extern "C" {
     TSS_TPMI_SH_POLICY_Marshalu(const TPMI_SH_POLICY*source, UINT16 *written, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TSS_TPMI_DH_CONTEXT_Marshalu(const TPMI_DH_CONTEXT *source, UINT16 *written, BYTE **buffer, uint32_t *size);
+    LIB_EXPORT TPM_RC
+    TSS_TPMI_DH_SAVED_Marshalu(const TPMI_DH_SAVED *source, uint16_t *written, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TSS_TPMI_RH_HIERARCHY_Marshalu(const TPMI_RH_HIERARCHY *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC

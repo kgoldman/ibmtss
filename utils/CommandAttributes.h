@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			     				*/
+/*			  Command Attributes	   				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: CommandAttributes.h 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*            $Id: CommandAttributes.h 1289 2018-07-30 16:31:47Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,20 +55,14 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2015				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2018				*/
 /*										*/
 /********************************************************************************/
-
-/* rev 119 */
 
 #ifndef COMMANDATTRIBUTES_H
 #define COMMANDATTRIBUTES_H
 
 #include <ibmtss/TPM_Types.h>
-
-/* kgold stub until next version of the spec */
-
-/* FIXME guess - kgold */
 
 #define IS_IMPLEMENTED 	0x0001
 #define HANDLE_1_USER 	0x0002

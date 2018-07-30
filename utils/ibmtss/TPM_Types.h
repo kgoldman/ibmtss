@@ -3,7 +3,7 @@
 /*			 Headers from Part 2    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*            $Id: TPM_Types.h 1289 2018-07-30 16:31:47Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -1231,6 +1231,10 @@ typedef TPM_HANDLE TPMI_SH_POLICY;
 /* Table 46 - Definition of (TPM_HANDLE) TPMI_DH_CONTEXT Type  */
 
 typedef TPM_HANDLE TPMI_DH_CONTEXT;
+
+/* Table 49 - Definition of (TPM_HANDLE) TPMI_DH_SAVED Type */
+    
+typedef TPM_HANDLE TPMI_DH_SAVED;
 
 /* Table 47 - Definition of (TPM_HANDLE) TPMI_RH_HIERARCHY Type  */
 
@@ -2722,7 +2726,7 @@ typedef union {
 
 typedef struct {
     UINT64		sequence;	/* the sequence number of the context */
-    TPMI_DH_CONTEXT	savedHandle;	/* a handle indicating if the context is a session, object or sequence object */
+    TPMI_DH_SAVED	savedHandle;	/* a handle indicating if the context is a session, object or sequence object */
     TPMI_RH_HIERARCHY	hierarchy;	/* the hierarchy of the context */
     TPM2B_CONTEXT_DATA	contextBlob;	/* the context data and integrity HMAC */
 } TPMS_CONTEXT;

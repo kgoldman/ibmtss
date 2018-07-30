@@ -802,6 +802,35 @@ TSS_TPMI_DH_CONTEXT_Unmarshalu(TPMI_DH_CONTEXT *target, BYTE **buffer, uint32_t 
     return rc;
 }
 
+/* Table 49 - Definition of (TPM_HANDLE) TPMI_DH_SAVED Type  */
+
+TPM_RC
+TSS_TPMI_DH_SAVED_Unmarshalu(TPMI_DH_SAVED *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	BOOL isNotHmacSession = (*target < HMAC_SESSION_FIRST ) || (*target > HMAC_SESSION_LAST);
+	BOOL isNotPolicySession = (*target < POLICY_SESSION_FIRST) || (*target > POLICY_SESSION_LAST);
+	BOOL isNotTransient = (*target != 0x80000000);
+	BOOL isNotSequence = (*target != 0x80000001);
+	BOOL isNotTransientStClear = (*target != 0x80000002);
+
+	if (isNotHmacSession &&
+	    isNotPolicySession &&
+	    isNotTransient && 
+	    isNotSequence &&
+	    isNotTransientStClear) {
+	    rc = TPM_RC_VALUE;
+	}
+    }
+    return rc;
+}
+
 /* Table 48 - Definition of (TPM_HANDLE) TPMI_RH_HIERARCHY Type  */
 
 TPM_RC
@@ -4272,7 +4301,7 @@ TSS_TPMS_CONTEXT_Unmarshalu(TPMS_CONTEXT *target, BYTE **buffer, uint32_t *size)
 	rc = TSS_UINT64_Unmarshalu(&target->sequence, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMI_DH_CONTEXT_Unmarshalu(&target->savedHandle, buffer, size, NO);
+	rc = TSS_TPMI_DH_SAVED_Unmarshalu(&target->savedHandle, buffer, size, NO);
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPMI_RH_HIERARCHY_Unmarshalu(&target->hierarchy, buffer, size, YES);

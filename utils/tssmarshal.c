@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: tssmarshal.c 1289 2018-07-30 16:31:47Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -3114,6 +3114,18 @@ TSS_TPMI_DH_CONTEXT_Marshalu(const TPMI_DH_CONTEXT *source, uint16_t *written, B
     return rc;
 }
 
+/* Table 49 - Definition of (TPM_HANDLE) TPMI_DH_SAVED Type  */
+
+TPM_RC
+TSS_TPMI_DH_SAVED_Marshalu(const TPMI_DH_SAVED *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPM_HANDLE_Marshalu(source, written, buffer, size);
+    }
+    return rc;
+}
+
 /* Table 48 - Definition of (TPM_HANDLE) TPMI_RH_HIERARCHY Type  */
 
 TPM_RC
@@ -5841,7 +5853,7 @@ TSS_TPMS_CONTEXT_Marshalu(const TPMS_CONTEXT *source, uint16_t *written, BYTE **
 	rc = TSS_UINT64_Marshalu(&source->sequence, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPMI_DH_CONTEXT_Marshalu(&source->savedHandle, written, buffer, size);
+	rc = TSS_TPMI_DH_SAVED_Marshalu(&source->savedHandle, written, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_TPMI_RH_HIERARCHY_Marshalu(&source->hierarchy, written, buffer, size);

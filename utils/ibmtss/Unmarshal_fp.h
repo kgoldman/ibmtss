@@ -3,7 +3,7 @@
 /*			   Unmarshal Functions  				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Unmarshal_fp.h 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*            $Id: Unmarshal_fp.h 1289 2018-07-30 16:31:47Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -147,6 +147,8 @@ extern "C" {
     TSS_TPMI_SH_POLICY_Unmarshalu(TPMI_SH_POLICY *target, BYTE **buffer, uint32_t *size, BOOL allowNull);
     LIB_EXPORT TPM_RC
     TSS_TPMI_DH_CONTEXT_Unmarshalu(TPMI_DH_CONTEXT *target, BYTE **buffer, uint32_t *size, BOOL allowNull);
+    LIB_EXPORT TPM_RC
+    TSS_TPMI_DH_SAVED_Unmarshalu(TPMI_DH_SAVED *target, BYTE **buffer, uint32_t *size, BOOL allowNull);
     LIB_EXPORT TPM_RC
     TSS_TPMI_RH_HIERARCHY_Unmarshalu(TPMI_RH_HIERARCHY *target, BYTE **buffer, uint32_t *size, BOOL allowNull);
     LIB_EXPORT TPM_RC
