@@ -3,9 +3,9 @@
 /*			    NV Read		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvread.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: nvread.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -371,16 +371,16 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_NV_Read\n");
     printf("\n");
-    printf("\t[-hia hierarchy authorization (o, p)(default index authorization)]\n");
-    printf("\t-ha NV index handle\n");
-    printf("\t[-pwdn password for NV index (default empty)]\n");
-    printf("\t[-sz data size (default to size of index)]\n");
+    printf("\t[-hia\thierarchy authorization (o, p)(default index authorization)]\n");
+    printf("\t-ha\tNV index handle\n");
+    printf("\t[-pwdn\tpassword for NV index (default empty)]\n");
+    printf("\t[-sz\tdata size (default to size of index)]\n");
     printf("\t\tcounter, bits, pin read 8 bytes, extend reads based on hash algorithm\n");
-    printf("\t[-off offset (default 0)]\n");
-    printf("\t[-of data file (default do not save)]\n");
+    printf("\t[-off\toffset (default 0)]\n");
+    printf("\t[-of\tdata file (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

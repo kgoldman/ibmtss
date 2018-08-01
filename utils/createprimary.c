@@ -3,9 +3,9 @@
 /*			    Create Primary	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createprimary.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: createprimary.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -761,21 +761,21 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_CreatePrimary\n");
     printf("\n");
-    printf("\t[-hi hierarchy (e, o, p, n) (default null)]\n");
-    printf("\t[-pwdp password for hierarchy (default empty)]\n");
-    printf("\t[-pwdpi password file name for hierarchy (default empty)]\n");
-    printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t[-iu inPublic unique field file (default none)]\n");
-    printf("\t[-opu public key file name (default do not save)]\n");
-    printf("\t[-opem public key PEM format file name (default do not save)]\n");
-    printf("\t[-tk output ticket file name]\n");
-    printf("\t[-ch output creation hash file name]\n");
+    printf("\t[-hi\t\thierarchy (e, o, p, n) (default null)]\n");
+    printf("\t[-pwdp\t\tpassword for hierarchy (default empty)]\n");
+    printf("\t[-pwdpi\t\tpassword file name for hierarchy (default empty)]\n");
+    printf("\t[-pwdk\t\tpassword for key (default empty)]\n");
+    printf("\t[-iu\t\tinPublic unique field file (default none)]\n");
+    printf("\t[-opu\t\tpublic key file name (default do not save)]\n");
+    printf("\t[-opem\t\tpublic key PEM format file name (default do not save)]\n");
+    printf("\t[-tk\t\toutput ticket file name]\n");
+    printf("\t[-ch\t\toutput creation hash file name]\n");
     printf("\n");
     printUsageTemplate();
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

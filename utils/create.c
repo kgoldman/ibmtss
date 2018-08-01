@@ -3,9 +3,9 @@
 /*			    Create 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: create.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: create.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -674,18 +674,18 @@ static void printUsage(void)
     printf("\n");
     printUsageTemplate();
     printf("\n");
-    printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t[-pwdp password for parent key (default empty)]\n");
+    printf("\t[-pwdk\tpassword for key (default empty)]\n");
+    printf("\t[-pwdp\tpassword for parent key (default empty)]\n");
     printf("\n");
-    printf("\t[-opu public key file name (default do not save)]\n");
-    printf("\t[-opr private key file name (default do not save)]\n");
-    printf("\t[-opem public key PEM format file name (default do not save)]\n");
-    printf("\t[-tk output ticket file name (default do not save)]\n");
-    printf("\t[-ch output creation hash file name (default do not save)]\n");
+    printf("\t[-opu\tpublic key file name (default do not save)]\n");
+    printf("\t[-opr\tprivate key file name (default do not save)]\n");
+    printf("\t[-opem\tpublic key PEM format file name (default do not save)]\n");
+    printf("\t[-tk\toutput ticket file name (default do not save)]\n");
+    printf("\t[-ch\toutput creation hash file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

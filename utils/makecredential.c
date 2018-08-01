@@ -3,9 +3,9 @@
 /*			    MakeCredential					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: makecredential.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: makecredential.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -289,16 +289,15 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_MakeCredential\n");
     printf("\n");
-    printf("\t-ha handle of encryption key public area\n");
-    printf("\t-icred input credential file name\n");
-    printf("\t-in object name file name\n");
-    printf("\n");
-    printf("\t[-ocred output credential file name (default do not save)]\n");
-    printf("\t[-os secret file name (default do not save)]\n");
+    printf("\t-ha\thandle of encryption key public area\n");
+    printf("\t-icred\tinput credential file name\n");
+    printf("\t-in\tobject name file name\n");
+    printf("\t[-ocred\t output credential file name (default do not save)]\n");
+    printf("\t[-os\tsecret file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

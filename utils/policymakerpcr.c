@@ -3,9 +3,9 @@
 /*			   policymakerpcr					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymakerpcr.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: policymakerpcr.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -422,14 +422,17 @@ static void printUsage(void)
     printf("\n");
     printf("Assumes that the byte mask and PCR values are consistent\n");
     printf("\n");
-    printf("[-halg hash algorithm  (sha1 sha256 sha384 sha512) (default sha256)]\n");
-    printf("-bm pcr byte mask in hex, big endian\n");
+    printf("\t[-halg\thash algorithm  (sha1 sha256 sha384 sha512) (default sha256)]\n");
+    printf("\t-bm\tpcr byte mask in hex, big endian\n");
+    printf("\n");
     printf("\te.g. 010000 selects PCR 16\n");
     printf("\te.g. ffffff selects all 24 PCRs\n");
-    printf("-if input file - PCR values, hex ascii, one per line, %u max\n", IMPLEMENTATION_PCR);
+    printf("\n");
+    printf("\t-if input file - PCR values, hex ascii, one per line, %u max\n", IMPLEMENTATION_PCR);
     printf("\trequired unless pcr mask is 0\n");
-    printf("[-of output file - policy hash in binary]\n");
-    printf("[-pr stdout - policy hash in hex ascii]\n");
+    printf("\n");
+    printf("\t[-of\toutput file - policy hash in binary]\n");
+    printf("\t[-pr\tstdout - policy hash in hex ascii]\n");
     printf("\n");
     exit(1);	
 }

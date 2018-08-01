@@ -3,9 +3,9 @@
 /*			    Commit						*/
 /*	     		Written by Bill Martin 					*/
 /*                 Green Hills Integrity Software Services 			*/
-/*	      $Id: commit.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: commit.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017.						*/
+/* (c) Copyright IBM Corporation 2017 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -374,20 +374,20 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Commit\n");
     printf("\n");
-    printf("\t-hk key handle\n");
-    printf("\t[-pt point input file name (default empty)]\n");
-    printf("\t[-s2 s2 input file name (default empty)]\n");
-    printf("\t[-y2 y2 input file name (default empty)]\n");
-    printf("\t[-Kf K output data file name (default do not save)]\n");
-    printf("\t[-Lf output data file name (default do not save)]\n");
-    printf("\t[-Ef output data file name (default do not save)]\n");
-    printf("\t[-cf output counter file name (default do not save)]\n");
-    printf("\t[-pwdk password for key (default empty)]\n");
+    printf("\t-hk\tkey handle\n");
+    printf("\t[-pt\tpoint input file name (default empty)]\n");
+    printf("\t[-s2\ts2 input file name (default empty)]\n");
+    printf("\t[-y2\ty2 input file name (default empty)]\n");
+    printf("\t[-Kf\tK output data file name (default do not save)]\n");
+    printf("\t[-Lf\toutput data file name (default do not save)]\n");
+    printf("\t[-Ef\toutput data file name (default do not save)]\n");
+    printf("\t[-cf\toutput counter file name (default do not save)]\n");
+    printf("\t[-pwdk\tpassword for key (default empty)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1); 
 }
 

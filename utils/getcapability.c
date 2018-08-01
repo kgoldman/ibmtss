@@ -3,9 +3,9 @@
 /*			    Get Capability	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: getcapability.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -569,13 +569,13 @@ static void printUsage(TPM_CAP capability)
     printf("\n");
     printf("Runs TPM2_GetCapability\n");
     printf("\n");
-    printf("\t-cap capability\n");
-    printf("\t-pr property (defaults to 0)\n");
-    printf("\t-pc propertyCount (defaults to 64)\n");
+    printf("\t-cap\tcapability\n");
+    printf("\t-pr\tproperty (defaults to 0)\n");
+    printf("\t-pc\tpropertyCount (defaults to 64)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t80 command audit\n");
+    printf("\t\t01\tcontinue\n");
+    printf("\t\t80\tcommand audit\n");
     printf("\n");
    
     /* call the usage function in the capability table */
@@ -592,17 +592,17 @@ static void printUsage(TPM_CAP capability)
 
 static void usageCapability(void)
 {
-    printf("-cap values\n"
+    printf("\t-cap\tvalues\n"
 	   "\n"
-	   "TPM_CAP_ALGS                0\n"
-	   "TPM_CAP_HANDLES             1\n"
-	   "TPM_CAP_COMMANDS            2\n"
-	   "TPM_CAP_PP_COMMANDS         3\n"
-	   "TPM_CAP_AUDIT_COMMANDS      4\n"
-	   "TPM_CAP_PCRS                5\n"
-	   "TPM_CAP_TPM_PROPERTIES      6\n"
-	   "TPM_CAP_PCR_PROPERTIES      7\n"
-	   "TPM_CAP_ECC_CURVES          8\n"
+	   "\t\tTPM_CAP_ALGS                0\n"
+	   "\t\tTPM_CAP_HANDLES             1\n"
+	   "\t\tTPM_CAP_COMMANDS            2\n"
+	   "\t\tTPM_CAP_PP_COMMANDS         3\n"
+	   "\t\tTPM_CAP_AUDIT_COMMANDS      4\n"
+	   "\t\tTPM_CAP_PCRS                5\n"
+	   "\t\tTPM_CAP_TPM_PROPERTIES      6\n"
+	   "\t\tTPM_CAP_PCR_PROPERTIES      7\n"
+	   "\t\tTPM_CAP_ECC_CURVES          8\n"
 	   );
     return;
 }

@@ -3,9 +3,9 @@
 /*			   PCR_Event 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrevent.c 1271 2018-07-19 15:18:02Z kgoldman $		*/
+/*	      $Id: pcrevent.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -306,12 +306,12 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PCR_Event\n");
     printf("\n");
-    printf("\t-ha pcr handle\n");
-    printf("\t-ic data string\n");
-    printf("\t-if data file\n");
-    printf("\t[-of1 sha1 output digest file (default do not save)]\n");
-    printf("\t[-of2 sha256 output digest file (default do not save)]\n");
-    printf("\t[-of3 sha384 output digest file (default do not save)]\n");
-    printf("\t[-of5 sha512 output digest file (default do not save)]\n");
+    printf("\t-ha\tpcr handle\n");
+    printf("\t-ic\tdata string\n");
+    printf("\t-if\tdata file\n");
+    printf("\t[-of1\tsha1 output digest file (default do not save)]\n");
+    printf("\t[-of2\tsha256 output digest file (default do not save)]\n");
+    printf("\t[-of3\tsha384 output digest file (default do not save)]\n");
+    printf("\t[-of5\tsha512 output digest file (default do not save)]\n");
    exit(1);	
 }

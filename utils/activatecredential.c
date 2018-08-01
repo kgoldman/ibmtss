@@ -3,7 +3,7 @@
 /*			    ActivateCredential					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: activatecredential.c 1285 2018-07-27 18:33:41Z kgoldman $	*/
+/*	      $Id: activatecredential.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -311,19 +311,18 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_ActivateCredential\n");
     printf("\n");
-    printf("\t-ha activation handle of object associated with the certificate\n");
-    printf("\t-hk handle of loaded decryption key\n");
-    printf("\t-icred input credential file name\n");
-    printf("\t-is secret file name\n");
+    printf("\t-ha\tactivation handle of object associated with the certificate\n");
+    printf("\t-hk\thandle of loaded decryption key\n");
+    printf("\t-icred\tinput credential file name\n");
+    printf("\t-is\tsecret file name\n");
     printf("\n");
-    printf("\t[-pwda password for activation key (default empty)]\n");
-    printf("\t[-pwdk password for decryption key (default empty)]\n");
+    printf("\t[-pwda\tpassword for activation key (default empty)]\n");
+    printf("\t[-pwdk\tpassword for decryption key (default empty)]\n");
+    printf("\t[-ocred\t output credential file name (default do not save)]\n");
     printf("\n");
-    printf("\t[-ocred output credential file name (default do not save)]\n");
-    printf("\n");
-    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t-se[0-2]\tsession handle / attributes (default PWAP)\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

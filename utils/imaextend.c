@@ -3,9 +3,9 @@
 /*		      Extend an IMA measurement list into PCR 10		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: imaextend.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: imaextend.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2014, 2018.					*/
+/* (c) Copyright IBM Corporation 2014 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -374,7 +374,7 @@ static void printUsage(void)
     printf("\n");
     printf("imaextend\n");
     printf("\n");
-    printf("Runs TPM2_PCR_Extend to Extends a SHA-1 IMA measurement file (binary) into TPM PCRs\n");
+    printf("Runs TPM2_PCR_Extend to Extend a SHA-1 IMA measurement file (binary) into TPM PCRs\n");
     printf("The IMA measurement is directly extended into the SHA-1 bank, and a zero padded\n");
     printf("measurement is extended into the SHA-256 bank\n");
     printf("\n");
@@ -383,14 +383,14 @@ static void printUsage(void)
     printf("If -sim is specified, TPM PCRs are not extended.  Rather, imaextend extends into\n");
     printf("simluated PCRs and traces the result.\n");
     printf("\n");
-    printf("\t-if IMA event log file name\n");
-    printf("\t[-le input file is little endian (default big endian)]\n");
-    printf("\t[-sim calculate simulated PCRs]\n");
-    printf("\t[-b beginning entry (default 0, beginning of log)]\n");
+    printf("\t-if\tIMA event log file name\n");
+    printf("\t[-le\tinput file is little endian (default big endian)]\n");
+    printf("\t[-sim\tcalculate simulated PCRs]\n");
+    printf("\t[-b\tbeginning entry (default 0, beginning of log)]\n");
     printf("\t\tA beginning entry after the end of the log becomes a noop\n");
-    printf("\t[-e ending entry (default end of log)]\n");
+    printf("\t[-e\tending entry (default end of log)]\n");
     printf("\t\tE.g., -b 0 -e 0 sends one entry\n");
-    printf("\t[-l time - run in a continuous loop, with a sleep of 'time' seconds betwteen loops]\n");
+    printf("\t[-l\ttime - run in a continuous loop, with a sleep of 'time' seconds betwteen loops]\n");
     printf("\t\tThe intent is that this be run without specifying -b and -e\n");
     printf("\t\tAfer each pass, the next beginning entry is set to the last entry +1\n");
     printf("\n");

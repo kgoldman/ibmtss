@@ -3,9 +3,9 @@
 /*			    NV Write Application				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: writeapp.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: writeapp.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -398,8 +398,9 @@ static void printUsage(void)
     printf("then does two writes with password 'pwd' using a bound, salted\n");
     printf("HMAC session using AES CFB parameter encryption.\n");
     printf("\n");
-    printf("\t[-pwsess Use a password session, no HMAC or parameter encryption]\n");
-    printf("\t\tUsed to test minimal TSS build\n");
+    printf("Used to test minimal TSS build\n");
+    printf("\n");
+    printf("\t[-pwsess\tUse a password session, no HMAC or parameter encryption]\n");
     printf("\n");
     exit(1);	
 }

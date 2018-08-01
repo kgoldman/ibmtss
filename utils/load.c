@@ -3,9 +3,9 @@
 /*			   Load 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: load.c 1285 2018-07-27 18:33:41Z kgoldman $			*/
+/*	      $Id: load.c 1290 2018-08-01 14:45:24Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -265,15 +265,14 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Load\n");
     printf("\n");
-    printf("\t-hp parent handle\n");
-    printf("\t-pwdp password for parent key (default empty)\n");
-    printf("\n");
-    printf("\t-ipu public key file name\n");
-    printf("\t-ipr private key file name\n");
+    printf("\t-hp\tparent handle\n");
+    printf("\t[-pwdp\tpassword for parent key (default empty)]\n");
+    printf("\t-ipu\tpublic key file name\n");
+    printf("\t-ipr\tprivate key file name\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

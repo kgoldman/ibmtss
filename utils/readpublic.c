@@ -3,9 +3,9 @@
 /*			   ReadPublic 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: readpublic.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: readpublic.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -270,15 +270,15 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_ReadPublic\n");
     printf("\n");
-    printf("\t-ho object handle\n");
-    printf("\t[-opu public key file name (default do not save)]\n");
-    printf("\t[-opem public key PEM format file name (default do not save)]\n");
-    printf("\t[-ns additionally print Name in hex ascii on one line]\n");
+    printf("\t-ho\tobject handle\n");
+    printf("\t[-opu\tpublic key file name (default do not save)]\n");
+    printf("\t[-opem\tpublic key PEM format file name (default do not save)]\n");
+    printf("\t[-ns\tadditionally print Name in hex ascii on one line]\n");
     printf("\t\tUseful to paste into policy\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t40 response encrypt\n");
-    printf("\t\t80 audit\n");
+    printf("\t01\tcontinue\n");
+    printf("\t40\tresponse encrypt\n");
+    printf("\t80\taudit\n");
     exit(1);	
 }

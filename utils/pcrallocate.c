@@ -3,9 +3,9 @@
 /*			    PCR_Allocate	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrallocate.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: pcrallocate.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -332,7 +332,7 @@ static void printUsage(void)
     printf("\nAllocates banks for a full set of PCR 0-23.  Not all\n"
 	   "hardware TPMs support multiple banks or all algorithms\n");
     printf("\n");
-    printf("\t[-pwdp platform hierarchy password (default empty)]\n");
+    printf("\t[-pwdp\tplatform hierarchy password (default empty)]\n");
     printf("\t+sha1   -sha1   allocate / deallocate a SHA-1 bank\n");
     printf("\t+sha256 -sha256 allocate / deallocate a SHA-256 bank\n");
     printf("\t+sha384 -sha384 allocate / deallocate a SHA-384 bank\n");

@@ -3,9 +3,9 @@
 /*			    PolicyCommandCode	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policycommandcode.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: policycommandcode.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -155,7 +155,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyCommandCode\n");
     printf("\n");
-    printf("\t-ha policy session handle\n");
-    printf("\t-cc command code\n");
+    printf("\t-ha\tpolicy session handle\n");
+    printf("\t-cc\tcommand code\n");
     exit(1);	
 }

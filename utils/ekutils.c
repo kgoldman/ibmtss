@@ -3,9 +3,9 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: ekutils.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

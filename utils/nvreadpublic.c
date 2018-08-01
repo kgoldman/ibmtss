@@ -3,9 +3,9 @@
 /*			    NV ReadPublic					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadpublic.c 1275 2018-07-23 18:37:45Z kgoldman $		*/
+/*	      $Id: nvreadpublic.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -300,15 +300,15 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_NV_ReadPublic\n");
     printf("\n");
-    printf("\t-ha NV index handle\n");
-    printf("\t[-nalg expected name hash algorithm (sha1, sha256, sha384 sha512)\n"
+    printf("\t-ha\tNV index handle\n");
+    printf("\t[-nalg\texpected name hash algorithm (sha1, sha256, sha384 sha512)\n"
 	   "\t\t(default no check)]\n");
-    printf("\t[-ns additionally print Name in hex ascii on one line]\n");
+    printf("\t[-ns\tadditionally print Name in hex ascii on one line]\n");
     printf("\t\tUseful to paste into policy\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t40 response encrypt\n");
-    printf("\t\t80 audit\n");
+    printf("\t01\tcontinue\n");
+    printf("\t40\tresponse encrypt\n");
+    printf("\t80\taudit\n");
     exit(1);	
 }

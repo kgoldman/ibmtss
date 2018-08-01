@@ -3,9 +3,9 @@
 /*			    PolicyPCR	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policypcr.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: policypcr.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -268,9 +268,9 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyPCR\n");
     printf("\n");
-    printf("\t-ha policy session handle\n");
-    printf("\t-halg (sha1, sha256, sha384, sha512) (default sha256)\n");
-    printf("\t-bm pcr mask in hex\n");
+    printf("\t-ha\tpolicy session handle\n");
+    printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t-bm\tpcr mask in hex\n");
     printf("\t\te.g., -bm 10000 is PCR 16, 000001 is PCR 0\n");
     exit(1);	
 }

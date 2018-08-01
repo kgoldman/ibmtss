@@ -3,9 +3,9 @@
 /*			   Nuvoton Preconfig 	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2preconfig.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: ntc2preconfig.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -548,27 +548,28 @@ static void printUsage(void)
     printf("\n");
     printf("Runs NTC2_PreConfig\n");
     printf("\n");
-    printf("-p8 or -p9 Configure Nuvoton TPM for P8 or P9\n");
-    printf("-override - permits individual register values, read-modify-write\n");
+    printf("\t-p8 or -p9\tConfigure Nuvoton TPM for P8 or P9\n");
+    printf("\t-override\tpermits individual register values, read-modify-write\n");
     printf("\n");
     printf("Values to set, each is a hex byte, (default do not change)\n");
-    printf("[-i2cLoc1_2 byte]\n");
-    printf("[-i2cLoc3_4 byte]\n");
-    printf("[-AltCfg byte]\n");
-    printf("[-Direction byte]\n");
-    printf("[-PullUp byte]\n");
-    printf("[-PushPull byte]\n");
-    printf("[-CFG_A byte]\n");
-    printf("[-CFG_B byte]\n");
-    printf("[-CFG_C byte]\n");
-    printf("[-CFG_D byte]\n");
-    printf("[-CFG_E byte]\n");
-    printf("[-CFG_F byte]\n");
-    printf("[-CFG_G byte]\n");
-    printf("[-CFG_H byte]\n");
-    printf("[-CFG_I byte]\n");
-    printf("[-CFG_J byte]\n");
-    printf("[-IsValid byte]\n");
+    printf("\n");
+    printf("\t[-i2cLoc1_2\tbyte]\n");
+    printf("\t[-i2cLoc3_4\tbyte]\n");
+    printf("\t[-AltCfg\tbyte]\n");
+    printf("\t[-Direction\tbyte]\n");
+    printf("\t[-PullUp\tbyte]\n");
+    printf("\t[-PushPull\tbyte]\n");
+    printf("\t[-CFG_A\t\tbyte]\n");
+    printf("\t[-CFG_B\t\tbyte]\n");
+    printf("\t[-CFG_C\t\tbyte]\n");
+    printf("\t[-CFG_D\t\tbyte]\n");
+    printf("\t[-CFG_E\t\tbyte]\n");
+    printf("\t[-CFG_F\t\tbyte]\n");
+    printf("\t[-CFG_G\t\tbyte]\n");
+    printf("\t[-CFG_H\t\tbyte]\n");
+    printf("\t[-CFG_I\t\tbyte]\n");
+    printf("\t[-CFG_J\t\tbyte]\n");
+    printf("\t[-IsValid\tbyte]\n");
     exit(1);
 }
 

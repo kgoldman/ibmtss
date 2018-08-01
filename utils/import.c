@@ -3,9 +3,9 @@
 /*			   Import		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: import.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: import.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -359,18 +359,18 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Import\n");
     printf("\n");
-    printf("\t-hp parent handle\n");
-    printf("\t[-pwdp password for parent (default empty)]\n");
-    printf("\t[-ik encryption key in file name]\n");
-    printf("\t-ipu object public area file name\n");
-    printf("\t-id duplicate file name\n");
-    printf("\t-iss symmetric seed file name\n");
-    printf("\t[-salg symmetric algorithm (default none)]\n");
+    printf("\t-hp\tparent handle\n");
+    printf("\t[-pwdp\tpassword for parent (default empty)]\n");
+    printf("\t[-ik\tencryption key in file name]\n");
+    printf("\t-ipu\tobject public area file name\n");
+    printf("\t-id\tduplicate file name\n");
+    printf("\t-iss\tsymmetric seed file name\n");
+    printf("\t[-salg\tsymmetric algorithm (default none)]\n");
+    printf("\t-opr\tprivate area file name\n");
     printf("\n");
-    printf("\t-opr private area file name\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

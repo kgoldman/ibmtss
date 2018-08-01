@@ -3,9 +3,9 @@
 /*			    PolicyTicket	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyticket.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: policyticket.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -342,13 +342,13 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyTicket\n");
     printf("\n");
-    printf("\t-ha policy session handle\n");
-    printf("\t-to timeout file name\n");
-    printf("\t-cp cpHash file (default none)\n");
-    printf("\t-pref policyRef file (default none)\n");
-    printf("\t-na authName file (not hierarchy)\n");
-    printf("\t-hi hierarchy (e, o, p)(authName is hierarchy)\n");
+    printf("\t-ha\tpolicy session handle\n");
+    printf("\t-to\ttimeout file name\n");
+    printf("\t[-cp\tcpHash file (default none)]\n");
+    printf("\t[-pref\tpolicyRef file (default none)]\n");
+    printf("\t-na\tauthName file (not hierarchy)\n");
+    printf("\t-hi\thierarchy (e, o, p) (authName is hierarchy)\n");
     printf("\t\te endorsement, o owner, p platform\n");
-    printf("\t-tk ticket file name\n");
+    printf("\t-tk\tticket file name\n");
     exit(1);	
 }

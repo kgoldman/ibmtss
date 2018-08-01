@@ -3,9 +3,9 @@
 /*			   ClockRateAdjust					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: clockrateadjust.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: clockrateadjust.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -250,10 +250,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_ClockRateAdjust\n");
     printf("\n");
-    printf("\t[-hi hierarchy auth (p, o) (default p)]\n"); 
-    printf("\t[-pwdp hierarchy password (default empty)]\n");
-    printf("\t[-adj rate adjust (default 0)]\n");
+    printf("\t[-hi\thierarchy auth (p, o) (default p)]\n"); 
+    printf("\t[-pwdp\thierarchy password (default empty)]\n");
+    printf("\t[-adj\trate adjust (default 0)]\n");
+    printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
+    printf("\t01\tcontinue\n");
     exit(1);	
 }

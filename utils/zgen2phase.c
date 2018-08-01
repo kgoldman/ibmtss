@@ -3,9 +3,9 @@
 /*			    ZGen_2Phase						*/
 /*	     		Written by Ken Goldman 					*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: zgen2phase.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: zgen2phase.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017.						*/
+/* (c) Copyright IBM Corporation 2017 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -343,22 +343,22 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_ZGen_2Phase\n");
     printf("\n");
-    printf("\t-hk unrestricted decryption key handle\n");
-    printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t-qsb QsB point input file name\n");
-    printf("\t-qeb QeB point input file name\n");
-    printf("\t-cf counter file name\n");
-    printf("\t[-scheme (default ecdh)]\n");
+    printf("\t-hk\tunrestricted decryption key handle\n");
+    printf("\t[-pwdk\tpassword for key (default empty)]\n");
+    printf("\t-qsb\tQsB point input file name\n");
+    printf("\t-qeb\tQeB point input file name\n");
+    printf("\t-cf\tcounter file name\n");
+    printf("\t[-scheme\t(default ecdh)]\n");
     printf("\t\tecdh\n");
     printf("\t\tecmqv\n");
     printf("\t\tsm2\n");
-    printf("\t[-z1 Z1 output data file name (default do not save)]\n");
-    printf("\t[-z2 Z2 output data file name (default do not save)]\n");
+    printf("\t[-z1\tZ1 output data file name (default do not save)]\n");
+    printf("\t[-z2\tZ2 output data file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1); 
 }
 

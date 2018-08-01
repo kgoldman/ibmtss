@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id: policytemplate.c 778 2016-10-19 15:21:05Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016.						*/
+/* (c) Copyright IBM Corporation 2016 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -160,7 +160,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyTemplate\n");
     printf("\n");
-    printf("\t-ha policy session handle\n");
-    printf("\t-te template file\n");
+    printf("\t-ha\tpolicy session handle\n");
+    printf("\t-te\ttemplate file\n");
     exit(1);	
 }

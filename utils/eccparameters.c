@@ -3,9 +3,9 @@
 /*			   ECC_Parameters					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eccparameters.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: eccparameters.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -163,7 +163,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_ECC_Parameters\n");
     printf("\n");
-    printf("\t-cv curve ID\n");
+    printf("\t-cv\tcurve ID\n");
     printf("\t\tbnp256\n");
     printf("\t\tnistp256\n");
     printf("\t\tnistp384\n");

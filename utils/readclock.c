@@ -3,9 +3,9 @@
 /*			   ReadClock						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: readclock.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: readclock.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -154,8 +154,8 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_ReadClock\n");
     printf("\n");
-    printf("\t[-otime time file name (default do not save)]\n");
-    printf("\t[-oclock clock file name (default do not save)]\n");
+    printf("\t[-otime    time file name (default do not save)]\n");
+    printf("\t[-oclock   clock file name (default do not save)]\n");
     printf("\n");
     exit(1);	
 }

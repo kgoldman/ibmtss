@@ -3,9 +3,9 @@
 /*			    HierarchyChangeAuth	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hierarchychangeauth.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: hierarchychangeauth.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -344,15 +344,15 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_HierarchyChangeAuth\n");
     printf("\n");
-    printf("\t-hi hierarchy (l, e, o, p)\n");
+    printf("\t-hi\thierarchy (l, e, o, p)\n");
     printf("\t\tl lockout, e endorsement, o owner, p platform\n");
-    printf("\t-pwdn new authorization password (default empty)\n");
-    printf("\t-pwdni new authorization password file name (default empty)\n");
-    printf("\t-pwda authorization password (default empty)\n");
-    printf("\t-pwdai authorization password file name (default empty)\n");
+    printf("\t-pwdn\tnew authorization password (default empty)\n");
+    printf("\t-pwdni\tnew authorization password file name (default empty)\n");
+    printf("\t-pwda\tauthorization password (default empty)\n");
+    printf("\t-pwdai\tauthorization password file name (default empty)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
     exit(1);	
 }

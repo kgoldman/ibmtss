@@ -3,9 +3,9 @@
 /*			    GetTime						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: gettime.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: gettime.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -370,18 +370,18 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_GetTime\n");
     printf("\n");
-    printf("\t-hk signing key handle\n");
-    printf("\t[-pwdk password for signing key (default empty)]\n");
-    printf("\t[-pwde password for endorsement hierarchy (default empty)]\n");
-    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t[-salg signature algorithm (rsa, ecc) (default rsa)]\n");
-    printf("\t[-qd qualifying data file name]\n");
-    printf("\t[-os signature file name  (default do not save)]\n");
-    printf("\t[-oa attestation output file name (default do not save)]\n");
+    printf("\t-hk\tsigning key handle\n");
+    printf("\t[-pwdk\tpassword for signing key (default empty)]\n");
+    printf("\t[-pwde\tpassword for endorsement hierarchy (default empty)]\n");
+    printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-salg\tsignature algorithm (rsa, ecc) (default rsa)]\n");
+    printf("\t[-qd\tqualifying data file name]\n");
+    printf("\t[-os\tsignature file name  (default do not save)]\n");
+    printf("\t[-oa\tattestation output file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

@@ -3,9 +3,9 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: loadexternal.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -504,30 +504,33 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_LoadExternal\n");
     printf("\n");
-    printf("\t[-hi hierarchy (e, o, p, n) (default NULL)]\n");
-    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-hi\thierarchy (e, o, p, n) (default NULL)]\n");
+    printf("\t[-nalg\tname hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\n");
     printf("\t[Asymmetric Key Algorithm]\n");
-    printf("\t\t-rsa (default)\n");
-    printf("\t\t-ecc\n");
-    printf("\t-ipu TPM2B_PUBLIC public key file name\n");
-    printf("\t-ipem PEM format public key file name\n");
-    printf("\t-ider DER format plaintext key pair file name\n");
-    printf("\t\t[-pwdk password for key (default empty)]\n");
-    printf("\t\t[-uwa userWithAuth attribute clear (default set)]\n");
-    printf("\t[-si signing (default) RSA default RSASSA scheme]\n");
-    printf("\t\t[-scheme]\n");
-    printf("\t\t\trsassa\n");
-    printf("\t\t\trsapss\n");
-    printf("\t[-st storage (default NULL scheme)]\n");
-    printf("\t[-den decryption, (unrestricted, RSA and EC NULL scheme)\n");
-    printf("\t[-ns additionally print Name in hex ascii on one line]\n");
+    printf("\n");
+    printf("\t[-rsa\t(default)]\n");
+    printf("\t[-ecc\t]\n");
+    printf("\n");
+    printf("\t-ipu\tTPM2B_PUBLIC public key file name\n");
+    printf("\t-ipem\tPEM format public key file name\n");
+    printf("\t-ider\tDER format plaintext key pair file name\n");
+    printf("\t[-pwdk\tpassword for DER key (default empty)]\n");
+    printf("\t[-uwa\tuserWithAuth attribute clear (default set)]\n");
+    printf("\t[-si\tsigning (default) RSA]\n");
+    printf("\t[-scheme  for signing key (default RSASSA scheme)]\n");
+    printf("\t\trsassa\n");
+    printf("\t\trsapss\n");
+    printf("\t[-st\tstorage (default NULL scheme)]\n");
+    printf("\t[-den\tdecryption, (unrestricted, RSA and EC NULL scheme)\n");
+    printf("\t[-ns\tadditionally print Name in hex ascii on one line]\n");
     printf("\t\tUseful to paste into policy\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
-    printf("\t\t80 audit\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
+    printf("\t80\taudit\n");
     exit(1);	
 }

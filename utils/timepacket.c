@@ -3,9 +3,9 @@
 /*			   Time a TPM Command					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: timepacket.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: timepacket.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017.						*/
+/* (c) Copyright IBM Corporation 2017 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -188,7 +188,7 @@ static void printUsage(void)
     printf("\n");
     printf("Times the supplied packet\n");
     printf("\n");
-    printf("\t-if packet in hexascii (requires one space at end of packet)\n");
-    printf("\t[-l number of loops to time (default 1)]\n");
+    printf("\t-if\tpacket in hexascii (requires one space at end of packet)\n");
+    printf("\t[-l\tnumber of loops to time (default 1)]\n");
     exit(1);	
 }

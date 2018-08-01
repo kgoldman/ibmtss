@@ -3,9 +3,9 @@
 /*			    NV Extend		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvextend.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: nvextend.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -262,13 +262,13 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_NV_Extend\n");
     printf("\n");
-    printf("\t-ha NV index handle\n");
-    printf("\t-pwdn password for NV index (default empty)\n");
-    printf("\t-ic data string\n");
-    printf("\t-if data file\n");
+    printf("\t-ha\tNV index handle\n");
+    printf("\t-pwdn\tpassword for NV index (default empty)\n");
+    printf("\t-ic\tdata string\n");
+    printf("\t-if\tdata file\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t01 continue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t01\tcontinue\n");
     exit(1);	
 }

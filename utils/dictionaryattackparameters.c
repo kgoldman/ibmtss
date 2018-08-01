@@ -3,7 +3,7 @@
 /*			    DictionaryAttackParameters 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*      $Id: dictionaryattackparameters.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*      $Id: dictionaryattackparameters.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -244,12 +244,12 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_DictionaryAttackParameters\n");
     printf("\n");
-    printf("\t[-pwd lockout auth password (default empty)]\n");
-    printf("\t[-nmt new max tries (default 1 try)]\n");
-    printf("\t[-nrt new recovery time (default 10 seconds)]\n");
-    printf("\t[-lr lockout recovery (default 1 second)]\n");
+    printf("\t[-pwd\tlockout auth password (default empty)]\n");
+    printf("\t[-nmt\tnew max tries (default 1 try)]\n");
+    printf("\t[-nrt\tnew recovery time (default 10 seconds)]\n");
+    printf("\t[-lr\tlockout recovery (default 1 second)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
+    printf("\t01\tcontinue\n");
     exit(1);	
 }

@@ -3,7 +3,7 @@
 /*			    CertifyCreation					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: certifycreation.c 1285 2018-07-27 18:33:41Z kgoldman $	*/
+/*	      $Id: certifycreation.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -442,20 +442,20 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_CertifyCreation\n");
     printf("\n");
-    printf("\t-ho object handle\n");
-    printf("\t-hk certifying key handle\n");
-    printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t[-halg (sha1, sha256, sha384) (default sha256)]\n");
-    printf("\t[-salg signature algorithm (rsa, ecc) (default rsa)]\n");
-    printf("\t[-qd qualifying data file name]\n");
-    printf("\t-tk input ticket file name\n");
-    printf("\t-ch input creation hash file name\n");
-    printf("\t[-os signature file name] (default do not save)\n");
-    printf("\t[-oa attestation output file name (default do not save)]\n");
+    printf("\t-ho\tobject handle\n");
+    printf("\t-hk\tcertifying key handle\n");
+    printf("\t[-pwdk\tpassword for key (default empty)]\n");
+    printf("\t[-halg\t(sha1, sha256, sha384) (default sha256)]\n");
+    printf("\t[-salg\tsignature algorithm (rsa, ecc) (default rsa)]\n");
+    printf("\t[-qd\tqualifying data file name]\n");
+    printf("\t-tk\tinput ticket file name\n");
+    printf("\t-ch\tinput creation hash file name\n");
+    printf("\t[-os\tsignature file name] (default do not save)\n");
+    printf("\t[-oa\tattestation output file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

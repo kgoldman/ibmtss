@@ -3,9 +3,9 @@
 /*			   EvictControl		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: evictcontrol.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: evictcontrol.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -264,16 +264,16 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_EvictControl\n");
     printf("\n");
-    printf("\t-hi authhandle hierarchy (o, p)\n");
+    printf("\t-hi\tauthhandle hierarchy (o, p)\n");
     printf("\t\to owner, p platform\n");
-    printf("\t-ho object handle\n");
+    printf("\t-ho\tobject handle\n");
     printf("\t\tif transient: make persistent, if persistent: flush\n");
-    printf("\t-hp persistent handle\n");
-    printf("\t\t owner    81000000 to 817FFFFF\n");
-    printf("\t\t platform 81800000 to 81FFFFFF\n");
-    printf("\t-pwda authorization password (default empty)\n");
+    printf("\t-hp\tpersistent handle\n");
+    printf("\t\towner    81000000 to 817FFFFF\n");
+    printf("\t\tplatform 81800000 to 81FFFFFF\n");
+    printf("\t-pwda\tauthorization password (default empty)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
+    printf("\t01\tcontinue\n");
     exit(1);	
 }

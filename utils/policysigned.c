@@ -3,9 +3,9 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: policysigned.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -489,19 +489,19 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicySigned\n");
     printf("\n");
-    printf("\t-hk signature verification key handle\n");
-    printf("\t-ha policy session handle\n");
-    printf("\t[-in nonceTPM file (default none)]\n");
-    printf("\t[-cp cpHash file (default none)]\n");
-    printf("\t[-pref policyRef file (default none)]\n");
-    printf("\t[-exp expiration in decimal (default none)]\n");
-    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t-sk RSA signing key file name (PEM format)\n");
+    printf("\t-hk\tsignature verification key handle\n");
+    printf("\t-ha\tpolicy session handle\n");
+    printf("\t[-in\tnonceTPM file (default none)]\n");
+    printf("\t[-cp\tcpHash file (default none)]\n");
+    printf("\t[-pref\tpolicyRef file (default none)]\n");
+    printf("\t[-exp\texpiration in decimal (default none)]\n");
+    printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t-sk\tRSA signing key file name (PEM format)\n");
     printf("\t\tUse this signing key.\n");
-    printf("\t-is signature file name\n");
+    printf("\t-is\tsignature file name\n");
     printf("\t\tUse this signature from e.g., a smart card or other HSM.\n");
-    printf("\t[-pwdk signing key password (default null)]\n");
-    printf("\t[-tk ticket file name]\n");
-    printf("\t[-to timeout file name]\n");
+    printf("\t[-pwdk\tsigning key password (default null)]\n");
+    printf("\t[-tk\tticket file name]\n");
+    printf("\t[-to\ttimeout file name]\n");
     exit(1);	
 }

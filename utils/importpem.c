@@ -3,7 +3,7 @@
 /*			   Import a PEM keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
+/*	      $Id: importpem.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016 - 2018					*/
 /*										*/
@@ -461,28 +461,29 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Import for a PEM key\n");
     printf("\n");
-    printf("\t-hp parent handle\n");
-    printf("\t[-pwdp password for parent (default empty)]\n");
-    printf("\t-ipem PEM format key pair\n");
+    printf("\t-hp\tparent handle\n");
+    printf("\t[-pwdp\tpassword for parent (default empty)]\n");
+    printf("\t-ipem\tPEM format key pair\n");
+    printf("\n");
     printf("\t[Asymmetric Key Algorithm]\n");
-    printf("\t\t-rsa (default), RSASSA scheme\n");
-    printf("\t\t-ecc curve\n");
-    printf("\t[-si signing (default) RSA default RSASSA scheme]\n");
-    printf("\t\t[-scheme]\n");
-    printf("\t\t\trsassa\n");
-    printf("\t\t\trsapss\n");
-    printf("\t[-st storage (default NULL scheme)]\n");
-    printf("\t[-den decryption, (unrestricted, RSA and EC NULL scheme)\n");
-    printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t-opu public area file name\n");
-    printf("\t-opr private area file name\n");
-    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t[-halg scheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t[-pol policy file (default empty)]\n");
+    printf("\n");
+    printf("\t[-rsa\t(default)]\n");
+    printf("\t[-ecc\t]\n");
+    printf("\n");
+    printf("\t[-si\tsigning (default)]\n");
+    printf("\t[-scheme  signing scheme (rsassa rsapss) (RSA default RSASSA) (ECC ECDSA)]\n");
+    printf("\t[-st\tstorage (NULL scheme)]\n");
+    printf("\t[-den\tdecryption, (unrestricted, RSA and ECC NULL scheme)\n");
+    printf("\t[-pwdk\tpassword for key (default empty)]\n");
+    printf("\t-opu\tpublic area file name\n");
+    printf("\t-opr\tprivate area file name\n");
+    printf("\t[-nalg\tname hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-halg\tscheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-pol\tpolicy file (default empty)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

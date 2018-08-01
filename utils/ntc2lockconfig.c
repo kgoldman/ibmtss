@@ -3,9 +3,9 @@
 /*			   Nuvoton Lock Preconfig  				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2lockconfig.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: ntc2lockconfig.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015. 2017					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -128,7 +128,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs NTC2_LockPreConfig\n");
     printf("\n");
-    printf("-lock (required)\n");
+    printf("-lock\t(required)\n");
     printf("\n");
     exit(1);
 }

@@ -3,9 +3,9 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymaker.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: policymaker.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -313,14 +313,15 @@ static int Format_ByteFromHexascii(unsigned char *byte,
 
 static void printUsage(void)
 {
+    printf("\n");
     printf("policymaker\n");
     printf("\n");
-    printf("[-halg hash algorithm (sha1 sha256 sha384 sha512) (default sha256)\n");
-    printf("[-nz do not extend starting with zeros, just hash the last line]\n");
-    printf("-if input policy statements in hex ascii\n");
-    printf("[-of] output file - policy hash in binary\n");
-    printf("[-pr] stdout - policy hash in hex ascii\n");
-    printf("\t[-ns additionally print policy hash in hex ascii on one line]\n");
+    printf("\t[-halg\thash algorithm (sha1 sha256 sha384 sha512) (default sha256)]\n");
+    printf("\t[-nz\tdo not extend starting with zeros, just hash the last line]\n");
+    printf("\t-if\tinput policy statements in hex ascii\n");
+    printf("\t[-of\toutput file - policy hash in binary]\n");
+    printf("\t[-pr\tstdout - policy hash in hex ascii]\n");
+    printf("\t[-ns\tadditionally print policy hash in hex ascii on one line]\n");
     printf("\t\tUseful to paste into policy OR\n");
     printf("\n");
     exit(1);	

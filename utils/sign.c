@@ -3,9 +3,9 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 1285 2018-07-27 18:33:41Z kgoldman $			*/
+/*	      $Id: sign.c 1290 2018-08-01 14:45:24Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -443,24 +443,22 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Sign\n");
     printf("\n");
-    printf("\t-hk key handle\n");
-    printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t[-rsa (default)]\n");
-    printf("\t\t[-scheme (default rsassa)]\n");
-    printf("\t\t\trsassa\n");
-    printf("\t\t\trsapss\n");
-    printf("\t[-ecc (ECDSA scheme)]\n");
-    printf("\t[-ecdaa [ECDAA scheme)]\n");
+    printf("\t-hk\tkey handle\n");
+    printf("\t-if\tinput message to hash and sign\n");
+    printf("\t[-pwdk\tpassword for key (default empty)]\n");
+    printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-rsa\t(default)]\n");
+    printf("\t[-scheme  RSA signing scheme (rsassa rsapss) (default rsassa)]\n");
+    printf("\t[-ecc\t ECDSA signing scheme]\n");
+    printf("\t[-ecdaa\t ECDAA signing scheme]\n");
+    printf("\t[-cf\tinput counter file (commit count required for ECDAA scheme]\n");
+    printf("\t[-ipu\tpublic key file name to verify signature (default no verify)]\n");
     printf("\t\tVerify only supported for RSA now\n");
-    printf("\t-if input message to hash and sign\n");
-    printf("\t[-cf input counter file (commit count required for ECDAA scheme]\n");
-    printf("\t[-ipu public key file name to verify signature (default no verify)]\n");
-    printf("\t[-os signature file name (default do not save)]\n");
-    printf("\t[-tk ticket file name]\n");
+    printf("\t[-os\tsignature file name (default do not save)]\n");
+    printf("\t[-tk\tticket file name]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
     exit(1);	
 }

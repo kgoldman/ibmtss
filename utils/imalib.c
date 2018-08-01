@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*            $Id: imalib.c 963 2017-03-15 20:37:25Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

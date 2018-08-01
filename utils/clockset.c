@@ -3,9 +3,9 @@
 /*			   ClockSet						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: clockset.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: clockset.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -296,13 +296,14 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_ClockSet\n");
     printf("\n");
-    printf("\t-clock new clock\n");
-    printf("\t-iclock new clock file name\n");
-    printf("\t[-addsec seconds to add to new clock]\n");
-    printf("\t-hi hierarchy (o, p) (default platform)\n");
+    printf("\t-clock\t\tnew clock\n");
+    printf("\t-iclock\t\tnew clock file name\n");
+    printf("\t[-addsec\tseconds to add to new clock]\n");
+    printf("\t-hi\t\thierarchy (o, p) (default platform)\n");
     printf("\t\to owner, p platform\n");
-    printf("\t-pwdp password for hierarchy (default empty)\n");
-    printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
+    printf("\t-pwdp\t\tpassword for hierarchy (default empty)\n");
+    printf("\n");
+    printf("\t-se[0-2]\t session handle / attributes (default PWAP)\n");
+    printf("\t01\tcontinue\n");
     exit(1);	
 }

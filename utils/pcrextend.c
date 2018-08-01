@@ -3,9 +3,9 @@
 /*			   PCR_Extend 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrextend.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: pcrextend.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -258,11 +258,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PCR_Extend\n");
     printf("\n");
-    printf("\t-ha pcr handle\n");
-    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t-ha\tpcr handle\n");
+    printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t\t-halg may be specified more than once\n");
     printf("\n");
-    printf("\t-ic data string, 0 pad appended to halg length\n");
-    printf("\t-if data file, 0 pad appended to halg length\n");
+    printf("\t-ic\tdata string, 0 pad appended to halg length\n");
+    printf("\t-if\tdata file, 0 pad appended to halg length\n");
     exit(1);	
 }

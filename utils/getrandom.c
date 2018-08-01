@@ -3,9 +3,9 @@
 /*			   GetRandom						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getrandom.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: getrandom.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -282,14 +282,14 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_GetRandom\n");
     printf("\n");
-    printf("\t-by bytes requested\n");
-    printf("\t[-of output file, with -nz, appends nul terminator (default do not save)]\n");
-    printf("\t[-nz get random number with no zero bytes (for authorization value)]\n");
-    printf("\t[-ns no space, no text, no newlines]\n");
+    printf("\t-by\tbytes requested\n");
+    printf("\t[-of\toutput file, with -nz, appends nul terminator (default do not save)]\n");
+    printf("\t[-nz\tget random number with no zero bytes (for authorization value)]\n");
+    printf("\t[-ns\tno space, no text, no newlines]\n");
     printf("\t\tjust a string of hexascii suitable for a symmetric key\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

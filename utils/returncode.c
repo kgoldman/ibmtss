@@ -3,9 +3,9 @@
 /*			Return Code Hex to String     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: returncode.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: returncode.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2017.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 static void printUsage(void)
 {
     printf("\n");
-    printf("returncode hex-number\n");
+    printf("Usage: returncode hex-number\n");
     printf("\n");
     printf("Returns the TPM_RC name and text for the return code\n");
     printf("\n");

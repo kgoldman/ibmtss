@@ -3,9 +3,9 @@
 /*		TPM 2.0 Attestation - Client EK and EK certificate  		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: createekcert.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*            $Id: createekcert.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -467,16 +467,16 @@ static void printUsage(void)
     printf("Provisions an EK certificate, using the default IWG template\n");
     printf("E.g.,\n");
     printf("\n");
-    printf("createekcert -alg rsa -cakey cakey.pem    -capwd rrrr -v\n");
-    printf("createekcert -alg ecc -cakey cakeyecc.pem -capwd rrrr -caalg ec -v\n");
+    printf("Usage: createekcert -alg rsa -cakey cakey.pem    -capwd rrrr -v\n");
+    printf("or:    createekcert -alg ecc -cakey cakeyecc.pem -capwd rrrr -caalg ec -v\n");
     printf("\n");
-    printf("\t[-pwdp platform hierarchy password (default empty)]\n");
-    printf("\t-cakey CA PEM key file name\n");
-    printf("\t[-capwd CA PEM key password (default empty)]\n");
-    printf("\t[-caalg CA key algorithm (rsa or ec) (default rsa)]\n");
-    printf("\t[-alg (rsa or ecc certificate) (default rsa)]\n");
-    printf("\t[-noflush - do not flush the primary key]\n");
-    printf("\t[-of - DER certificate output file name]\n");
+    printf("\t[-pwdp\t\tplatform hierarchy password (default empty)]\n");
+    printf("\t-cakey\t\tCA PEM key file name\n");
+    printf("\t[-capwd\t\tCA PEM key password (default empty)]\n");
+    printf("\t[-caalg\t\tCA key algorithm (rsa or ec) (default rsa)]\n");
+    printf("\t[-alg\t\t(rsa or ecc certificate) (default rsa)]\n");
+    printf("\t[-noflush\tdo not flush the primary key]\n");
+    printf("\t[-of\t\tDER certificate output file name]\n");
     printf("\n");
     printf("Currently:\n");
     printf("\n");

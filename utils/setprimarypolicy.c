@@ -3,9 +3,9 @@
 /*			    SetPrimaryPolicy 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: setprimarypolicy.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: setprimarypolicy.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -287,13 +287,13 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_SetPrimaryPolicy\n");
     printf("\n");
-    printf("\t[-hi authhandle hierarchy (l, e, o, p) (default platform)]\n");
-    printf("\t[-pwda authorization password (default empty)]\n");
-    printf("\t[-pol policy file (default empty policy)]\n");
-    printf("\t[-halg (sha1, sha256) (default null)]\n");
+    printf("\t[-hi\tauthhandle hierarchy (l, e, o, p) (default platform)]\n");
+    printf("\t[-pwda\tauthorization password (default empty)]\n");
+    printf("\t[-pol\tpolicy file (default empty policy)]\n");
+    printf("\t[-halg\t(sha1, sha256) (default null)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
     exit(1);	
 }

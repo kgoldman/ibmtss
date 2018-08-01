@@ -3,9 +3,9 @@
 /*			    Hmac						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hmac.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
+/*	      $Id: hmac.c 1290 2018-08-01 14:45:24Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -341,16 +341,16 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_HMAC\n");
     printf("\n");
-    printf("\t-hk key handle\n");
-    printf("\t[-pwdk password for key (default empty)]\n");
-    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t-if input file to be HMACed\n");
-    printf("\t-ic data string to be HMACed\n");
-    printf("\t[-os hmac file name (default do not save)]\n");
+    printf("\t-hk\tkey handle\n");
+    printf("\t[-pwdk\tpassword for key (default empty)]\n");
+    printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t-if\tinput file to be HMACed\n");
+    printf("\t-ic\tdata string to be HMACed\n");
+    printf("\t[-os\thmac file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

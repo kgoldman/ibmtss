@@ -3,9 +3,9 @@
 /*			     IWG EK Index Parsing				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createek.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: createek.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -276,16 +276,16 @@ static void printUsage(void)
     printf("Parses and prints the various EK NV indexes specified by the IWG\n");
     printf("Creates a primary key based on the EK NV indexes\n");
     printf("\n");
-    printf("-te print EK Template \n");
-    printf("-no print EK nonce \n");
-    printf("-ce print EK certificate \n");
-    printf("-cp CreatePrimary using the EK template and EK nonce\n");
-    printf("\tValidate the EK against the EK certificate\n");
-    printf("\t[-noflush Do not flush the primary key after validation]\n");
-    printf("[-root filename - validate EK certificate against the root]\n");
-    printf("\tfilename contains a list of PEM format CA root certificate\n"
-	   "\tfilenames, one per line\n");
-    printf("\tthe list may contain up to %u certificates\n", MAX_ROOTS);
-    printf("-alg (rsa or ecc) \n");
+    printf("\t-te\tprint EK Template \n");
+    printf("\t-no\tprint EK nonce \n");
+    printf("\t-ce\tprint EK certificate \n");
+    printf("\t-cp\tCreatePrimary using the EK template and EK nonce.\n");
+    printf("\t\tValidate the EK against the EK certificate\n");
+    printf("\t[-noflush\tDo not flush the primary key after validation]\n");
+    printf("\t[-root\tfilename - validate EK certificate against the root]\n");
+    printf("\t\tfilename contains a list of PEM format CA root certificate\n"
+	   "\t\tfilenames, one per line.\n");
+    printf("\t\tThe list may contain up to %u certificates.\n", MAX_ROOTS);
+    printf("\t-alg (rsa or ecc) \n");
     exit(1);	
 }

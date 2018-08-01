@@ -3,9 +3,9 @@
 /*			    NV Define Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 1275 2018-07-23 18:37:45Z kgoldman $		*/
+/*	      $Id: nvdefinespace.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -545,42 +545,47 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_NV_DefineSpace\n");
     printf("\n");
-    printf("\t-ha NV index handle\n");
+    printf("\t-ha\tNV index handle\n");
     printf("\t\t01xxxxxx\n");
-    printf("\t-hi authorizing hierarchy (o, p)\n");
+    printf("\t-hi\tauthorizing hierarchy (o, p)\n");
     printf("\t\to owner, p platform\n");
     printf("\t\tp sets PLATFORMCREATE\n");
-    printf("\t[-pwdp password for hierarchy (default empty)]\n");
-    printf("\t[-hia hierarchy authorization (o, p)(default index authorization)]\n");
-    printf("\t\tdefault AUTHWRITE, AUTHREAD\n");
-    printf("\t\to sets OWNERWRITE, OWNERREAD\n");
-    printf("\t\tp sets PPWRITE, PPREAD (platform)\n");
-    printf("\t[-pwdn password for NV index (default empty)]\n");
+    printf("\t[-pwdp\tpassword for hierarchy (default empty)]\n");
+    printf("\t[-hia\thierarchy authorization (o, p)(default index authorization)]\n");
+    printf("\n");
+    printf("\t\tdefault  AUTHWRITE, AUTHREAD\n");
+    printf("\t\to sets  OWNERWRITE, OWNERREAD\n");
+    printf("\t\tp sets  PPWRITE, PPREAD (platform)\n");
+    printf("\n");
+    printf("\t[-pwdn\tpassword for NV index (default empty)]\n");
     printf("\t\tsets AUTHWRITE (if not PIN index), AUTHREAD\n");
-    printf("\t[-nalg name algorithm (sha1, sha256, sha384 sha512) (default sha256)]\n");
-    printf("\t[-sz data size in decimal (default 0)]\n");
+    printf("\t[-nalg\tname algorithm (sha1, sha256, sha384 sha512) (default sha256)]\n");
+    printf("\t[-sz\tdata size in decimal (default 0)]\n");
     printf("\t\tIgnored for other than ordinary index\n");
-    printf("\t[-ty index type (o, c, b, e, p, f) (default ordinary)]\n");
+    printf("\t[-ty\tindex type (o, c, b, e, p, f) (default ordinary)]\n");
     printf("\t\tordinary, counter, bits, extend, pin pass, pin fail\n");
-    printf("\t[-pol policy file (default empty)]\n");
+    printf("\t[-pol\tpolicy file (default empty)]\n");
     printf("\t\tsets POLICYWRITE, POLICYREAD\n");
-    printf("\t[+at attributes to add (may be specified more than once)]\n");
-    printf("\t\tppw  (PPWRITE)\t\tppr (PPREAD)\n");
-    printf("\t\tow   (OWNERWRITE)\tor  (OWNERREAD)\n");
-    printf("\t\taw   (AUTHWRITE)\tar  (AUTHREAD)\n");
-    printf("\t\twd   (WRITEDEFINE)\tgl  (GLOBALLOCK)\n");
-    printf("\t\trst  (READ_STCLEAR)\twst (WRITE_STCLEAR)\n");
-    printf("\t\twa   (WRITEALL)\t\tody (ORDERLY)\n");
-    printf("\t\tpold (POLICY_DELETE)\tstc (CLEAR_STCLEAR)\n");
-    printf("\t[-at attributes to delete (may be specified more than once)]\n");
-    printf("\t\tppw  (PPWRITE)\t\tppr (PPREAD)\n");
-    printf("\t\tow   (OWNERWRITE)\tor  (OWNERREAD)\n");
-    printf("\t\taw   (AUTHWRITE)\tar  (AUTHREAD)\n");
-    printf("\t\tpw   (POLICYWRITE)\tpr  (POLICYREAD)\n");
-    printf("\t\tda   (NO_DA) (default set)\n");
+    printf("\t[+at\tattributes to add (may be specified more than once)]\n");
+    printf("\n");
+    printf("\t\tppw   (PPWRITE)\t\tppr (PPREAD) \n");
+    printf("\t\tow    (OWNERWRITE)\tor  (OWNERREAD) \n");
+    printf("\t\taw    (AUTHWRITE)\tar  (AUTHREAD) \n");
+    printf("\t\twd    (WRITEDEFINE)\tgl  (GLOBALLOCK) \n");
+    printf("\t\trst   (READ_STCLEAR)\twst (WRITE_STCLEAR) \n");
+    printf("\t\twa    (WRITEALL)\tody (ORDERLY) \n");
+    printf("\t\tpold  (POLICY_DELETE) \tstc (CLEAR_STCLEAR) \n");
+    printf("\n");
+    printf("\t[-at\tattributes to delete (may be specified more than once)]\n");
+    printf("\n");
+    printf("\t\tppw   (PPWRITE)\t\tppr (PPREAD)\n");
+    printf("\t\tow    (OWNERWRITE)\tor  (OWNERREAD)\n");
+    printf("\t\taw    (AUTHWRITE)\tar  (AUTHREAD)\n");
+    printf("\t\tpw    (POLICYWRITE)\tpr  (POLICYREAD)\n");
+    printf("\t\tda    (NO_DA) (default set)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
     exit(1);	
 }

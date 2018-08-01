@@ -3,9 +3,9 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 1268 2018-07-18 17:55:10Z kgoldman $		*/
+/*	      $Id: pcrread.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -269,15 +269,16 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PCR_Read\n");
     printf("\n");
-    printf("\t-ha pcr handle\n");
-    printf("\t-halg (sha1, sha256, sha384, sha512) (default sha256)\n");
+    printf("\t-ha\tpcr handle\n");
+    printf("\t-halg\t(sha1, sha256, sha384, sha512) (default sha256)\n");
     printf("\t\t-halg may be specified more than once\n");
-    printf("\t[-of data file for first algorithm specified, in binary]\n");
+    printf("\t[-of\tdata file for first algorithm specified, in binary]\n");
     printf("\t\t(default do not save)\n");
-    printf("\t[-ns no space, no text, no newlines\n");
+    printf("\t[-ns\tno space, no text, no newlines\n");
     printf("\t\tUsed for scripting policy construction\n");
+    printf("\n");
     printf("\t-se0 session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t80 audit\n");
+    printf("\t01\tcontinue\n");
+    printf("\t80\taudit\n");
     exit(1);	
 }

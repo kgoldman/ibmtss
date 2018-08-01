@@ -3,9 +3,9 @@
 /*			    PolicyAuthValue	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyauthvalue.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: policyauthvalue.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -137,6 +137,6 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyAuthValue\n");
     printf("\n");
-    printf("\t-ha policy session handle\n");
+    printf("\t-ha\tpolicy session handle\n");
     exit(1);	
 }

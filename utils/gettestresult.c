@@ -3,7 +3,7 @@
 /*			   GetTestResult					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: gettestresult.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: gettestresult.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -200,7 +200,7 @@ static void printUsage(void)
     printf("Runs TPM2_GetTestResult\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

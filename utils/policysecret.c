@@ -3,9 +3,9 @@
 /*			    PolicySecret	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysecret.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: policysecret.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -340,19 +340,19 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicySecret\n");
     printf("\n");
-    printf("\t-ha authorizing entity handle\n");
-    printf("\t-hs policy session handle\n");
-    printf("\t[-in nonceTPM file (default none)]\n");
-    printf("\t[-cp cpHash file (default none)]\n");
-    printf("\t[-pref policyRef file (default none)]\n");
-    printf("\t[-exp expiration (default none)]\n");
-    printf("\t[-pwde authorizing entity password (default empty)]\n");
-    printf("\t[-tk ticket file name]\n");
-    printf("\t[-to timeout file name]\n");
+    printf("\t-ha\tauthorizing entity handle\n");
+    printf("\t-hs\tpolicy session handle\n");
+    printf("\t[-in\tnonceTPM file (default none)]\n");
+    printf("\t[-cp\tcpHash file (default none)]\n");
+    printf("\t[-pref\tpolicyRef file (default none)]\n");
+    printf("\t[-exp\texpiration (default none)]\n");
+    printf("\t[-pwde\tauthorizing entity password (default empty)]\n");
+    printf("\t[-tk\tticket file name]\n");
+    printf("\t[-to\ttimeout file name]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

@@ -3,7 +3,7 @@
 /*			    PolicyNameHash 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*      $Id: policynamehash.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*      $Id: policynamehash.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -246,11 +246,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyNameHash\n");
     printf("\n");
-    printf("\t-ha policy session handle\n");
-    printf("\t-nh NameHash file - TPM2B_DIGEST\n");
+    printf("\t-ha\tpolicy session handle\n");
+    printf("\t-nh\tNameHash file - TPM2B_DIGEST\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
     exit(1);	
 }

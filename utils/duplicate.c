@@ -3,9 +3,9 @@
 /*			   Duplicate		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: duplicate.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: duplicate.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -335,19 +335,19 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Duplicate\n");
     printf("\n");
-    printf("\t-ho object handle\n");
-    printf("\t[-pwdo password for object (default empty)]\n");
-    printf("\t[-hp new parent handle (default TPM_RH_NULL)]\n");
-    printf("\t[-ik encryption key in file name]\n");
-    printf("\t[-salg symmetric algorithm (aes)(default none)]\n");
+    printf("\t-ho\tobject handle\n");
+    printf("\t[-pwdo\tpassword for object (default empty)]\n");
+    printf("\t[-hp\tnew parent handle (default TPM_RH_NULL)]\n");
+    printf("\t[-ik\tencryption key in file name]\n");
+    printf("\t[-salg\tsymmetric algorithm (aes)(default none)]\n");
     printf("\n");
-    printf("\t[-oek encryption key out file name (default do not save)]\n");
-    printf("\t[-od duplicate private area file name (default do not save)]\n");
-    printf("\t[-oss symmetric seed file name (default do not save)]\n");
+    printf("\t[-oek\tencryption key out file name (default do not save)]\n");
+    printf("\t[-od\tduplicate private area file name (default do not save)]\n");
+    printf("\t[-oss\tsymmetric seed file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

@@ -3,9 +3,9 @@
 /*			    PolicyNvWritten 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policynvwritten.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: policynvwritten.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -237,11 +237,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyNvWritten\n");
     printf("\n");
-    printf("\t-hs policy session handle\n");
-    printf("\t-ws written set (y, n)\n");
+    printf("\t-hs\tpolicy session handle\n");
+    printf("\t-ws\twritten set (y, n)\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t80 audit\n");
+    printf("\t01\tcontinue\n");
+    printf("\t80\taudit\n");
     exit(1);	
 }

@@ -3,9 +3,9 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 1285 2018-07-27 18:33:41Z kgoldman $	*/
+/*	      $Id: verifysignature.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -441,23 +441,31 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_VerifySignature and/or verifies using the PEM public key\n");
     printf("\n");
-    printf("\t[-hk key handle]\n");
-    printf("\t[-ipem public key PEM format file name to verify signature]\n");
-    printf("\t\tOne of -hk, -ipem must be specified\n");
-    printf("\t[-halg (sha1, sha256, sha384 sha512) (default sha256)]\n");
-    printf("\t[asymmetric key algorithm]\n");
-    printf("\t\t[-rsa (default)]\n");
-    printf("\t\t[-ecc curve (P256)]\n");
-    printf("\t-if input message file name\n");
-    printf("\t-ih input hash file name\n");
-    printf("\t-is signature file name\n");
-    printf("\t[-raw (flag) signature specified by -is is in raw format]\n");
+    printf("\t-if\tinput message file name\n");
+    printf("\t-ih\tinput hash file name\n");
+    printf("\n");
+    printf("\t\tOne of -if, -ih must be specified\n");
+    printf("\n");
+    printf("\t-is\tsignature file name\n");
+    printf("\t[-raw\tsignature specified by -is is in raw format]\n");
     printf("\t\t(default TPMT_SIGNATURE)\n");
-    printf("\t[-tk ticket file name (requires -hk)]\n");
+    printf("\t-hk\tkey handle\n");
+    printf("\t-ipem\tpublic key PEM format file name to verify signature\n");
+    printf("\n");
+    printf("\t\tOne of -hk, -ipem must be specified\n");
+    printf("\n");
+    printf("\t[-tk\tticket file name (requires -hk)]\n");
+    printf("\n");
+    printf("\t[-halg\t(sha1, sha256, sha384 sha512) (default sha256)]\n");
+    printf("\n");
+    printf("\t[Asymmetric Key Algorithm]\n");
+    printf("\n");
+    printf("\t[-rsa\t(default)]\n");
+    printf("\t[-ecc\t]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default NULL)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t80 audit\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t80\taudit\n");
     exit(1);	
 }

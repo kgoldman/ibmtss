@@ -3,9 +3,9 @@
 /*			   EncryptDecrypt					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: encryptdecrypt.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
+/*	      $Id: encryptdecrypt.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -344,16 +344,16 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_EncryptDecrypt\n");
     printf("\n");
-    printf("\t-hk key handle\n");
-    printf("\t-pwdk password for key (default empty)\n");
-    printf("\t-d decrypt (default encrypt)\n");
-    printf("\t-if input file name\n");
-    printf("\t[-of output file name (default do not save)]\n");
-    printf("\t[-2 use TPM2_EncryptDecrypt2]\n");
+    printf("\t-hk\tkey handle\n");
+    printf("\t-pwdk\tpassword for key (default empty)\n");
+    printf("\t-d\tdecrypt (default encrypt)\n");
+    printf("\t-if\tinput file name\n");
+    printf("\t[-of\toutput file name (default do not save)]\n");
+    printf("\t[-2\tuse TPM2_EncryptDecrypt2]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

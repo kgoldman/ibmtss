@@ -3,9 +3,9 @@
 /*		    TPM public key TPM2B_PUBLIC to TPM2B_ECC_POINT 		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tpmpublic2eccpoint.c 1287 2018-07-30 13:34:27Z kgoldman $	*/
+/*	      $Id: tpmpublic2eccpoint.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017						*/
+/* (c) Copyright IBM Corporation 2017 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -146,10 +146,9 @@ static void printUsage(void)
     printf("Converts an EC TPM2B_PUBLIC to TPM2B_ECC_POINT.  The intended use case\n");
     printf("is to convert the public key output of certain commands (TPM2_CreatePrimary,\n");
     printf("TPM2_Create, TPM2_CreateLoaded, TPM2_ReadPublic) to a format useful for\n");
-    printf("TPM2_ZGen_2Phase\n");
+    printf("TPM2_ZGen_2Phase.\n");
     printf("\n");
-    printf("\n");
-    printf("\t-ipu EC public key input file in TPM TPM2B_PUBLIC format\n");
-    printf("\t-pt EC public key output file in TPM TPM2B_ECC_POINT format\n");
+    printf("\t-ipu\tEC public key input file in TPM TPM2B_PUBLIC format\n");
+    printf("\t-pt\tEC public key output file in TPM TPM2B_ECC_POINT format\n");
     exit(1);	
 }

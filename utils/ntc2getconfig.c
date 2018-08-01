@@ -3,9 +3,9 @@
 /*			   Nuvoton GetConfig 	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2getconfig.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: ntc2getconfig.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -190,10 +190,10 @@ static void printUsage(void)
     printf("\n");
     printf("Runs NTC2_GetConfig\n");
     printf("\n");
-    printf("[-verify Verify results against System P default (default no verify)]\n");
-    printf("[-verifylocked Also verify that the preconfig is locked\n"
-	   "\t(default verify not locked)]\n");
-    printf("[-p8 or -p9 Verify Nuvoton TPM for P8 or P9]");
+    printf("\t[-verify\tVerify results against System P default (default no verify)]\n");
+    printf("\t[-verifylocked\tAlso verify that the preconfig is locked\n"
+	   "\t\t(default verify not locked)]\n");
+    printf("\t[-p8 or -p9\tVerify Nuvoton TPM for P8 or P9]");
     printf("\n");
     exit(1);
 }

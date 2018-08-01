@@ -3,9 +3,9 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -513,40 +513,41 @@ TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
 void printUsageTemplate(void)
 {
     printf("\t[Asymmetric Key Algorithm]\n");
-    printf("\t\t-rsa (default)\n");
-    printf("\t\t-ecc curve\n");
-    printf("\t\t\tbnp256\n");
-    printf("\t\t\tnistp256\n");
-    printf("\t\t\tnistp384\n");
+    printf("\n");
+    printf("\t-rsa (default)\n");
+    printf("\t-ecc curve\n");
+    printf("\t\tbnp256\n");
+    printf("\t\tnistp256\n");
+    printf("\t\tnistp384\n");
     printf("\n");
     printf("\tKey attributes\n");
     printf("\n");
-    printf("\t\t-bl data blob for unseal (create only)\n");
-    printf("\t\t\t-if data file name\n");
-    printf("\t\t-den decryption, (unrestricted, RSA and EC NULL scheme)\n");
-    printf("\t\t-deo decryption, (unrestricted, RSA OAEP, EC NULL scheme)\n");
-    printf("\t\t-des encryption/decryption, AES symmetric\n");
+    printf("\t\t-bl\tdata blob for unseal (create only)\n");
+    printf("\t\t\t-if\tdata file name\n");
+    printf("\t\t-den\tdecryption, (unrestricted, RSA and EC NULL scheme)\n");
+    printf("\t\t-deo\tdecryption, (unrestricted, RSA OAEP, EC NULL scheme)\n");
+    printf("\t\t-des\tencryption/decryption, AES symmetric\n");
     printf("\t\t\t[-116 for TPM rev 116 compatibility]\n");
-    printf("\t\t-st storage (restricted)\n");
+    printf("\t\t-st\tstorage (restricted)\n");
     printf("\t\t\t[default for primary keys]\n");
-    printf("\t\t-si unrestricted signing (RSA and EC NULL scheme)\n");
-    printf("\t\t-sir restricted signing (RSA RSASSA, EC ECDSA scheme)\n");
-    printf("\t\t-dau unrestricted ECDAA signing key pair\n");
-    printf("\t\t-dar restricted ECDAA signing key pair\n");
-    printf("\t\t-kh keyed hash (hmac)\n");
-    printf("\t\t-dp derivation parent\n");
-    printf("\t\t-gp general purpose, not storage\n");
+    printf("\t\t-si\tunrestricted signing (RSA and EC NULL scheme)\n");
+    printf("\t\t-sir\trestricted signing (RSA RSASSA, EC ECDSA scheme)\n");
+    printf("\t\t-dau\tunrestricted ECDAA signing key pair\n");
+    printf("\t\t-dar\trestricted ECDAA signing key pair\n");
+    printf("\t\t-kh\tkeyed hash (hmac)\n");
+    printf("\t\t-dp\tderivation parent\n");
+    printf("\t\t-gp\tgeneral purpose, not storage\n");
     printf("\n");
-    printf("\t\t[-kt (can be specified more than once)]\n"
-	   "\t\t\tf fixedTPM (default for primary keys and derivation parents)\n"
-	   "\t\t\tp fixedParent (default for primary keys and derivation parents)\n"
-	   "\t\t\tnf no fixedTPM (default for non-primary keys)\n"
-	   "\t\t\tnp no fixedParent (default for non-primary keys)\n");
-    printf("\t\t[-da object subject to DA protection (default no)]\n");
-    printf("\t[-pol policy file (default empty)]\n");
-    printf("\t[-uwa userWithAuth attribute clear (default set)]\n");
+    printf("\t\t[-kt\t(can be specified more than once)]\n"
+	   "\t\t\tf\tfixedTPM (default for primary keys and derivation parents)\n"
+	   "\t\t\tp\tfixedParent (default for primary keys and derivation parents)\n"
+	   "\t\t\tnf\tno fixedTPM (default for non-primary keys)\n"
+	   "\t\t\tnp\tno fixedParent (default for non-primary keys)\n");
+    printf("\t\t[-da\tobject subject to DA protection (default no)]\n");
+    printf("\t[-pol\tpolicy file (default empty)]\n");
+    printf("\t[-uwa\tuserWithAuth attribute clear (default set)]\n");
     printf("\n");
-    printf("\t[-nalg name hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t[-halg scheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-nalg\tname hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-halg\tscheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
     return;	
 }

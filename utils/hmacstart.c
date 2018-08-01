@@ -3,9 +3,9 @@
 /*			    HmacStart						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hmacstart.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: hmacstart.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -267,12 +267,12 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Hmac_Start\n");
     printf("\n");
-    printf("\t-hk key handle\n");
-    printf("\t-pwdk password for key (default empty)\n");
-    printf("\t-pwda password for sequence (default empty)\n");
-    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t-hk\tkey handle\n");
+    printf("\t-pwdk\tpassword for key (default empty)\n");
+    printf("\t-pwda\tpassword for sequence (default empty)\n");
+    printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
+    printf("\t01\tcontinue\n");
     exit(1);	
 }

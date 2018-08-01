@@ -3,9 +3,9 @@
 /*			   Rewrap		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rewrap.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
+/*	      $Id: rewrap.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -331,19 +331,19 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Rewrap\n");
     printf("\n");
-    printf("\t-ho handle of object old parent\n");
-    printf("\t[-pwdo password for old parent] (default empty)\n");
-    printf("\t-hn handle of object new parent\n");
-    printf("\t-id duplicate private area file name\n");
-    printf("\t-in object name file name\n");
-    printf("\t-iss input symmetric seed file name");
+    printf("\t-ho\thandle of object old parent\n");
+    printf("\t[-pwdo\tpassword for old parent (default empty)]\n");
+    printf("\t-hn\thandle of object new parent\n");
+    printf("\t-id\tduplicate private area file name\n");
+    printf("\t-in\tobject name file name\n");
+    printf("\t-iss\tinput symmetric seed file name");
     printf("\n");
-    printf("\t[-od rewrap private area file name (default do not save)]\n");
-    printf("\t[-oss symmetric seed file name (default do not save)]\n");
+    printf("\t[-od\trewrap private area file name (default do not save)]\n");
+    printf("\t[-oss\tsymmetric seed file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
-    printf("\t\t40 response encrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
+    printf("\t40\tresponse encrypt\n");
     exit(1);	
 }

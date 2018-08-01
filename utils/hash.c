@@ -3,9 +3,9 @@
 /*			    Hash						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hash.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
+/*	      $Id: hash.c 1290 2018-08-01 14:45:24Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -298,13 +298,13 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Hash\n");
     printf("\n");
-    printf("\t[-hi hierarchy (e, o, p, n) (default null)]\n");
+    printf("\t[-hi\thierarchy (e, o, p, n) (default null)]\n");
     printf("\t\te endorsement, o owner, p platform, n null\n");
-    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t-if input file to be hashed\n");
-    printf("\t-ic data string to be hashed\n");
-    printf("\t[-ns no space, no text, no newlines]\n");
-    printf("\t[-oh hash file name (default do not save)]\n");
-    printf("\t[-tk ticket file name (default do not save)]\n");
+    printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t-if\tinput file to be hashed\n");
+    printf("\t-ic\tdata string to be hashed\n");
+    printf("\t[-ns\tno space, no text, no newlines]\n");
+    printf("\t[-oh\thash file name (default do not save)]\n");
+    printf("\t[-tk\tticket file name (default do not save)]\n");
     exit(1);	
 }

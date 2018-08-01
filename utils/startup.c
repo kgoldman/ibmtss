@@ -3,9 +3,9 @@
 /*			    Startup		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: startup.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: startup.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -179,10 +179,10 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_Startup\n");
     printf("\n");
-    printf("\t[-c startup clear (default)]\n");
-    printf("\t[-s startup state]\n");
-    printf("\t[-st run TPM2_SelfTest]\n");
-    printf("\t[-sto run only TPM2_SelfTest (no startup)]\n");
+    printf("\t[-c\tstartup clear (default)]\n");
+    printf("\t[-s\tstartup state]\n");
+    printf("\t[-st\trun TPM2_SelfTest]\n");
+    printf("\t[-sto\trun only TPM2_SelfTest (no startup)]\n");
     exit(1);	
 }
 

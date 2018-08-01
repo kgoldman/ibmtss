@@ -3,9 +3,9 @@
 /*			    PolicyNV	 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policynv.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: policynv.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -329,15 +329,17 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_PolicyNV\n");
     printf("\n");
-    printf("\t[-hi hierarchy authHandle (o, p)]\n");
+    printf("\t[-hi\thierarchy authHandle (o, p)]\n");
     printf("\t\tdefault NV index\n");
-    printf("\t-ha NV index handle (operand A)\n");
-    printf("\t[-pwda password for authorization (default empty)]\n");
-    printf("\t-hs policy session handle\n");
-    printf("\t-ic data string (operandB)\n");
-    printf("\t-if data file (operandB) \n");
-    printf("\t[-off offset (default 0)]\n");
-    printf("\t-op operation (default A = B)\n");
+    printf("\n");
+    printf("\t-ha\tNV index handle (operand A)\n");
+    printf("\t[-pwda\tpassword for authorization (default empty)]\n");
+    printf("\t-hs\tpolicy session handle\n");
+    printf("\t-ic\tdata string (operandB)\n");
+    printf("\t-if\tdata file (operandB) \n");
+    printf("\t[-off\toffset (default 0)]\n");
+    printf("\t-op\toperation (default A = B)\n");
+    printf("\n");
     printf("\t\t0	A = B \n");
     printf("\t\t1	A != B \n");
     printf("\t\t2	A > B signed	 \n");
@@ -352,7 +354,7 @@ static void printUsage(void)
     printf("\t\tB	All bits SET in B are CLEAR in A. ((A&B)=0) \n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
-    printf("\t\t01 continue\n");
-    printf("\t\t20 command decrypt\n");
+    printf("\t01\tcontinue\n");
+    printf("\t20\tcommand decrypt\n");
     exit(1);	
 }

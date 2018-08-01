@@ -3,9 +3,9 @@
 /*		    TPM public key TPM2B_PUBLIC to PEM 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tpm2pem.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: tpm2pem.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2017					*/
+/* (c) Copyright IBM Corporation 2016 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -141,7 +141,7 @@ static void printUsage(void)
     printf("\n");
     printf("Converts an RSA or EC TPM2B_PUBLIC to PEM\n");
     printf("\n");
-    printf("\t-ipu public key input file in TPM format\n");
-    printf("\t-opem public key output file in PEM format\n");
+    printf("\t-ipu\tpublic key input file in TPM format\n");
+    printf("\t-opem\tpublic key output file in PEM format\n");
     exit(1);	
 }

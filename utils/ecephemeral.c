@@ -3,9 +3,9 @@
 /*			    EC_Ephemeral					*/
 /*	     		Written by Bill Martin 					*/
 /*                 Green Hills Integrity Software Services 			*/
-/*	      $Id: ecephemeral.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: ecephemeral.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017.						*/
+/* (c) Copyright IBM Corporation 2017 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -185,11 +185,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_EC_Ephemeral\n");
     printf("\n");
-    printf("\t-ecc curve\n");
+    printf("\t-ecc\tcurve\n");
     printf("\t\tbnp256\n");
     printf("\t\tnistp256\n");
     printf("\t\tnistp384\n");
-    printf("\t[-oq output Q ephemeral public key file name (default do not save)]\n");
-    printf("\t[-cf output counter file name (default do not save)]\n");
+    printf("\t[-oq\toutput Q ephemeral public key file name (default do not save)]\n");
+    printf("\t[-cf\toutput counter file name (default do not save)]\n");
     exit(1); 
 }

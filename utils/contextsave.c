@@ -3,9 +3,9 @@
 /*			   ContextSave 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: contextsave.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: contextsave.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -156,7 +156,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_ContextSave\n");
     printf("\n");
-    printf("\t-ha handle\n");
-    printf("\t[-of context file name (default do not save)]\n");
+    printf("\t-ha\thandle\n");
+    printf("\t[-of\tcontext file name (default do not save)]\n");
     exit(1);	
 }
