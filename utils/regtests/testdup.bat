@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
+REM #		$Id: testdup.bat 1292 2018-08-01 17:27:24Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
@@ -729,6 +729,20 @@ REM # A real target would not have access to tmpaeskeysrc.bin for the compare
         exit /B 1
     )
 
+)
+
+REM cleanup
+    
+echo "Undefine the RSA EK certificate index"
+%TPM_EXE_PATH%nvundefinespace -hi p -ha 01c00002
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "Undefine the ECC EK certificate index"
+%TPM_EXE_PATH%nvundefinespace -hi p -ha 01c0000a
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
 )
 
 rm -f tmpo1name.bin

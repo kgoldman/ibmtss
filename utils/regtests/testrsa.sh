@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testrsa.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
+#	$Id: testrsa.sh 1291 2018-08-01 15:53:40Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -197,6 +197,8 @@ rm -f tmpmsg.bin
 rm -f tmpdig.bin
 rm -f tmpsig.bin
 rm -f tmpprivkey.pem
+rm -f tmpkeypair.pem
+rm -f tmpkeypair.der
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 02000000

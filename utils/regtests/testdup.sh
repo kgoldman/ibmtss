@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
+#		$Id: testdup.sh 1292 2018-08-01 17:27:24Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -558,6 +558,16 @@ do
     checkSuccess $?
 
 done
+
+REM cleanup
+    
+echo "Undefine the RSA EK certificate index"
+${PREFIX}nvundefinespace -hi p -ha 01c00002
+checkSuccess $?
+
+echo "Undefine the ECC EK certificate index"
+${PREFIX}nvundefinespace -hi p -ha 01c0000a
+checkSuccess $?
 
 rm -f tmpo1name.bin
 rm -f tmpsignpriv.bin

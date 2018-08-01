@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testclocks.bat 1116 2017-12-14 19:13:01Z kgoldman $		#
+REM #		$Id: testclocks.bat 1292 2018-08-01 17:27:24Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2017					#
+REM # (c) Copyright IBM Corporation 2015 - 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -97,6 +97,8 @@ echo "Flush the auth session"
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
+
+rm -f tmpclk.bin
 
 exit /B 0
 

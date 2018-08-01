@@ -5,7 +5,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: reg.bat 1276 2018-07-23 19:25:13Z kgoldman $		#
+REM #		$Id: reg.bat 1292 2018-08-01 17:27:24Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
@@ -313,9 +313,15 @@ rm -f enc.bin
 rm -f khprivsha1.bin
 rm -f khprivsha256.bin
 rm -f khprivsha384.bin
+rm -f khprivsha512.bin
 rm -f khpubsha1.bin
 rm -f khpubsha256.bin
 rm -f khpubsha384.bin
+rm -f khpubsha512.bin
+rm -f pritk.bin
+rm -f stotk.bin
+rm -f prich.bin
+rm -f stoch.bin
 rm -f msg.bin
 rm -f noncetpm.bin
 rm -f policyapproved.bin
@@ -345,6 +351,7 @@ rm -f tmppub.bin
 rm -f tmpsha1.bin
 rm -f tmpsha256.bin
 rm -f tmpsha384.bin
+rm -f tmpsha512.bin
 rm -f tmpspriv.bin
 rm -f tmpspub.bin
 rm -f to.bin
