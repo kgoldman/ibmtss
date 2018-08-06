@@ -80,7 +80,7 @@ Startup_In_Unmarshal(Startup_In *target, BYTE **buffer, uint32_t *size, TPM_HAND
     handles = handles;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_SU_Unmarshalu(&target->startupType, buffer, size);
+	rc = TSS_TPM_SU_Unmarshalu(&target->startupType, buffer, size);	
 	if (rc != TPM_RC_SUCCESS) {	
 	    rc += RC_Startup_startupType;
 	}

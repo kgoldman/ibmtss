@@ -262,7 +262,7 @@ int main(int argc, char * argv[])
 #ifdef TPM_WINDOWS
 	Sleep(loopTime * 1000);
 #endif
-
+	
     } while ((rc == 0) && (loopTime != 0)); 		/* sleep loop */
     if (!sim) {
 	TPM_RC rc1 = TSS_Delete(tssContext);

@@ -198,7 +198,7 @@ TSS_TPM_KEY_BITS_Unmarshalu(TPM_KEY_BITS *target, BYTE **buffer, uint32_t *size)
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_UINT16_Unmarshalu(target, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(target, buffer, size);  
     }
     return rc;
 }
@@ -211,7 +211,7 @@ TSS_TPM_GENERATED_Unmarshalu(TPM_GENERATED *target, BYTE **buffer, uint32_t *siz
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_UINT32_Unmarshalu(target, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (*target != TPM_GENERATED_VALUE) {
@@ -229,7 +229,7 @@ TSS_TPM_ALG_ID_Unmarshalu(TPM_ALG_ID *target, BYTE **buffer, uint32_t *size)
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_UINT16_Unmarshalu(target, buffer, size);
+	rc = TSS_UINT16_Unmarshalu(target, buffer, size);  
     }
     return rc;
 }
@@ -273,7 +273,7 @@ TSS_TPM_CC_Unmarshalu(TPM_RC *target, BYTE **buffer, uint32_t *size)
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_UINT32_Unmarshalu(target, buffer, size);
+	rc = TSS_UINT32_Unmarshalu(target, buffer, size);  
     }
     return rc;
 }
@@ -615,7 +615,7 @@ TSS_TPMI_DH_OBJECT_Unmarshalu(TPMI_DH_OBJECT *target, BYTE **buffer, uint32_t *s
     TPM_RC rc = TPM_RC_SUCCESS;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	BOOL isNotTransient = (*target < TRANSIENT_FIRST) || (*target > TRANSIENT_LAST);
@@ -638,7 +638,7 @@ TSS_TPMI_DH_PERSISTENT_Unmarshalu(TPMI_DH_PERSISTENT *target, BYTE **buffer, uin
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	BOOL isNotPersistent = (*target < PERSISTENT_FIRST) || (*target > PERSISTENT_LAST);
@@ -657,7 +657,7 @@ TSS_TPMI_DH_ENTITY_Unmarshalu(TPMI_DH_ENTITY *target, BYTE **buffer, uint32_t *s
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	BOOL isNotOwner = *target != TPM_RH_OWNER;
@@ -698,7 +698,7 @@ TSS_TPMI_DH_PCR_Unmarshalu(TPMI_DH_PCR *target, BYTE **buffer, uint32_t *size, B
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 #if PCR_FIRST != 0
@@ -723,7 +723,7 @@ TSS_TPMI_SH_AUTH_SESSION_Unmarshalu(TPMI_SH_AUTH_SESSION *target, BYTE **buffer,
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	BOOL isNotHmacSession = (*target < HMAC_SESSION_FIRST ) || (*target > HMAC_SESSION_LAST);
@@ -747,7 +747,7 @@ TSS_TPMI_SH_HMAC_Unmarshalu(TPMI_SH_HMAC *target, BYTE **buffer, uint32_t *size,
     allowNull = allowNull;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	BOOL isNotHmacSession = (*target < HMAC_SESSION_FIRST ) || (*target > HMAC_SESSION_LAST);
@@ -767,7 +767,7 @@ TSS_TPMI_SH_POLICY_Unmarshalu(TPMI_SH_POLICY *target, BYTE **buffer, uint32_t *s
     allowNull = allowNull;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	BOOL isNotPolicySession = (*target < POLICY_SESSION_FIRST) || (*target > POLICY_SESSION_LAST);
@@ -787,7 +787,7 @@ TSS_TPMI_DH_CONTEXT_Unmarshalu(TPMI_DH_CONTEXT *target, BYTE **buffer, uint32_t 
     allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	BOOL isNotHmacSession = (*target < HMAC_SESSION_FIRST ) || (*target > HMAC_SESSION_LAST);
@@ -839,7 +839,7 @@ TSS_TPMI_RH_HIERARCHY_Unmarshalu(TPMI_RH_HIERARCHY *target, BYTE **buffer, uint3
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -867,7 +867,7 @@ TSS_TPMI_RH_ENABLES_Unmarshalu(TPMI_RH_ENABLES *target, BYTE **buffer, uint32_t 
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -897,7 +897,7 @@ TSS_TPMI_RH_HIERARCHY_AUTH_Unmarshalu(TPMI_RH_HIERARCHY_AUTH *target, BYTE **buf
     allowNull = allowNull;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -922,7 +922,7 @@ TSS_TPMI_RH_PLATFORM_Unmarshalu(TPMI_RH_PLATFORM *target, BYTE **buffer, uint32_
     allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -943,7 +943,7 @@ TSS_TPMI_RH_ENDORSEMENT_Unmarshalu(TPMI_RH_ENDORSEMENT *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -970,7 +970,7 @@ TSS_TPMI_RH_PROVISION_Unmarshalu(TPMI_RH_PROVISION *target, BYTE **buffer, uint3
     allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -993,7 +993,7 @@ TSS_TPMI_RH_CLEAR_Unmarshalu(TPMI_RH_CLEAR *target, BYTE **buffer, uint32_t *siz
     allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1016,7 +1016,7 @@ TSS_TPMI_RH_NV_AUTH_Unmarshalu(TPMI_RH_NV_AUTH *target, BYTE **buffer, uint32_t 
     allowNull = allowNull;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1044,7 +1044,7 @@ TSS_TPMI_RH_LOCKOUT_Unmarshalu(TPMI_RH_LOCKOUT *target, BYTE **buffer, uint32_t 
     allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1066,7 +1066,7 @@ TSS_TPMI_RH_NV_INDEX_Unmarshalu(TPMI_RH_NV_INDEX *target, BYTE **buffer, uint32_
     allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	BOOL isNotNv = (*target < NV_INDEX_FIRST) || (*target > NV_INDEX_LAST);
@@ -1085,7 +1085,7 @@ TSS_TPMI_ALG_HASH_Unmarshalu(TPMI_ALG_HASH *target, BYTE **buffer, uint32_t *siz
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1125,7 +1125,7 @@ TSS_TPMI_ALG_SYM_Unmarshalu(TPMI_ALG_SYM *target, BYTE **buffer, uint32_t *size,
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1162,7 +1162,7 @@ TSS_TPMI_ALG_SYM_OBJECT_Unmarshalu(TPMI_ALG_SYM_OBJECT *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1196,7 +1196,7 @@ TSS_TPMI_ALG_SYM_MODE_Unmarshalu(TPMI_ALG_SYM_MODE *target, BYTE **buffer, uint3
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1236,7 +1236,7 @@ TSS_TPMI_ALG_KDF_Unmarshalu(TPMI_ALG_KDF *target, BYTE **buffer, uint32_t *size,
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1273,7 +1273,7 @@ TSS_TPMI_ALG_SIG_SCHEME_Unmarshalu(TPMI_ALG_SIG_SCHEME *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1319,7 +1319,7 @@ TSS_TPMI_ECC_KEY_EXCHANGE_Unmarshalu(TPMI_ECC_KEY_EXCHANGE *target, BYTE **buffe
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1354,7 +1354,7 @@ TSS_TPMI_ST_COMMAND_TAG_Unmarshalu(TPMI_ST_COMMAND_TAG *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ST_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ST_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1376,7 +1376,7 @@ TSS_TPMI_ALG_MAC_SCHEME_Unmarshalu(TPMI_ALG_MAC_SCHEME *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -1419,7 +1419,7 @@ TSS_TPMI_ALG_CIPHER_MODE_Unmarshalu(TPMI_ALG_CIPHER_MODE*target, BYTE **buffer, 
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -2438,7 +2438,7 @@ TSS_TPMI_AES_KEY_BITS_Unmarshalu(TPMI_AES_KEY_BITS *target, BYTE **buffer, uint3
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -2460,7 +2460,7 @@ TSS_TPMI_CAMELLIA_KEY_BITS_Unmarshalu(TPMI_CAMELLIA_KEY_BITS *target, BYTE **buf
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -2481,7 +2481,7 @@ TSS_TPMI_SM4_KEY_BITS_Unmarshalu(TPMI_SM4_KEY_BITS *target, BYTE **buffer, uint3
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -2707,7 +2707,7 @@ TSS_TPMS_SCHEME_ECDAA_Unmarshalu(TPMS_SCHEME_ECDAA *target, BYTE **buffer, uint3
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMI_ALG_HASH_Unmarshalu(&target->hashAlg, buffer, size, NO);
+	rc = TSS_TPMI_ALG_HASH_Unmarshalu(&target->hashAlg, buffer, size, NO);	
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(&target->count, buffer, size);	
@@ -2723,7 +2723,7 @@ TSS_TPMI_ALG_KEYEDHASH_SCHEME_Unmarshalu(TPMI_ALG_KEYEDHASH_SCHEME *target, BYTE
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -2996,7 +2996,7 @@ TSS_TPMS_KEY_SCHEME_ECDH_Unmarshalu(TPMS_KEY_SCHEME_ECDH *target, BYTE **buffer,
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMS_SCHEME_HASH_Unmarshalu(target, buffer, size);
+	rc = TSS_TPMS_SCHEME_HASH_Unmarshalu(target, buffer, size); 
     }
     return rc;
 }
@@ -3009,7 +3009,7 @@ TSS_TPMS_KEY_SCHEME_ECMQV_Unmarshalu(TPMS_KEY_SCHEME_ECMQV *target, BYTE **buffe
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMS_SCHEME_HASH_Unmarshalu(target, buffer, size);
+	rc = TSS_TPMS_SCHEME_HASH_Unmarshalu(target, buffer, size); 
     }
     return rc;
 }
@@ -3022,7 +3022,7 @@ TSS_TPMS_SCHEME_KDF1_SP800_108_Unmarshalu(TPMS_SCHEME_KDF1_SP800_108 *target, BY
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMS_SCHEME_HASH_Unmarshalu(target, buffer, size);
+	rc = TSS_TPMS_SCHEME_HASH_Unmarshalu(target, buffer, size); 
     }
     return rc;
 }
@@ -3035,7 +3035,7 @@ TSS_TPMS_SCHEME_KDF1_SP800_56A_Unmarshalu(TPMS_SCHEME_KDF1_SP800_56A *target, BY
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMS_SCHEME_HASH_Unmarshalu(target, buffer, size);
+	rc = TSS_TPMS_SCHEME_HASH_Unmarshalu(target, buffer, size); 
     }
     return rc;
 }
@@ -3127,7 +3127,7 @@ TSS_TPMI_ALG_ASYM_SCHEME_Unmarshalu(TPMI_ALG_ASYM_SCHEME *target, BYTE **buffer,
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -3267,7 +3267,7 @@ TSS_TPMI_ALG_RSA_SCHEME_Unmarshalu(TPMI_ALG_RSA_SCHEME *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -3320,7 +3320,7 @@ TSS_TPMI_ALG_RSA_DECRYPT_Unmarshalu(TPMI_ALG_RSA_DECRYPT *target, BYTE **buffer,
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -3380,7 +3380,7 @@ TSS_TPMI_RSA_KEY_BITS_Unmarshalu(TPMI_RSA_KEY_BITS *target, BYTE **buffer, uint3
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -3415,7 +3415,7 @@ TSS_TPM2B_ECC_PARAMETER_Unmarshalu(TPM2B_ECC_PARAMETER *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_ECC_KEY_BYTES, buffer, size);
+     	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_ECC_KEY_BYTES, buffer, size);
     }
     return rc;
 }
@@ -3474,7 +3474,7 @@ TSS_TPMI_ALG_ECC_SCHEME_Unmarshalu(TPMI_ALG_ECC_SCHEME *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -3517,7 +3517,7 @@ TSS_TPMI_ECC_CURVE_Unmarshalu(TPMI_ECC_CURVE *target, BYTE **buffer, uint32_t *s
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ECC_CURVE_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ECC_CURVE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -3792,7 +3792,7 @@ TSS_TPMI_ALG_PUBLIC_Unmarshalu(TPMI_ALG_PUBLIC *target, BYTE **buffer, uint32_t 
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);
+	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
@@ -4269,7 +4269,7 @@ TSS_TPMS_CONTEXT_DATA_Unmarshalu(TPMS_CONTEXT_DATA *target, BYTE **buffer, uint3
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_DIGEST_Unmarshalu(&target->integrity, buffer, size);
+	rc = TSS_TPM2B_DIGEST_Unmarshalu(&target->integrity, buffer, size);	
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM2B_CONTEXT_SENSITIVE_Unmarshalu(&target->encrypted, buffer, size);

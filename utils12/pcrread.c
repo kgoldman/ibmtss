@@ -3,7 +3,7 @@
 /*			    PcrRead		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 1284 2018-07-26 18:10:33Z kgoldman $		*/
+/*	      $Id: pcrread.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
