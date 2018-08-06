@@ -115,7 +115,7 @@ typedef struct tdTCG_PCR_EVENT2 {
 } TCG_PCR_EVENT2;
 
 /* TCG_EfiSpecIdEventAlgorithmSize is a hash agile mapping of algorithmId to digestSize. It is part
-   of the first event log entry.  It permits a parser to unmarshal en event log that contains hash
+   of the first event log entry.  It permits a parser to unmarshal an event log that contains hash
    algorithms that are unknown to the parser.  */
 		
 typedef struct tdTCG_EfiSpecIdEventAlgorithmSize {
