@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			     							*/
+/*		    TSS Implementation Specific Constants			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Implementation.h 1274 2018-07-20 20:37:08Z kgoldman $	*/
+/*            $Id: Implementation.h 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -59,7 +59,11 @@
 /*										*/
 /********************************************************************************/
 
-/* rev 124 */
+/* #define TPM_TSS_SO_0 to get the libibmtss.so.0 values.  Leave it undefined to get the new
+   libibmtss.so.1 values.
+
+   The new values are required for a TPM with 4 or more hash algorithms.
+*/
 
 // A.2	Implementation.h
 
@@ -70,15 +74,89 @@
 #include <ibmtss/BaseTypes.h>
 #include <ibmtss/TPMB.h>
 
+/* Constants for TPM_Types.h structures.  Changing these values is likely to break ABI
+   compatiblility.*/
+
+// From Vendor-Specific: Table 4 - Defines for Key Size Constants
+
+#ifdef TPM_TSS_SO0
+#define  MAX_RSA_KEY_BYTES          256
+#else
+#define  MAX_RSA_KEY_BYTES          512
+#endif
+
+#ifdef TPM_TSS_SO0
+#define  MAX_ECC_KEY_BYTES     48
+#else
+#define  MAX_ECC_KEY_BYTES     128
+#endif
+
+/* This is the PC Client minimum value, and should be used for applications. */
+#define IMPLEMENTATION_PCR		24
+
+#define MAX_HANDLE_NUM			3	/* the maximum number of handles in the handle
+						   area */
+#define MAX_ACTIVE_SESSIONS		64	/* the number of simultaneously active sessions that
+						   are supported by the TPM implementation */
+#define MAX_SESSION_NUM 		3	/* this is the current maximum value */
+
+#ifdef TPM_TSS_SO_0
+#define PCR_SELECT_MAX			((IMPLEMENTATION_PCR+7)/8) */
+#else
+/* increased to 8 to handle up to 64 PCRs */
+#define PCR_SELECT_MAX			8
+#endif
+
+#ifdef TPM_TSS_SO_0
+#define MAX_CONTEXT_SIZE		2048
+#else
+#define MAX_CONTEXT_SIZE		5120
+#endif
+
+#define MAX_DIGEST_BUFFER		2048
+#define MAX_NV_BUFFER_SIZE		2048
+#define MAX_CAP_BUFFER                  2048
+
+#ifdef TPM_TSS_SO_0
+#define MAX_ALG_LIST_SIZE               64	/* number of algorithms that can be in a list */
+#else
+#define MAX_ALG_LIST_SIZE               128	/* number of algorithms that can be in a list */
+#endif
+
+#define MAX_COMMAND_SIZE		4096	/* maximum size of a command */
+#define MAX_RESPONSE_SIZE		4096	/* maximum size of a response */
+
+#ifdef TPM_TSS_SO_0
+#define MAX_SYM_DATA			128		/* this is the maximum number of octets that
+							   may be in a sealed blob. */
+#else
+#define MAX_SYM_DATA			256
+#endif
+
+#ifdef TPM_TSS_SO_0
+/* For the TSS .so.0, the number of digest and PCR banks was originally dependent on the number of
+   supported hash algoriths, using common TPM / TSS code. */
+#define HASH_COUNT 3
+#else
+/* For the TSS .so.1, the number was increased to support a SW TPM with 4 banks (unlikely for a HW
+   TPM) plus future expansion. */
+#define HASH_COUNT 16
+#endif
+
+/* value independent of supported hash algorithms */
+#define LABEL_MAX_BUFFER   48
+#if LABEL_MAX_BUFFER < 32
+#error "The size allowed for the label is not large enough for interoperability."
+#endif
+
+/* hard code maximum independent of the algorithms actually supported */
+#define MAX_SYM_KEY_BYTES 	32
+#define MAX_SYM_BLOCK_SIZE  	16
+
+#define RSA_DEFAULT_PUBLIC_EXPONENT	0x00010001	/* 2^^16 + 1 */
+
 #undef TRUE
 #undef FALSE
-
-// This table is built in to TpmStructures() Change these definitions to turn all algorithms or
-// commands on or off
-#define      ALG_YES      YES
-#define      ALG_NO       NO
-#define      CC_YES       YES
-#define      CC_NO        NO
 
 // From TPM 2.0 Part 2: Table 4 - Defines for Logic Values
 
@@ -89,20 +167,13 @@
 #define  SET      1
 #define  CLEAR    0
 
-#ifndef MAX
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
+// Change these definitions to turn all algorithms or commands ON or OFF. That is, to turn all
+// algorithms on, set ALG_NO to YES. This is mostly useful as a debug feature.
 
-#ifndef MIN
-#  define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
-// From Vendor-Specific: Table 1 - Defines for Processor Values
-
-#define BIG_ENDIAN_TPM       	NO	/*  to YES or NO according to the processor */
-#define LITTLE_ENDIAN_TPM	YES	/*  to YES or NO according to the processor */
-#define NO_AUTO_ALIGN		NO	/*  to YES if the processor does not allow unaligned
-					    accesses */
+#define      ALG_YES      YES
+#define      ALG_NO       NO
+#define      CC_YES       YES
+#define      CC_NO        NO
 
 // From Vendor-Specific: Table 2 - Defines for Implemented Algorithms
 
@@ -142,55 +213,6 @@
 #define  ALG_CBC               ALG_YES
 #define  ALG_CFB               ALG_YES
 #define  ALG_ECB               ALG_YES
-
-// From Vendor-Specific: Table 4 - Defines for Key Size Constants
-
-#define  RSA_KEY_SIZES_BITS         {1024,2048}
-#define  RSA_KEY_SIZE_BITS_1024     RSA_ALLOWED_KEY_SIZE_1024
-#define  RSA_KEY_SIZE_BITS_2048     RSA_ALLOWED_KEY_SIZE_2048
-#define  MAX_RSA_KEY_BITS           2048
-#define  MAX_RSA_KEY_BYTES          256
-#define  TDES_KEY_SIZES_BITS        {128,192}
-#define  TDES_KEY_SIZE_BITS_128     TDES_ALLOWED_KEY_SIZE_128
-#define  TDES_KEY_SIZE_BITS_192     TDES_ALLOWED_KEY_SIZE_192
-#define  MAX_TDES_KEY_BITS          192
-#define  MAX_TDES_KEY_BYTES         24
-#define MAX_TDES_BLOCK_SIZE_BYTES				      \
-    MAX(TDES_128_BLOCK_SIZE_BYTES,					\
-	MAX(TDES_192_BLOCK_SIZE_BYTES, 0))
-#define  AES_KEY_SIZES_BITS         {128,256}
-#define  AES_KEY_SIZE_BITS_128      AES_ALLOWED_KEY_SIZE_128
-#define  AES_KEY_SIZE_BITS_256      AES_ALLOWED_KEY_SIZE_256
-#define  MAX_AES_KEY_BITS           256
-#define  MAX_AES_KEY_BYTES          32
-#define MAX_AES_BLOCK_SIZE_BYTES				      \
-    MAX(AES_128_BLOCK_SIZE_BYTES,					\
-	MAX(AES_256_BLOCK_SIZE_BYTES, 0))
-#define  SM4_KEY_SIZES_BITS         {128}
-#define  SM4_KEY_SIZE_BITS_128      SM4_ALLOWED_KEY_SIZE_128
-#define  MAX_SM4_KEY_BITS           128
-#define  MAX_SM4_KEY_BYTES          16
-#define MAX_SM4_BLOCK_SIZE_BYTES			\
-    MAX(SM4_128_BLOCK_SIZE_BYTES, 0)
-#define  CAMELLIA_KEY_SIZES_BITS    {128}
-#define  CAMELLIA_KEY_SIZE_BITS_128    CAMELLIA_ALLOWED_KEY_SIZE_128
-#define  MAX_CAMELLIA_KEY_BITS      128
-#define  MAX_CAMELLIA_KEY_BYTES     16
-#define MAX_CAMELLIA_BLOCK_SIZE_BYTES				\
-    MAX(CAMELLIA_128_BLOCK_SIZE_BYTES, 0)
-
-// From Vendor-Specific: Table 5 - Defines for Implemented Curves
-
-#define  ECC_NIST_P256         YES
-#define  ECC_NIST_P384         YES
-#define  ECC_BN_P256           YES
-#define  ECC_CURVES							\
-    {TPM_ECC_BN_P256, TPM_ECC_NIST_P256, TPM_ECC_NIST_P384}
-#define  ECC_KEY_SIZES_BITS    {256, 384}
-#define  ECC_KEY_SIZE_BITS_256
-#define  ECC_KEY_SIZE_BITS_384
-#define  MAX_ECC_KEY_BITS      384
-#define  MAX_ECC_KEY_BYTES     48
 
 // From Vendor-Specific: Table 6 - Defines for Implemented Commands
 
@@ -313,94 +335,8 @@
 #define  CC_NTC2_LockPreConfig            CC_YES
 #define  CC_NTC2_GetConfig                CC_YES
 
-// From Vendor-Specific: Table 7 - Defines for Implementation Values
-
-#define FIELD_UPGRADE_IMPLEMENTED	NO	/* temporary define */
-#define BSIZE				UINT16	/* size used for internal storage of the size field of a TPM2B */
-#define BUFFER_ALIGNMENT		4	/* sets the size granularity for the buffers in a TPM2B structure */
-#define IMPLEMENTATION_PCR		24	/* the number of PCR in the TPM */
-#define PLATFORM_PCR			24	/* the number of PCR required by the relevant platform specification */
-#define DRTM_PCR			17	/* the DRTM PCR */
-#define HCRTM_PCR			0	/* PCR that will receive the H-CRTM value at
-						   TPM2_Startup.  This value should not be changed. */
-#define NUM_LOCALITIES			5	/* the number of localities supported by the TPM */
-#define MAX_HANDLE_NUM			3	/* the maximum number of handles in the handle area */
-#define MAX_ACTIVE_SESSIONS		64	/* the number of simultaneously active sessions that
-						   are supported by the TPM implementation */
-#define CONTEXT_SLOT                     UINT16	/* the type of an entry in the array of
-						   saved contexts */
-#define CONTEXT_COUNTER                  UINT64	/* the type of the saved session counter */
-
-/* TSS can permit maximum range */
-#define MAX_LOADED_SESSIONS		0x10000000	/* the number of sessions that the TPM may have in memory */
-
-#define MAX_SESSION_NUM 		3	/* this is the current maximum value */
-
-/* TSS can permit maximum range */
-#define MAX_LOADED_OBJECTS		0x10000000	/* the number of simultaneously loaded
-							   objects that are supported by the TPM */
-
-#define MIN_EVICT_OBJECTS		2	/* the minimum number of evict objects supported by the TPM */
-#define PCR_SELECT_MIN			((PLATFORM_PCR+7)/8)
-#define PCR_SELECT_MAX			((IMPLEMENTATION_PCR+7)/8)
-#if 0	/* original Part 4 settings */
-#define NUM_POLICY_PCR_GROUP 		1	/* number of PCR groups that have individual policies */
-#define NUM_AUTHVALUE_PCR_GROUP		1	/* number of PCR groups that have individual authorization values */
-#endif
-/* kgold PC Client does not have PCR policy or authorization */
-#define NUM_POLICY_PCR_GROUP 		0	/* number of PCR groups that have individual policies */
-#define NUM_AUTHVALUE_PCR_GROUP		0	/* number of PCR groups that have individual authorization values */
-#define MAX_CONTEXT_SIZE		2048	/* This may be larger than necessary */
-#define MAX_DIGEST_BUFFER		2048
-#define MAX_NV_INDEX_SIZE               2048		/* maximum data size allowed in an NV Index */
-#define MAX_NV_BUFFER_SIZE		2048
-#define MAX_CAP_BUFFER                  2048
-
-#define NV_MEMORY_SIZE                  16384	/* size of NV memory in octets */
-#define NUM_STATIC_PCR                  16
-#define MAX_ALG_LIST_SIZE               64	/* number of algorithms that can be in a list */
-#define TIMER_PRESCALE                  100000	/* nominal value for the pre-scale value of Clock */
-#define PRIMARY_SEED_SIZE               32	/* size of the Primary Seed in octets */
-#define CONTEXT_ENCRYPT_ALG		TPM_ALG_AES			/* context encryption algorithm */
-#define CONTEXT_ENCRYPT_KEY_BITS	MAX_SYM_KEY_BITS		/* context encryption key size in bits */
-#define CONTEXT_ENCRYPT_KEY_BYTES	((CONTEXT_ENCRYPT_KEY_BITS+7)/8)
-#define CONTEXT_INTEGRITY_HASH_ALG	TPM_ALG_SHA256			/* context integrity hash
-									   algorithm */
-#define CONTEXT_INTEGRITY_HASH_SIZE	SHA256_DIGEST_SIZE		/* number of byes in the
-									   context integrity
-									   digest */
-#define PROOF_SIZE			CONTEXT_INTEGRITY_HASH_SIZE	/* size of proof value in octets */
-#define NV_CLOCK_UPDATE_INTERVAL	12	/* the update interval expressed as a power of 2 seconds */
-#define NUM_POLICY_PCR			1	/* number of PCR that allow policy/auth */
-#define MAX_COMMAND_SIZE		4096	/* maximum size of a command */
-#define MAX_RESPONSE_SIZE		4096	/* maximum size of a response */
-#define ORDERLY_BITS			8	/* number between 1 and 32 inclusive */
-#define MAX_ORDERLY_COUNT               ((1<<ORDERLY_BITS)-1)	/* maximum count of orderly counter
-								   before NV is updated.  This must
-								   be of the form 2N - 1 where 1 = N
-								   = 32. */
-#define ALG_ID_FIRST			TPM_ALG_FIRST	/* used by GetCapability() processing to
-							   bound the algorithm search */
-#define ALG_ID_LAST			TPM_ALG_LAST	/* used by GetCapability() processing to
-							   bound the algorithm search */
-#define MAX_SYM_DATA			128		/* this is the maximum number of octets that
-							   may be in a sealed blob. */
-#define MAX_RNG_ENTROPY_SIZE		64
-#define RAM_INDEX_SPACE			512
-#define RSA_DEFAULT_PUBLIC_EXPONENT	0x00010001	/* 2^^16 + 1 */
-#define ENABLE_PCR_NO_INCREMENT		YES		/* indicates if the TPM_PT_PCR_NO_INCREMENT
-							   group is implemented */
-#define CRT_FORMAT_RSA			YES
-
-#define  VENDOR_COMMAND_COUNT             3
-
-#define  PRIVATE_VENDOR_SPECIFIC_BYTES			\
-    ((MAX_RSA_KEY_BYTES/2)*(3+CRT_FORMAT_RSA*2))
-#define  MAX_VENDOR_BUFFER_SIZE           1024
-
 // From TCG Algorithm Registry: Table 2 - Definition of TPM_ALG_ID Constants
 
-//typedef  UINT16             TPM_ALG_ID;
 #define  ALG_ERROR_VALUE             0x0000
 #define  TPM_ALG_ERROR               (TPM_ALG_ID)(ALG_ERROR_VALUE)
 #define  ALG_RSA_VALUE               0x0001
@@ -557,14 +493,9 @@
 #if defined ALG_ECB && ALG_ECB == YES
 #define  TPM_ALG_ECB                 (TPM_ALG_ID)(ALG_ECB_VALUE)
 #endif
-#define  TPM_ALG_FIRST               (TPM_ALG_ID)(0x0001)
-#define  ALG_FIRST_VALUE             0x0001
-#define  TPM_ALG_LAST                (TPM_ALG_ID)(0x0044)
-#define  ALG_LAST_VALUE              0x0044
 
 //     From TCG Algorithm Registry: Table 3 - Definition of TPM_ECC_CURVE Constants
 
-/* typedef  UINT16             TPM_ECC_CURVE; kgold - in Table 10 */
 #define  TPM_ECC_NONE         (TPM_ECC_CURVE)(0x0000)
 #define  TPM_ECC_NIST_P192    (TPM_ECC_CURVE)(0x0001)
 #define  TPM_ECC_NIST_P224    (TPM_ECC_CURVE)(0x0002)
@@ -611,21 +542,14 @@
     0x30,0x30,0x30,0x0C,0x06,0x08,0x2A,0x81,0x1C,0x81,0x45,0x01,0x83,0x11,0x05,0x00,0x04,0x20
 
 // From TCG Algorithm Registry: Table 17 - Defines for AES Symmetric Cipher Algorithm Constants
-#define  AES_ALLOWED_KEY_SIZE_128    YES
-#define  AES_ALLOWED_KEY_SIZE_192    YES
-#define  AES_ALLOWED_KEY_SIZE_256    YES
 #define  AES_128_BLOCK_SIZE_BYTES    16
 #define  AES_192_BLOCK_SIZE_BYTES    16
 #define  AES_256_BLOCK_SIZE_BYTES    16
 
 // From TCG Algorithm Registry: Table 18 - Defines for SM4 Symmetric Cipher Algorithm Constants
-#define  SM4_ALLOWED_KEY_SIZE_128    YES
 #define  SM4_128_BLOCK_SIZE_BYTES    16
 
 // From TCG Algorithm Registry: Table 19 - Defines for CAMELLIA Symmetric Cipher Algorithm Constants
-#define  CAMELLIA_ALLOWED_KEY_SIZE_128    YES
-#define  CAMELLIA_ALLOWED_KEY_SIZE_192    YES
-#define  CAMELLIA_ALLOWED_KEY_SIZE_256    YES
 #define  CAMELLIA_128_BLOCK_SIZE_BYTES    16
 #define  CAMELLIA_192_BLOCK_SIZE_BYTES    16
 #define  CAMELLIA_256_BLOCK_SIZE_BYTES    16
@@ -1357,7 +1281,7 @@ typedef  UINT32             TPM_CC;
 					  + (ADD_FILL || CC_EvictControl)               /* 0x00000120 */ \
 					  + (ADD_FILL || CC_HierarchyControl)           /* 0x00000121 */ \
 					  + (ADD_FILL || CC_NV_UndefineSpace)           /* 0x00000122 */ \
-					  + ADD_FILL                                             /* 0x00000123 */ \
+					  + ADD_FILL                                    /* 0x00000123 */ \
 					  + (ADD_FILL || CC_ChangeEPS)                  /* 0x00000124 */ \
 					  + (ADD_FILL || CC_ChangePPS)                  /* 0x00000125 */ \
 					  + (ADD_FILL || CC_Clear)                      /* 0x00000126 */ \
@@ -1412,19 +1336,19 @@ typedef  UINT32             TPM_CC;
 					  + (ADD_FILL || CC_Load)                       /* 0x00000157 */ \
 					  + (ADD_FILL || CC_Quote)                      /* 0x00000158 */ \
 					  + (ADD_FILL || CC_RSA_Decrypt)                /* 0x00000159 */ \
-					  + ADD_FILL                                             /* 0x0000015a */ \
+					  + ADD_FILL                                    /* 0x0000015a */ \
 					  + (ADD_FILL || CC_HMAC_Start)                 /* 0x0000015b */ \
 					  + (ADD_FILL || CC_SequenceUpdate)             /* 0x0000015c */ \
 					  + (ADD_FILL || CC_Sign)                       /* 0x0000015d */ \
 					  + (ADD_FILL || CC_Unseal)                     /* 0x0000015e */ \
-					  + ADD_FILL                                             /* 0x0000015f */ \
+					  + ADD_FILL                                    /* 0x0000015f */ \
 					  + (ADD_FILL || CC_PolicySigned)               /* 0x00000160 */ \
 					  + (ADD_FILL || CC_ContextLoad)                /* 0x00000161 */ \
 					  + (ADD_FILL || CC_ContextSave)                /* 0x00000162 */ \
 					  + (ADD_FILL || CC_ECDH_KeyGen)                /* 0x00000163 */ \
 					  + (ADD_FILL || CC_EncryptDecrypt)             /* 0x00000164 */ \
 					  + (ADD_FILL || CC_FlushContext)               /* 0x00000165 */ \
-					  + ADD_FILL                                             /* 0x00000166 */ \
+					  + ADD_FILL                                    /* 0x00000166 */ \
 					  + (ADD_FILL || CC_LoadExternal)               /* 0x00000167 */ \
 					  + (ADD_FILL || CC_MakeCredential)             /* 0x00000168 */ \
 					  + (ADD_FILL || CC_NV_ReadPublic)              /* 0x00000169 */ \
@@ -1439,7 +1363,7 @@ typedef  UINT32             TPM_CC;
 					  + (ADD_FILL || CC_PolicyTicket)               /* 0x00000172 */ \
 					  + (ADD_FILL || CC_ReadPublic)                 /* 0x00000173 */ \
 					  + (ADD_FILL || CC_RSA_Encrypt)                /* 0x00000174 */ \
-					  + ADD_FILL                                             /* 0x00000175 */ \
+					  + ADD_FILL                                    /* 0x00000175 */ \
 					  + (ADD_FILL || CC_StartAuthSession)           /* 0x00000176 */ \
 					  + (ADD_FILL || CC_VerifySignature)            /* 0x00000177 */ \
 					  + (ADD_FILL || CC_ECC_Parameters)             /* 0x00000178 */ \
@@ -1481,77 +1405,19 @@ typedef  UINT32             TPM_CC;
 
 #define COMMAND_COUNT							\
     (LIBRARY_COMMAND_ARRAY_SIZE + VENDOR_COMMAND_ARRAY_SIZE)
-
     
-#define MAX_HASH_BLOCK_SIZE  128	/* SHA-512 */
-#define MAX_DIGEST_SIZE      64		/* SHA-512 */
-
-/* For the TSS .so.1, this is the number of supported PCR banks, independent of the number of
-   supported hash algoriths */
-/* #define HASH_COUNT 3 */
-
-/* .so.2 to support a SW TPM with 4 banks (unlikely for a HW TPM) plus future expansion. */
-#define HASH_COUNT 16
-
-TPM2B_TYPE(MAX_HASH_BLOCK, MAX_HASH_BLOCK_SIZE);
-
-/* value independent of supported hash algorithms */
-#define LABEL_MAX_BUFFER   48
-#if LABEL_MAX_BUFFER < 32
-#error "The size allowed for the label is not large enough for interoperability."
-#endif
-
 // Following typedef is for some old code
-
-typedef TPM2B_MAX_HASH_BLOCK    TPM2B_HASH_BLOCK;
 
 #ifndef ALG_CAMELLIA
 #   define ALG_CAMELLIA         NO
-#endif
-
-#ifndef MAX_CAMELLIA_KEY_BITS
-#   define      MAX_CAMELLIA_KEY_BITS  0
-#   define      MAX_CAMELLIA_BLOCK_SIZE_BYTES 0
 #endif
 
 #ifndef ALG_SM4
 #   define ALG_SM4         NO
 #endif
 
-#ifndef MAX_SM4_KEY_BITS
-#   define      MAX_SM4_KEY_BITS  0
-#   define      MAX_SM4_BLOCK_SIZE_BYTES 0
-#endif
-
 #ifndef ALG_AES
 #   define ALG_AES         NO
 #endif
-
-#ifndef MAX_AES_KEY_BITS
-#   define      MAX_AES_KEY_BITS  0
-#   define      MAX_AES_BLOCK_SIZE_BYTES 0
-#endif
-
-#if 0
-#define MAX_SYM_KEY_BITS (						\
-			  MAX(MAX_CAMELLIA_KEY_BITS * ALG_CAMELLIA,	\
-			      MAX(MAX_SM4_KEY_BITS * ALG_SM4,		\
-				  MAX(MAX_AES_KEY_BITS * ALG_AES,	\
-				      0))))
-#endif
-/* hard code maximum independent of the algorithms actually supported */
-#define MAX_SYM_KEY_BITS 256
-#define MAX_SYM_KEY_BYTES ((MAX_SYM_KEY_BITS + 7) / 8)
-#define MAX_SYM_BLOCK_SIZE  (						\
-			     MAX(MAX_CAMELLIA_BLOCK_SIZE_BYTES * ALG_CAMELLIA, \
-				 MAX(MAX_SM4_BLOCK_SIZE_BYTES * ALG_SM4, \
-				     MAX(MAX_AES_BLOCK_SIZE_BYTES * ALG_AES, \
-					 0))))
-#if MAX_SYM_KEY_BITS == 0 || MAX_SYM_BLOCK_SIZE == 0
-#   error Bad size for MAX_SYM_KEY_BITS or MAX_SYM_BLOCK_SIZE
-#endif
-
-// Define the 2B structure for a seed
-TPM2B_TYPE(SEED, PRIMARY_SEED_SIZE);
 
 #endif  // _IMPLEMENTATION_H_

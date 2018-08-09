@@ -3,7 +3,7 @@
 /*			     	TPM 1.2 TakeOwnership				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: takeownership.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*	      $Id: takeownership.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -207,7 +207,8 @@ int main(int argc, char *argv[])
 
 	in.encOwnerAuthSize = 256;
 	rc = TSS_RSAPublicEncrypt((uint8_t *)&in.encOwnerAuth,	/* encrypted data */
-				  MAX_RSA_KEY_BYTES,   		/* size of encrypted data buffer */
+				  /* size of encrypted data buffer */
+				  readPubekOut.pubEndorsementKey.pubKey.keyLength,   
 				  (uint8_t *)&ownerAuth.digest, /* decrypted data */
 				  SHA1_DIGEST_SIZE,
 				  readPubekOut.pubEndorsementKey.pubKey.key,	/* pub modulus */
@@ -226,7 +227,8 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	in.encSrkAuthSize = 256;
 	rc = TSS_RSAPublicEncrypt((uint8_t *)&in.encSrkAuth,   	/* encrypted data */
-				  MAX_RSA_KEY_BYTES,   		/* size of encrypted data buffer */
+				  /* size of encrypted data buffer */
+				  readPubekOut.pubEndorsementKey.pubKey.keyLength,
 				  (uint8_t *)&srkAuth.digest, 	/* decrypted data */
 				  SHA1_DIGEST_SIZE,
 				  readPubekOut.pubEndorsementKey.pubKey.key,	/* pub modulus */

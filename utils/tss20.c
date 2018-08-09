@@ -3,7 +3,7 @@
 /*			    TSS Primary API for TPM 2.0				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss20.c 1285 2018-07-27 18:33:41Z kgoldman $			*/
+/*	      $Id: tss20.c 1294 2018-08-09 19:08:34Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -988,7 +988,8 @@ static TPM_RC TSS_PwapSession_Set(TPMS_AUTH_COMMAND *authCommand,
 	authCommand->sessionAttributes.val = 0;
     }
     if (password != NULL) {
-	rc = TSS_TPM2B_StringCopy(&authCommand->hmac.b, password, sizeof(TPMU_HA));
+	rc = TSS_TPM2B_StringCopy(&authCommand->hmac.b,
+				  password, sizeof(authCommand->hmac.t.buffer));
     }
     else {
 	authCommand->hmac.t.size = 0;
@@ -1557,7 +1558,7 @@ static TPM_RC TSS_Name_GetName(TSS_CONTEXT *tssContext,
       case TPM_HT_HMAC_SESSION:
       case TPM_HT_POLICY_SESSION:
       case TPM_HT_PERMANENT:
-	rc = TSS_TPM2B_CreateUint32(&name->b, handle, sizeof(TPMU_NAME));
+	rc = TSS_TPM2B_CreateUint32(&name->b, handle, sizeof(name->t.name));
 	break;
 	/* for NV, the Names was calculated at NV read public */
       case TPM_HT_NV_INDEX:
@@ -1666,7 +1667,7 @@ static TPM_RC TSS_Name_Load(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_Name_Load: File %s\n", nameFilename);
 	rc = TSS_File_Read2B(&name->b,
-			     sizeof(TPMU_NAME),
+			     sizeof(name->t.name),
 			     nameFilename);
     }
     return rc;
@@ -2168,7 +2169,7 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 
     /* marshal the TPMT_PUBLIC */
     if (rc == 0) {
-	uint32_t 	size = MAX_RESPONSE_SIZE;
+	uint32_t 	size = sizeof(buffer);
 	uint8_t 	*buffer1 = buffer;
 	rc = TSS_TPMT_PUBLIC_Marshalu(tpmtPublic, &written, &buffer1, &size);
     }
@@ -2402,7 +2403,7 @@ static TPM_RC TSS_NVPublic_GetName(TPM2B_NAME *name,
 
     /* marshal the TPMS_NV_PUBLIC */
     if (rc == 0) {
-	uint32_t 	size = MAX_RESPONSE_SIZE;
+	uint32_t 	size = sizeof(buffer);
 	uint8_t 	*buffer1 = buffer;
 	rc = TSS_TPMS_NV_PUBLIC_Marshalu(nvPublic, &written, &buffer1, &size);
     }
@@ -2556,7 +2557,7 @@ static TPM_RC TSS_HmacSession_SetHmacKey(TSS_CONTEXT *tssContext,
 		printf("TSS_HmacSession_SetHmacKey: Appending authValue to HMAC key\n");
 	    /* convert the password to an authvalue */
 	    if (rc == 0) {
-		rc = TSS_TPM2B_StringCopy(&authValue.b, password, sizeof(TPMU_HA));
+		rc = TSS_TPM2B_StringCopy(&authValue.b, password, sizeof(authValue.t.buffer));
 	    }
 	    /* append the authvalue to the session key to create the hmac key */
 	    if (rc == 0) {
@@ -2580,7 +2581,7 @@ static TPM_RC TSS_HmacSession_SetHmacKey(TSS_CONTEXT *tssContext,
 			   "No bind, appending authValue to sessionValue\n");
 		/* convert the password to an authvalue */
 		if (rc == 0) {
-		    rc = TSS_TPM2B_StringCopy(&authValue.b, password, sizeof(TPMU_HA));
+		    rc = TSS_TPM2B_StringCopy(&authValue.b, password, sizeof(authValue.t.buffer));
 		}
 		if (rc == 0) {
 		    rc = TSS_TPM2B_Append(&session->sessionValue.b, &authValue.b,
@@ -2806,7 +2807,8 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
 		if (rc == 0) {
 		    rc = TSS_TPM2B_Create(&authCommand[i]->hmac.b,
 					  (uint8_t *)&hmac.digest,
-					  session[i]->sizeInBytes, sizeof(TPMU_HA));
+					  session[i]->sizeInBytes,
+					  sizeof(authCommand[i]->hmac.t.buffer));
 		}
 #else
 		tssAuthContext = tssAuthContext;
@@ -2828,7 +2830,8 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
 	else {		/* isPasswordNeeded true */
 	    if (tssVverbose) printf("TSS_HmacSession_SetHMAC: use password\n");
 	    /* nonce has already been set */
-	    rc = TSS_TPM2B_StringCopy(&authCommand[i]->hmac.b, password[i], sizeof(TPMU_HA));
+	    rc = TSS_TPM2B_StringCopy(&authCommand[i]->hmac.b,
+				      password[i], sizeof(authCommand[i]->hmac.t.buffer));
 	}
     }
     return rc;
@@ -3861,7 +3864,7 @@ static TPM_RC TSS_RSA_Salt(TPM2B_DIGEST 		*salt,
 	    int b4 = publicArea->parameters.rsaDetail.keyBits != 2048;
 	    int b5 = (publicArea->parameters.rsaDetail.exponent != 0) &&
 		     /* some HW TPMs return 010001 for the RSA EK with the default IWG template */
-		     (publicArea->parameters.rsaDetail.exponent != 0x010001);
+		     (publicArea->parameters.rsaDetail.exponent != RSA_DEFAULT_PUBLIC_EXPONENT);
 	    /* TSS support checks */
 	    if (b1 || b2 || b3 || b4 || b5) {
 		if (tssVerbose)
@@ -3902,7 +3905,7 @@ static TPM_RC TSS_RSA_Salt(TPM2B_DIGEST 		*salt,
 	unsigned char earr[3] = {0x01, 0x00, 0x01};
 	/* encrypt the salt with the tpmKey public key */
 	rc = TSS_RSAPublicEncrypt((uint8_t *)&encryptedSalt->t.secret,   /* encrypted data */
-				  MAX_RSA_KEY_BYTES,   	/* size of encrypted data buffer */
+				  publicArea->unique.rsa.t.size,  /* size of encrypted data buffer */
 				  (uint8_t *)&salt->t.buffer, /* decrypted data */
 				  salt->t.size,
 				  publicArea->unique.rsa.t.buffer,  /* public modulus */
@@ -4036,7 +4039,7 @@ static TPM_RC TSS_PO_StartAuthSession(TSS_CONTEXT *tssContext,
 	}
 	else {
 	    rc = TSS_TPM2B_StringCopy(&session->bindAuthValue.b,
-				      extra->bindPassword, sizeof(TPMU_HA));
+				      extra->bindPassword, sizeof(session->bindAuthValue.t.buffer));
 	}
     }
     if (rc == 0) {

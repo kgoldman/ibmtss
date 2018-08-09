@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 1227 2018-05-23 17:34:44Z kgoldman $		#
+#	      $Id: makefile.mak 1294 2018-08-09 19:08:34Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2018					#
 # 										#
@@ -149,8 +149,6 @@ tssresponsecode.o: $(TSS_HEADERS) tssresponsecode.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssresponsecode.c
 tssccattributes.o: $(TSS_HEADERS) tssccattributes.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssccattributes.c
-fail.o: 	$(TSS_HEADERS) fail.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) fail.c
 tssprint.o: 	$(TSS_HEADERS) tssprint.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssprint.c
 Unmarshal.o: 	$(TSS_HEADERS) Unmarshal.c

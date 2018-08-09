@@ -3,7 +3,7 @@
 /*			   Unmarshal Functions  				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Unmarshal_fp.h 1289 2018-07-30 16:31:47Z kgoldman $		*/
+/*            $Id: Unmarshal_fp.h 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -442,8 +442,6 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TPM2B_TEMPLATE_Unmarshalu(TPM2B_TEMPLATE *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
-    TSS_TPM2B_PRIVATE_VENDOR_SPECIFIC_Unmarshalu(TPM2B_PRIVATE_VENDOR_SPECIFIC *target, BYTE **buffer, uint32_t *size);
-    LIB_EXPORT TPM_RC
     TSS_TPMU_SENSITIVE_COMPOSITE_Unmarshalu(TPMU_SENSITIVE_COMPOSITE *target, BYTE **buffer, uint32_t *size, UINT32 selector);
     LIB_EXPORT TPM_RC
     TSS_TPMT_SENSITIVE_Unmarshalu(TPMT_SENSITIVE *target, BYTE **buffer, uint32_t *size);
@@ -659,7 +657,6 @@ extern "C" {
     TPM_RC TPMT_PUBLIC_Unmarshal(TPMT_PUBLIC *target, BYTE **buffer, INT32 *size, BOOL allowNull);
     TPM_RC TPM2B_PUBLIC_Unmarshal(TPM2B_PUBLIC *target, BYTE **buffer, INT32 *size, BOOL allowNull);
     TPM_RC TPM2B_TEMPLATE_Unmarshal(TPM2B_TEMPLATE *target, BYTE **buffer, INT32 *size);
-    TPM_RC TPM2B_PRIVATE_VENDOR_SPECIFIC_Unmarshal(TPM2B_PRIVATE_VENDOR_SPECIFIC *target, BYTE **buffer, INT32 *size);
     TPM_RC TPMU_SENSITIVE_COMPOSITE_Unmarshal(TPMU_SENSITIVE_COMPOSITE *target, BYTE **buffer, INT32 *size, UINT32 selector);
     TPM_RC TPMT_SENSITIVE_Unmarshal(TPMT_SENSITIVE *target, BYTE **buffer, INT32 *size);
     TPM_RC TPM2B_SENSITIVE_Unmarshal(TPM2B_SENSITIVE *target, BYTE **buffer, INT32 *size);

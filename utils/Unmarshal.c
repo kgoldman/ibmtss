@@ -1528,7 +1528,7 @@ TSS_TPM2B_DIGEST_Unmarshalu(TPM2B_DIGEST *target, BYTE **buffer, uint32_t *size)
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(TPMU_HA), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -1541,7 +1541,7 @@ TSS_TPM2B_DATA_Unmarshalu(TPM2B_DATA *target, BYTE **buffer, uint32_t *size)
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(TPMT_HA), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -1593,7 +1593,7 @@ TSS_TPM2B_EVENT_Unmarshalu(TPM2B_EVENT *target, BYTE **buffer, uint32_t *size)
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(EVENT_2B) - sizeof(uint16_t), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -1606,7 +1606,7 @@ TSS_TPM2B_MAX_BUFFER_Unmarshalu(TPM2B_MAX_BUFFER *target, BYTE **buffer, uint32_
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_DIGEST_BUFFER, buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -1619,7 +1619,7 @@ TSS_TPM2B_MAX_NV_BUFFER_Unmarshalu(TPM2B_MAX_NV_BUFFER *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_NV_BUFFER_SIZE, buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -1645,7 +1645,7 @@ TSS_TPM2B_IV_Unmarshalu(TPM2B_IV *target, BYTE **buffer, uint32_t *size)
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_SYM_BLOCK_SIZE, buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -1658,7 +1658,7 @@ TSS_TPM2B_NAME_Unmarshalu(TPM2B_NAME *target, BYTE **buffer, uint32_t *size)
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(TPMU_NAME), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.name), buffer, size);
     }
     return rc;
 }
@@ -1677,13 +1677,12 @@ TSS_TPMS_PCR_SELECTION_Unmarshalu(TPMS_PCR_SELECTION *target, BYTE **buffer, uin
 	rc = TSS_UINT8_Unmarshalu(&target->sizeofSelect, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	if ((target->sizeofSelect < PCR_SELECT_MIN) ||
-	    (target->sizeofSelect > PCR_SELECT_MAX)) {
+	if (target->sizeofSelect > PCR_SELECT_MAX) {
 	    rc = TPM_RC_VALUE;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc =TSS_Array_Unmarshalu(target->pcrSelect, target->sizeofSelect, buffer, size);
+	rc = TSS_Array_Unmarshalu(target->pcrSelect, target->sizeofSelect, buffer, size);
     }
     return rc;
 }
@@ -2405,7 +2404,7 @@ TSS_TPM2B_ATTEST_Unmarshalu(TPM2B_ATTEST *target, BYTE **buffer, uint32_t *size)
     TPM_RC rc = TPM_RC_SUCCESS;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(TPMS_ATTEST), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.attestationData), buffer, size);
     }
     return rc;
 }
@@ -2609,7 +2608,7 @@ TSS_TPM2B_SYM_KEY_Unmarshalu(TPM2B_SYM_KEY *target, BYTE **buffer, uint32_t *siz
     TPM_RC rc = TPM_RC_SUCCESS;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_SYM_KEY_BYTES, buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -2635,7 +2634,7 @@ TSS_TPM2B_SENSITIVE_DATA_Unmarshalu(TPM2B_SENSITIVE_DATA *target, BYTE **buffer,
     TPM_RC rc = TPM_RC_SUCCESS;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_SYM_DATA, buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -3367,7 +3366,7 @@ TSS_TPM2B_PUBLIC_KEY_RSA_Unmarshalu(TPM2B_PUBLIC_KEY_RSA *target, BYTE **buffer,
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_RSA_KEY_BYTES, buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -3402,7 +3401,7 @@ TSS_TPM2B_PRIVATE_KEY_RSA_Unmarshalu(TPM2B_PRIVATE_KEY_RSA *target, BYTE **buffe
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_RSA_KEY_BYTES/2, buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -3415,7 +3414,7 @@ TSS_TPM2B_ECC_PARAMETER_Unmarshalu(TPM2B_ECC_PARAMETER *target, BYTE **buffer, u
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-     	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_ECC_KEY_BYTES, buffer, size);
+     	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -3521,15 +3520,9 @@ TSS_TPMI_ECC_CURVE_Unmarshalu(TPMI_ECC_CURVE *target, BYTE **buffer, uint32_t *s
     }
     if (rc == TPM_RC_SUCCESS) {
 	switch (*target) {
-#ifdef TPM_ECC_BN_P256
 	  case TPM_ECC_BN_P256:
-#endif
-#ifdef TPM_ECC_NIST_P256
 	  case TPM_ECC_NIST_P256:
-#endif
-#ifdef TPM_ECC_NIST_P384
 	  case TPM_ECC_NIST_P384:
-#endif
 	    break;
 	  default:
 	    rc = TPM_RC_CURVE;
@@ -3779,7 +3772,7 @@ TSS_TPM2B_ENCRYPTED_SECRET_Unmarshalu(TPM2B_ENCRYPTED_SECRET *target, BYTE **buf
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(TPMU_ENCRYPTED_SECRET), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.secret), buffer, size);
     }
     return rc;
 }
@@ -4041,25 +4034,10 @@ TSS_TPM2B_TEMPLATE_Unmarshalu(TPM2B_TEMPLATE *target, BYTE **buffer, uint32_t *s
     TPM_RC rc = TPM_RC_SUCCESS;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(TPMT_PUBLIC), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
-
-/* Table 186 - Definition of TPM2B_PRIVATE_VENDOR_SPECIFIC Structure<> */
-
-#if 0
-TPM_RC
-TSS_TPM2B_PRIVATE_VENDOR_SPECIFIC_Unmarshalu(TPM2B_PRIVATE_VENDOR_SPECIFIC *target, BYTE **buffer, uint32_t *size)
-{
-    TPM_RC rc = TPM_RC_SUCCESS;
-
-    if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, PRIVATE_VENDOR_SPECIFIC_BYTES, buffer, size);
-    }
-    return rc;
-}
-#endif
     
 /* Table 187 - Definition of TPMU_SENSITIVE_COMPOSITE Union <IN/OUT, S> */
 
@@ -4152,7 +4130,7 @@ TSS_TPM2B_PRIVATE_Unmarshalu(TPM2B_PRIVATE *target, BYTE **buffer, uint32_t *siz
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(_PRIVATE), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -4165,7 +4143,7 @@ TSS_TPM2B_ID_OBJECT_Unmarshalu(TPM2B_ID_OBJECT *target, BYTE **buffer, uint32_t 
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(_ID_OBJECT), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.credential), buffer, size);
     }
     return rc;
 }
@@ -4210,11 +4188,6 @@ TSS_TPMS_NV_PUBLIC_Unmarshalu(TPMS_NV_PUBLIC *target, BYTE **buffer, uint32_t *s
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(&target->dataSize, buffer, size);
     }
-    if (rc == TPM_RC_SUCCESS) {
-	if (target->dataSize > MAX_NV_INDEX_SIZE) {
-	    rc = TPM_RC_SIZE;
-	}
-    }
     return rc;
 }
 
@@ -4256,7 +4229,7 @@ TSS_TPM2B_CONTEXT_SENSITIVE_Unmarshalu(TPM2B_CONTEXT_SENSITIVE *target, BYTE **b
     TPM_RC rc = TPM_RC_SUCCESS;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, MAX_CONTEXT_SIZE, buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -4285,7 +4258,7 @@ TSS_TPM2B_CONTEXT_DATA_Unmarshalu(TPM2B_CONTEXT_DATA *target, BYTE **buffer, uin
     TPM_RC rc = TPM_RC_SUCCESS;
     
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(TPMS_CONTEXT_DATA), buffer, size);
+	rc = TSS_TPM2B_Unmarshalu(&target->b, sizeof(target->t.buffer), buffer, size);
     }
     return rc;
 }
@@ -5269,13 +5242,6 @@ TPM_RC TPM2B_TEMPLATE_Unmarshal(TPM2B_TEMPLATE *target, BYTE **buffer, INT32 *si
 {
     return TSS_TPM2B_TEMPLATE_Unmarshalu(target, buffer, (uint32_t *)size);
 }
-
-#if 0
-TPM_RC TPM2B_PRIVATE_VENDOR_SPECIFIC_Unmarshal(TPM2B_PRIVATE_VENDOR_SPECIFIC *target, BYTE **buffer, INT32 *size)
-{
-    return TSS_TPM2B_PRIVATE_VENDOR_SPECIFIC_Unmarshalu(target, buffer, (uint32_t *)size);
-}
-#endif
 
 TPM_RC TPMU_SENSITIVE_COMPOSITE_Unmarshal(TPMU_SENSITIVE_COMPOSITE *target, BYTE **buffer, INT32 *size, UINT32 selector)
 {

@@ -3,7 +3,7 @@
 /*			    SetPrimaryPolicy 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: setprimarypolicy.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
+/*	      $Id: setprimarypolicy.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
     /* authorization policy */
     if (policyFilename != NULL) {
 	rc = TSS_File_Read2B(&in.authPolicy.b,
-			     sizeof(TPMU_HA),
+			     sizeof(in.authPolicy.t.buffer),
 			     policyFilename);
     }
     else {

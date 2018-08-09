@@ -3,7 +3,7 @@
 /*		Common TPM 1.2 and TPM 2.0 TSS Authorization 			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*            $Id: tssauth.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -84,8 +84,8 @@ TPM_RC TSS_AuthCreate(TSS_AUTH_CONTEXT **tssAuthContext)
 
 void TSS_InitAuthContext(TSS_AUTH_CONTEXT *tssAuthContext)
 {
-    memset(tssAuthContext->commandBuffer, 0, MAX_COMMAND_SIZE);
-    memset(tssAuthContext->responseBuffer, 0, MAX_RESPONSE_SIZE);
+    memset(tssAuthContext->commandBuffer, 0, sizeof(tssAuthContext->commandBuffer));
+    memset(tssAuthContext->responseBuffer, 0, sizeof(tssAuthContext->responseBuffer));
     tssAuthContext->commandText = NULL;
     tssAuthContext->commandCode = 0;
     tssAuthContext->responseCode = 0;

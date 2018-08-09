@@ -3,7 +3,7 @@
 /*			    TPM 1.2 NV_WriteValueAuth				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvwritevalueauth.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*	      $Id: nvwritevalueauth.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -180,9 +180,9 @@ int main(int argc, char * argv[])
 				     datafilename);
     }
     if ((rc == 0) && (datafilename != NULL)) {
-	if (writeLength > MAX_NV_BUFFER_SIZE) {
+	if (writeLength > sizeof(in.data)) {
 	    printf("nvwritevalueauth: size %u greater than %u\n",
-		   (unsigned int)writeLength, MAX_NV_BUFFER_SIZE);	
+		   (unsigned int)writeLength, (unsigned int)sizeof(in.data));	
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
@@ -191,9 +191,9 @@ int main(int argc, char * argv[])
 	}
     }
     if ((rc == 0) && (commandData != NULL)) {
-	if (strlen(commandData) >  MAX_NV_BUFFER_SIZE) {
+	if (strlen(commandData) >  sizeof(in.data)) {
 	    printf("nvwritevalueauth: size %u greater than %u\n",
-		   (unsigned int)strlen(commandData), MAX_NV_BUFFER_SIZE);	
+		   (unsigned int)strlen(commandData), (unsigned int)sizeof(in.data));	
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {

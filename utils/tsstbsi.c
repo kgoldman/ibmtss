@@ -3,9 +3,9 @@
 /*	Windows 7,8,10 Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstbsi.c 1285 2018-07-27 18:33:41Z kgoldman $ 		*/
+/*	      $Id: tsstbsi.c 1294 2018-08-09 19:08:34Z kgoldman $ 		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -100,7 +100,9 @@ static void TSS_Tbsi_GetTBSError(const char *prefix,
 extern int tssVverbose;
 extern int tssVerbose;
 
-/* TSS_Tbsi_Transmit() transmits the command and receives the response.
+/* TSS_Tbsi_Transmit() transmits the command and receives the response. 'responseBuffer' must be at
+   least MAX_RESPONSE_SIZE bytes.
+
 
    Can return device transmit and receive packet errors, but normally returns the TPM response code.
 */

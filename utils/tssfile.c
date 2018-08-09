@@ -3,9 +3,9 @@
 /*			    TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssfile.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*		$Id: tssfile.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017					*/
+/* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/

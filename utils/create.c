@@ -3,7 +3,7 @@
 /*			    Create 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: create.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: create.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
@@ -492,14 +492,15 @@ int main(int argc, char *argv[])
 	}
 	else {
 	    rc = TSS_TPM2B_StringCopy(&in.inSensitive.sensitive.userAuth.b,
-				      keyPassword, sizeof(TPMU_HA));
+				      keyPassword,
+				      sizeof(in.inSensitive.sensitive.userAuth.t.buffer));
 	}
     }
     if (rc == 0) {
 	/* Table 132 - Definition of TPM2B_SENSITIVE_DATA Structure data */
 	if (dataFilename != NULL) {
 	    rc = TSS_File_Read2B(&in.inSensitive.sensitive.data.b,
-				 MAX_SYM_DATA,
+				 sizeof(in.inSensitive.sensitive.data.t.buffer),
 				 dataFilename);
 	}
 	else {

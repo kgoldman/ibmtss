@@ -3,7 +3,7 @@
 /*			    TPM 1.2 NV_WriteValueAuth				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: NV_WriteValueAuth_fp.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: NV_WriteValueAuth_fp.h 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/

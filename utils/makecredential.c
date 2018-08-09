@@ -3,7 +3,7 @@
 /*			    MakeCredential					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: makecredential.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
+/*	      $Id: makecredential.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -224,13 +224,13 @@ int main(int argc, char *argv[])
     /* read the credential information */
     if (rc == 0) {
 	rc = TSS_File_Read2B(&in.credential.b,
-			     sizeof(TPMU_HA),
+			     sizeof(in.credential.t.buffer),
 			     inputCredentialFilename);
     }
     /* read the object Name */
     if (rc == 0) {
 	rc = TSS_File_Read2B(&in.objectName.b,
-			     sizeof(TPMU_NAME),
+			     sizeof(in.objectName.t.name),
 			     nameFilename);
     }
     /* Start a TSS context */

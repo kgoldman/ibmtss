@@ -3,7 +3,7 @@
 /*			    Sign Application					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: signapp.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: signapp.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -613,7 +613,8 @@ static TPM_RC createKey(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	createIn.parentHandle = parentHandle;
 	rc = TSS_TPM2B_StringCopy(&createIn.inSensitive.sensitive.userAuth.b,
-				  keyPassword, sizeof(TPMU_HA));
+				  keyPassword,
+				  sizeof(createIn.inSensitive.sensitive.userAuth.t.buffer));
     }
     /* policy command code sign + policy authvalue or policy password */
     if (rc == 0) {

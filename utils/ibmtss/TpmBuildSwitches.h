@@ -1,9 +1,9 @@
 /********************************************************************************/
 /*										*/
-/*			     				*/
+/*			TSS Compiler Build Switches    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TpmBuildSwitches.h 1257 2018-06-27 20:52:08Z kgoldman $	*/
+/*            $Id: TpmBuildSwitches.h 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,99 +55,33 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2015				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2018				*/
 /*										*/
 /********************************************************************************/
 
-/* rev 122 */
-
 // 5.12	TpmBuildSwitches.h
 
-// This file contains the build switches. This contains switches for multiple versions of the crypto-library so some may not apply to your environment.
+// This file contains the build switches.
+
 #ifndef _TPM_BUILD_SWITCHES_H
 #define _TPM_BUILD_SWITCHES_H
-#define SIMULATION
-#define FIPS_COMPLIANT
-// Define TABLE_DRIVEN_DISPATCH to use tables rather than case statements for command dispatch and handle unmarshaling
-#define TABLE_DRIVEN_DISPATCH
-#ifndef RSA_KEY_SIEVE
-// Remove comment on following line to enable the generation of RSA primes using a sieve.
-// #define RSA_KEY_SIEVE
-#endif
-// Define the alignment macro appropriate for the build environment For MS C compiler
-#define ALIGN_TO(boundary)  __declspec(align(boundary))
-// For ISO 9899:2011
-// #define ALIGN_TO(boundary)    _Alignas(boundary)
-// This switch enables the RNG state save and restore
-#undef  _DRBG_STATE_SAVE
-#define _DRBG_STATE_SAVE        // Comment this out if no state save is wanted
-// Switch added to support packed lists that leave out space assocaited with unimplemented commands. Comment this out to use linear lists.
-// NOTE:	if vendor specific commands are presnet, the associated list is always in compressed form.
-#define COMPRESSED_LISTS
-// Set the alignment size for the crypto. It would be nice to set this according to macros automatically defined by the build environment, but that doesn't seem possible because there isn't any simple set for that. So, this is just a plugged value. Your compiler should complain if this alignment isn't possible.
-// NOTE:	this value can be set at the command line or just plugged in here.
-#ifdef CRYPTO_ALIGN_16
-#   define CRYPTO_ALIGNMENT     16
-#elif defined CRYPTO_ALIGN_8
-#   define CRYPTO_ALIGNMENT     8
-#elif defined CRYPTO_ALIGN_2
-#   define  CRYPTO_ALIGNMENT    2
-#elif defined CRTYPO_ALIGN_1
-#   define  CRYPTO_ALIGNMENT    1
-#else
-#   define CRYPTO_ALIGNMENT     4    // For 32-bit builds
-#endif
-#define CRYPTO_ALIGNED	// kgold
-// #define CRYPTO_ALIGNED  ALIGN_TO(CRYPTO_ALIGNMENT)
-#ifdef  _MSC_VER
 
+// Switch added to support packed lists that leave out space associated with unimplemented
+// commands. Comment this out to use linear lists.  NOTE: if vendor specific commands are present,
+// the associated list is always in compressed form.
+#define COMPRESSED_LISTS
+
+#ifdef  _MSC_VER
 // This macro is used to handle LIB_EXPORT of function and variable names in lieu of a .def
 // file. Visual Studio requires that functions be explicity exported and imported.
-
 #   define LIB_EXPORT __declspec(dllexport) // VS compatible version
-#   define LIB_IMPORT __declspec(dllimport)
-
-// This is defined to indicate a function that does not return. Microsoft compilers do not support
-// the _Noretrun() function parameter.
-
-#   define NORETURN  __declspec(noreturn)
-#   define INLINE  __inline
-#ifdef SELF_TEST
-#pragma comment(lib, "algorithmtests.lib")
 #endif
-#endif // _MSC_VER
 
 // The following definitions are used if they have not already been defined. The defaults for these
 // settings are compatible with ISO/IEC 9899:2011 (E)
 
 #ifndef LIB_EXPORT
 #   define LIB_EXPORT
-#   define LIB_IMPORT
 #endif
-#ifndef NORETURN
-/* #   define NORETURN _Noreturn */
-/* for gcc - kgold */
-#   define NORETURN
-#endif
-#ifndef INLINE
-#   define  INLINE  inline
-#endif
-#ifndef NOT_REFERENCED
-#   define NOT_REFERENCED(x)   ((void) (x))
-#endif
-// This definition forces the no-debug setting for the compile unless DEBUG is explicity set.
-#if !defined DEBUG && !defined NDEBUG
-#   define NDEBUG
-#endif
-// The switches in this group can only be enabled when running a simulation
-#ifdef SIMULATION
-#   define RSA_KEY_CACHE
-#   ifdef DEBUG
-// This provides fixed seeding of the RNG when doing debug on a simulator. This should allow consistent results on test runs as long as the input parameters to the functions remains the same.
-#       define TPM_RNG_FOR_DEBUG
-#   endif
-#else
-#   undef RSA_KEY_CACHE
-#   undef TPM_RNG_FOR_DEBUG
-#endif  // SIMULATION
+
 #endif // _TPM_BUILD_SWITCHES_H

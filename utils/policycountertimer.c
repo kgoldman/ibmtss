@@ -3,7 +3,7 @@
 /*			    PolicyCounterTimer	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policycountertimer.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
+/*	      $Id: policycountertimer.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -224,12 +224,12 @@ int main(int argc, char *argv[])
     }
     if (operandBData != NULL) {
 	rc = TSS_TPM2B_StringCopy(&in.operandB.b,
-				  operandBData, sizeof(TPMU_HA));
+				  operandBData, sizeof(in.operandB.t.buffer));
 	
     }
     if (operandBFilename != NULL) {
 	rc = TSS_File_Read2B(&in.operandB.b,
-			     sizeof(TPMU_HA),
+			     sizeof(in.operandB.t.buffer),
 			     operandBFilename);
     }
     /* Start a TSS context */

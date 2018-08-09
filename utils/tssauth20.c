@@ -3,7 +3,7 @@
 /*			     TPM 2.0 TSS Authorization				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth20.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
+/*            $Id: tssauth20.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -712,7 +712,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     if (rc == 0) {
 	/* make a copy of the command buffer and size since the marshal functions move them */
 	buffer = tssAuthContext->commandBuffer;
-	size = MAX_COMMAND_SIZE;
+	size = sizeof(tssAuthContext->commandBuffer);
 	/* marshal header, preliminary tag and command size */
 	rc = TSS_TPMI_ST_COMMAND_TAG_Marshalu(&tag, &tssAuthContext->commandSize, &buffer, &size);
     }
@@ -758,7 +758,8 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     if ((rc == 0) && (tssAuthContext->unmarshalInFunction != NULL)) {
 	COMMAND_PARAMETERS target;
 	TPM_HANDLE 	handles[MAX_HANDLE_NUM];
-	size = MAX_COMMAND_SIZE;
+	size = sizeof(tssAuthContext->commandBuffer) -
+	       (tssAuthContext->commandHandleCount * sizeof(TPM_HANDLE));
 	rc = tssAuthContext->unmarshalInFunction(&target, &bufferu, &size, handles);
 	if ((rc != 0) && tssVerbose) {
 	    printf("TSS_Marshal: Invalid command parameter\n");
@@ -892,7 +893,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 		cpBufferSize +
 		sizeof (uint32_t) +		/* authorizationSize */
 		authorizationSize		/* authorization area */
-		> tssAuthContext->commandBuffer + MAX_COMMAND_SIZE) {
+		> tssAuthContext->commandBuffer + sizeof(tssAuthContext->commandBuffer)) {
 	
 		if (tssVerbose)
 		    printf("TSS_SetCmdAuths: Command authorizations overflow command buffer\n");

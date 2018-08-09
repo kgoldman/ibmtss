@@ -3,7 +3,7 @@
 /*			     Structure Print and Scan Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: tssprint.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -1788,21 +1788,15 @@ void TSS_TPMI_ECC_CURVE_Print(const char *string, TPMI_ECC_CURVE source, unsigne
 {
     printf("%*s", indent, "");
     switch (source) {
-#ifdef TPM_ECC_BN_P256
       case TPM_ECC_BN_P256:
 	printf("%s TPM_ECC_BN_P256\n", string);
 	break;
-#endif
-#ifdef TPM_ECC_NIST_P256
       case TPM_ECC_NIST_P256:
 	printf("%s TPM_ECC_NIST_P256\n", string);
 	break;
-#endif
-#ifdef TPM_ECC_NIST_P384
       case TPM_ECC_NIST_P384:
 	printf("%s TPM_ECC_NIST_P384\n", string);
 	break;
-#endif
       default:
 	printf("%s TPMI_ECC_CURVE %04hx unknown\n", string, source);
     }

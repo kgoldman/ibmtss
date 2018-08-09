@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 1274 2018-07-20 20:37:08Z kgoldman $		#
+#	      $Id: makefile 1294 2018-08-09 19:08:34Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014, 2018					#
 # 										#
@@ -185,8 +185,6 @@ tssresponsecode.o: $(TSS_HEADERS) tssresponsecode.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssresponsecode.c
 tssccattributes.o: $(TSS_HEADERS) tssccattributes.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssccattributes.c
-fail.o: 	$(TSS_HEADERS) fail.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) fail.c
 tssprint.o: 	$(TSS_HEADERS) tssprint.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssprint.c
 tssprintcmd.o: 	$(TSS_HEADERS) tssprintcmd.c

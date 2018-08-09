@@ -3,7 +3,7 @@
 /*			    NV Write Application				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: writeapp.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: writeapp.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -309,7 +309,7 @@ static TPM_RC defineSpace(TSS_CONTEXT *tssContext,
 
     if (rc == 0) {
 	rc = TSS_TPM2B_StringCopy(&in.auth.b,
-				  NVPWD, sizeof(TPMU_HA));
+				  NVPWD, sizeof(in.auth.t.buffer));
     }
     if (rc == 0) {
 	in.authHandle = TPM_RH_OWNER;

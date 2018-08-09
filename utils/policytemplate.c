@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	rc = TSS_File_Read2B(&in.templateHash.b,
-			     sizeof(TPMU_HA) ,
+			     sizeof(in.templateHash.t.buffer),
 			     templateFilename);
     }
     /* Start a TSS context */

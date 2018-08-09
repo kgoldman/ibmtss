@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
@@ -500,7 +500,7 @@ TPM_RC getPolicy(TPMT_PUBLIC *publicArea,
     if (rc == 0) {
 	if (policyFilename != NULL) {
 	    rc = TSS_File_Read2B(&publicArea->authPolicy.b,
-				 sizeof(TPMU_HA),
+				 sizeof(publicArea->authPolicy.t.buffer),
 				 policyFilename);
 	}
 	else {

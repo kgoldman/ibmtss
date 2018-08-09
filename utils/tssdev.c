@@ -3,9 +3,9 @@
 /*		Linux Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.c 1257 2018-06-27 20:52:08Z kgoldman $ 		*/
+/*	      $Id: tssdev.c 1294 2018-08-09 19:08:34Z kgoldman $ 		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -149,7 +149,8 @@ static uint32_t TSS_Dev_SendCommand(int dev_fd,
     return rc;
 }
 
-/* TSS_Dev_ReceiveCommand() reads a response buffer from the device.
+/* TSS_Dev_ReceiveCommand() reads a response buffer from the device.  'buffer' must be at least
+   MAX_RESPONSE_SIZE bytes.
 
    Returns TPM packet error code.
 

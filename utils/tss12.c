@@ -3,7 +3,7 @@
 /*			    TSS Primary API for TPM 1.2				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss12.c 1285 2018-07-27 18:33:41Z kgoldman $			*/
+/*	      $Id: tss12.c 1294 2018-08-09 19:08:34Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -788,7 +788,7 @@ static TPM_RC TSS_HmacSession12_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* aut
 	if (rc == 0) {
 	    rc = TSS_TPM2B_Create(&hmacKey.b,
 				  (uint8_t *)&session[i]->hmacKey.digest, SHA1_DIGEST_SIZE,
-				  sizeof(TPMU_HA));
+				  sizeof(hmacKey.t.buffer));
 	}
 	if (rc == 0) {
 	    hmac.hashAlg = TPM_ALG_SHA1;
@@ -882,7 +882,7 @@ static TPM_RC TSS_HmacSession12_Verify(TSS_AUTH_CONTEXT *tssAuthContext,	/* auth
 	if (rc == 0) {
 	    rc = TSS_TPM2B_Create(&hmacKey.b,
 				  (uint8_t *)&session[i]->hmacKey.digest, SHA1_DIGEST_SIZE,
-				  sizeof(TPMU_HA));
+				  sizeof(hmacKey.t.buffer));
 	}
 	/* verify the HMAC */
 	if (rc == 0) {
@@ -1388,7 +1388,7 @@ static TPM_RC TSS_PO_OSAP(TSS_CONTEXT *tssContext,
     /* convert the TPMT_HA hash to a TPM2B_KEY hmac key */
     if (rc == 0) {
 	rc = TSS_TPM2B_Create(&hmacKey.b, (uint8_t *)&usageAuth.digest, SHA1_DIGEST_SIZE,
-			      sizeof(TPMU_HA));
+			      sizeof(hmacKey.t.buffer));
     }
     /* calculate the sharedSecret */
     if (rc == 0) {

@@ -3,9 +3,9 @@
 /*			    Certify						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: certify.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: certify.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -307,7 +307,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (qualifyingDataFilename != NULL) {
 	    rc = TSS_File_Read2B(&in.qualifyingData.b,
-				 sizeof(TPMT_HA),
+				 sizeof(in.qualifyingData.t.buffer),
 				 qualifyingDataFilename);
 	}
 	else {

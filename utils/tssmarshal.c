@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.c 1289 2018-07-30 16:31:47Z kgoldman $		*/
+/*	      $Id: tssmarshal.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -3578,7 +3578,7 @@ TSS_TPMS_PCR_SELECTION_Marshalu(const TPMS_PCR_SELECTION *source, uint16_t *writ
 	rc = TSS_UINT8_Marshalu(&source->sizeofSelect, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshalu(&source->pcrSelect[0], PCR_SELECT_MAX, written, buffer, size);
+	rc = TSS_Array_Marshalu(&source->pcrSelect[0], source->sizeofSelect, written, buffer, size);
     }
     return rc;
 }
@@ -3698,7 +3698,7 @@ TSS_TPMS_TAGGED_PCR_SELECT_Marshalu(const TPMS_TAGGED_PCR_SELECT *source, uint16
 	rc = TSS_UINT8_Marshalu(&source->sizeofSelect, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_Array_Marshalu(&source->pcrSelect[0], PCR_SELECT_MAX, written, buffer, size);
+	rc = TSS_Array_Marshalu(&source->pcrSelect[0], source->sizeofSelect, written, buffer, size);
     }
     return rc;
 }

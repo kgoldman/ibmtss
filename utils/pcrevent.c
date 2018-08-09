@@ -3,7 +3,7 @@
 /*			   PCR_Event 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrevent.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: pcrevent.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -177,12 +177,12 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (data != NULL) {
 	    if (verbose) printf("Event data %u bytes\n", (unsigned int)strlen(data));
-	    rc = TSS_TPM2B_StringCopy(&in.eventData.b, data, 1024);
+	    rc = TSS_TPM2B_StringCopy(&in.eventData.b, data, sizeof(in.eventData.t.buffer));
 	}
     }
     if (datafilename != NULL) {
 	rc = TSS_File_Read2B(&in.eventData.b,
-			     1024,
+			     sizeof(in.eventData.t.buffer),
 			     datafilename);
     }
     /* Start a TSS context */

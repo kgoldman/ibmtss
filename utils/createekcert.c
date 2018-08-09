@@ -3,7 +3,7 @@
 /*		TPM 2.0 Attestation - Client EK and EK certificate  		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: createekcert.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*            $Id: createekcert.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
@@ -423,7 +423,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 		writeBytes = nvBufferMax;	/* next chunk */
 	    }
 	    rc = TSS_TPM2B_Create(&nvWriteIn.data.b, certificate + bytesWritten, writeBytes,
-				  MAX_NV_BUFFER_SIZE);
+				  sizeof(nvWriteIn.data.t.buffer));
 	}
 	if (rc == 0) {
 	    rc = TSS_Execute(tssContext,

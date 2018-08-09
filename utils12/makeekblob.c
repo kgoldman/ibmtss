@@ -3,7 +3,7 @@
 /*			    TPM 1.2 Make EK Blob				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: makeekblob.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
+/*	      $Id: makeekblob.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -72,7 +72,7 @@ int main(int argc, char * argv[])
     unsigned char 		*aikPubkey = NULL;		/* TPM_PUBKEY AIK */
     size_t 			aikPubLength;
     TPM_PUBKEY 			ekPubkey;			/* TPM_PUBKEY EK */
-    uint8_t 			decBlob[MAX_RSA_KEY_BYTES];
+    uint8_t 			decBlob[2048/8];
     size_t			decBlobLength;
     uint8_t 			encBlob[2048/8];
 

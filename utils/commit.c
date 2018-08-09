@@ -3,7 +3,7 @@
 /*			    Commit						*/
 /*	     		Written by Bill Martin 					*/
 /*                 Green Hills Integrity Software Services 			*/
-/*	      $Id: commit.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: commit.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017 - 2018					*/
 /*										*/
@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (s2Filename != NULL) {
 	    rc = TSS_File_Read2B(&in.s2.b,
-				 MAX_SYM_DATA,
+				 sizeof(in.s2.t.buffer),
 				 s2Filename);
 	}
 	else {
@@ -293,7 +293,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (y2Filename != NULL) {
 	    rc = TSS_File_Read2B(&in.y2.b,
-				 MAX_SYM_DATA,
+				 sizeof(in.y2.t.buffer),
 				 y2Filename);
 	}
 	else {

@@ -3,7 +3,7 @@
 /*			    PolicyTicket	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policyticket.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: policyticket.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -257,23 +257,23 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	rc = TSS_File_Read2B(&in.timeout.b,
-			     sizeof(TPMU_HA),
+			     sizeof(in.timeout.t.buffer),
 			     timeoutFilename);
     }
     if ((rc == 0) && (cpHashAFilename != NULL)) {
 	rc = TSS_File_Read2B(&in.cpHashA.b,
-			     sizeof(TPMU_HA),
+			     sizeof(in.cpHashA.t.buffer),
 			     cpHashAFilename);
     }
     if ((rc == 0) && (policyRefFilename != NULL)) {
 	rc = TSS_File_Read2B(&in.policyRef.b,
-			     sizeof(TPMU_HA),
+			     sizeof(in.policyRef.t.buffer),
 			     policyRefFilename);
     }
     /* if the authorizing entity was an object */
     if ((rc == 0) && (authNameFilename != NULL)) {
 	rc = TSS_File_Read2B(&in.authName.b,
-			     sizeof(TPMU_NAME),
+			     sizeof(in.authName.t.name),
 			     authNameFilename);
     }
     /* if the authorizing object was a hierarchy */
@@ -291,7 +291,7 @@ int main(int argc, char *argv[])
 	    printf("Bad parameter %c for -hi\n", hierarchyChar);
 	    printUsage();
 	}
-	rc = TSS_TPM2B_CreateUint32(&in.authName.b, primaryHandle, sizeof(TPMU_NAME));
+	rc = TSS_TPM2B_CreateUint32(&in.authName.b, primaryHandle, sizeof(in.authName.t.name));
     }
     if (rc == 0) {
 	rc = TSS_File_ReadStructure(&in.ticket,

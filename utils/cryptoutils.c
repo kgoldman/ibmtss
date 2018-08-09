@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: cryptoutils.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -341,7 +341,8 @@ TPM_RC convertEcPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 	tSensitive.sensitiveType = TPM_ALG_ECC;
 	tSensitive.seedValue.b.size = 0;
 	/* key password converted to TPM2B */
-	rc = TSS_TPM2B_StringCopy(&tSensitive.authValue.b, password, sizeof(TPMU_HA));
+	rc = TSS_TPM2B_StringCopy(&tSensitive.authValue.b, password,
+				  sizeof(tSensitive.authValue.t.buffer));
     }
     if (rc == 0) {
 	if (privateKeyBytes > 32) {	/* hard code NISTP256 */
@@ -429,7 +430,8 @@ TPM_RC convertRsaPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
     }
     /* key password converted to TPM2B */
     if (rc == 0) {
-	rc = TSS_TPM2B_StringCopy(&tSensitive.authValue.b, password, sizeof(TPMU_HA));
+	rc = TSS_TPM2B_StringCopy(&tSensitive.authValue.b, password,
+				  sizeof(tSensitive.authValue.t.buffer));
     }
     if (rc == 0) {
 	if ((size_t)privateKeyBytes > sizeof(tSensitive.sensitive.rsa.t.buffer)) {
@@ -1454,7 +1456,7 @@ TPM_RC verifyRSASignatureFromRSA(unsigned char *message,
 	}
     }
     else if (tSignature->sigAlg == TPM_ALG_RSAPSS) {
-	uint8_t decryptedSig[MAX_RSA_KEY_BYTES];
+	uint8_t decryptedSig[sizeof(tSignature->signature.rsapss.sig.t.buffer)];
 	if (rc == 0) {
 	    irc = RSA_public_decrypt(tSignature->signature.rsapss.sig.t.size,
 				     tSignature->signature.rsapss.sig.t.buffer,

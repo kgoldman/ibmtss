@@ -3,7 +3,7 @@
 /*			    Hmac						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hmac.c 1290 2018-08-01 14:45:24Z kgoldman $			*/
+/*	      $Id: hmac.c 1294 2018-08-09 19:08:34Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
 					 inFilename);
 	}
 	if (rc == 0) {
-	    if (length > MAX_DIGEST_BUFFER) {
+	    if (length > sizeof(in.buffer.t.buffer)) {
 		printf("Input data too long %lu\n", (unsigned long)length);
 		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
@@ -268,7 +268,7 @@ int main(int argc, char *argv[])
     if (inString != NULL) {
 	if (rc == 0) {
 	    length = strlen(inString);
-	    if (length > MAX_DIGEST_BUFFER) {
+	    if (length > sizeof(in.buffer.t.buffer)) {
 		printf("Input data too long %lu\n", (unsigned long)length);
 		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    } 

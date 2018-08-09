@@ -3,7 +3,7 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: policysigned.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -271,17 +271,17 @@ int main(int argc, char *argv[])
     /* read the optional components - nonceTPM, cpHashA, policyRef */ 
     if ((rc == 0) && (nonceTPMFilename != NULL)) {
 	rc = TSS_File_Read2B(&in.nonceTPM.b,
-			     sizeof(TPMU_HA),
+			     sizeof(in.nonceTPM.t.buffer),
 			     nonceTPMFilename);
     }
     if ((rc == 0) && (cpHashAFilename != NULL)) {
 	rc = TSS_File_Read2B(&in.cpHashA.b,
-			     sizeof(TPMU_HA),
+			     sizeof(in.cpHashA.t.buffer),
 			     cpHashAFilename);
     }
     if ((rc == 0) && (policyRefFilename != NULL)) {
 	rc = TSS_File_Read2B(&in.policyRef.b,
-			     sizeof(TPMU_HA),
+			     sizeof(in.policyRef.t.buffer),
 			     policyRefFilename);
     }
     if (rc == 0) {

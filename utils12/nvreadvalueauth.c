@@ -3,7 +3,7 @@
 /*			    TPM 1.2 NV_ReadValueAuth				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadvalueauth.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
+/*	      $Id: nvreadvalueauth.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -175,8 +175,9 @@ int main(int argc, char * argv[])
 	printf("-off must not be specified with -cert!\n");
 	printUsage();
     }
-    if (dataSize > MAX_NV_BUFFER_SIZE) {
-	printf("nvreadvalueauth: size %u greater than %u\n", dataSize, MAX_NV_BUFFER_SIZE);	
+    if (dataSize > sizeof(out.data)) {
+	printf("nvreadvalueauth: size %u greater than %u\n",
+	       dataSize, (unsigned int)sizeof(out.data));	
 	rc = TSS_RC_INSUFFICIENT_BUFFER;
     }
     /* Start a TSS context */

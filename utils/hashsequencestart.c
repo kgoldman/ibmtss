@@ -3,7 +3,7 @@
 /*			    HashSequenceStart					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hashsequencestart.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
+/*	      $Id: hashsequencestart.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	/* auth value for sequence */
-	rc = TSS_TPM2B_StringCopy(&in.auth.b, authPassword, sizeof(TPMU_HA));
+	rc = TSS_TPM2B_StringCopy(&in.auth.b, authPassword, sizeof(in.auth.t.buffer));
     }
     if (rc == 0) {
 	in.hashAlg = hashAlg;

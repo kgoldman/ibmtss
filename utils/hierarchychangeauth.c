@@ -3,7 +3,7 @@
 /*			    HierarchyChangeAuth	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: hierarchychangeauth.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
+/*	      $Id: hierarchychangeauth.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
 	if (newPassword != NULL) {
 	    /* convert password string to TPM2B */
 	    rc = TSS_TPM2B_StringCopy(&in.newAuth.b,
-				      newPassword, sizeof(TPMU_HA));
+				      newPassword, sizeof(in.newAuth.t.buffer));
 	}
 	/* new auth from file */
 	else if (newPasswordFilename != NULL) {
@@ -260,7 +260,7 @@ int main(int argc, char *argv[])
 	    /* convert password file string to TPM2B */
 	    if (rc == 0) {
 		rc = TSS_TPM2B_StringCopy(&in.newAuth.b,
-					  (const char *)buffer, sizeof(TPMU_HA));
+					  (const char *)buffer, sizeof(in.newAuth.t.buffer));
 	    }
 	    free(buffer);
 	    buffer = NULL;

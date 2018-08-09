@@ -3,7 +3,7 @@
 /*			    TPM 1.2 ActivateIdentity				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: activateidentity.c 1258 2018-06-28 16:46:10Z kgoldman $	*/
+/*	      $Id: activateidentity.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -223,9 +223,9 @@ int main(int argc, char * argv[])
 				     blobFilename);
     }
     if (rc == 0) {
-	if (blobSize > MAX_RSA_KEY_BYTES) {
+	if (blobSize > sizeof(in.blob)) {
 	    printf("activateidentity: blob size %u greater than %u\n",
-		   (unsigned int)blobSize, MAX_NV_BUFFER_SIZE);
+		   (unsigned int)blobSize, (unsigned int)sizeof(in.blob));
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }

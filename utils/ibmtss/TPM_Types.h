@@ -3,7 +3,7 @@
 /*			 Headers from Part 2    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 1289 2018-07-30 16:31:47Z kgoldman $		*/
+/*            $Id: TPM_Types.h 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -736,23 +736,23 @@ typedef TPM_HANDLE TPM_RH;
 #define HR_PERSISTENT		(TPM_HT_PERSISTENT << HR_SHIFT)		
 #define HR_NV_INDEX		(TPM_HT_NV_INDEX << HR_SHIFT)		
 #define HR_PERMANENT		(TPM_HT_PERMANENT << HR_SHIFT)		
-#define PCR_FIRST		(HR_PCR + 0)					/* first PCR */
-#define PCR_LAST		(PCR_FIRST + IMPLEMENTATION_PCR-1)		/* last PCR */
-#define HMAC_SESSION_FIRST	(HR_HMAC_SESSION + 0)				/* first HMAC session */
-#define HMAC_SESSION_LAST	(HMAC_SESSION_FIRST | 0x00FFFFFF)	/* last HMAC session */
-#define LOADED_SESSION_FIRST  	HMAC_SESSION_FIRST				/* used in GetCapability */
-#define LOADED_SESSION_LAST	HMAC_SESSION_LAST				/* used in GetCapability */
-#define POLICY_SESSION_FIRST	(HR_POLICY_SESSION + 0)				/* first policy session */
-#define POLICY_SESSION_LAST	(POLICY_SESSION_FIRST | 0x00FFFFFF)	/* last policy session */
-#define TRANSIENT_FIRST		((UINT32)(HR_TRANSIENT + 0))			/* first transient object */
-#define ACTIVE_SESSION_FIRST	POLICY_SESSION_FIRST				/* used in GetCapability */
-#define ACTIVE_SESSION_LAST	POLICY_SESSION_LAST				/* used in GetCapability */
-#define TRANSIENT_LAST		((UINT32)(TRANSIENT_FIRST+MAX_LOADED_OBJECTS-1)) /* last transient object */
+#define PCR_FIRST		(HR_PCR + 0)				/* first PCR */
+#define PCR_LAST		(HR_PCR | HR_HANDLE_MASK)		/* last PCR in range */
+#define HMAC_SESSION_FIRST	(HR_HMAC_SESSION + 0)			/* first HMAC session */
+#define HMAC_SESSION_LAST	(HMAC_SESSION_FIRST | HR_HANDLE_MASK)	/* last HMAC session */
+#define LOADED_SESSION_FIRST  	HMAC_SESSION_FIRST			/* used in GetCapability */
+#define LOADED_SESSION_LAST	HMAC_SESSION_LAST			/* used in GetCapability */
+#define POLICY_SESSION_FIRST	(HR_POLICY_SESSION + 0)			/* first policy session */
+#define POLICY_SESSION_LAST	(POLICY_SESSION_FIRST | HR_HANDLE_MASK)	/* last policy session */
+#define TRANSIENT_FIRST		((UINT32)(HR_TRANSIENT + 0))		/* first transient object */
+#define ACTIVE_SESSION_FIRST	POLICY_SESSION_FIRST			/* used in GetCapability */
+#define ACTIVE_SESSION_LAST	POLICY_SESSION_LAST			/* used in GetCapability */
+#define TRANSIENT_LAST		((UINT32)(TRANSIENT_FIRST | HR_HANDLE_MASK)) /* last transient object */
 #define PERSISTENT_FIRST	((UINT32)(HR_PERSISTENT + 0))			/* first persistent object */
-#define PERSISTENT_LAST		((UINT32)(PERSISTENT_FIRST + 0x00FFFFFF))	/* last persistent object */
-#define PLATFORM_PERSISTENT	(PERSISTENT_FIRST + 0x00800000)			/* first platform persistent object */
-#define NV_INDEX_FIRST		(HR_NV_INDEX + 0)				/* first allowed NV Index */
-#define NV_INDEX_LAST		(NV_INDEX_FIRST + 0x00FFFFFF)			/* last allowed NV Index */
+#define PERSISTENT_LAST		((UINT32)(PERSISTENT_FIRST | HR_HANDLE_MASK))	/* last persistent object */
+#define PLATFORM_PERSISTENT	(PERSISTENT_FIRST + 0x00800000)		/* first platform persistent object */
+#define NV_INDEX_FIRST		(HR_NV_INDEX + 0)			/* first allowed NV Index */
+#define NV_INDEX_LAST		(NV_INDEX_FIRST | HR_HANDLE_MASK)	/* last allowed NV Index */
 #define PERMANENT_FIRST		TPM_RH_FIRST		
 #define PERMANENT_LAST		TPM_RH_LAST
 
@@ -1427,8 +1427,6 @@ typedef union {
 /* Table 77 - Definition of TPM2B_MAX_BUFFER Structure */
 
 /* MAX_DIGEST_BUFFER is TPM-dependent but is required to be at least 1,024. */
-
-/* #define MAX_DIGEST_BUFFER 1024 in Implementation.h */
 
 typedef struct {
     UINT16	size;				/* size of the buffer */
@@ -2419,18 +2417,6 @@ typedef union {
     TPM2B       b;
 } TPM2B_TEMPLATE;
 
-/* Table 185 - Definition of TPM2B_PRIVATE_VENDOR_SPECIFIC Structure<> */
-
-typedef struct {
-    UINT16	size;
-    BYTE	buffer[PRIVATE_VENDOR_SPECIFIC_BYTES];	
-} PRIVATE_VENDOR_SPECIFIC_2B;
-
-typedef union {
-    PRIVATE_VENDOR_SPECIFIC_2B t;
-    TPM2B                      b;
-} TPM2B_PRIVATE_VENDOR_SPECIFIC;
-
 /* Table 186 - Definition of TPMU_SENSITIVE_COMPOSITE Union <IN/OUT, S> */
 
 typedef union {
@@ -2446,7 +2432,6 @@ typedef union {
 #ifdef TPM_ALG_SYMCIPHER
     TPM2B_SYM_KEY			sym;	/* TPM_ALG_SYMCIPHER the symmetric key */
 #endif
-    TPM2B_PRIVATE_VENDOR_SPECIFIC	any;	/* vendor-specific size for key storage */
 } TPMU_SENSITIVE_COMPOSITE;
 
 /* Table 187 - Definition of TPMT_SENSITIVE Structure */

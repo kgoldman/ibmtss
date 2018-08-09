@@ -3,7 +3,7 @@
 /*			    PolicyDuplicationSelect 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*      $Id: policyduplicationselect.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
+/*      $Id: policyduplicationselect.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -206,12 +206,12 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	rc = TSS_File_Read2B(&in.newParentName.b,
-			     sizeof(TPMU_NAME) ,
+			     sizeof(in.newParentName.t.name),
 			     newParentNameFilename);
     }
     if (rc == 0) {
 	rc = TSS_File_Read2B(&in.objectName.b,
-			     sizeof(TPMU_NAME),
+			     sizeof(in.objectName.t.name),
 			     objectNameFilename);
     }
     /* Start a TSS context */
