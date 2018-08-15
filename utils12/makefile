@@ -3,7 +3,7 @@
 #		Linux TPM 1.2 Utilities Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 1258 2018-06-28 16:46:10Z kgoldman $		#
+#	      $Id: makefile 1296 2018-08-10 13:56:48Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2018						#
 # 										#
@@ -95,18 +95,7 @@ LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 
 LNALIBS +=  -libmtssutils12 -libmtss -lcrypto
 
-# shared library
-
-# versioned shared library
-LIBTSSVERSIONED=../utils/libibmtss.so.0.1
-
-# soname field of the shared library
-# which will be made symbolic link to the versioned shared library
-# this is used to provide version backward-compatibility information
-LIBTSSSONAME=../utils/libibmtss.so.0
-
-# symbolic link to the versioned shared library
-# this allows linking to the shared library with '-ltss' 
+# TSS shared library
 
 LIBTSS=../utils/libibmtss.so
 
