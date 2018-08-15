@@ -3,7 +3,7 @@
 /*			    TPM 1.2 NV_ReadValue				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadvalue.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
+/*	      $Id: nvreadvalue.c 1294M 2018-08-13 17:59:26Z (local) $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -218,7 +218,8 @@ int main(int argc, char * argv[])
 				    sessionAttributes0);
 	}
 	if (rc == 0) {
-	    if (verbose) TSS_PrintAll("nvreadvalue: certificate", x509CertificateDer, x509CertificateDerLength);
+	    if (verbose) TSS_PrintAll("nvreadvalue: certificate",
+				      x509CertificateDer, x509CertificateDerLength);
 	    const uint8_t *tmpData = x509CertificateDer;
 	    x509Certificate = d2i_X509(NULL,	/* freed @2 */
 				       (const unsigned char **)&tmpData, x509CertificateDerLength);
@@ -245,7 +246,8 @@ int main(int argc, char * argv[])
 	    rc = TSS_File_WriteBinaryFile(out.data, out.dataSize, dataFilename);
 	}
 	else {
-	    rc = TSS_File_WriteBinaryFile(x509CertificateDer, x509CertificateDerLength, dataFilename);
+	    rc = TSS_File_WriteBinaryFile(x509CertificateDer,
+					  x509CertificateDerLength, dataFilename);
 	}
     }
     if (rc == 0) {
