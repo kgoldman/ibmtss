@@ -3,7 +3,7 @@
 /*			    NV Read		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvread.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: nvread.c 1300 2018-08-14 13:24:40Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
     NV_Read_Out			out;
     uint16_t 			offset = 0;			/* default 0 */
     uint16_t 			readLength = 0;			/* bytes to read */
+    int 			cert = FALSE;			/* boolean, read certificate */
     int				readLengthSet = FALSE;
     char 			hierarchyAuthChar = 0;
     const char 			*datafilename = NULL;
@@ -144,6 +145,9 @@ int main(int argc, char *argv[])
 		printf("-sz option needs a value\n");
 		printUsage();
 	    }
+	}
+	else if (!strcmp("-cert",argv[i])) {
+	    cert = TRUE;
 	}
 	else if (strcmp(argv[i],"-se0") == 0) {
 	    i++;
@@ -348,8 +352,26 @@ int main(int argc, char *argv[])
 	rc = TSS_File_WriteBinaryFile(readBuffer, readLength, datafilename);
     }
     if (rc == 0) {
-	if (verbose) printf("nvread: success\n");
-	TSS_PrintAll("nvread: data", readBuffer, readLength);
+	if (!cert) {
+	    if (verbose) printf("nvread: success\n");
+	    TSS_PrintAll("nvread: data", readBuffer, readLength);
+	}
+	else {
+	    X509 		*x509Certificate = NULL;
+	    const uint8_t 	*tmpData = readBuffer;
+	    x509Certificate = d2i_X509(NULL,	/* freed @2 */
+				       (const unsigned char **)&tmpData, readLength);
+	    if (x509Certificate == NULL) {
+		printf("nvread: Could not parse X509 certificate\n");
+		rc = TSS_RC_X509_ERROR;
+	    }
+	    if (rc == 0) {
+		X509_print_fp(stdout, x509Certificate);
+	    }
+	    if (x509Certificate != NULL) {
+		X509_free(x509Certificate);   	/* @2 */
+	    }
+	}
     }
     else {
 	const char *msg;
@@ -375,6 +397,7 @@ static void printUsage(void)
     printf("\t-ha\tNV index handle\n");
     printf("\t[-pwdn\tpassword for NV index (default empty)]\n");
     printf("\t[-sz\tdata size (default to size of index)]\n");
+    printf("\t[-cert dumps the certificate, the number of bytes is embedded in the prefix]\n");
     printf("\t\tcounter, bits, pin read 8 bytes, extend reads based on hash algorithm\n");
     printf("\t[-off\toffset (default 0)]\n");
     printf("\t[-of\tdata file (default do not save)]\n");
