@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testrsa.bat 1291 2018-08-01 15:53:40Z kgoldman $		#
+REM #		$Id: testrsa.bat 1301 2018-08-15 21:46:19Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015 - 2018					#
 REM # 										#
@@ -64,7 +64,7 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "Verify the decrypt result"
 tail --bytes=3 dec.bin > tmp.bin
-diff policies/aaa tmp.bin
+diff policies/aaa tmp.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -110,7 +110,7 @@ for /L %%i in (1,1,!L!) do (
 
     echo "Verify Result - !HALG[%%i]! !HSIZ[%%i]! bytes"
     tail --bytes=!HSIZ[%%i]! tmpmsg.bin > tmpdig.bin
-    diff tmpdig.bin policies/!HALG[%%i]!aaa.bin
+    diff tmpdig.bin policies/!HALG[%%i]!aaa.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -168,7 +168,7 @@ for %%S in ("" "-se0 02000000 1") do (
 
     echo "Verify the decrypt result"
     tail --bytes=3 dec.bin > tmp.bin
-    diff policies/aaa tmp.bin
+    diff policies/aaa tmp.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -226,7 +226,7 @@ for %%S in ("" "-se0 02000000 1") do (
 
     echo "Verify the decrypt result"
     tail --bytes=3 dec.bin > tmp.bin
-    diff policies/aaa tmp.bin
+    diff policies/aaa tmp.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

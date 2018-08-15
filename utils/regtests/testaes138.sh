@@ -65,7 +65,7 @@ do
     checkSuccess $?
 
     echo "Verify the decrypt result"
-    diff msg.bin dec.bin
+    diff msg.bin dec.bin > run.out
     checkSuccess $?
 
     echo "Encrypt using the symmetric cipher key 0 length message ${SESS}"
@@ -77,7 +77,7 @@ do
     checkSuccess $?
 
     echo "Verify the decrypt result"
-    diff zero.bin dec.bin
+    diff zero.bin dec.bin > run.out
     checkSuccess $?
 
     echo "Flush the symmetric cipher key"
@@ -97,7 +97,7 @@ do
     checkSuccess $?
 
     echo "Verify the decrypt result"
-    diff msg.bin dec.bin
+    diff msg.bin dec.bin > run.out
     checkSuccess $?
 
     echo "Flush the symmetric cipher key"

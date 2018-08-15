@@ -100,7 +100,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Check the decrypted result"
-diff tmpcredin.bin tmpcreddec.bin
+diff tmpcredin.bin tmpcreddec.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

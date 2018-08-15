@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testaes.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
+REM #		$Id: testaes.bat 1301 2018-08-15 21:46:19Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015					#
 REM # 										#
@@ -72,7 +72,7 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "Verify the decrypt result"
-    diff msg.bin dec.bin
+    diff msg.bin dec.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
     )
@@ -90,7 +90,7 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "Verify the decrypt result"
-    diff zero.bin dec.bin
+    diff zero.bin dec.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
     )
@@ -120,7 +120,7 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "Verify the decrypt result"
-    diff msg.bin dec.bin
+    diff msg.bin dec.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
     )

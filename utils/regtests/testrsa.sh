@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testrsa.sh 1291 2018-08-01 15:53:40Z kgoldman $			#
+#	$Id: testrsa.sh 1301 2018-08-15 21:46:19Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -59,7 +59,7 @@ checkSuccess $?
 
 echo "Verify the decrypt result"
 tail -c 3 dec.bin > tmp.bin
-diff policies/aaa tmp.bin
+diff policies/aaa tmp.bin > run.out
 checkSuccess $?
 
 echo "Flush the decryption key"
@@ -90,7 +90,7 @@ do
 
     echo "Verify Result - ${HALG[i]} ${HSIZ[i]} bytes"
     tail -c ${HSIZ[i]} tmpmsg.bin > tmpdig.bin
-    diff tmpdig.bin policies/${HALG[i]}aaa.bin
+    diff tmpdig.bin policies/${HALG[i]}aaa.bin > run.out
     checkSuccess $?
 
 done
@@ -135,7 +135,7 @@ do
 
     echo "Verify the decrypt result"
     tail -c 3 dec.bin > tmp.bin
-    diff policies/aaa tmp.bin
+    diff policies/aaa tmp.bin > run.out
     checkSuccess $?
 
     echo "Flush the encryption key"
@@ -180,7 +180,7 @@ do
 
     echo "Verify the decrypt result"
     tail -c 3 dec.bin > tmp.bin
-    diff policies/aaa tmp.bin
+    diff policies/aaa tmp.bin > run.out
     checkSuccess $?
 
     echo "Flush the encryption key"

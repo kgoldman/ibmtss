@@ -3,7 +3,7 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: testpcr.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
+REM		$Id: testpcr.bat 1301 2018-08-15 21:46:19Z kgoldman $		#
 REM										#
 REM (c) Copyright IBM Corporation 2015, 2018					#
 REM 										#
@@ -243,7 +243,7 @@ for /L %%i in (1,1,!L!) do (
       	)
 
     	echo "Verify the read data %%H"
-    	diff policies/%%Hextaaa0.bin tmp.bin
+    	diff policies/%%Hextaaa0.bin tmp.bin > run.out
     	IF !ERRORLEVEL! NEQ 0 (
       	    exit /B 1
       	)
@@ -268,7 +268,7 @@ for /L %%i in (1,1,!L!) do (
     for %%H in (!BANKS[%%i]!) do (
 
     	echo "Verify Digest %%H"
-    	diff policies/%%Haaa.bin tmp%%H.bin > run.out
+    	diff policies/%%Haaa.bin tmp%%H.bin > run.out > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	    exit /B 1
 	)

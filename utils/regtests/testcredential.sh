@@ -85,7 +85,7 @@ ${PREFIX}activatecredential -ha 80000002 -hk 80000001 -icred tmpcredenc.bin -is 
 checkSuccess $?
 
 echo "Check the decrypted result"
-diff tmpcredin.bin tmpcreddec.bin
+diff tmpcredin.bin tmpcreddec.bin > run.out
 checkSuccess $?
 
 echo "Flush the storage key"

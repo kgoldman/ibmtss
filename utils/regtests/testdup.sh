@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testdup.sh 1292 2018-08-01 17:27:24Z kgoldman $		#
+#		$Id: testdup.sh 1301 2018-08-15 21:46:19Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -542,7 +542,7 @@ do
 # A real target would not have access to tmpaeskeysrc.bin for the compare
 
     echo "Target: Verify the unsealed result, same at source, for debug"
-    diff tmpaeskeytgt.bin tmpaeskeysrc.bin
+    diff tmpaeskeytgt.bin tmpaeskeysrc.bin > run.out
     checkSuccess $?
 
     echo "Flush the EK"

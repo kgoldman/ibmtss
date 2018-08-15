@@ -71,7 +71,7 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "Verify the decrypt result"
-    diff msg.bin dec.bin
+    diff msg.bin dec.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -89,7 +89,7 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "Verify the decrypt result"
-    diff zero.bin dec.bin
+    diff zero.bin dec.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -119,7 +119,7 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "Verify the decrypt result"
-    diff msg.bin dec.bin
+    diff msg.bin dec.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

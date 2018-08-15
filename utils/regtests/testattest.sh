@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testattest.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
+#	$Id: testattest.sh 1301 2018-08-15 21:46:19Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -286,6 +286,8 @@ checkSuccess $?
 echo "Flush the signing key 80000001"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
+
+# cleanup
 
 rm -f tmppriv.bin
 rm -f tmppub.bin

@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 1292 2018-08-01 17:27:24Z kgoldman $		#
+REM #		$Id: testdup.bat 1301 2018-08-15 21:46:19Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
@@ -706,7 +706,7 @@ REM # change it.
 REM # A real target would not have access to tmpaeskeysrc.bin for the compare
 
     echo "Target: Verify the unsealed result, same at source, for debug"
-    diff tmpaeskeytgt.bin tmpaeskeysrc.bin
+    diff tmpaeskeytgt.bin tmpaeskeysrc.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

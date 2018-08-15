@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testhmac.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
+#		$Id: testhmac.sh 1301 2018-08-15 21:46:19Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -81,7 +81,7 @@ do
 	checkSuccess $?
 
 	echo "Verify the HMAC ${HALG} using the two methods"
-	diff sig.bin tmp.bin
+	diff sig.bin tmp.bin > run.out
 	checkSuccess $?
 
 	echo "HMAC ${HALG} using the keyed hash key, message from command line ${SESS}"
@@ -89,7 +89,7 @@ do
 	checkSuccess $?
 
 	echo "Verify the HMAC ${HALG} using the two methods"
-	diff sig.bin tmp.bin
+	diff sig.bin tmp.bin > run.out
 	checkSuccess $?
 
 	echo "Flush the ${HALG} HMAC key"
@@ -117,7 +117,7 @@ do
 	checkSuccess $?
 
 	echo "Verify the HMAC ${HALG} using the two methods"
-	diff sig.bin tmp.bin
+	diff sig.bin tmp.bin > run.out
 	checkSuccess $?
 
 	echo "Flush the ${HALG} primary HMAC key"

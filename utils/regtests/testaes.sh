@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testaes.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
+#	$Id: testaes.sh 1301 2018-08-15 21:46:19Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -65,7 +65,7 @@ do
     checkSuccess $?
 
     echo "Verify the decrypt result"
-    diff msg.bin dec.bin
+    diff msg.bin dec.bin > run.out
     checkSuccess $?
 
     echo "Encrypt using the symmetric cipher key 0 length message ${SESS}"
@@ -77,7 +77,7 @@ do
     checkSuccess $?
 
     echo "Verify the decrypt result"
-    diff zero.bin dec.bin
+    diff zero.bin dec.bin > run.out
     checkSuccess $?
 
     echo "Flush the symmetric cipher key"
@@ -97,7 +97,7 @@ do
     checkSuccess $?
 
     echo "Verify the decrypt result"
-    diff msg.bin dec.bin
+    diff msg.bin dec.bin > run.out
     checkSuccess $?
 
     echo "Flush the symmetric cipher key"

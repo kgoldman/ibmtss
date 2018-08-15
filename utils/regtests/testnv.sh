@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testnv.sh 1276 2018-07-23 19:25:13Z kgoldman $		#
+#		$Id: testnv.sh 1301 2018-08-15 21:46:19Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -83,7 +83,7 @@ do
 	checkSuccess $?
 
 	echo "Verify the read data"
-	diff policies/aaa tmp.bin
+	diff policies/aaa tmp.bin > run.out
 	checkSuccess $?
 
 	echo "NV read, invalid offset - should fail ${SESS}"
@@ -141,7 +141,7 @@ do
     checkSuccess $?
 
     echo "Verify the read data"
-    diff policies/bits48321601.bin tmp.bin
+    diff policies/bits48321601.bin tmp.bin > run.out
     checkSuccess $?
 
     echo "NV Undefine Space"
@@ -239,7 +239,7 @@ do
 	checkSuccess $?
 
 	echo "Verify the read data ${HALG[$i]}"
-	diff policies/${HALG[$i]}extaaa.bin tmp.bin
+	diff policies/${HALG[$i]}extaaa.bin tmp.bin > run.out
 	checkSuccess $?
 
 	echo "NV Undefine Space"

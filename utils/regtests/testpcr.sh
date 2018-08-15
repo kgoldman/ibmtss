@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpcr.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
+#		$Id: testpcr.sh 1301 2018-08-15 21:46:19Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -223,7 +223,7 @@ do
 	checkSuccess $?
 
 	echo "Verify the read data ${HALG}"
-	diff policies/${HALG}extaaa0.bin tmp.bin
+	diff policies/${HALG}extaaa0.bin tmp.bin > run.out
 	checkSuccess $?
 
     done
