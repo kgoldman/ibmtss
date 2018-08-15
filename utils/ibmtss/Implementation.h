@@ -3,7 +3,7 @@
 /*		    TSS Implementation Specific Constants			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Implementation.h 1294 2018-08-09 19:08:34Z kgoldman $	*/
+/*            $Id: Implementation.h 1299 2018-08-14 13:23:19Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -79,13 +79,13 @@
 
 // From Vendor-Specific: Table 4 - Defines for Key Size Constants
 
-#ifdef TPM_TSS_SO0
+#ifdef TPM_TSS_SO_0
 #define  MAX_RSA_KEY_BYTES          256
 #else
 #define  MAX_RSA_KEY_BYTES          512
 #endif
 
-#ifdef TPM_TSS_SO0
+#ifdef TPM_TSS_SO_0
 #define  MAX_ECC_KEY_BYTES     48
 #else
 #define  MAX_ECC_KEY_BYTES     128
@@ -101,7 +101,7 @@
 #define MAX_SESSION_NUM 		3	/* this is the current maximum value */
 
 #ifdef TPM_TSS_SO_0
-#define PCR_SELECT_MAX			((IMPLEMENTATION_PCR+7)/8) */
+#define PCR_SELECT_MAX			((IMPLEMENTATION_PCR+7)/8)
 #else
 /* increased to 8 to handle up to 64 PCRs */
 #define PCR_SELECT_MAX			8
