@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testrsa.sh 1301 2018-08-15 21:46:19Z kgoldman $			#
+#	$Id: testrsa.sh 1302 2018-08-20 16:46:41Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -193,9 +193,41 @@ echo "Flush the session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
 
+echo ""
+echo "Encrypt with OpenSSL OAEP, decrypt with TPM"
+echo ""
+
+echo "Create OAEP encruption key"
+${PREFIX}create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha1 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out	
+checkSuccess $?
+
+echo "Load encryption key at 80000001"
+${PREFIX}load -hp 80000000 -pwdp sto -ipr tmpprivkey.bin -ipu tmppubkey.bin  > run.out
+checkSuccess $?
+
+echo "Encrypt using OpenSSL and the PEM public key"
+openssl rsautl -oaep -encrypt -inkey tmppubkey.pem -pubin -in policies/aaa -out enc.bin > run.out
+checkSuccess $?
+
+echo "Decrypt using TPM key at 80000001"
+${PREFIX}rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin > run.out
+checkSuccess $?
+
+echo "Verify the decrypt result"
+diff policies/aaa dec.bin > run.out
+checkSuccess $?
+
+echo "Flush the encryption key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+
 rm -f tmpmsg.bin
 rm -f tmpdig.bin
 rm -f tmpsig.bin
+rm -f tmpprivkey,bin 
+rm -f tmppubkey.bin
+rm -f tmppubkey.pem
 rm -f tmpprivkey.pem
 rm -f tmpkeypair.pem
 rm -f tmpkeypair.der
