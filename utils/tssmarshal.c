@@ -3,7 +3,7 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
+/*	      $Id: tssmarshal.c 1303 2018-08-20 16:49:52Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -2323,7 +2323,7 @@ TSS_Certify_Out_Unmarshalu(Certify_Out *target, TPM_ST tag, BYTE **buffer, uint3
 	rc = TSS_TPM2B_ATTEST_Unmarshalu(&target->certifyInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, YES);
     }
     return rc;
 }
@@ -2341,7 +2341,7 @@ TSS_CertifyCreation_Out_Unmarshalu(CertifyCreation_Out *target, TPM_ST tag, BYTE
 	rc = TSS_TPM2B_ATTEST_Unmarshalu(&target->certifyInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, YES);
     }
     return rc;
 }
@@ -2359,7 +2359,7 @@ TSS_Quote_Out_Unmarshalu(Quote_Out *target, TPM_ST tag, BYTE **buffer, uint32_t 
 	rc = TSS_TPM2B_ATTEST_Unmarshalu(&target->quoted, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, YES);
     }
     return rc;
 }
@@ -2377,7 +2377,7 @@ TSS_GetSessionAuditDigest_Out_Unmarshalu(GetSessionAuditDigest_Out *target, TPM_
 	rc = TSS_TPM2B_ATTEST_Unmarshalu(&target->auditInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, YES);
     }
     return rc;
 }
@@ -2395,7 +2395,7 @@ TSS_GetCommandAuditDigest_Out_Unmarshalu(GetCommandAuditDigest_Out *target, TPM_
 	rc = TSS_TPM2B_ATTEST_Unmarshalu(&target->auditInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, YES);
     }
     return rc;
 }
@@ -2413,7 +2413,7 @@ TSS_GetTime_Out_Unmarshalu(GetTime_Out *target, TPM_ST tag, BYTE **buffer, uint3
 	rc = TSS_TPM2B_ATTEST_Unmarshalu(&target->timeInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, YES);
     }
     return rc;
 }
@@ -2742,7 +2742,7 @@ TSS_NV_Certify_Out_Unmarshalu(NV_Certify_Out *target, TPM_ST tag, BYTE **buffer,
 	rc = TSS_TPM2B_ATTEST_Unmarshalu(&target->certifyInfo, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, NO);
+	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, YES);
     }
     return rc;
 }

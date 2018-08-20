@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testattest.sh 1301 2018-08-15 21:46:19Z kgoldman $			#
+#	$Id: testattest.sh 1303 2018-08-20 16:49:52Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -287,10 +287,63 @@ echo "Flush the signing key 80000001"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
+echo ""
+echo "Audit a PCR Read"
+echo ""
+
+for HALG in ${ITERATE_ALGS}
+do
+
+    echo "Start an audit session ${HALG}"
+    ${PREFIX}startauthsession -se h -halg  ${HALG} > run.out
+    checkSuccess $?
+
+    echo "PCR 16 reset"
+    ${PREFIX}pcrreset -ha 16 > run.out
+    checkSuccess $?
+
+    cp policies/zero${HALG}.bin tmpdigestr.bin
+
+    echo "PCR 16 read ${HALG}"
+    ${PREFIX}pcrread -ha 16 -halg ${HALG} -se0 02000000 81 -ahalg ${HALG} -iosad tmpdigestr.bin > run.out
+    checkSuccess $?
+
+    echo "Get session audit digest"
+    ${PREFIX}getsessionauditdigest -hs 02000000 -od tmpdigestg.bin > run.out
+    checkSuccess $?
+
+    echo "Check session audit digest"
+    diff tmpdigestr.bin tmpdigestg.bin
+    checkSuccess $?
+
+    echo "Extend PCR 16"
+    ${PREFIX}pcrextend -ha 16 -halg ${HALG} -ic aaa > run.out
+    checkSuccess $?
+
+    echo "PCR 16 read ${HALG}"
+    ${PREFIX}pcrread -ha 16 -halg ${HALG} -se0 02000000 81 -ahalg ${HALG} -iosad tmpdigestr.bin > run.out
+    checkSuccess $?
+
+     echo "Get session audit digest"
+    ${PREFIX}getsessionauditdigest -hs 02000000 -od tmpdigestg.bin > run.out
+    checkSuccess $?
+
+    echo "Check session audit digest"
+    diff tmpdigestr.bin tmpdigestg.bin
+    checkSuccess $?
+
+    echo "Flush the audit session"
+    ${PREFIX}flushcontext -ha 02000000
+    checkSuccess $?
+
+done
+
 # cleanup
 
 rm -f tmppriv.bin
 rm -f tmppub.bin
+rm -f tmpdigestr.bin
+rm -f tmpdigestg.bin
 rm -f sig.bin
 rm -f tmp.bin
 

@@ -3,7 +3,7 @@
 /*			     Structure Print and Scan Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 1298 2018-08-10 14:58:51Z kgoldman $		*/
+/*	      $Id: tssprint.c 1303 2018-08-20 16:49:52Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -1411,7 +1411,9 @@ void TSS_TPMS_ATTEST_Print(TPMS_ATTEST *source, unsigned int indent)
     printf("%*s" "TPMS_ATTEST magic %08x\n", indent+2, "", source->magic);
     TSS_TPMI_ST_ATTEST_Print("type", source->type, indent+2);
     TSS_TPM2B_Print("TPMS_ATTEST extraData", indent+2, &source->extraData.b);
+    TSS_TPM2B_Print("TPMS_ATTEST qualifiedSigner", indent+2, &source->qualifiedSigner.b);
     TSS_TPMS_CLOCK_INFO_Print(&source->clockInfo, indent+2);
+    printf("%*s" "TPMS_ATTEST firmwareVersion %"PRIu64"\n",  indent+2, "", source->firmwareVersion);
     TSS_TPMU_ATTEST_Print(&source->attested, source->type, indent+2);
     return;
 }

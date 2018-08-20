@@ -3,7 +3,7 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: pcrread.c 1303M 2018-08-20 17:42:38Z (local) $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -50,6 +50,8 @@
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tssmarshal.h>
+#include <ibmtss/tsscryptoh.h>
 
 static void printPcrRead(PCR_Read_Out *out);
 static void printUsage(void);
@@ -65,6 +67,10 @@ int main(int argc, char *argv[])
     PCR_Read_Out 		out;
     TPMI_DH_PCR 		pcrHandle = IMPLEMENTATION_PCR;
     const char 			*datafilename = NULL;
+    TPMI_ALG_HASH		ahalg = TPM_ALG_SHA256;
+    uint32_t 			sizeInBytes = 0;	/* initialized to suppress false gcc -O3
+							   warning */
+    const char 			*sadfilename = NULL;
     int				noSpace = FALSE;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RH_NULL;
     unsigned int		sessionAttributes0 = 0;
@@ -121,12 +127,46 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-ahalg") == 0) {
+	    i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"sha1") == 0) {
+		    ahalg = TPM_ALG_SHA1;
+		}
+		else if (strcmp(argv[i],"sha256") == 0) {
+		    ahalg = TPM_ALG_SHA256;
+		}
+		else if (strcmp(argv[i],"sha384") == 0) {
+		    ahalg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    ahalg = TPM_ALG_SHA512;
+		}
+		else {
+		    printf("Bad parameter %s for -ahalg\n", argv[i]);
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("-halg option needs a value\n");
+		printUsage();
+	    }
+	}
  	else if (strcmp(argv[i], "-of")  == 0) {
 	    i++;
 	    if (i < argc) {
 		datafilename = argv[i];
 	    } else {
 		printf("-of option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i], "-iosad")  == 0) {
+	    i++;
+	    if (i < argc) {
+		sadfilename = argv[i];
+	    } else {
+		printf("-iosad option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -209,10 +249,124 @@ int main(int argc, char *argv[])
 	}
     }
     /* first hash algorithm, in binary */
+    if (rc != 0) {
+	const char *msg;
+	const char *submsg;
+	const char *num;
+	printf("pcrread: failed, rc %08x\n", rc);
+	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
+	printf("%s%s%s\n", msg, submsg, num);
+	rc = EXIT_FAILURE;
+    }
     if ((rc == 0) && (datafilename != NULL) && (out.pcrValues.count != 0)) {
 	rc = TSS_File_WriteBinaryFile(out.pcrValues.digests[0].t.buffer,
 				      out.pcrValues.digests[0].t.size,
 				      datafilename);
+    }
+    /* auth session hash algorithm for cpHash and rpHash */
+    if (rc == 0) {
+        sizeInBytes = TSS_GetDigestSize(ahalg);
+    }
+    /* option to output cpHash and rpHash to test session audit of PCR Read */
+    if (sadfilename != NULL) {
+	TPMT_HA 	cpHash;
+	uint8_t 	cpBuffer [MAX_COMMAND_SIZE];
+	uint16_t 	cpBufferSize = 0;
+	TPMT_HA 	rpHash;
+	uint8_t 	rpBuffer [MAX_RESPONSE_SIZE];
+	uint16_t 	rpBufferSize = 0;
+	uint8_t 	*tmpptr;
+	uint32_t 	tmpsize;
+	TPMT_HA 	sessionDigest;
+	uint8_t		*sessionDigestData = NULL;
+	size_t		sessionDigestSize;
+	/* calculate cpHash from CC || parameters */
+	if (rc == 0) {
+	    tmpptr = cpBuffer;
+	    tmpsize = sizeof(cpBuffer);
+	    rc = TSS_TPML_PCR_SELECTION_Marshalu(&in.pcrSelectionIn,
+						 &cpBufferSize, &tmpptr, &tmpsize);
+	}
+	if (rc == 0) {
+	    TPM_CC commandCode = TPM_CC_PCR_Read;
+	    TPM_CC commandCodeNbo = htonl(commandCode);
+	    cpHash.hashAlg = ahalg;
+	    rc = TSS_Hash_Generate(&cpHash,		/* largest size of a digest */
+				   sizeof(TPM_CC), &commandCodeNbo,
+				   cpBufferSize, cpBuffer,
+				   0, NULL);
+	}
+	if ((rc == 0) && verbose) {
+#if 0
+	    TSS_PrintAll("cpBuffer", cpBuffer, cpBufferSize);
+	    TSS_PrintAll("cpHash", (uint8_t *)&cpHash.digest, sizeInBytes);
+#endif
+	}
+	/* calculate rpHash from RC || CC || parameters */
+	if (rc == 0) {
+	    tmpptr = rpBuffer;
+	    tmpsize = sizeof(rpBuffer);
+	    rc = TSS_UINT32_Marshalu(&out.pcrUpdateCounter,
+				     &rpBufferSize, &tmpptr, &tmpsize);
+	}
+	if (rc == 0) {
+	    rc = TSS_TPML_PCR_SELECTION_Marshalu(&out.pcrSelectionOut,
+						 &rpBufferSize, &tmpptr, &tmpsize);
+	}
+	if (rc == 0) {
+	    rc = TSS_TPML_DIGEST_Marshalu(&out.pcrValues,
+					  &rpBufferSize, &tmpptr, &tmpsize);
+	}
+	if (rc == 0) {
+	    TPM_CC 		commandCode = TPM_CC_PCR_Read;
+	    TPM_CC 		commandCodeNbo = htonl(commandCode);
+	    rpHash.hashAlg = ahalg;
+	    rc = TSS_Hash_Generate(&rpHash,			/* largest size of a digest */
+				   sizeof(TPM_RC), &rc,	/* RC is always 0, no need to endian
+							   convert */
+				   sizeof(TPM_CC), &commandCodeNbo,
+				   rpBufferSize, rpBuffer,
+				   0, NULL);
+	}
+	if ((rc == 0) && verbose) {
+#if 0
+	    TSS_PrintAll("rpBuffer", rpBuffer, rpBufferSize);
+	    TSS_PrintAll("rpHash", (uint8_t *)&rpHash.digest, sizeInBytes);
+#endif
+	}
+	/* read the original session digest, must be initialized to all zero */
+	if (rc == 0) {
+	    rc = TSS_File_ReadBinaryFile(&sessionDigestData,	/* freed @1 */
+					 &sessionDigestSize,
+					 sadfilename);
+	}
+	/* sanity check the size against the session digest hash algorithm */
+	if (rc == 0) {
+	    if (sizeInBytes != sessionDigestSize) {
+		printf("pcrread: -ahalg size %u does not match digest size %u from %s\n",
+		       (unsigned int)sizeInBytes, (unsigned int)sessionDigestSize, sadfilename);
+	    }
+	}
+	/* extend cpHash and rpHash */
+	if (rc == 0) {
+	    sessionDigest.hashAlg = ahalg;
+	    rc = TSS_Hash_Generate(&sessionDigest,
+				   sizeInBytes, sessionDigestData, 
+				   sizeInBytes, (uint8_t *)&cpHash.digest,
+				   sizeInBytes, (uint8_t *)&rpHash.digest,
+				   0, NULL);
+	}
+	if ((rc == 0) && verbose) {
+	    TSS_PrintAll("Session digest old", sessionDigestData, sizeInBytes);
+	    TSS_PrintAll("Session digest new", (uint8_t *)&sessionDigest.digest, sizeInBytes);
+	}
+	if (rc == 0) {
+	    /* write back the result */
+	    rc = TSS_File_WriteBinaryFile((uint8_t *)&sessionDigest.digest,
+					  sizeInBytes,
+					  sadfilename);
+	}
+	free(sessionDigestData);	/* @1 */
     }
     if (rc == 0) {
 	/* machine readable format */
@@ -237,15 +391,6 @@ int main(int argc, char *argv[])
 	    printPcrRead(&out);
 	    if (verbose) printf("pcrread: success\n");
 	}
-    }
-    else {
-	const char *msg;
-	const char *submsg;
-	const char *num;
-	printf("pcrread: failed, rc %08x\n", rc);
-	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
-	printf("%s%s%s\n", msg, submsg, num);
-	rc = EXIT_FAILURE;
     }
     return rc;
 }
@@ -273,7 +418,8 @@ static void printUsage(void)
     printf("\t-halg\t(sha1, sha256, sha384, sha512) (default sha256)\n");
     printf("\t\t-halg may be specified more than once\n");
     printf("\t[-of\tdata file for first algorithm specified, in binary]\n");
-    printf("\t\t(default do not save)\n");
+    printf("\t[-ahalg\tfor session audit digest (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-iosad\tfile for session audit digest testing]\n");
     printf("\t[-ns\tno space, no text, no newlines\n");
     printf("\t\tUsed for scripting policy construction\n");
     printf("\n");

@@ -3,7 +3,7 @@
 /*			    GetSessionAuditDigest				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getsessionauditdigest.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
+/*	      $Id: getsessionauditdigest.c 1303 2018-08-20 16:49:52Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     GetSessionAuditDigest_In 	in;
     GetSessionAuditDigest_Out 	out;
     const char			*privacyAdminPassword = NULL; 
-    TPMI_DH_OBJECT		signHandle = 0;
+    TPMI_DH_OBJECT		signHandle = TPM_RH_NULL;
     const char			*signPassword = NULL; 
     TPMI_SH_HMAC		sessionHandle = 0;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
@@ -273,10 +273,6 @@ int main(int argc, char *argv[])
 	printf("Missing session handle parameter -hs\n");
 	printUsage();
     }
-    if (signHandle == 0) {
-	printf("Missing sign handle parameter -hk\n");
-	printUsage();
-    }
     if (rc == 0) {
 	/* Handle of key that authorizes the audit */
 	in.privacyAdminHandle = TPM_RH_ENDORSEMENT;
@@ -384,7 +380,7 @@ static void printUsage(void)
     printf("Runs TPM2_GetSessionAuditDigest\n");
     printf("\n");
     printf("\t[-pwde\tendorsement hierarchy password (default empty)]\n");
-    printf("\t-hk\tsigning key handle\n");
+    printf("\t[-hk\tsigning key handle]\n");
     printf("\t[-pwdk\tpassword for key (default empty)]\n");
     printf("\t-hs\taudit session handle\n");
     printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
