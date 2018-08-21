@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
+/*	      $Id: cryptoutils.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -1415,8 +1415,9 @@ TPM_RC verifyRSASignatureFromRSA(unsigned char *message,
 {
     TPM_RC 		rc = 0;
     int			irc;
-    int 		nid;
-    const EVP_MD 	*md;
+    int 		nid = 0;	/* initialized thsee two to suppress false gcc -O3
+					   warnings */
+    const EVP_MD 	*md = NULL;
     /* map from hash algorithm to openssl nid */
     if (rc == 0) {
 	switch (halg) {

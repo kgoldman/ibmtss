@@ -3,7 +3,7 @@
 /*			   Socket Transmit and Receive Utilities		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsssocket.c 1285 2018-07-27 18:33:41Z kgoldman $		*/
+/*	      $Id: tsssocket.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -583,8 +583,9 @@ TPM_RC TSS_Socket_Close(TSS_CONTEXT *tssContext)
     uint32_t 	rc = 0;
     int 	mssim;	/* boolean, true for MS simulator packet format, false for raw packet
 			   format */
-    int		rawsingle;	/* boolean, true for raw format with an open and close per
-				   command */
+    int		rawsingle = TRUE;	/* boolean, true for raw format with an open and close per
+					   command.  Initialized to suppress false gcc -O3
+					   warning. */
     
     if (tssVverbose) printf("TSS_Socket_Close: Closing %s-%s\n",
 			    tssContext->tssServerName, tssContext->tssServerType);

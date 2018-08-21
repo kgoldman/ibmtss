@@ -3,7 +3,7 @@
 /*			     IWG EK Index Parsing				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createek.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: createek.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -100,9 +100,10 @@ int main(int argc, char *argv[])
     const char 			*listFilename = NULL;
     unsigned int		inputCount = 0;
     unsigned int		algType = 0;
-    TPMI_RH_NV_INDEX		ekCertIndex;
-    TPMI_RH_NV_INDEX		ekNonceIndex;
-    TPMI_RH_NV_INDEX		ekTemplateIndex;
+    /* initialized to suppress false gcc -O3 warning */
+    TPMI_RH_NV_INDEX		ekCertIndex = 0;
+    TPMI_RH_NV_INDEX		ekNonceIndex = 0;
+    TPMI_RH_NV_INDEX		ekTemplateIndex = 0;
     TPMT_PUBLIC 		tpmtPublic;
     char			*rootFilename[MAX_ROOTS];
     unsigned int		rootFileCount = 0;

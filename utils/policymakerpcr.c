@@ -3,7 +3,7 @@
 /*			   policymakerpcr					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymakerpcr.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
+/*	      $Id: policymakerpcr.c 1304 2018-08-20 18:31:45Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -112,7 +112,8 @@ int main(int argc, char *argv[])
     const char 		*outFilename = NULL;
     FILE 		*inFile = NULL;
     FILE 		*outFile = NULL;
-    uint32_t           	sizeInBytes;		/* hash algorithm mapped to size */
+    /* initialized to suppress false gcc -O3 warning */
+    uint32_t           	sizeInBytes = 0;	/* hash algorithm mapped to size */
     uint32_t	  	pcrmask = 0xffffffff;	/* pcr register mask */
     TPML_PCR_SELECTION	pcrs;
     unsigned int 	pcrCount = 0;

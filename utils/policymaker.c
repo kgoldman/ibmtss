@@ -3,7 +3,7 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymaker.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: policymaker.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
@@ -92,8 +92,9 @@ int main(int argc, char *argv[])
     int			nz = FALSE;
     int			noSpace = FALSE;
     TPMT_HA 		digest;
-    uint32_t           	sizeInBytes;		/* hash algorithm mapped to size */
-    uint32_t           	startSizeInBytes;	/* starting buffer for extend */
+    /* initialized to suppress false gcc -O3 warning */
+    uint32_t           	sizeInBytes = 0;	/* hash algorithm mapped to size */
+    uint32_t           	startSizeInBytes = 0;	/* starting buffer for extend */
     FILE 		*inFile = NULL;
     FILE 		*outFile = NULL;
 

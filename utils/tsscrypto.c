@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
-/*	      $Id: tsscrypto.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: tsscrypto.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -628,7 +628,10 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     CURVE_DATA 		eCurveData;
 
     eCurveData.ctx = NULL;	/* for free */
-   /* only NIST P256 is currently supported */
+    eCurveData.G = NULL;	/* this is initialized in TSS_ECC_GeneratePlatformEphemeralKey() at
+				   EC_GROUP_new() but gcc -O3 emits a warning that it's
+				   uninitialized. */
+    /* only NIST P256 is currently supported */
     if (rc == 0) {
 	if ((publicArea->parameters.eccDetail.curveID != TPM_ECC_NIST_P256)) {
 	    if (tssVerbose)

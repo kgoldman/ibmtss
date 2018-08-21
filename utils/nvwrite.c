@@ -3,7 +3,7 @@
 /*			    NV Write		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvwrite.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
+/*	      $Id: nvwrite.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -69,8 +69,9 @@ int main(int argc, char *argv[])
     TSS_CONTEXT			*tssContext = NULL;
     NV_Write_In 		in;
     uint16_t 			offset = 0;			/* default 0 */
-    uint32_t 			pinPass;
-    uint32_t 			pinLimit;
+    uint32_t 			pinPass = 0;	/* these two initialized to suppress falose gcc -O3
+						   warnings */
+    uint32_t 			pinLimit = 0;
     int				inData = FALSE;
     unsigned int		dataSource = 0;
     const char 			*commandData = NULL;
@@ -322,7 +323,8 @@ int main(int argc, char *argv[])
 	bytesWritten = 0;
     }
     while ((rc == 0) && !done) {
-	uint16_t writeBytes;		/* bytes to write in this pass */
+	uint16_t writeBytes = 0;		/* bytes to write in this pass, initialized to
+						   suppress false gcc -O3 warning */
 	if (rc == 0) {
 	    /* for data from file, write a chunk */
 	    if (datafilename != NULL) {

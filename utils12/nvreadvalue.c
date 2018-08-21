@@ -3,7 +3,7 @@
 /*			    TPM 1.2 NV_ReadValue				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvreadvalue.c 1294M 2018-08-13 17:59:26Z (local) $		*/
+/*	      $Id: nvreadvalue.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/

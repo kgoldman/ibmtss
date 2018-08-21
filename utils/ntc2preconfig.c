@@ -3,7 +3,7 @@
 /*			   Nuvoton Preconfig 	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2preconfig.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: ntc2preconfig.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
@@ -84,7 +84,8 @@ int main(int argc, char *argv[])
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     memset(&preConfigSet, 0, sizeof(NTC2_CFG_STRUCT));	/* default nothing to change */
-    
+    memset(&preConfigIn, 0, sizeof(NTC2_CFG_STRUCT));   /* initialized to suppress false gcc -O3
+							   warning */
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	int inttmp;	/* for sccanf */
