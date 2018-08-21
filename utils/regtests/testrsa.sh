@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testrsa.sh 1302 2018-08-20 16:46:41Z kgoldman $			#
+#	$Id: testrsa.sh 1307 2018-08-20 19:43:29Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -221,11 +221,10 @@ echo "Flush the encryption key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
-
 rm -f tmpmsg.bin
 rm -f tmpdig.bin
 rm -f tmpsig.bin
-rm -f tmpprivkey,bin 
+rm -f tmpprivkey.bin 
 rm -f tmppubkey.bin
 rm -f tmppubkey.pem
 rm -f tmpprivkey.pem

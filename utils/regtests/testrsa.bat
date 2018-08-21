@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testrsa.bat 1301 2018-08-15 21:46:19Z kgoldman $		#
+REM #		$Id: testrsa.bat 1307 2018-08-20 19:43:29Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015 - 2018					#
 REM # 										#
@@ -245,9 +245,52 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+echo ""
+echo "Encrypt with OpenSSL OAEP, decrypt with TPM"
+echo ""
+
+echo "Create OAEP encruption key"
+%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha1 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out	
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load encryption key at 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipr tmpprivkey.bin -ipu tmppubkey.bin  > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Encrypt using OpenSSL and the PEM public key"
+openssl rsautl -oaep -encrypt -inkey tmppubkey.pem -pubin -in policies/aaa -out enc.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Decrypt using TPM key at 80000001"
+%TPM_EXE_PATH%rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the decrypt result"
+diff policies/aaa dec.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the encryption key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
 rm -f tmpmsg.bin
 rm -f tmpdig.bin
 rm -f tmpsig.bin
+rm -f tmpprivkey.bin 
+rm -f tmppubkey.bin
+rm -f tmppubkey.pem
 rm -f tmpprivkey.pem
 rm -f tmpkeypair.pem
 rm -f tmpkeypair.der
