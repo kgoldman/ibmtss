@@ -3,7 +3,7 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: initkeys.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
+REM		$Id: initkeys.bat 1306 2018-08-20 19:33:17Z kgoldman $		#
 REM										#
 REM (c) Copyright IBM Corporation 2015, 2018					#
 REM 										#
@@ -56,13 +56,13 @@ echo "Initialize Regression Test Keys"
 echo ""
 
 echo "Create a platform primary storage key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk sto > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto -tk pritk.bin -ch prich.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
 echo "Create an RSA storage key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr storepriv.bin -opu storepub.bin -pwdp sto -pwdk sto > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr storepriv.bin -opu storepub.bin -tk stotk.bin -ch stoch.bin -pwdp sto -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )

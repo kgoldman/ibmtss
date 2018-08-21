@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testattest.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
+REM #		$Id: testattest.bat 1306 2018-08-20 19:33:17Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2018					#
 REM # 										#
@@ -315,6 +315,137 @@ echo "Flush the session"
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
+
+echo ""
+echo "Certify Creation"
+echo ""
+
+echo "Load the RSA signing key under the primary key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Certify the creation data for the primary key 80000000"
+%TPM_EXE_PATH%certifycreation -ho 80000000 -hk 80000001 -pwdk sig -tk pritk.bin -ch prich.bin -os sig.bin -oa tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature"
+%TPM_EXE_PATH%verifysignature -hk 80000001 -if tmp.bin -is sig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the RSA storage key under the primary key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Certify the creation data for the storage key 80000002"
+%TPM_EXE_PATH%certifycreation -ho 80000002 -hk 80000001 -pwdk sig -tk stotk.bin -ch stoch.bin -os sig.bin -oa tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the signature"
+%TPM_EXE_PATH%verifysignature -hk 80000001 -if tmp.bin -is sig.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the storage key 80000002"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the signing key 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Audit a PCR Read"
+echo ""
+
+for %%H in (%ITERATE_ALGS%) do (
+
+    echo "Start an audit session %%H"
+    %TPM_EXE_PATH%startauthsession -se h -halg %%H > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "PCR 16 reset"
+    %TPM_EXE_PATH%pcrreset -ha 16 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    cp policies/zero%%H.bin tmpdigestr.bin
+
+    echo "PCR 16 read %%H"
+    %TPM_EXE_PATH%pcrread -ha 16 -halg %%H -se0 02000000 81 -ahalg %%H -iosad tmpdigestr.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Get session audit digest"
+    %TPM_EXE_PATH%getsessionauditdigest -hs 02000000 -od tmpdigestg.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Check session audit digest"
+    diff tmpdigestr.bin tmpdigestg.bin
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Extend PCR 16"
+    %TPM_EXE_PATH%pcrextend -ha 16 -halg %%H -ic aaa > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "PCR 16 read %%H"
+    %TPM_EXE_PATH%pcrread -ha 16 -halg %%H -se0 02000000 81 -ahalg %%H -iosad tmpdigestr.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+     echo "Get session audit digest"
+    %TPM_EXE_PATH%getsessionauditdigest -hs 02000000 -od tmpdigestg.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Check session audit digest"
+    diff tmpdigestr.bin tmpdigestg.bin
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the audit session"
+    %TPM_EXE_PATH%flushcontext -ha 02000000
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+)
+
+REM cleanup
+
+rm -f tmppriv.bin
+rm -f tmppub.bin
+rm -f tmpdigestr.bin
+rm -f tmpdigestg.bin
+rm -f sig.bin
+rm -f tmp.bin
 
 exit /B 0
 
