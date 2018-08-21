@@ -3,7 +3,7 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: tssproperties.c 1308 2018-08-21 16:55:56Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2017.					*/
 /*										*/
@@ -160,7 +160,6 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 	tssContext->dev_fd = -1;
 #ifdef TPM_WINDOWS
 #ifdef TPM_WINDOWS_TBSI
-	tssContext->hContext;
 #endif
 #endif
 #ifndef TPM_TSS_NOCRYPTO

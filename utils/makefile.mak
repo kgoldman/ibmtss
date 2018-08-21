@@ -3,7 +3,7 @@
 #			Windows MinGW TPM2 Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mak 1294 2018-08-09 19:08:34Z kgoldman $		#
+#	      $Id: makefile.mak 1309 2018-08-21 20:40:41Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2018					#
 # 										#
@@ -109,8 +109,11 @@ include makefile-common20
 
 # CCFLAGS +=	-DTPM_WINDOWS_TBSI		\
 # 		-DTPM_WINDOWS_TBSI_WIN8		\
-
 # 		-D_WIN32_WINNT=0x0600
+
+# or 
+# 		-DTPM_WINDOWS_TBSI_WIN7		\
+
 
 # TSS_OBJS += tsstbsi.o 
 

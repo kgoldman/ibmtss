@@ -3,7 +3,7 @@
 /*	Windows 7,8,10 Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstbsi.c 1294 2018-08-09 19:08:34Z kgoldman $ 		*/
+/*	      $Id: tsstbsi.c 1308 2018-08-21 16:55:56Z kgoldman $ 		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -67,6 +67,7 @@
 #include <limits.h>
 
 #include <windows.h>
+#include <winerror.h>
 #include <specstrings.h>
 
 #include <ibmtss/tssresponsecode.h>
@@ -116,14 +117,14 @@ TPM_RC TSS_Tbsi_Transmit(TSS_CONTEXT *tssContext,
 #if defined TPM_WINDOWS_TBSI_WIN7
     TBS_CONTEXT_PARAMS contextParams;
 #elif defined  TPM_WINDOWS_TBSI_WIN8
-    TBS_CONTEXT_PARAMS contextParams;
+    TBS_CONTEXT_PARAMS2 contextParams;
 #else
 #error "One of TPM_WINDOWS_TBSI_WIN7 or TPM_WINDOWS_TBSI_WIN8 must be defined"
 #endif
 
     if (rc == 0) {
 #if defined TPM_WINDOWS_TBSI_WIN7
-	if (!tssContext->>tpm12Command) {
+	if (!tssContext->tpm12Command) {
 	    if (tssVerbose) printf("TSS_Tbsi_Transmit: TPM 2.0 unsupported\n");
 	    rc = TSS_RC_INSUPPORTED_INTERFACE;
 	}
