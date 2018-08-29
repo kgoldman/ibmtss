@@ -3,9 +3,9 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testpolicy.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
+REM #		$Id: testpolicy.bat 1317 2018-08-29 18:14:51Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -845,24 +845,24 @@ REM # 03000000 policy session
 
 REM # Name for 80000001 0004 4234 c24f c1b9 de66 93a6 2453 417d 2734 d753 8f6f
 REM #
-REM # policyauthorize.txt
-REM # 0000016a00044234c24fc1b9de6693a62453417d2734d7538f6f
+REM # policyauthorizesha256.txt
+REM # 0000016a000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
 REM #
 REM # (need blank line for policyRef)
 REM #
-REM # > policymaker -if policies/policyauthorize.txt -of policies/policyauthorize.bin -pr
+REM # > policymaker -if policies/policyauthorizesha256.txt -of policies/policyauthorizesha256.bin -pr
 REM #
-REM # 46 d4 8c 7e 17 0a 71 ca 9e 1f c7 e1 77 e5 7b 53 
-REM # 75 df c4 3a 44 c9 65 4b 18 97 ce b1 92 e0 21 50 
+REM # eb a3 f9 8c 5e af 1e a8 f9 4f 51 9b 4d 2a 31 83 
+REM # ee 79 87 66 72 39 8e 23 15 d9 33 c2 88 a8 e5 03 
 
 echo "Create a signing key with policy authorize"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyauthorize.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyauthorizesha256.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Load external just the public part of PEM authorizing key"
-%TPM_EXE_PATH%loadexternal -hi p -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
+%TPM_EXE_PATH%loadexternal -hi p -halg sha256 -nalg sha256 -ipem policies/rsapubkey.pem > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -898,10 +898,10 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Openssl generate aHash"
-openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policyapproved.bin
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policyapproved.bin
 
 echo "Verify the signature to generate ticket"
-%TPM_EXE_PATH%verifysignature -hk 80000001 -halg sha1 -if policyapproved.bin -is pssig.bin -raw -tk tkt.bin > run.out
+%TPM_EXE_PATH%verifysignature -hk 80000001 -halg sha256 -if policyapproved.bin -is pssig.bin -raw -tk tkt.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1063,7 +1063,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "PCR extend PCR 0, updates pcr counter"
-%TPM_EXE_PATH%pcrextend -ha 0 -halg sha1 -ic policies/aaa > run.out
+%TPM_EXE_PATH%pcrextend -ha 0 -halg sha1 -if policies/aaa > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1153,7 +1153,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "PCR extend PCR 16"
-%TPM_EXE_PATH%pcrextend -ha 16 -halg sha1 -ic policies/aaa > run.out
+%TPM_EXE_PATH%pcrextend -ha 16 -halg sha1 -if policies/aaa > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1960,18 +1960,19 @@ echo "Policy Duplication Select with includeObject TRUE"
 echo ""
 
 REM # command code 00000188
-REM # newParentName
+REM # SI objectName
+REM # 000b 6319 28da 1624 3135 3a59 c03a 2ca7
+REM # dbb7 0989 1440 4236 3c7f a838 39d9 da6c
+REM # 437a
+REM # HP newParentName
 REM # 000b 
 REM # 1a5d f667 7533 4527 37bc 79a5 5ab6 d9fa 
 REM # 9174 5c03 3dfe 3f82 cdf0 903b a9d6 55f1
-REM # objectName
-REM # 000b 
-REM # 7601 a382 a1fa 6407 8180 62ee b389 6d80 
-REM # e5a9 5eac db5f fa8e 4e0d c009 c83f 3195
 REM # includeObject 01
+REM
 REM # policymaker -if policies/policydupsel-yes.txt -of policies/policydupsel-yes.bin -pr -v
-REM # 9c 09 51 b0 31 ca 76 c3 03 0e e0 aa fa 97 f7 4f 
-REM # b6 1b 01 fe 47 f4 04 37 31 7e af 32 f7 09 fe a9 
+REM # 14 64 06 4c 80 cb e3 4f f5 03 82 15 38 62 43 17 
+REM # 93 94 8f f1 e8 8a c6 23 4d d1 b0 c5 4c 05 f7 3b 
 REM 
 REM # 80000000 SK storage primary key
 REM # 80000001 NP new parent, the target of the duplication
@@ -1979,12 +1980,12 @@ REM # 80000002 SI signing key, duplicate from SK to NP
 REM # 03000000 policy session
 
 echo "Import a signing key SI under the primary key 80000000, with policy authorize"
-%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorizesha256.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Load the signing key SI at 80000002"
+echo "Load the signing key SI  with objectName 000b 6319 28da at 80000002"
 %TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipu tmpsipub.bin -ipr tmpsipriv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -2014,7 +2015,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Get policy digest,should be policy to approve, aHash input 9c 09 51 b0 same as policies/policydupsel-yes.bin"
+echo "Get policy digest,should be policy to approve, aHash input 14 64 06 4c same as policies/policydupsel-yes.bin"
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -2027,16 +2028,16 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Openssl generate and sign aHash (empty policyRef)"
-openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policydupsel-yes.bin
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policydupsel-yes.bin
 
 echo "Load external just the public part of PEM authorizing key 80000002"
-%TPM_EXE_PATH%loadexternal -hi p -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
+%TPM_EXE_PATH%loadexternal -hi p -halg sha256 -nalg sha256 -ipem policies/rsapubkey.pem > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Verify the signature against 80000002 to generate ticket"
-%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha1 -if policies/policydupsel-yes.bin -is pssig.bin -raw -tk tkt.bin > run.out
+%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha256 -if policies/policydupsel-yes.bin -is pssig.bin -raw -tk tkt.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2047,7 +2048,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Get policy digest, should be 46 d4 8c 7e ...."
+echo "Get policy digest"
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -2065,7 +2066,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Duplicate signing key SI at 80000002 under new parent TPM storage key NP 80000001"
+echo "Duplicate signing key SI at 80000002 under new parent TPM storage key NP 80000001 000b 1a5d f667"
 %TPM_EXE_PATH%duplicate -ho 80000002 -hp 80000001 -od tmpdup.bin -oss tmpss.bin -se0 03000000 0 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -2119,26 +2120,26 @@ echo ""
 
 REM # signing key SI Name
 REM # 000b 
-REM # 7601 a382 a1fa 6407 8180 62ee b389 6d80 
-REM # e5a9 5eac db5f fa8e 4e0d c009 c83f 3195
+REM # 6319 28da 1624 3135 3a59 c03a 2ca7 dbb7 
+REM # 0989 1440 4236 3c7f a838 39d9 da6c 437a 
 REM 
-REM #compute nameHash
+REM # compute nameHash
 REM 
 REM # nameHash - just a hash, not an extend
 REM # policymaker -if policies/pnhnamehash.txt -of policies/pnhnamehash.bin -nz -pr -v -ns
-REM # e8 6a 85 01 60 c9 32 0b 2b 61 f7 97 38 c4 e6 06 
-REM # 5f 43 5d cb b8 e7 9e d4 14 fe 8f 93 27 b4 62 62 
-REM # e86a850160c9320b2b61f79738c4e6065f435dcbb8e79ed414fe8f9327b46262
+REM # 18 e0 0c 62 77 18 d9 fc 81 22 3d 8a 56 33 7e eb 
+REM # 0e 7d 98 28 bd 7b c7 29 1d 3c 27 3f 7a c4 04 f1 
+REM # 18e00c627718d9fc81223d8a56337eeb0e7d9828bd7bc7291d3c273f7ac404f1
 REM 
 REM # compute policy (based on 
 REM 
 REM # 00000170 TPM_CC_PolicyNameHash
 REM # signing key SI Name
-REM # e86a850160c9320b2b61f79738c4e6065f435dcbb8e79ed414fe8f9327b46262
+REM # 18e00c627718d9fc81223d8a56337eeb0e7d9828bd7bc7291d3c273f7ac404f1
 REM 
 REM # policymaker -if policies/policynamehash.txt -of policies/policynamehash.bin -pr -v
-REM # 54 20 1d 4b 59 65 5a 10 cc be 5d 14 5f af cd fc 
-REM # 91 07 d3 cb 29 c6 d3 e3 4b c0 1f 91 eb ea 46 ca 
+REM # 96 30 f9 00 c3 4c 66 09 c1 c5 92 41 78 c1 b2 3d 
+REM # 9f d4 93 f4 f9 c2 98 c8 30 4a e3 0f 97 a2 fd 49 
 REM 
 REM # 80000000 SK storage primary key
 REM # 80000001 SI signing key
@@ -2146,7 +2147,7 @@ REM # 80000002 Authorizing public key
 REM # 03000000 policy session
 
 echo "Import a signing key SI under the primary key 80000000, with policy authorize"
-%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorize.bin > run.out
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policyauthorizesha256.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2181,23 +2182,23 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Get policy digest,should be policy to approve, 54 20 1d 4b"
+echo "Get policy digest, should be policy to approve, 96 30 f9 00"
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Openssl generate and sign aHash (empty policyRef)"
-openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policynamehash.bin
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policynamehash.bin
 
 echo "Load external just the public part of PEM authorizing key 80000002"
-%TPM_EXE_PATH%loadexternal -hi p -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
+%TPM_EXE_PATH%loadexternal -hi p -halg sha256 -nalg sha256 -ipem policies/rsapubkey.pem > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Verify the signature against 80000002 to generate ticket"
-%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha1 -if policies/policynamehash.bin -is pssig.bin -raw -tk tkt.bin > run.out
+%TPM_EXE_PATH%verifysignature -hk 80000002 -halg sha256 -if policies/policynamehash.bin -is pssig.bin -raw -tk tkt.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2208,7 +2209,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Get policy digest, should be 46 d4 8c 7e ...."
+echo "Get policy digest, should be eb a3 f9 8c ...."
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1

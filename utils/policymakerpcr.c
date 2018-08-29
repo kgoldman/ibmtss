@@ -3,7 +3,7 @@
 /*			   policymakerpcr					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymakerpcr.c 1304 2018-08-20 18:31:45Z kgoldman $	*/
+/*	      $Id: policymakerpcr.c 1315 2018-08-28 14:27:28Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -88,8 +88,6 @@
 #include <ibmtss/tsscrypto.h>
 #include <ibmtss/tssmarshal.h>
 
-#define MAX_DIGEST_SIZE      64		/* PCR - SHA-512 */
-
 static void printUsage(void);
 static void printPolicyPCR(FILE *out,
 			   uint32_t           	sizeInBytes,         		
@@ -120,7 +118,7 @@ int main(int argc, char *argv[])
     TPMU_HA		pcr[IMPLEMENTATION_PCR];	/* all the PCRs */
     int			pr = FALSE;
     TPMT_HA 		digest;
-    uint8_t		pcrBytes[IMPLEMENTATION_PCR * MAX_DIGEST_SIZE];
+    uint8_t		pcrBytes[IMPLEMENTATION_PCR * sizeof(TPMU_HA)];
     uint16_t		pcrLength;
 
     /* command line defaults */
@@ -283,7 +281,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	unsigned int pc;
 	uint8_t *buffer = pcrBytes;
-	uint32_t size = IMPLEMENTATION_PCR * MAX_DIGEST_SIZE;
+	uint32_t size = IMPLEMENTATION_PCR * sizeof(TPMU_HA);
 	pcrLength = 0;
 	for (pc = 0 ; (rc == 0) && (pc < pcrCount) ; pc++) {
 	    rc = TSS_Array_Marshalu((uint8_t *)&pcr[pc], sizeInBytes, &pcrLength, &buffer, &size);

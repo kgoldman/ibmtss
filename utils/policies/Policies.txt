@@ -3,7 +3,7 @@
 #			TPM2 regression test Directory of files			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: Policies.txt 1275 2018-07-23 18:37:45Z kgoldman $		#
+#		$Id: Policies.txt 1316 2018-08-29 14:34:01Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2018					#
 # 										#
@@ -44,7 +44,10 @@ the policyRef.  An empty policyRef is represented by a blank line.
 aaa					the characters aaa
 bits48321601.bin			uint64 with those bits set
 msgtpmgen.bin				message with TPM_GENERATED
-policyauthorize.txt			policy authorize
+policyauthorizesha1.txt			policyauthorize using rsapubkey.pem
+policyauthorizesha256.txt		"
+policyauthorizesha384.txt		"
+policyauthorizesha512.txt		"
 policyauthorizenv.txt			policy authorize NV
 policyccactivate.txt			policy command code activate credential
 policycccertify.txt			policy command code certify
