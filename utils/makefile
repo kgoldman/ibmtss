@@ -3,7 +3,7 @@
 #		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 1294 2018-08-09 19:08:34Z kgoldman $		#
+#	      $Id: makefile 1310 2018-08-21 21:10:13Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014, 2018					#
 # 										#
