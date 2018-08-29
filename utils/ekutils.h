@@ -3,7 +3,7 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: ekutils.h 1315 2018-08-28 14:27:28Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016, 2017.					*/
 /*										*/
@@ -119,8 +119,6 @@ extern "C" {
     TPM_RC convertX509ToDer(uint32_t *certLength,
 			    unsigned char **certificate,
 			    X509 *x509Certificate);
-    TPM_RC convertX509ToRsa(RSA  **rsaPkey,
-			    X509 *x509);
 #ifndef TPM_TSS_NOECC
     TPM_RC convertX509ToEc(EC_KEY **ecKey,
 			   X509 *x509);

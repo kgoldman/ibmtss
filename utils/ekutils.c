@@ -3,7 +3,7 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: ekutils.c 1315 2018-08-28 14:27:28Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
@@ -418,8 +418,6 @@ uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
 
 #endif
 
-#ifndef TPM_TSS_NOFILE
-
 /* getPubKeyFromX509Cert() gets an OpenSSL RSA public key token from an OpenSSL X509 certificate
    token. */
 
@@ -448,8 +446,6 @@ uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
     }
     return rc;
 }
-
-#endif
 
 #ifndef TPM_TSS_NOFILE
 
@@ -628,7 +624,10 @@ TPM_RC verifyCertificate(X509 *x509Certificate,
     }
     /* add the root certificate store and EK certificate to be verified to the verify context */
     if (rc == 0) {
-	int irc = X509_STORE_CTX_init(verifyCtx, caStore, x509Certificate, NULL);
+	int irc = X509_STORE_CTX_init(verifyCtx,
+				      caStore,		/* trusted certificates */
+				      x509Certificate,	/* end entity certificate */
+				      NULL);		/* untrusted (intermediate) certificates */
 	if (irc != 1) {
 	    printf("verifyCertificate: "
 		   "Error in X509_STORE_CTX_init initializing verify context\n");  
@@ -861,37 +860,6 @@ TPM_RC convertX509ToDer(uint32_t *certLength,
 	    printf("ERROR: convertX509ToDer: Error in certificate serialization i2d_X509()\n");
 	    rc = TSS_RC_X509_ERROR;
 	}
-    }
-    return rc;
-}
-
-/* convertX509ToRsa extracts the public key from an X509 structure to an openssl RSA structure
-
- */
-
-TPM_RC convertX509ToRsa(RSA  **rsaPkey,	/* freed by caller */
-			X509 *x509)
-{
-    TPM_RC rc = 0;
-    EVP_PKEY *evpPkey = NULL;
-
-    if (verbose) printf("convertX509ToRsa: Entry\n\n");
-    if (rc == 0) {
-	evpPkey = X509_get_pubkey(x509);	/* freed @1 */
-	if (evpPkey == NULL) {
-	    printf("ERROR: convertX509ToRsa: X509_get_pubkey failed\n");  
-	    rc = TSS_RC_RSA_KEY_CONVERT;
-	}
-    }
-    if (rc == 0) {
-	*rsaPkey = EVP_PKEY_get1_RSA(evpPkey);
-	if (*rsaPkey == NULL) {
-	    printf("ERROR: convertX509ToRsa: EVP_PKEY_get1_RSA failed\n");  
-	    rc = TSS_RC_RSA_KEY_CONVERT;
-	}
-    }
-    if (evpPkey != NULL) {
-	EVP_PKEY_free(evpPkey);		/* @1 */
     }
     return rc;
 }
