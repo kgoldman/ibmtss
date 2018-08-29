@@ -3,7 +3,7 @@
 /*			 Headers from Part 2    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 1294 2018-08-09 19:08:34Z kgoldman $		*/
+/*            $Id: TPM_Types.h 1315 2018-08-28 14:27:28Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -1348,6 +1348,10 @@ typedef union {
     BYTE	tssmax [128];			/* to make union size larger */
     
 } TPMU_HA;
+
+/* legacy, better to use (sizeof(TPMU_HA) */
+    
+#define MAX_DIGEST_SIZE (sizeof(TPMU_HA))    
 
 /* Table 70 - Definition of TPMT_HA Structure <IN/OUT> */
 
