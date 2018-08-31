@@ -3,7 +3,7 @@
 /*			    TSS Primary API for TPM 2.0				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss20.c 1294 2018-08-09 19:08:34Z kgoldman $			*/
+/*	      $Id: tss20.c 1324 2018-08-31 16:36:12Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -1920,9 +1920,10 @@ static TPM_RC TSS_Public_Load(TSS_CONTEXT *tssContext,
     }
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_Public_Load: File %s\n", publicFilename);
-	rc = TSS_File_ReadStructure(public,
-				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshalu,
-				    publicFilename);
+	rc = TSS_File_ReadStructureFlag(public,
+					(UnmarshalFunctionFlag_t)TSS_TPM2B_PUBLIC_Unmarshalu,
+					TRUE,			/* NULL permitted */
+					publicFilename);
     }
     return rc;
 }

@@ -3,7 +3,7 @@
 /*			TSS and Application Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssutils.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: tssutils.h 1324 2018-08-31 16:36:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -55,6 +55,7 @@ extern "C" {
 #endif
 
     typedef TPM_RC (*UnmarshalFunction_t)(void *target, uint8_t **buffer, uint32_t *size);
+    typedef TPM_RC (*UnmarshalFunctionFlag_t)(void *target, uint8_t **buffer, uint32_t *size, BOOL allowNull);
     typedef TPM_RC (*MarshalFunction_t)(void *source, uint16_t *written, uint8_t **buffer, uint32_t *size);
 
     LIB_EXPORT

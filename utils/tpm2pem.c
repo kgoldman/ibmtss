@@ -3,7 +3,7 @@
 /*		    TPM public key TPM2B_PUBLIC to PEM 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tpm2pem.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: tpm2pem.c 1324 2018-08-31 16:36:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016 - 2018					*/
 /*										*/
@@ -111,9 +111,10 @@ int main(int argc, char *argv[])
     }
     /* read the TPM public key to a structure */
     if (rc == 0) {
-	rc = TSS_File_ReadStructure(&public,
-				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshalu,
-				    publicKeyFilename);
+	rc = TSS_File_ReadStructureFlag(&public,
+					(UnmarshalFunctionFlag_t)TSS_TPM2B_PUBLIC_Unmarshalu,
+					TRUE,			/* NULL permitted */
+					publicKeyFilename);
     }
     /* convert to PEM format and write file */
     if (rc == 0) {

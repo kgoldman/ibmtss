@@ -3,7 +3,7 @@
 /*			TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssfile.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: tssfile.h 1324 2018-08-31 16:36:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -72,6 +72,11 @@ extern "C" {
     TPM_RC TSS_File_ReadStructure(void 			*structure,
 				  UnmarshalFunction_t 	unmarshalFunction,
 				  const char 		*filename);
+    LIB_EXPORT 
+    TPM_RC TSS_File_ReadStructureFlag(void 			*structure,
+				      UnmarshalFunctionFlag_t 	unmarshalFunction,
+				      BOOL 			allowNull,
+				      const char 		*filename);
     LIB_EXPORT 
     TPM_RC TSS_File_WriteStructure(void 			*structure,
 				   MarshalFunction_t 	marshalFunction,

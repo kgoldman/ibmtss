@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsign.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
+REM #		$Id: testsign.bat 1324 2018-08-31 16:36:12Z kgoldman $		#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015, 2018					#
 REM # 										#
@@ -269,8 +269,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo ""
-echo "Primary ECC Signing Key
-"
+echo "Primary ECC Signing Key"
 echo ""
 
 echo "Create primary signing key - ECC 80000001"

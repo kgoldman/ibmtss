@@ -3,7 +3,7 @@
 /*			    TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssfile.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
+/*		$Id: tssfile.c 1324 2018-08-31 16:36:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
@@ -208,6 +208,30 @@ TPM_RC TSS_File_ReadStructure(void 			*structure,
 	uint32_t ilength = length;
 	buffer1 = buffer;
 	rc = unmarshalFunction(structure, &buffer1, &ilength);
+    }
+    free(buffer);
+    return rc;
+}
+
+TPM_RC TSS_File_ReadStructureFlag(void 				*structure,
+				  UnmarshalFunctionFlag_t 	unmarshalFunction,
+				  BOOL 				allowNull,
+				  const char 			*filename)
+{
+    TPM_RC 	rc = 0;
+    uint8_t	*buffer = NULL;		/* for the free */
+    uint8_t	*buffer1 = NULL;	/* for unmarshaling */
+    size_t 	length = 0;
+
+    if (rc == 0) {
+	rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+				     &length,
+				     filename);
+    }
+    if (rc == 0) {
+	uint32_t ilength = length;
+	buffer1 = buffer;
+	rc = unmarshalFunction(structure, &buffer1, &ilength, allowNull);
     }
     free(buffer);
     return rc;

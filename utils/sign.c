@@ -3,7 +3,7 @@
 /*			    Sign						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: sign.c 1290 2018-08-01 14:45:24Z kgoldman $			*/
+/*	      $Id: sign.c 1324 2018-08-31 16:36:12Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -391,9 +391,10 @@ int main(int argc, char *argv[])
 	TPM2B_PUBLIC 	public;
 	RSA         	*rsaPubKey = NULL;
 	if (rc == 0) {
-	    rc = TSS_File_ReadStructure(&public,
-					(UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshalu,
-					publicKeyFilename);
+	    rc = TSS_File_ReadStructureFlag(&public,
+					    (UnmarshalFunctionFlag_t)TSS_TPM2B_PUBLIC_Unmarshalu,
+					    TRUE,			/* NULL permitted */
+					    publicKeyFilename);
 	}
 	/* construct the OpenSSL RSA public key token */
 	if (rc == 0) {

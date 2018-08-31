@@ -3,7 +3,7 @@
 /*			   Import		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: import.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
+/*	      $Id: import.c 1324 2018-08-31 16:36:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -296,9 +296,10 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	rc = TSS_File_ReadStructure(&in.objectPublic,
-				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshalu,
-				    objectPublicFilename);
+	rc = TSS_File_ReadStructureFlag(&in.objectPublic,
+					(UnmarshalFunctionFlag_t)TSS_TPM2B_PUBLIC_Unmarshalu,
+					FALSE,			/* NULL not permitted */
+					objectPublicFilename);
     }
     if (rc == 0) {
 	rc = TSS_File_Read2B(&in.duplicate.b,

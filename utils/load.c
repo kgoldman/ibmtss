@@ -3,7 +3,7 @@
 /*			   Load 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: load.c 1290 2018-08-01 14:45:24Z kgoldman $			*/
+/*	      $Id: load.c 1324 2018-08-31 16:36:12Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -213,9 +213,10 @@ int main(int argc, char *argv[])
 				    privateKeyFilename);
     }
     if (rc == 0) {
-	rc = TSS_File_ReadStructure(&in.inPublic,
-				    (UnmarshalFunction_t)TSS_TPM2B_PUBLIC_Unmarshalu,
-				    publicKeyFilename);
+	rc = TSS_File_ReadStructureFlag(&in.inPublic,
+					(UnmarshalFunctionFlag_t)TSS_TPM2B_PUBLIC_Unmarshalu,
+					FALSE,			/* NULL not permitted */
+					publicKeyFilename);
     }
     if (rc == 0) {
 	in.parentHandle = parentHandle;
