@@ -63,9 +63,6 @@
     <ClCompile Include="..\..\utils\Commands.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\utils\fail.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\utils\Unmarshal.c">
       <Filter>Source Files</Filter>
     </ClCompile>

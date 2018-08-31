@@ -84,7 +84,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\utils\CommandAttributeData.c" />
     <ClCompile Include="..\..\utils\Commands.c" />
-    <ClCompile Include="..\..\utils\fail.c" />
     <ClCompile Include="..\..\utils\tss.c" />
     <ClCompile Include="..\..\utils\tss20.c" />
     <ClCompile Include="..\..\utils\tssauth.c" />
