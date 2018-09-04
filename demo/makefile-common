@@ -2,7 +2,7 @@
 #			   TPM2 demo common makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile-common 1234 2018-05-29 18:59:51Z kgoldman $		#
+#	      $Id: makefile-common 1327 2018-08-31 19:32:58Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2016, 2018					#
 # 										#
@@ -73,8 +73,8 @@ all:					\
 	$(DEST)/policies/policypcr16aaasha256.bin	\
 	$(DEST)/policies/policypcr16aaasha1.bin	\
 					\
-	$(DEST)/libibmtss.so.0.1	\
-	$(DEST)/libibmtssutils.so.0.1	\
+	$(DEST)/libibmtss.so.1.1	\
+	$(DEST)/libibmtssutils.so.1.1	\
 					\
 	$(DEST)/clockset		\
 	$(DEST)/create			\
@@ -115,17 +115,17 @@ $(DEST)/policies/policypcr16aaasha1.bin:	$(SRCUTILS)/policies/policypcr16aaasha1
 	cp $(SRCUTILS)/policies/policypcr16aaasha1.bin $(DEST)/policies/policypcr16aaasha1.bin
 	chmod a+r				$(DEST)/policies/policypcr16aaasha1.bin
 
-$(DEST)/libibmtss.so.0.1:		$(SRCUTILS)/libibmtss.so.0.1
-	cp $(SRCUTILS)/libibmtss.so.0.1 $(DEST)/libibmtss.so.0.1
-	chmod 777 			$(DEST)/libibmtss.so.0.1
-	ln -sf $(DEST)/libibmtss.so.0.1	$(DEST)/libibmtss.so.0
-	ln -sf $(DEST)/libibmtss.so.0	$(DEST)/libibmtss.so
+$(DEST)/libibmtss.so.1.1:		$(SRCUTILS)/libibmtss.so.1.1
+	cp $(SRCUTILS)/libibmtss.so.1.1 $(DEST)/libibmtss.so.1.1
+	chmod 777 			$(DEST)/libibmtss.so.1.1
+	ln -sf $(DEST)/libibmtss.so.1.1	$(DEST)/libibmtss.so.1
+	ln -sf $(DEST)/libibmtss.so.1	$(DEST)/libibmtss.so
 
-$(DEST)/libibmtssutils.so.0.1:			$(SRCUTILS)/libibmtssutils.so.0.1
-	cp $(SRCUTILS)/libibmtssutils.so.0.1 	$(DEST)/libibmtssutils.so.0.1
-	chmod 777 				$(DEST)/libibmtssutils.so.0.1
-	ln -sf $(DEST)/libibmtssutils.so.0.1	$(DEST)/libibmtssutils.so.0
-	ln -sf $(DEST)/libibmtssutils.so.0	$(DEST)/libibmtssutils.so
+$(DEST)/libibmtssutils.so.1.1:			$(SRCUTILS)/libibmtssutils.so.1.1
+	cp $(SRCUTILS)/libibmtssutils.so.1.1 	$(DEST)/libibmtssutils.so.1.1
+	chmod 777 				$(DEST)/libibmtssutils.so.1.1
+	ln -sf $(DEST)/libibmtssutils.so.1.1	$(DEST)/libibmtssutils.so.1
+	ln -sf $(DEST)/libibmtssutils.so.1	$(DEST)/libibmtssutils.so
 
 $(DEST)/pcrread:			$(SRCUTILS)/pcrread	
 	cp $(SRCUTILS)/pcrread		$(DEST)/pcrread
