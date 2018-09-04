@@ -1,11 +1,11 @@
 #################################################################################
 #										#
-#		Linux TPM 1.2 TSS and TPM 2.0 TSS and Utilities Makefile	#
+#		Linux TPM2 Utilities Makefile					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefiletpmc 1318 2018-08-29 19:26:23Z kgoldman $		#
+#	      $Id: makefiletpm20 1328 2018-09-04 15:08:15Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2018						#
+# (c) Copyright IBM Corporation 2014, 2018					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -56,8 +56,7 @@ CCFLAGS += 	-DTPM_POSIX
 
 CCLFLAGS += 	-I. 		\
 		-fPIC		\
-		-DTPM_TPM20	\
-		-DTPM_TPM12
+		-DTPM_TPM20
 
 # to compile out printf's.  Regression test will fail because it tries
 # to print a structure -DTPM_TSS_NO_PRINT
@@ -72,7 +71,6 @@ CCLFLAGS += 	-I. 		\
 
 CCAFLAGS += 	-I.		\
 		-DTPM_TPM20	\
-		-DTPM_TPM12	\
 		-fPIE
 
 # link - common flags flags TSS library and applications
@@ -153,7 +151,6 @@ TSSUTILS_OBJS = cryptoutils.o	\
 # common to all builds
 
 include makefile-common
-include makefile-common12
 include makefile-common20
 
 # default build target
@@ -209,22 +206,6 @@ tss20.o: 	$(TSS_HEADERS) tss20.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tss20.c
 tssauth20.o: 	$(TSS_HEADERS) tssauth20.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth20.c
-# TPM 1.2
-
-tss12.o: 	$(TSS_HEADERS) tss12.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) tss12.c
-tssauth12.o: 	$(TSS_HEADERS) tssauth12.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) tssauth12.c
-tssmarshal12.o:	$(TSS_HEADERS) tssmarshal12.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) tssmarshal12.c
-Unmarshal12.o: 	$(TSS_HEADERS) Unmarshal12.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) Unmarshal12.c
-Commands12.o: 	$(TSS_HEADERS) Commands12.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) Commands12.c
-tssccattributes12.o: $(TSS_HEADERS) tssccattributes12.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) tssccattributes12.c
-CommandAttributeData12.o: 	$(TSS_HEADERS) CommandAttributeData12.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) CommandAttributeData12.c
 
 # TSS utilities shared library source
 
@@ -240,8 +221,7 @@ eventlib.o: 	$(TSS_HEADERS) eventlib.c
 # TSS shared library build
 
 $(LIBTSS): 	$(TSS_OBJS)
-		$(CC) $(LNFLAGS) $(LNLFLAGS) -Wl,-soname,$(LIBTSSSONAME) -o $(LIBTSSVERSIONED) \
-			$(TSS_OBJS) $(LNLLIBS)
+		$(CC) $(LNFLAGS) $(LNLFLAGS) -Wl,-soname,$(LIBTSSSONAME) -o $(LIBTSSVERSIONED) $(TSS_OBJS) $(LNLLIBS)
 		rm -f $(LIBTSSSONAME)
 		ln -sf $(LIBTSSVERSIONED) $(LIBTSSSONAME)
 		rm -f $(LIBTSS)
@@ -267,15 +247,14 @@ clean:
 		$(LIBTSSUTILSSONAME) 	\
 		$(LIBTSSUTILSVERSIONED)	\
 		$(ALL)
-
 # applications
 
 activatecredential:	ibmtss/tss.h activatecredential.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) activatecredential.o $(LNALIBS) -o activatecredential
-eventextend:		eventextend.o eventlib.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o eventlib.o $(LNALIBS) -o eventextend
-imaextend:		imaextend.o imalib.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o imalib.o $(LNALIBS) -o imaextend
+eventextend:		eventextend.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o $(LNALIBS) -o eventextend
+imaextend:		imaextend.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o $(LNALIBS) -o imaextend
 certify:		ibmtss/tss.h certify.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) certify.o $(LNALIBS) -o certify
 certifycreation:	ibmtss/tss.h certifycreation.o $(LIBTSS) $(LIBTSSUTILS)
@@ -300,7 +279,7 @@ contextsave:		ibmtss/tss.h contextsave.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) contextsave.o $(LNALIBS) -o contextsave
 create:			ibmtss/tss.h create.o objecttemplates.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) create.o objecttemplates.o $(LNALIBS) -o create
-createloaded:		ibmtss/tss.h createloaded.o objecttemplates.o $(LIBTSS) $(LIBTTSSUTILS)
+createloaded:		ibmtss/tss.h createloaded.o objecttemplates.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createloaded.o objecttemplates.o $(LNALIBS) -o createloaded
 createprimary:		ibmtss/tss.h createprimary.o objecttemplates.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createprimary.o objecttemplates.o $(LNALIBS) -o createprimary
