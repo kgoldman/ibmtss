@@ -1,4 +1,4 @@
-<!-- $Id: nv.php 1223 2018-05-22 13:56:14Z kgoldman $ -->
+<!-- $Id: nv.php 1329 2018-09-05 15:16:18Z kgoldman $ -->
 
 <?php
 /* (c) Copyright IBM Corporation 2016, 2018					*/
@@ -98,22 +98,22 @@
 		    $attr = hexdec($exp[2]);
 		    printf("Attributes: %08x\n<br>", $attr);
 		    switch ($attr & 0x000000f0) {
-			case '0x00000000':
+			case 0x00000000:
 			    printf("Type: Ordinary\n");
 			    break;
-			case '0x00000010':
+			case 0x00000010:
 			    printf("Type: Counter\n");
 			    break;
-			case '0x00000020':
+			case 0x00000020:
 			    printf("Type: Bits\n");
 			    break;
-			case '0x00000040':
+			case 0x00000040:
 			    printf("Type: Extend\n");
 			    break;
-			case '0x00000080':
+			case 0x00000080:
 			    printf("Type: Pin Fail\n");
 			    break;
-			case '0x00000090':
+			case 0x00000090:
 			    printf("Type: Pin Pass\n");
 			    break;
 			default:
