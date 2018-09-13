@@ -4,23 +4,27 @@ lib_LTLIBRARIES = libibmtss.la
 lib_LTLIBRARIES += libibmtssutils.la
 
 # default TSS Library
-libibmtss_la_SOURCES = tssfile.c tsscryptoh.c tsscrypto.c tssprintcmd.c
+libibmtss_la_SOURCES = tssfile.c tsscryptoh.c tsscrypto.c
 
-# TSS shared library object files
+# TSS shared library object files (utils/makefile-common)
 libibmtss_la_SOURCES += tss.c tssproperties.c tssmarshal.c tssauth.c tssutils.c tsssocket.c tssdev.c tsstransmit.c tssresponsecode.c tssccattributes.c tssprint.c Unmarshal.c CommandAttributeData.c
 
 # TPM 2.0
 # TSS share libarary object files
-libibmtss_la_SOURCES += tss20.c tssauth20.c Commands.c
+libibmtss_la_SOURCES += tss20.c tssauth20.c Commands.c tssprintcmd.c
 libibmtss_la_SOURCES += ntc2lib.c tssntc.c
 
 # TSS utilities shared library source
 libibmtss_la_SOURCES += cryptoutils.c ekutils.c imalib.c eventlib.c
 
+# (from utils/makefile-common12)
+if CONFIG_TPM12
 libibmtss_la_SOURCES += tss12.c tssauth12.c tssmarshal12.c Unmarshal12.c Commands12.c tssccattributes12.c CommandAttributeData12.c
+endif
 
 libibmtss_la_CFLAGS = $(OPENSSL_CFLAGS) -fPIC -DTPM_TPM20
 
+if CONFIG_TPM12
 libibmtss_la_CFLAGS += -DTPM_TPM12
 libibmtss_la_CFLAGS += -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
 
@@ -32,13 +36,21 @@ libibmtss_la_LIBADD =  $(IBMTPMTSS_SOURCES) $(OPENSSL_LIBS)
 
 libibmtssutils_la_SOURCES = cryptoutils.c ekutils.c imalib.c eventlib.c
 libibmtssutils_la_CFLAGS = $(OPENSSL_CFLAGS) -fPIC -DTPM_TPM20
+if CONFIG_TPM12
 libibmtssutils_la_CFLAGS += -DTPM_TPM12
+endif
 #current[:revision[:age]]
 #result: [current-age].age.revision
 libibmtssutils_la_LDFLAGS = -version-info $(LIBIBMTSS_VERSION)
 libibmtssutils_la_LIBADD =  $(OPENSSL_LIBS)
 
-noinst_HEADERS = CommandAttributes.h imalib.h tss12.h tssdev.h Commands12_fp.h ntc2lib.h tss20.h tssntc.h Commands_fp.h objecttemplates.h tssauth12.h tssproperties.h cryptoutils.h Platform.h tssauth.h tsssocket.h ekutils.h tssauth20.h tsstbsi.h eventlib.h tbs.h tssccattributes.h  ibmtss/tss.h ibmtss/tsscryptoh.h ibmtss/tsscrypto.h ibmtss/tsserror.h ibmtss/tssfile.h ibmtss/tssmarshal.h ibmtss/tssprint.h ibmtss/tssprintcmd.h ibmtss/tsstransmit.h ibmtss/tssresponsecode.h ibmtss/tssutils.h ibmtss/Unmarshal_fp.h ibmtss/Implementation.h
+noinst_HEADERS = CommandAttributes.h imalib.h tssdev.h ntc2lib.h tssntc.h Commands_fp.h objecttemplates.h tssproperties.h cryptoutils.h Platform.h tssauth.h tsssocket.h ekutils.h tsstbsi.h eventlib.h tbs.h tssccattributes.h ibmtss/tss.h ibmtss/tsscryptoh.h ibmtss/tsscrypto.h ibmtss/tsserror.h ibmtss/tssfile.h ibmtss/tssmarshal.h ibmtss/tssprint.h ibmtss/tsstransmit.h ibmtss/tssresponsecode.h ibmtss/tssutils.h ibmtss/Unmarshal_fp.h ibmtss/Implementation.h
+
+noinst_HEADERS += tss20.h tssauth20.h ibmtss/tssprintcmd.h
+
+if CONFIG_TPM12
+noinst_HEADERS += tss12.h Commands12_fp.h tssauth12.h tssccattributes12.h ibmtss/Unmarshal12_fp.h ibmtss/Parameters12.h ibmtss/tpmstructures12.h ibmtss/tpmconstants12.h ibmtss/tpmtypes12.h
+endif
 
 bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation changeeps changepps clear clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters ecephemeral encryptdecrypt eventsequencecomplete evictcontrol flushcontext getcommandauditdigest getcapability getrandom gettestresult getsessionauditdigest gettime hashsequencestart hash hierarchycontrol hierarchychangeauth hmac hmacstart \
 import importpem load loadexternal makecredential nvcertify nvchangeauth nvdefinespace nvextend nvglobalwritelock nvincrement nvread nvreadlock nvreadpublic nvsetbits nvundefinespace nvundefinespacespecial nvwrite nvwritelock objectchangeauth pcrallocate pcrevent pcrextend pcrread pcrreset policyauthorize policyauthvalue policycommandcode policycphash policynamehash policycountertimer policyduplicationselect policygetdigest policymaker policymakerpcr policyauthorizenv policynv policynvwritten \

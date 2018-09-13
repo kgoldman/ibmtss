@@ -1,5 +1,6 @@
 transform=s&^&tss1&
 
+if CONFIG_TPM12
 lib_LTLIBRARIES = libibmtssutils12.la
 
 libibmtssutils12_la_SOURCES = ekutils12.c
@@ -147,3 +148,4 @@ imaextend_SOURCES = imaextend.c
 imaextend_CFLAGS = $(OPENSSL_CFLAGS) -I$(top_srcdir)/utils -DTPM_TPM12
 imaextend_LDFLAGS = -L$(top_srcdir)/utils
 imaextend_LDADD =  libibmtssutils12.la ../utils/libibmtss.la -lcrypto
+endif

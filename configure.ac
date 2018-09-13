@@ -55,6 +55,14 @@ case $host_os in
        linux-*)        CFLAGS="-DTPM_POSIX $CFLAGS" ;;
 esac
 
+AC_ARG_ENABLE(tpm-1.2,
+   AS_HELP_STRING([--disable-tpm-1.2], [Include only TPM 2.0 support]),
+     [case "${enableval}" in
+     yes | no ) tpm12="${enableval}" ;;
+     *) AC_MSG_ERROR([bad value ${enableval} for --disable-tpm-1.2]) ;;
+   esac], [tpm12="yes"])
+   AM_CONDITIONAL([CONFIG_TPM12], [test x$tpm12 = xyes])
+
 AC_CONFIG_FILES([Makefile
 		utils/Makefile
 		utils12/Makefile
@@ -64,3 +72,4 @@ AC_OUTPUT
 # Give some feedback
 echo   "Configuration:"
 echo   "	CFLAGS:	$CFLAGS"
+echo   "	tpm12:	$tpm12"
