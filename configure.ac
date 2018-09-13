@@ -55,6 +55,14 @@ case $host_os in
        linux-*)        CFLAGS="-DTPM_POSIX $CFLAGS" ;;
 esac
 
+AC_ARG_ENABLE(tpm-2.0,
+   AS_HELP_STRING([--disable-tpm-2.0], [Include only TPM 1.2 support]),
+     [case "${enableval}" in
+     yes | no ) tpm20="${enableval}" ;;
+     *) AC_MSG_ERROR([bad value ${enableval} for --disable-tpm-2.0]) ;;
+   esac], [tpm20="yes"])
+   AM_CONDITIONAL([CONFIG_TPM20], [test x$tpm20 = xyes])
+
 AC_ARG_ENABLE(tpm-1.2,
    AS_HELP_STRING([--disable-tpm-1.2], [Include only TPM 2.0 support]),
      [case "${enableval}" in
@@ -73,3 +81,4 @@ AC_OUTPUT
 echo   "Configuration:"
 echo   "	CFLAGS:	$CFLAGS"
 echo   "	tpm12:	$tpm12"
+echo   "	tpm20:	$tpm20"
