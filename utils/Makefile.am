@@ -34,7 +34,13 @@ endif
 
 if CONFIG_TPM12
 libibmtss_la_CFLAGS += -DTPM_TPM12
-libibmtss_la_CFLAGS += -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
+endif
+
+if CONFIG_TSS_NOPRINT
+libibmtss_la_CFLAGS += -DTPM_TSS_NO_PRINT
+endif
+
+libibmtss_la_CCFLAGS = -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
 
 #current[:revision[:age]]
 #result: [current-age].age.revision

@@ -71,6 +71,10 @@ AC_ARG_ENABLE(tpm-1.2,
    esac], [tpm12="yes"])
    AM_CONDITIONAL([CONFIG_TPM12], [test x$tpm12 = xyes])
 
+AC_ARG_ENABLE(noprint,
+   AS_HELP_STRING([--enable-noprint], [Build a TSS library without tracing or prints]))
+   AM_CONDITIONAL([CONFIG_TSS_NOPRINT], [test "x$enable_noprint" = "xyes"])
+
 AC_CONFIG_FILES([Makefile
 		utils/Makefile
 		utils12/Makefile
@@ -82,3 +86,4 @@ echo   "Configuration:"
 echo   "	CFLAGS:	$CFLAGS"
 echo   "	tpm12:	$tpm12"
 echo   "	tpm20:	$tpm20"
+echo   "	noprint:	$enable_noprint"
