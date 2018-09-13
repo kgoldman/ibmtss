@@ -27,6 +27,9 @@ libibmtss_la_SOURCES += tss12.c tssauth12.c tssmarshal12.c Unmarshal12.c Command
 endif
 
 libibmtss_la_CFLAGS = $(OPENSSL_CFLAGS) -fPIC
+if CONFIG_HWTPM
+libibmtss_la_CFLAGS += -DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
+endif
 
 if CONFIG_TPM20
 libibmtss_la_CFLAGS += -DTPM_TPM20
