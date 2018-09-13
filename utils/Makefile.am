@@ -17,7 +17,7 @@ libibmtss_la_SOURCES += cryptoutils.c ekutils.c imalib.c eventlib.c
 
 libibmtss_la_SOURCES += tss12.c tssauth12.c tssmarshal12.c Unmarshal12.c Commands12.c tssccattributes12.c CommandAttributeData12.c
 
-libibmtss_la_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX -fPIC -DTPM_TPM20
+libibmtss_la_CFLAGS = $(OPENSSL_CFLAGS) -fPIC -DTPM_TPM20
 
 libibmtss_la_CFLAGS += -DTPM_TPM12
 libibmtss_la_CFLAGS += -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
@@ -29,7 +29,7 @@ libibmtss_la_LDFLAGS = -version-info $(LIBIBMTSS_VERSION)
 libibmtss_la_LIBADD =  $(IBMTPMTSS_SOURCES) $(OPENSSL_LIBS)
 
 libibmtssutils_la_SOURCES = cryptoutils.c ekutils.c imalib.c eventlib.c
-libibmtssutils_la_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX -fPIC -DTPM_TPM20
+libibmtssutils_la_CFLAGS = $(OPENSSL_CFLAGS) -fPIC -DTPM_TPM20
 libibmtssutils_la_CFLAGS += -DTPM_TPM12
 #current[:revision[:age]]
 #result: [current-age].age.revision
@@ -43,27 +43,27 @@ import importpem load loadexternal makecredential nvcertify nvchangeauth nvdefin
 policyor policypassword policypcr policyrestart policysigned policysecret policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt sequenceupdate sequencecomplete setprimarypolicy shutdown sign startauthsession startup stirrandom unseal verifysignature zgen2phase signapp writeapp timepacket createek createekcert tpm2pem tpmpublic2eccpoint ntc2getconfig ntc2preconfig ntc2lockconfig
 
 activatecredential_SOURCES = activatecredential.c
-activatecredential_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+activatecredential_CFLAGS = $(OPENSSL_CFLAGS)
 activatecredential_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 eventextend_SOURCES = eventextend.c
-eventextend_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+eventextend_CFLAGS = $(OPENSSL_CFLAGS)
 eventextend_LDADD = libibmtssutils.la libibmtss.la
 
 imaextend_SOURCES = imaextend.c
-imaextend_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+imaextend_CFLAGS = $(OPENSSL_CFLAGS)
 imaextend_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 certify_SOURCES = certify.c
-certify_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+certify_CFLAGS = $(OPENSSL_CFLAGS)
 certify_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 certifycreation_SOURCES = certifycreation.c
-certifycreation_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+certifycreation_CFLAGS = $(OPENSSL_CFLAGS)
 certifycreation_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 changeeps_SOURCES = changeeps.c
-changeeps_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+changeeps_CFLAGS = $(OPENSSL_CFLAGS)
 changeeps_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 changepps_SOURCES = changepps.c
@@ -71,425 +71,425 @@ changepps_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
 changepps_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 clear_SOURCES = clear.c
-clear_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+clear_CFLAGS = $(OPENSSL_CFLAGS)
 clear_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 clearcontrol_SOURCES = clearcontrol.c
-clearcontrol_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+clearcontrol_CFLAGS = $(OPENSSL_CFLAGS)
 clearcontrol_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 clockrateadjust_SOURCES = clockrateadjust.c
-clockrateadjust_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+clockrateadjust_CFLAGS = $(OPENSSL_CFLAGS)
 clockrateadjust_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 clockset_SOURCES = clockset.c
-clockset_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+clockset_CFLAGS = $(OPENSSL_CFLAGS)
 clockset_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 commit_SOURCES = commit.c
-commit_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+commit_CFLAGS = $(OPENSSL_CFLAGS)
 commit_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 contextload_SOURCES = contextload.c
-contextload_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+contextload_CFLAGS = $(OPENSSL_CFLAGS)
 contextload_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 contextsave_SOURCES = contextsave.c
-contextsave_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+contextsave_CFLAGS = $(OPENSSL_CFLAGS)
 contextsave_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 create_SOURCES = create.c objecttemplates.c
-create_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+create_CFLAGS = $(OPENSSL_CFLAGS)
 create_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 createloaded_SOURCES = createloaded.c objecttemplates.c
-createloaded_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+createloaded_CFLAGS = $(OPENSSL_CFLAGS)
 createloaded_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 createprimary_SOURCES = createprimary.c objecttemplates.c
-createprimary_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+createprimary_CFLAGS = $(OPENSSL_CFLAGS)
 createprimary_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 dictionaryattacklockreset_SOURCES = dictionaryattacklockreset.c
-dictionaryattacklockreset_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+dictionaryattacklockreset_CFLAGS = $(OPENSSL_CFLAGS)
 dictionaryattacklockreset_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 dictionaryattackparameters_SOURCES = dictionaryattackparameters.c
-dictionaryattackparameters_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+dictionaryattackparameters_CFLAGS = $(OPENSSL_CFLAGS)
 dictionaryattackparameters_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 duplicate_SOURCES = duplicate.c
-duplicate_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+duplicate_CFLAGS = $(OPENSSL_CFLAGS)
 duplicate_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 eccparameters_SOURCES = eccparameters.c
-eccparameters_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+eccparameters_CFLAGS = $(OPENSSL_CFLAGS)
 eccparameters_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 ecephemeral_SOURCES = ecephemeral.c
-ecephemeral_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+ecephemeral_CFLAGS = $(OPENSSL_CFLAGS)
 ecephemeral_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 encryptdecrypt_SOURCES = encryptdecrypt.c
-encryptdecrypt_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+encryptdecrypt_CFLAGS = $(OPENSSL_CFLAGS)
 encryptdecrypt_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 eventsequencecomplete_SOURCES = eventsequencecomplete.c
-eventsequencecomplete_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+eventsequencecomplete_CFLAGS = $(OPENSSL_CFLAGS)
 eventsequencecomplete_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 evictcontrol_SOURCES = evictcontrol.c
-evictcontrol_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+evictcontrol_CFLAGS = $(OPENSSL_CFLAGS)
 evictcontrol_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 flushcontext_SOURCES = flushcontext.c
-flushcontext_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+flushcontext_CFLAGS = $(OPENSSL_CFLAGS)
 flushcontext_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 getcommandauditdigest_SOURCES = getcommandauditdigest.c
-getcommandauditdigest_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+getcommandauditdigest_CFLAGS = $(OPENSSL_CFLAGS)
 getcommandauditdigest_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 getcapability_SOURCES = getcapability.c
-getcapability_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+getcapability_CFLAGS = $(OPENSSL_CFLAGS)
 getcapability_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 getrandom_SOURCES = getrandom.c
-getrandom_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+getrandom_CFLAGS = $(OPENSSL_CFLAGS)
 getrandom_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 gettestresult_SOURCES = gettestresult.c
-gettestresult_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+gettestresult_CFLAGS = $(OPENSSL_CFLAGS)
 gettestresult_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 getsessionauditdigest_SOURCES = getsessionauditdigest.c
-getsessionauditdigest_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+getsessionauditdigest_CFLAGS = $(OPENSSL_CFLAGS)
 getsessionauditdigest_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 gettime_SOURCES = gettime.c
-gettime_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+gettime_CFLAGS = $(OPENSSL_CFLAGS)
 gettime_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 hashsequencestart_SOURCES = hashsequencestart.c
-hashsequencestart_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+hashsequencestart_CFLAGS = $(OPENSSL_CFLAGS)
 hashsequencestart_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 hash_SOURCES = hash.c
-hash_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+hash_CFLAGS = $(OPENSSL_CFLAGS)
 hash_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 hierarchycontrol_SOURCES = hierarchycontrol.c
-hierarchycontrol_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+hierarchycontrol_CFLAGS = $(OPENSSL_CFLAGS)
 hierarchycontrol_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 hierarchychangeauth_SOURCES = hierarchychangeauth.c
-hierarchychangeauth_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+hierarchychangeauth_CFLAGS = $(OPENSSL_CFLAGS)
 hierarchychangeauth_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 hmac_SOURCES = hmac.c
-hmac_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+hmac_CFLAGS = $(OPENSSL_CFLAGS)
 hmac_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 hmacstart_SOURCES = hmacstart.c
-hmacstart_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+hmacstart_CFLAGS = $(OPENSSL_CFLAGS)
 hmacstart_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 import_SOURCES = import.c
-import_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+import_CFLAGS = $(OPENSSL_CFLAGS)
 import_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 importpem_SOURCES = importpem.c objecttemplates.c
-importpem_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+importpem_CFLAGS = $(OPENSSL_CFLAGS)
 importpem_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 load_SOURCES = load.c
-load_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+load_CFLAGS = $(OPENSSL_CFLAGS)
 load_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 loadexternal_SOURCES = loadexternal.c
-loadexternal_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+loadexternal_CFLAGS = $(OPENSSL_CFLAGS)
 loadexternal_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 makecredential_SOURCES = makecredential.c
-makecredential_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+makecredential_CFLAGS = $(OPENSSL_CFLAGS)
 makecredential_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvcertify_SOURCES = nvcertify.c
-nvcertify_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvcertify_CFLAGS = $(OPENSSL_CFLAGS)
 nvcertify_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvchangeauth_SOURCES = nvchangeauth.c
-nvchangeauth_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvchangeauth_CFLAGS = $(OPENSSL_CFLAGS)
 nvchangeauth_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvdefinespace_SOURCES = nvdefinespace.c
-nvdefinespace_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvdefinespace_CFLAGS = $(OPENSSL_CFLAGS)
 nvdefinespace_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvextend_SOURCES = nvextend.c
-nvextend_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvextend_CFLAGS = $(OPENSSL_CFLAGS)
 nvextend_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvglobalwritelock_SOURCES = nvglobalwritelock.c
-nvglobalwritelock_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvglobalwritelock_CFLAGS = $(OPENSSL_CFLAGS)
 nvglobalwritelock_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvincrement_SOURCES = nvincrement.c
-nvincrement_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvincrement_CFLAGS = $(OPENSSL_CFLAGS)
 nvincrement_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvread_SOURCES = nvread.c
-nvread_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvread_CFLAGS = $(OPENSSL_CFLAGS)
 nvread_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvreadlock_SOURCES = nvreadlock.c
-nvreadlock_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvreadlock_CFLAGS = $(OPENSSL_CFLAGS)
 nvreadlock_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvreadpublic_SOURCES = nvreadpublic.c
-nvreadpublic_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvreadpublic_CFLAGS = $(OPENSSL_CFLAGS)
 nvreadpublic_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvsetbits_SOURCES = nvsetbits.c
-nvsetbits_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvsetbits_CFLAGS = $(OPENSSL_CFLAGS)
 nvsetbits_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvundefinespace_SOURCES = nvundefinespace.c
-nvundefinespace_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvundefinespace_CFLAGS = $(OPENSSL_CFLAGS)
 nvundefinespace_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvundefinespacespecial_SOURCES = nvundefinespacespecial.c
-nvundefinespacespecial_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvundefinespacespecial_CFLAGS = $(OPENSSL_CFLAGS)
 nvundefinespacespecial_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvwrite_SOURCES = nvwrite.c
-nvwrite_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvwrite_CFLAGS = $(OPENSSL_CFLAGS)
 nvwrite_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 nvwritelock_SOURCES = nvwritelock.c
-nvwritelock_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+nvwritelock_CFLAGS = $(OPENSSL_CFLAGS)
 nvwritelock_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 objectchangeauth_SOURCES = objectchangeauth.c
-objectchangeauth_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+objectchangeauth_CFLAGS = $(OPENSSL_CFLAGS)
 objectchangeauth_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 pcrallocate_SOURCES = pcrallocate.c
-pcrallocate_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+pcrallocate_CFLAGS = $(OPENSSL_CFLAGS)
 pcrallocate_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 pcrevent_SOURCES = pcrevent.c
-pcrevent_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+pcrevent_CFLAGS = $(OPENSSL_CFLAGS)
 pcrevent_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 pcrextend_SOURCES = pcrextend.c
-pcrextend_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+pcrextend_CFLAGS = $(OPENSSL_CFLAGS)
 pcrextend_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 pcrread_SOURCES = pcrread.c
-pcrread_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+pcrread_CFLAGS = $(OPENSSL_CFLAGS)
 pcrread_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 pcrreset_SOURCES = pcrreset.c
-pcrreset_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+pcrreset_CFLAGS = $(OPENSSL_CFLAGS)
 pcrreset_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policyauthorize_SOURCES = policyauthorize.c
-policyauthorize_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policyauthorize_CFLAGS = $(OPENSSL_CFLAGS)
 policyauthorize_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policyauthvalue_SOURCES = policyauthvalue.c
-policyauthvalue_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policyauthvalue_CFLAGS = $(OPENSSL_CFLAGS)
 policyauthvalue_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policycommandcode_SOURCES = policycommandcode.c
-policycommandcode_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policycommandcode_CFLAGS = $(OPENSSL_CFLAGS)
 policycommandcode_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policycphash_SOURCES = policycphash.c
-policycphash_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policycphash_CFLAGS = $(OPENSSL_CFLAGS)
 policycphash_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policynamehash_SOURCES = policynamehash.c
-policynamehash_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policynamehash_CFLAGS = $(OPENSSL_CFLAGS)
 policynamehash_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policycountertimer_SOURCES = policycountertimer.c
-policycountertimer_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policycountertimer_CFLAGS = $(OPENSSL_CFLAGS)
 policycountertimer_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policyduplicationselect_SOURCES = policyduplicationselect.c
-policyduplicationselect_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policyduplicationselect_CFLAGS = $(OPENSSL_CFLAGS)
 policyduplicationselect_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policygetdigest_SOURCES = policygetdigest.c
-policygetdigest_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policygetdigest_CFLAGS = $(OPENSSL_CFLAGS)
 policygetdigest_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policymaker_SOURCES = policymaker.c
-policymaker_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policymaker_CFLAGS = $(OPENSSL_CFLAGS)
 policymaker_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policymakerpcr_SOURCES = policymakerpcr.c
-policymakerpcr_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policymakerpcr_CFLAGS = $(OPENSSL_CFLAGS)
 policymakerpcr_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policyauthorizenv_SOURCES = policyauthorizenv.c
-policyauthorizenv_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policyauthorizenv_CFLAGS = $(OPENSSL_CFLAGS)
 policyauthorizenv_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policynv_SOURCES = policynv.c
-policynv_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policynv_CFLAGS = $(OPENSSL_CFLAGS)
 policynv_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policynvwritten_SOURCES = policynvwritten.c
-policynvwritten_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policynvwritten_CFLAGS = $(OPENSSL_CFLAGS)
 policynvwritten_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policyor_SOURCES = policyor.c
-policyor_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policyor_CFLAGS = $(OPENSSL_CFLAGS)
 policyor_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policypassword_SOURCES = policypassword.c
-policypassword_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policypassword_CFLAGS = $(OPENSSL_CFLAGS)
 policypassword_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policypcr_SOURCES = policypcr.c
-policypcr_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policypcr_CFLAGS = $(OPENSSL_CFLAGS)
 policypcr_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policyrestart_SOURCES = policyrestart.c
-policyrestart_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policyrestart_CFLAGS = $(OPENSSL_CFLAGS)
 policyrestart_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policysigned_SOURCES = policysigned.c
-policysigned_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policysigned_CFLAGS = $(OPENSSL_CFLAGS)
 policysigned_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policysecret_SOURCES = policysecret.c
-policysecret_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policysecret_CFLAGS = $(OPENSSL_CFLAGS)
 policysecret_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policytemplate_SOURCES = policytemplate.c
-policytemplate_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policytemplate_CFLAGS = $(OPENSSL_CFLAGS)
 policytemplate_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 policyticket_SOURCES = policyticket.c
-policyticket_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+policyticket_CFLAGS = $(OPENSSL_CFLAGS)
 policyticket_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 quote_SOURCES = quote.c
-quote_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+quote_CFLAGS = $(OPENSSL_CFLAGS)
 quote_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 powerup_SOURCES = powerup.c
-powerup_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+powerup_CFLAGS = $(OPENSSL_CFLAGS)
 powerup_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 readclock_SOURCES = readclock.c
-readclock_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+readclock_CFLAGS = $(OPENSSL_CFLAGS)
 readclock_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 readpublic_SOURCES = readpublic.c
-readpublic_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+readpublic_CFLAGS = $(OPENSSL_CFLAGS)
 readpublic_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 returncode_SOURCES = returncode.c
-returncode_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+returncode_CFLAGS = $(OPENSSL_CFLAGS)
 returncode_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 rewrap_SOURCES = rewrap.c
-rewrap_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+rewrap_CFLAGS = $(OPENSSL_CFLAGS)
 rewrap_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 rsadecrypt_SOURCES = rsadecrypt.c
-rsadecrypt_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+rsadecrypt_CFLAGS = $(OPENSSL_CFLAGS)
 rsadecrypt_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 rsaencrypt_SOURCES = rsaencrypt.c
-rsaencrypt_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+rsaencrypt_CFLAGS = $(OPENSSL_CFLAGS)
 rsaencrypt_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 sequenceupdate_SOURCES = sequenceupdate.c
-sequenceupdate_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+sequenceupdate_CFLAGS = $(OPENSSL_CFLAGS)
 sequenceupdate_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 sequencecomplete_SOURCES = sequencecomplete.c
-sequencecomplete_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+sequencecomplete_CFLAGS = $(OPENSSL_CFLAGS)
 sequencecomplete_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 setprimarypolicy_SOURCES = setprimarypolicy.c
-setprimarypolicy_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+setprimarypolicy_CFLAGS = $(OPENSSL_CFLAGS)
 setprimarypolicy_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 shutdown_SOURCES = shutdown.c
-shutdown_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+shutdown_CFLAGS = $(OPENSSL_CFLAGS)
 shutdown_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 sign_SOURCES = sign.c
-sign_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+sign_CFLAGS = $(OPENSSL_CFLAGS)
 sign_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 startauthsession_SOURCES = startauthsession.c
-startauthsession_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+startauthsession_CFLAGS = $(OPENSSL_CFLAGS)
 startauthsession_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 startup_SOURCES = startup.c
-startup_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+startup_CFLAGS = $(OPENSSL_CFLAGS)
 startup_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 stirrandom_SOURCES = stirrandom.c
-stirrandom_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+stirrandom_CFLAGS = $(OPENSSL_CFLAGS)
 stirrandom_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 unseal_SOURCES = unseal.c
-unseal_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+unseal_CFLAGS = $(OPENSSL_CFLAGS)
 unseal_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 verifysignature_SOURCES = verifysignature.c
-verifysignature_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+verifysignature_CFLAGS = $(OPENSSL_CFLAGS)
 verifysignature_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 zgen2phase_SOURCES = zgen2phase.c
-zgen2phase_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+zgen2phase_CFLAGS = $(OPENSSL_CFLAGS)
 zgen2phase_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 signapp_SOURCES = signapp.c
-signapp_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+signapp_CFLAGS = $(OPENSSL_CFLAGS)
 signapp_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 writeapp_SOURCES = writeapp.c
-writeapp_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+writeapp_CFLAGS = $(OPENSSL_CFLAGS)
 writeapp_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 timepacket_SOURCES = timepacket.c
-timepacket_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+timepacket_CFLAGS = $(OPENSSL_CFLAGS)
 timepacket_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 createek_SOURCES = createek.c
-createek_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+createek_CFLAGS = $(OPENSSL_CFLAGS)
 createek_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 createekcert_SOURCES = createekcert.c
-createekcert_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+createekcert_CFLAGS = $(OPENSSL_CFLAGS)
 createekcert_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 tpm2pem_SOURCES = tpm2pem.c
-tpm2pem_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+tpm2pem_CFLAGS = $(OPENSSL_CFLAGS)
 tpm2pem_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 tpmpublic2eccpoint_SOURCES = tpmpublic2eccpoint.c
-tpmpublic2eccpoint_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+tpmpublic2eccpoint_CFLAGS = $(OPENSSL_CFLAGS)
 tpmpublic2eccpoint_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 ntc2getconfig_SOURCES = ntc2getconfig.c
-ntc2getconfig_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+ntc2getconfig_CFLAGS = $(OPENSSL_CFLAGS)
 ntc2getconfig_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 ntc2preconfig_SOURCES = ntc2preconfig.c
-ntc2preconfig_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+ntc2preconfig_CFLAGS = $(OPENSSL_CFLAGS)
 ntc2preconfig_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 ntc2lockconfig_SOURCES = ntc2lockconfig.c
-ntc2lockconfig_CFLAGS = $(OPENSSL_CFLAGS) -DTPM_POSIX
+ntc2lockconfig_CFLAGS = $(OPENSSL_CFLAGS)
 ntc2lockconfig_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la

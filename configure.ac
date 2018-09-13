@@ -50,8 +50,17 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([gethostbyname memmove memset socket strerror strtoul])
 
+# Linux requires -DTPM_POSIX
+case $host_os in
+       linux-*)        CFLAGS="-DTPM_POSIX $CFLAGS" ;;
+esac
+
 AC_CONFIG_FILES([Makefile
 		utils/Makefile
 		utils12/Makefile
 		])
 AC_OUTPUT
+
+# Give some feedback
+echo   "Configuration:"
+echo   "	CFLAGS:	$CFLAGS"
