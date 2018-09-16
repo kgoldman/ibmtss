@@ -75,6 +75,11 @@ AC_ARG_ENABLE(noprint,
    AS_HELP_STRING([--enable-noprint], [Build a TSS library without tracing or prints]))
    AM_CONDITIONAL([CONFIG_TSS_NOPRINT], [test "x$enable_noprint" = "xyes"])
 
+AC_ARG_ENABLE(nofile,
+	      AS_HELP_STRING([--enable-nofile], [Build a TSS library that does not
+		   use files to preserve state]))
+   AM_CONDITIONAL([CONFIG_TSS_NOFILE], [test "x$enable_nofile" = "xyes"])
+
 AC_ARG_ENABLE(hwtpm,
    AS_HELP_STRING([--enable-hwtpm], [Configure to use the hardware TPM]))
    AM_CONDITIONAL([CONFIG_HWTPM], [test "x$enable_hwtpm" = "xyes"])
@@ -91,4 +96,5 @@ echo   "	CFLAGS:	$CFLAGS"
 echo   "	tpm12:	$tpm12"
 echo   "	tpm20:	$tpm20"
 echo   "	hwtpm:	$enable_hwtpm"
+echo   "	nofile:	$enable_nofile"
 echo   "	noprint:	$enable_noprint"

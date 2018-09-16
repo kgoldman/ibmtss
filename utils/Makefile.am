@@ -43,6 +43,10 @@ if CONFIG_TSS_NOPRINT
 libibmtss_la_CFLAGS += -DTPM_TSS_NO_PRINT
 endif
 
+if CONFIG_TSS_NOFILE
+libibmtss_la_CFLAGS += -DTPM_TSS_NOFILE
+endif
+
 libibmtss_la_CCFLAGS = -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
 
 #current[:revision[:age]]
