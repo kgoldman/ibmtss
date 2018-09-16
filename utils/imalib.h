@@ -49,6 +49,11 @@
 
 #include <ibmtss/TPM_Types.h>
 
+/* Debian/Hurd does not define MAXPATHLEN */
+#ifndef MAXPATHLEN
+#define MAXPATHLEN 4096
+#endif
+
 #define IMA_PCR 		10
 /* IMA currently supports only SHA-1 and SHA-256 */
 #define IMA_PCR_BANKS		2

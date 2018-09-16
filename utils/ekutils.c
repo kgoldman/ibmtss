@@ -67,7 +67,12 @@
 
 /* windows apparently uses _MAX_PATH in stdlib.h */
 #ifndef PATH_MAX
+#ifdef _MAX_PATH
 #define PATH_MAX _MAX_PATH
+#else
+/* Debian/Hurd does not define MAX_PATH */
+#define PATH_MAX 4096
+#endif
 #endif
 
 /* The print flag is set by the caller, depending on whether it wants information displayed.
