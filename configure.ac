@@ -80,6 +80,11 @@ AC_ARG_ENABLE(nofile,
 		   use files to preserve state]))
    AM_CONDITIONAL([CONFIG_TSS_NOFILE], [test "x$enable_nofile" = "xyes"])
 
+AC_ARG_ENABLE(nocrypto,
+	      AS_HELP_STRING([--enable-nocrypto], [Build a TSS library that does not
+		   require a crypto library]))
+   AM_CONDITIONAL([CONFIG_TSS_NOCRYPTO], [test "x$enable_nocrypto" = "xyes"])
+
 AC_ARG_ENABLE(hwtpm,
    AS_HELP_STRING([--enable-hwtpm], [Configure to use the hardware TPM]))
    AM_CONDITIONAL([CONFIG_HWTPM], [test "x$enable_hwtpm" = "xyes"])
@@ -98,3 +103,4 @@ echo   "	tpm20:	$tpm20"
 echo   "	hwtpm:	$enable_hwtpm"
 echo   "	nofile:	$enable_nofile"
 echo   "	noprint:	$enable_noprint"
+echo   "	nocrypto:	$enable_nocrypto"

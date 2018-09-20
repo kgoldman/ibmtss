@@ -45,6 +45,9 @@ endif
 
 if CONFIG_TSS_NOFILE
 libibmtss_la_CFLAGS += -DTPM_TSS_NOFILE
+if CONFIG_TSS_NOCRYPTO
+libibmtss_la_CFLAGS += -DTPM_TSS_NOCRYPTO
+endif
 endif
 
 libibmtss_la_CCFLAGS = -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
