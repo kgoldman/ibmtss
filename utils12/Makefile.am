@@ -1,3 +1,5 @@
+transform=s&^&tss1&
+
 lib_LTLIBRARIES = libibmtssutils12.la
 
 libibmtssutils12_la_SOURCES = ekutils12.c

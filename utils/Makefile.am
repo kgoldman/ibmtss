@@ -1,3 +1,5 @@
+transform=s&^&tss&
+
 lib_LTLIBRARIES = libibmtss.la
 lib_LTLIBRARIES += libibmtssutils.la
 
