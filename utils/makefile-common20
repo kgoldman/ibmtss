@@ -160,6 +160,9 @@ ALL	+= 					\
 	ntc2preconfig$(EXE)			\
 	ntc2lockconfig$(EXE)
 
+ALL	+=					\
+	publicname$(EXE)
+
 # TSS shared library headers 
 
 TSS_HEADERS +=				\
