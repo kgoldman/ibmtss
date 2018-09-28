@@ -99,8 +99,9 @@ enum hash_algo {
 };
 
 #define IMA_UNSUPPORTED	0
-#define IMA_NG		1
-#define IMA_SIG		2
+#define IMA_FORMAT_IMA_NG	1
+#define IMA_FORMAT_IMA_SIG	2
+#define IMA_FORMAT_IMA		3
 
 //typedef TPM_DIGEST TPM_PCRVALUE;        	/* The value inside of the PCR */
 

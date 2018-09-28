@@ -3,7 +3,7 @@
 /*		      Extend an IMA measurement list into PCR 10		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: imaextend.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: imaextend.c 1335 2018-09-20 21:24:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2014 - 2018.					*/
 /*										*/
@@ -246,7 +246,19 @@ int main(int argc, char * argv[])
 		    }
 		}
 		else {		/* sim */
-		    rc = IMA_Event_PcrExtend(simPcrs, &imaEvent);
+		    if (rc == 0) {
+			rc = IMA_Event_PcrExtend(simPcrs, &imaEvent);
+		    }
+		    if (rc == 0 && verbose) {
+			TSS_PrintAll("PCR digest SHA-1",
+				     simPcrs[0][imaEvent.pcrIndex].digest.tssmax,
+				     SHA1_DIGEST_SIZE);
+			TSS_PrintAll("PCR digest SHA-256",
+				     simPcrs[1][imaEvent.pcrIndex].digest.tssmax,
+				     SHA256_DIGEST_SIZE);
+			
+			
+		    }
 		}
 	    }	/* for each IMA event in range */
 	    IMA_Event_Free(&imaEvent);
@@ -280,7 +292,7 @@ int main(int argc, char * argv[])
 		   array on one line with no length */
 		uint16_t digestSize = TSS_GetDigestSize(simPcrs[bankNum][pcrNum].hashAlg);
 		TSS_PrintAllLogLevel(LOGLEVEL_INFO, pcrString, 1,
-				     simPcrs[bankNum ][pcrNum].digest.tssmax,
+				     simPcrs[bankNum][pcrNum].digest.tssmax,
 				     digestSize);
 	    }
 	}
