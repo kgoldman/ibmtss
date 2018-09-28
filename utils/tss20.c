@@ -3,7 +3,7 @@
 /*			    TSS Primary API for TPM 2.0				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss20.c 1324 2018-08-31 16:36:12Z kgoldman $			*/
+/*	      $Id: tss20.c 1336 2018-09-25 13:33:57Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018						*/
 /*										*/
@@ -378,8 +378,8 @@ static const TSS_PRINT_TABLE tssPrintTable [] = {
 				 
     {TPM_CC_Startup, (TSS_InPrintFunction_t)Startup_In_Print},
     {TPM_CC_Shutdown, (TSS_InPrintFunction_t)Shutdown_In_Print},
-    {TPM_CC_SelfTest, (TSS_InPrintFunction_t)NULL},
-    {TPM_CC_IncrementalSelfTest, (TSS_InPrintFunction_t)NULL},
+    {TPM_CC_SelfTest, (TSS_InPrintFunction_t)SelfTest_In_Print},
+    {TPM_CC_IncrementalSelfTest, (TSS_InPrintFunction_t)IncrementalSelfTest_In_Print},
     {TPM_CC_GetTestResult, NULL},
     {TPM_CC_StartAuthSession, (TSS_InPrintFunction_t)StartAuthSession_In_Print},
     {TPM_CC_PolicyRestart, (TSS_InPrintFunction_t)PolicyRestart_In_Print},
