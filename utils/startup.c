@@ -3,7 +3,7 @@
 /*			    Startup		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: startup.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: startup.c 1339 2018-09-26 14:04:55Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -168,6 +168,9 @@ TPM_RC selftestCommand(void)
 	if (rc == 0) {
 	    rc = rc1;
 	}
+    }
+    if (rc == 0) {
+	printf("selftest: success\n");
     }
     return rc;
 }
