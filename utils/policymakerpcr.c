@@ -3,7 +3,7 @@
 /*			   policymakerpcr					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymakerpcr.c 1315 2018-08-28 14:27:28Z kgoldman $	*/
+/*	      $Id: policymakerpcr.c 1337 2018-09-25 19:24:03Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -123,6 +123,9 @@ int main(int argc, char *argv[])
 
     /* command line defaults */
     digest.hashAlg = TPM_ALG_SHA256;
+
+    ERR_load_crypto_strings ();
+    OpenSSL_add_all_algorithms ();
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-halg") == 0) {
