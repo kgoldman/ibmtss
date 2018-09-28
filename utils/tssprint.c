@@ -3,7 +3,7 @@
 /*			     Structure Print and Scan Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 1303 2018-08-20 16:49:52Z kgoldman $		*/
+/*	      $Id: tssprint.c 1340 2018-09-28 18:32:11Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -1410,8 +1410,8 @@ void TSS_TPMS_ATTEST_Print(TPMS_ATTEST *source, unsigned int indent)
 {
     printf("%*s" "TPMS_ATTEST magic %08x\n", indent+2, "", source->magic);
     TSS_TPMI_ST_ATTEST_Print("type", source->type, indent+2);
-    TSS_TPM2B_Print("TPMS_ATTEST extraData", indent+2, &source->extraData.b);
     TSS_TPM2B_Print("TPMS_ATTEST qualifiedSigner", indent+2, &source->qualifiedSigner.b);
+    TSS_TPM2B_Print("TPMS_ATTEST extraData", indent+2, &source->extraData.b);
     TSS_TPMS_CLOCK_INFO_Print(&source->clockInfo, indent+2);
     printf("%*s" "TPMS_ATTEST firmwareVersion %"PRIu64"\n",  indent+2, "", source->firmwareVersion);
     TSS_TPMU_ATTEST_Print(&source->attested, source->type, indent+2);
@@ -1520,8 +1520,10 @@ void TSS_TPMT_SYM_DEF_Print(TPMT_SYM_DEF *source, unsigned int indent)
 void TSS_TPMT_SYM_DEF_OBJECT_Print(TPMT_SYM_DEF_OBJECT *source, unsigned int indent)
 {
     TSS_TPM_ALG_ID_Print("algorithm", source->algorithm, indent+2);
-    printf("%*s" "keyBits: %u\n", indent+2, "", source->keyBits.sym);
-    TSS_TPM_ALG_ID_Print("mode", source->mode.sym, indent+2);
+    if (source->algorithm != TPM_ALG_NULL) {
+	printf("%*s" "keyBits: %u\n", indent+2, "", source->keyBits.sym);
+	TSS_TPM_ALG_ID_Print("mode", source->mode.sym, indent+2);
+    }
     return;
 }
 
@@ -1917,7 +1919,7 @@ void TSS_TPMU_SIGNATURE_Print(TPMU_SIGNATURE *source, TPMI_ALG_SIG_SCHEME select
 
 void TSS_TPMT_SIGNATURE_Print(TPMT_SIGNATURE *source, unsigned int indent)
 {
-    TSS_TPM_ALG_ID_Print("sigAlg", source->sigAlg, indent);
+    TSS_TPM_ALG_ID_Print("sigAlg", source->sigAlg, indent+2);
     if (source->sigAlg != TPM_ALG_NULL) {
 	TSS_TPMU_SIGNATURE_Print(&source->signature, source->sigAlg, indent);
     }

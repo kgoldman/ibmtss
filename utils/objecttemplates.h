@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.h 1015 2017-06-07 13:16:34Z kgoldman $	*/
+/*	      $Id: objecttemplates.h 1340 2018-09-28 18:32:11Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016.						*/
 /*										*/
@@ -54,6 +54,7 @@
 #define TYPE_DP		10
 #define TYPE_DAA        11
 #define TYPE_DAAR       12
+#define TYPE_KHR	13
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,6 +78,7 @@ extern "C" {
     TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,
 				   TPMA_OBJECT addObjectAttributes,
 				   TPMA_OBJECT deleteObjectAttributes,
+				   int type,
 				   TPMI_ALG_HASH nalg,
 				   TPMI_ALG_HASH halg,
 				   const char *policyFilename);

@@ -3,7 +3,7 @@
 /*			    Create 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: create.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
+/*	      $Id: create.c 1340 2018-09-28 18:32:11Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
@@ -151,6 +151,10 @@ int main(int argc, char *argv[])
 	    keyType = TYPE_KH;
 	    keyTypeSpecified++;
 	}
+	else if (strcmp(argv[i], "-khr") == 0) {
+	    keyType = TYPE_KHR;
+	    keyTypeSpecified++;
+	}
 	else if (strcmp(argv[i], "-dp") == 0) {
 	    keyType = TYPE_DP;
 	    keyTypeSpecified++;
@@ -201,7 +205,7 @@ int main(int argc, char *argv[])
 		    deleteObjectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
 		}
 		else if (strcmp(argv[i], "np")  == 0) {
-			deleteObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+		    deleteObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
 		}
 		else {
 		    printf("Bad parameter %s for -kt\n", argv[i]);
@@ -352,6 +356,7 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-if") == 0) {
 	    i++;
 	    if (i < argc) {
+		deleteObjectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
 		dataFilename = argv[i];
 	    }
 	    else {
@@ -476,6 +481,7 @@ int main(int argc, char *argv[])
 	break;
       case TYPE_DES:
       case TYPE_KH:
+      case TYPE_KHR:
       case TYPE_DP:
 	/* inSensitive optional for symmetric keys */
 	break;
@@ -536,9 +542,10 @@ int main(int argc, char *argv[])
 					 policyFilename);
 	    break;
 	  case TYPE_KH:
+	  case TYPE_KHR:
 	    rc = keyedHashPublicTemplate(&in.inPublic.publicArea,
 					 addObjectAttributes, deleteObjectAttributes,
-					 nalg, halg,
+					 keyType, nalg, halg,
 					 policyFilename);
 	    break;
 	  case TYPE_DP:

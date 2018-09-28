@@ -3,7 +3,7 @@
 /*			   Import a PEM keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
+/*	      $Id: importpem.c 1340 2018-09-28 18:32:11Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016 - 2018					*/
 /*										*/
@@ -37,7 +37,7 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
-/* Use OpenSSL to create an RSA  keypair like this
+/* Use OpenSSL to create an RSA or ECC keypair like this
 
    > openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048
    > openssl ecparam -name prime256v1 -genkey -noout |

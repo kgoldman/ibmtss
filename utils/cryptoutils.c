@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
+/*	      $Id: cryptoutils.c 1340 2018-09-28 18:32:11Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -69,6 +69,7 @@
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssmarshal.h>
 #include <ibmtss/tsscrypto.h>
+#include <ibmtss/tsscryptoh.h>
 #include <ibmtss/Implementation.h>
 
 #include "objecttemplates.h"
@@ -1465,7 +1466,7 @@ TPM_RC verifyRSASignatureFromRSA(unsigned char *message,
 				     rsaPubKey,
 				     RSA_NO_PADDING);
 	    if (irc == -1) {
-		printf(": RSAPSS Bad signature\n");
+		printf("verifyRSASignatureFromRSA: RSAPSS Bad signature\n");
 		rc = TSS_RC_RSA_SIGNATURE;
 	    }
 	}
@@ -1570,6 +1571,39 @@ TPM_RC verifyEcSignatureFromEvpPubKey(unsigned char *message,
 }
 
 #endif	/* TPM_TSS_NOECC */
+
+/* verifySignatureFromHmacKey() verifies the signature (MAC) against the digest 'message'
+   using the HMAC key in raw binary format.
+*/
+
+TPM_RC verifySignatureFromHmacKey(unsigned char *message,
+				  unsigned int messageSize,
+				  TPMT_SIGNATURE *tSignature,
+				  TPMI_ALG_HASH halg,
+				  const char *hmacKeyFilename)
+{
+    TPM_RC 		rc = 0;
+    TPMT_HA 		actualHmac;
+    TPM2B_KEY 		hmacKey;
+    uint32_t 		sizeInBytes;
+    
+    /* read the HMAC key */
+    if (rc == 0) {
+	rc = TSS_File_Read2B(&hmacKey.b,
+			     sizeof(hmacKey.t.buffer),
+			     hmacKeyFilename);
+    }
+    if (rc == 0) {
+	actualHmac.hashAlg = halg;
+	sizeInBytes = TSS_GetDigestSize(halg);
+	rc = TSS_HMAC_Verify(&tSignature->signature.hmac,
+			     &hmacKey,		/* input HMAC key */
+			     sizeInBytes,
+			     messageSize, message,
+			     0, NULL);
+    }
+    return rc;
+}
 
 /* convertRsaBinToTSignature() converts an RSA binary signature to a TPMT_SIGNATURE */
 

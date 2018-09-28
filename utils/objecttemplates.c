@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 1340 2018-09-28 18:32:11Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
@@ -83,7 +83,6 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 
     if (rc == 0) {
 	publicArea->objectAttributes = addObjectAttributes;
-	publicArea->objectAttributes.val &= ~deleteObjectAttributes.val;
 	/* Table 185 - TPM2B_PUBLIC inPublic */
 	/* Table 184 - TPMT_PUBLIC publicArea */
 	publicArea->type = algPublic;		/* RSA or ECC */
@@ -327,15 +326,19 @@ TPM_RC symmetricCipherTemplate(TPMT_PUBLIC *publicArea,		/* output */
     return rc;
 }
 
-/* keyedHashPublicTemplate() is a template for a HMAC key
+/* keyedHashPublicTemplate() is a template for an HMAC key
 
-   The key is not restricted
+   It can create these types:
+
+   TYPE_KH:	HMAC key, unrestricted
+   TYPE_KHR:	HMAC key, restricted
 */
 
 TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
 			       TPMA_OBJECT addObjectAttributes,	/* add default, can be overridden
 								   here */
 			       TPMA_OBJECT deleteObjectAttributes,
+			       int keyType,			/* see above */
 			       TPMI_ALG_HASH nalg,		/* Name algorithm */
 			       TPMI_ALG_HASH halg,		/* hash algorithm */
 			       const char *policyFilename)	/* binary policy, NULL means empty */
@@ -346,7 +349,7 @@ TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
 	publicArea->objectAttributes = addObjectAttributes;
 
 	/* Table 185 - TPM2B_PUBLIC inPublic */
-	/* Table 184 - TPMT_PUBLIC publicArea->*/
+	/* Table 184 - TPMT_PUBLIC publicArea */
 	/* Table 176 - Definition of (TPM_ALG_ID) TPMI_ALG_PUBLIC Type */
 	publicArea->type = TPM_ALG_KEYEDHASH;
 	/* Table 59 - Definition of (TPM_ALG_ID) TPMI_ALG_HASH Type  */
@@ -358,6 +361,14 @@ TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
 	publicArea->objectAttributes.val |= TPMA_OBJECT_SENSITIVEDATAORIGIN;
 	publicArea->objectAttributes.val |= TPMA_OBJECT_USERWITHAUTH;
 	publicArea->objectAttributes.val &= ~TPMA_OBJECT_ADMINWITHPOLICY;
+	switch (keyType) {
+	  case TYPE_KH:
+	    publicArea->objectAttributes.val &= ~TPMA_OBJECT_RESTRICTED;
+	    break;
+	  case TYPE_KHR:
+	    publicArea->objectAttributes.val |= TPMA_OBJECT_RESTRICTED;
+	    break;
+	}
 	publicArea->objectAttributes.val &= ~deleteObjectAttributes.val;
 	/* Table 72 -  TPM2B_DIGEST authPolicy */
 	/* policy set separately */
@@ -382,7 +393,7 @@ TPM_RC keyedHashPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
     return rc;
 }
 
-/* derivationParentPublicTemplate() is a template for a HMAC key
+/* derivationParentPublicTemplate() is a template for a derivation parent
 
    The key is not restricted
 */
@@ -402,7 +413,7 @@ TPM_RC derivationParentPublicTemplate(TPMT_PUBLIC *publicArea,		/* output */
 	publicArea->objectAttributes = addObjectAttributes;
 
 	/* Table 185 - TPM2B_PUBLIC inPublic */
-	/* Table 184 - TPMT_PUBLIC publicArea->*/
+	/* Table 184 - TPMT_PUBLIC publicArea */
 	/* Table 176 - Definition of (TPM_ALG_ID) TPMI_ALG_PUBLIC Type */
 	publicArea->type = TPM_ALG_KEYEDHASH;
 	/* Table 59 - Definition of (TPM_ALG_ID) TPMI_ALG_HASH Type  */
@@ -459,7 +470,7 @@ TPM_RC blPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	publicArea->objectAttributes = addObjectAttributes;
 
 	/* Table 185 - TPM2B_PUBLIC inPublic */
-	/* Table 184 - TPMT_PUBLIC publicArea->*/
+	/* Table 184 - TPMT_PUBLIC publicArea */
 	/* Table 176 - Definition of (TPM_ALG_ID) TPMI_ALG_PUBLIC Type */
 	publicArea->type = TPM_ALG_KEYEDHASH;
 	/* Table 59 - Definition of (TPM_ALG_ID) TPMI_ALG_HASH Type  */
@@ -523,7 +534,7 @@ void printUsageTemplate(void)
     printf("\tKey attributes\n");
     printf("\n");
     printf("\t\t-bl\tdata blob for unseal (create only)\n");
-    printf("\t\t\t-if\tdata file name\n");
+    printf("\t\t\trequires -if\n");
     printf("\t\t-den\tdecryption, (unrestricted, RSA and EC NULL scheme)\n");
     printf("\t\t-deo\tdecryption, (unrestricted, RSA OAEP, EC NULL scheme)\n");
     printf("\t\t-des\tencryption/decryption, AES symmetric\n");
@@ -534,7 +545,8 @@ void printUsageTemplate(void)
     printf("\t\t-sir\trestricted signing (RSA RSASSA, EC ECDSA scheme)\n");
     printf("\t\t-dau\tunrestricted ECDAA signing key pair\n");
     printf("\t\t-dar\trestricted ECDAA signing key pair\n");
-    printf("\t\t-kh\tkeyed hash (hmac)\n");
+    printf("\t\t-kh\tkeyed hash (unrestricted, hmac)\n");
+    printf("\t\t-khr\tkeyed hash (restricted, hmac)\n");
     printf("\t\t-dp\tderivation parent\n");
     printf("\t\t-gp\tgeneral purpose, not storage\n");
     printf("\n");
@@ -546,6 +558,7 @@ void printUsageTemplate(void)
     printf("\t\t[-da\tobject subject to DA protection (default no)]\n");
     printf("\t[-pol\tpolicy file (default empty)]\n");
     printf("\t[-uwa\tuserWithAuth attribute clear (default set)]\n");
+    printf("\t[-if\tdata (inSensitive) file name]\n");
     printf("\n");
     printf("\t[-nalg\tname hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-halg\tscheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");

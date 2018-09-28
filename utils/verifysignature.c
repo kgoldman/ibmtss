@@ -3,7 +3,7 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
+/*	      $Id: verifysignature.c 1340 2018-09-28 18:32:11Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
     VerifySignature_Out 	out;
     TPMI_DH_OBJECT		keyHandle = 0;
     const char			*pemFilename = NULL;
+    const char			*hmacKeyFilename = NULL;
     const char			*signatureFilename = NULL;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
@@ -122,6 +123,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-ipem option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-ihmac") == 0) {
+	    i++;
+	    if (i < argc) {
+		hmacKeyFilename = argv[i];
+	    }
+	    else {
+		printf("-ihmac option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -278,8 +289,8 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
-    if ((keyHandle == 0) && (pemFilename == NULL)) {
-	printf("Missing handle parameter -hk or PEM file name -ipem\n");
+    if ((keyHandle == 0) && (pemFilename == NULL) && (hmacKeyFilename == NULL)) {
+	printf("Missing handle parameter -hk, PEM file name -ipem, or HMAC key file name -ihmac\n");
 	printUsage();
     }
     if (messageFilename == NULL) {
@@ -382,6 +393,17 @@ int main(int argc, char *argv[])
 					halg,
 					pemFilename);
 	}
+	if (verbose) printf("verifysignature: verifySignatureFromPem rc %08x\n", rc);
+    }
+    if (hmacKeyFilename != NULL) {
+	if (rc == 0) {
+	    rc = verifySignatureFromHmacKey((uint8_t *)&in.digest.t.buffer,
+					    in.digest.t.size,
+					    &in.signature,
+					    halg,
+					    hmacKeyFilename); 
+	}
+	if (verbose) printf("verifysignature: verifySignatureFromHmacKey rc %08x\n", rc);
     }
     if (rc == 0) {
 	if (verbose) printf("verifysignature: success\n");
@@ -451,8 +473,9 @@ static void printUsage(void)
     printf("\t\t(default TPMT_SIGNATURE)\n");
     printf("\t-hk\tkey handle\n");
     printf("\t-ipem\tpublic key PEM format file name to verify signature\n");
+    printf("\t-ihmac\tHMAC key in raw binary format file name to verify signature\n");
     printf("\n");
-    printf("\t\tOne of -hk, -ipem must be specified\n");
+    printf("\t\tOne of -hk, -ipem, -ihmac must be specified\n");
     printf("\n");
     printf("\t[-tk\tticket file name (requires -hk)]\n");
     printf("\n");

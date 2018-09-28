@@ -6,7 +6,7 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testattest.sh 1303 2018-08-20 16:49:52Z kgoldman $			#
+#	$Id: testattest.sh 1340 2018-09-28 18:32:11Z kgoldman $			#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -146,6 +146,43 @@ checkSuccess $?
 echo "Flush the auth session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
+
+echo ""
+echo "Attestation with an HMAC key"
+echo ""
+
+echo "Generate an HMAC key"
+${PREFIX}getrandom -by 32 -of tmphkey.bin -ns > run.out
+checkSuccess $?
+
+for HALG in ${ITERATE_ALGS}
+do
+
+    echo "Create a ${HALG} HMAC key ${HMACKEY}"
+    ${PREFIX}create -hp 80000000 -pwdp sto -kh -halg ${HALG} -if tmphkey.bin -opu tmppub.bin -opr tmppriv.bin > run.out
+    checkSuccess $?
+
+    echo "Load the ${HALG} HMAC key"
+    ${PREFIX}load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+    checkSuccess $?
+
+    echo "Gettime signed with an HMAC key"
+    ${PREFIX}gettime -hk 80000001 -halg ${HALG} -salg hmac -os sig.bin -oa tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using TPM"
+    ${PREFIX}verifysignature -hk 80000001 -halg ${HALG} -if tmp.bin -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using OpenSSL"
+    ${PREFIX}verifysignature -halg ${HALG} -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the ${HALG} HMAC key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
 
 echo ""
 echo "Audit"
@@ -346,6 +383,7 @@ rm -f tmpdigestr.bin
 rm -f tmpdigestg.bin
 rm -f sig.bin
 rm -f tmp.bin
+rm -f tmphkey.bin
 
 exit ${WARN}
 

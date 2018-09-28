@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
+/*	      $Id: cryptoutils.h 1340 2018-09-28 18:32:11Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2017.						*/
 /*										*/
@@ -141,6 +141,11 @@ extern "C" {
 				     TPMI_ALG_HASH halg,
 				     uint8_t *signatureBin,
 				     size_t signatureBinLen);
+    TPM_RC verifySignatureFromHmacKey(unsigned char *message,
+				      unsigned int messageSize,
+				      TPMT_SIGNATURE *tSignature,
+				      TPMI_ALG_HASH halg,
+				      const char *hmacKeyFilename);
 
 #ifndef TPM_TSS_NOECC
     TPM_RC convertEvpPkeyToEckey(EC_KEY **ecKey,
