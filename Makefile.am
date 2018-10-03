@@ -1,0 +1,2 @@
+SUBDIRS = utils utils12
+ACLOCAL_AMFLAGS = -I m4
