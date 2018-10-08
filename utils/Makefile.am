@@ -50,6 +50,10 @@ libibmtss_la_CFLAGS += -DTPM_TSS_NOCRYPTO
 endif
 endif
 
+if CONFIG_TSS_NOECC
+libibmtss_la_CFLAGS += -DTPM_TSS_NOECC
+endif
+
 libibmtss_la_CCFLAGS = -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
 
 #current[:revision[:age]]

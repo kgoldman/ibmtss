@@ -85,6 +85,11 @@ AC_ARG_ENABLE(nocrypto,
 		   require a crypto library]))
    AM_CONDITIONAL([CONFIG_TSS_NOCRYPTO], [test "x$enable_nocrypto" = "xyes"])
 
+AC_ARG_ENABLE(noecc,
+	      AS_HELP_STRING([--enable-noecc], [Build a TSS library that does not
+		   require OpenSSL elliptic curve support]))
+   AM_CONDITIONAL([CONFIG_TSS_NOECC], [test "x$enable_noecc" = "xyes"])
+
 AC_ARG_ENABLE(hwtpm,
    AS_HELP_STRING([--enable-hwtpm], [Configure to use the hardware TPM]))
    AM_CONDITIONAL([CONFIG_HWTPM], [test "x$enable_hwtpm" = "xyes"])
@@ -104,3 +109,4 @@ echo   "	hwtpm:	$enable_hwtpm"
 echo   "	nofile:	$enable_nofile"
 echo   "	noprint:	$enable_noprint"
 echo   "	nocrypto:	$enable_nocrypto"
+echo   "	noecc:		$enable_noecc"
