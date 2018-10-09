@@ -1,0 +1,85 @@
+Linux Specific build notes
+--------------------------
+$Id: README.linux 1328 2018-09-04 15:08:15Z kgoldman $
+Written by Ken Goldman
+IBM Thomas J. Watson Research Center
+
+Most users will begin by untarring the tarball or cloning the git repo,
+and then executing 'make' in the utils and utils12 directories.
+
+$ cd utils
+$ make
+$ cd utils12
+$ make
+
+This builds a TSS
+- with TPM 2.0 and TPM 1.2 support,
+- connecting to a TPM 2.0 SW TPM,
+- with TSS state files in cwd,
+- with tracing support,
+- and with elliptic curve support.
+
+
+Advanced options
+----------------
+
+For all options and details, see the documentation in ibmtss.doc or
+ibmtss.html.
+
+Some of the more common options are below.
+
+1-3 can also be specified in an environment variable or at run time.
+
+4-8, which are used to reduce the size of the library, must be
+specified at compile time.
+
+1) To default to a hardware TPM (rather than the SW TPM)
+
+Add to CCLFLAGS:
+
+	-DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
+
+2) To default to /dev/tpmrm0 (rather than /dev/tpm0)
+
+Add to CCLFLAGS:
+
+	-DTPM_DEVICE_DEFAULT="\"/dev/tpm0\""
+
+3) To default to a different directory for TSS state files (rather
+than cwd)
+
+Add to CCLFLAGS:
+
+	-DTPM_DATA_DIR_DEFAULT="\"directory\""
+
+4) To remove TPM 1.2 support
+
+Delete from CCLFLAGS and CCAFLAGS
+
+	-DTPM_TPM12
+
+5) To remove the requirement for a filesystem (see documentation for
+limitations)
+
+Add to CCFLAGS
+
+	-DTPM_TSS_NOFILE
+
+6) To remove the requirement for crypto (see documentation for
+limitations)
+
+Add to CCFLAGS
+
+	-DTPM_TSS_NOCRYPTO
+
+7) To remove print tracing support
+
+Add to CCFLAGS
+
+	-DTPM_TSS_NOPRINT
+
+8) To remove elliptic curve dependencies
+
+Add to CCFLAGS
+
+	-DTPM_TSS_NOECC
