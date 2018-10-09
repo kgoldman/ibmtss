@@ -1,16 +1,19 @@
 Linux Specific build notes
 --------------------------
-$Id: README.linux 1328 2018-09-04 15:08:15Z kgoldman $
 Written by Ken Goldman
 IBM Thomas J. Watson Research Center
 
-Most users will begin by untarring the tarball or cloning the git repo,
-and then executing 'make' in the utils and utils12 directories.
+
+Prior to the autotools support, most users began by untarring the
+tarball or cloning the git repo, and then executing 'make' or 'make -f
+<makefile>' in the utils and utils12 directories.  For autotools and the
+existing makefiles to co-exist, the existing "makefile" was renamed to
+"makefiletpmc".
 
 $ cd utils
-$ make
+$ make -f makefiletpmc
 $ cd utils12
-$ make
+$ make -f makefiletpmc
 
 This builds a TSS
 - with TPM 2.0 and TPM 1.2 support,
@@ -18,6 +21,83 @@ This builds a TSS
 - with TSS state files in cwd,
 - with tracing support,
 - and with elliptic curve support.
+
+Refer to the "Advanced options", below, for additional compiler options.
+
+
+Autotools
+---------
+
+On Linux (and probably other Unix systems), open source projects expect
+the normal shell command 'autoreconf -i && ./configure && make && make install'
+should configure and build the package.
+
+Example 1: To configure the TSS library to use the software TPM, build and
+install the package in ${HOME}/local/bin and ${HOME}/local/lib directories
+execute the following shell commands:
+
+$ autoreconf -i
+$ ./configure --prefix=${HOME}/local
+$ make clean
+$ make
+$ make install
+
+An initial set of the most common TSS "./configure" options are defined
+to enable/disable different features.
+
+--disable-tpm-2.0 - include only TPM 1.2 support
+--disable-tpm-1.2 - include only TPM 2.0 support
+--enable-hwtpm    - configure to use the hardware TPM
+--enable-noprint  - build a TSS library without tracing or prints
+--enable-nofile   - build a TSS library that does not use files to preserve state
+--enable-nocrypto - build a TSS library that does not require a crypto library
+		    (dependency on "--enable-nofile")
+--enable-noecc    - build a TSS library that does not require OpenSSL elliptic curve support
+--enable-debug    - build a TSS library used for debugging.
+
+Example 2: To configure the TSS library to use the hardware TPM, build and
+install the package in the default /usr/local directories requires root
+privileges.  Executing the following shell commands will make and install the
+package in the default directories.
+
+$ autoreconf -i
+$ ./configure --enable-hwtpm
+$ make clean
+$ make
+$ sudo make install
+
+Other TSS features can be modified by specifying them directly as CFLAGS
+"./configure" options.
+
+CFLAGS='<options>'
+options:
+-O0					- change compiler optimization (default: 02)
+-DTPM_DEVICE_DEFAULT="\"/dev/tpmrm0\""	- change hardware TPM (default: /dev/tpm0)
+-DTPM_DATA_DIR_DEFAULT="\"<pathname>\""	- specify directory for TSS state files
+-DTPM_TRACE_LEVEL_DEFAULT="\"<level>""	- change level of tracing (default: 0)
+	0 - no tracing
+	1 - trace errors
+	2 - trace errors and execution flow
+
+Example 3: To install the package in ${HOME}/local/bin and ${HOME}/local/lib
+directories, compile for the gdb debugger, and connect by default to a socket
+simulator TPM at command port 3333, execute the following shell commands:
+
+$ autoreconf -i
+$ ./configure --prefix=${HOME}/local --enable-debug \
+CFLAGS='-DTPM_INTERFACE_TYPE_DEFAULT="\"socsim\"" -DTPM_COMMAND_PORT_DEFAULT="\"3333\""'
+$ make clean
+$ make
+$ make install
+
+The TPM utility binaries are stored in utils/.lib and utils12/.lib directories
+of the source directory.[1]  To debug using these binaries in the source tree,
+use either the binary stored in .lib or the libtool command.
+
+$ libtool --mode=execute gdb <.lib/utility>
+
+[1] For an explanation, refer to the GNU documentation
+https://www.gnu.org/software/libtool/manual/libtool.html#Debugging-executables.
 
 
 Advanced options
