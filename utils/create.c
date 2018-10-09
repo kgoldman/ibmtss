@@ -3,7 +3,7 @@
 /*			    Create 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: create.c 1340 2018-09-28 18:32:11Z kgoldman $		*/
+/*	      $Id: create.c 1346 2018-10-09 17:40:01Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
@@ -206,6 +206,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i], "np")  == 0) {
 		    deleteObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+		}
+		else if (strcmp(argv[i], "ed")  == 0) {
+		    addObjectAttributes.val |= TPMA_OBJECT_ENCRYPTEDDUPLICATION;
 		}
 		else {
 		    printf("Bad parameter %s for -kt\n", argv[i]);

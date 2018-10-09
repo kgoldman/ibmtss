@@ -3,7 +3,7 @@
 /*			    Create Loaded					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createloaded.c 1340 2018-09-28 18:32:11Z kgoldman $		*/
+/*	      $Id: createloaded.c 1346 2018-10-09 17:40:01Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -189,16 +189,26 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i], "-kt") == 0) {
 	    i++;
 	    if (i < argc) {
-		switch (argv[i][0]) {
-		  case 'f':
-		    addObjectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
-		    break;
-		  case 'p':
-		    addObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
-		    break;
-		  default:
-		    printf("Bad parameter %c for -kt\n", argv[i][0]);
-		    printUsage();
+		if (i < argc) {
+		    if (strcmp(argv[i], "f") == 0) {
+			addObjectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
+		    }
+		    else if (strcmp(argv[i], "p") == 0) {
+			addObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+		    }
+		    else if (strcmp(argv[i], "nf") == 0) {
+			deleteObjectAttributes.val |= TPMA_OBJECT_FIXEDTPM;
+		    }
+		    else if (strcmp(argv[i], "np")  == 0) {
+			deleteObjectAttributes.val |= TPMA_OBJECT_FIXEDPARENT;
+		    }
+		    else if (strcmp(argv[i], "ed")  == 0) {
+			addObjectAttributes.val |= TPMA_OBJECT_ENCRYPTEDDUPLICATION;
+		    }
+		    else {
+			printf("Bad parameter %c for -kt\n", argv[i][0]);
+			printUsage();
+		    }
 		}
 	    }
 	    else {

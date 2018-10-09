@@ -3,7 +3,7 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.c 1340 2018-09-28 18:32:11Z kgoldman $		*/
+/*	      $Id: cryptoutils.c 1343 2018-10-02 21:23:33Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -1583,7 +1583,6 @@ TPM_RC verifySignatureFromHmacKey(unsigned char *message,
 				  const char *hmacKeyFilename)
 {
     TPM_RC 		rc = 0;
-    TPMT_HA 		actualHmac;
     TPM2B_KEY 		hmacKey;
     uint32_t 		sizeInBytes;
     
@@ -1594,7 +1593,6 @@ TPM_RC verifySignatureFromHmacKey(unsigned char *message,
 			     hmacKeyFilename);
     }
     if (rc == 0) {
-	actualHmac.hashAlg = halg;
 	sizeInBytes = TSS_GetDigestSize(halg);
 	rc = TSS_HMAC_Verify(&tSignature->signature.hmac,
 			     &hmacKey,		/* input HMAC key */

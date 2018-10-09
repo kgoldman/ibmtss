@@ -3,7 +3,7 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 1340 2018-09-28 18:32:11Z kgoldman $	*/
+/*	      $Id: objecttemplates.c 1346 2018-10-09 17:40:01Z kgoldman $	*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
@@ -554,7 +554,8 @@ void printUsageTemplate(void)
 	   "\t\t\tf\tfixedTPM (default for primary keys and derivation parents)\n"
 	   "\t\t\tp\tfixedParent (default for primary keys and derivation parents)\n"
 	   "\t\t\tnf\tno fixedTPM (default for non-primary keys)\n"
-	   "\t\t\tnp\tno fixedParent (default for non-primary keys)\n");
+	   "\t\t\tnp\tno fixedParent (default for non-primary keys)\n"
+	   "\t\t\ted\tencrypted duplication (default not set)\n");
     printf("\t\t[-da\tobject subject to DA protection (default no)]\n");
     printf("\t[-pol\tpolicy file (default empty)]\n");
     printf("\t[-uwa\tuserWithAuth attribute clear (default set)]\n");
