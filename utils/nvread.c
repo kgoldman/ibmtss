@@ -3,7 +3,6 @@
 /*			    NV Read		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvread.c 1300 2018-08-14 13:24:40Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -66,6 +65,7 @@ int main(int argc, char *argv[])
     uint16_t 			offset = 0;			/* default 0 */
     uint16_t 			readLength = 0;			/* bytes to read */
     int 			cert = FALSE;			/* boolean, read certificate */
+    const char			*certificateFilename = NULL;
     int				readLengthSet = FALSE;
     char 			hierarchyAuthChar = 0;
     const char 			*datafilename = NULL;
@@ -148,6 +148,16 @@ int main(int argc, char *argv[])
 	}
 	else if (!strcmp("-cert",argv[i])) {
 	    cert = TRUE;
+	}
+	else if (strcmp(argv[i],"-ocert") == 0) {
+	    i++;
+	    if (i < argc) {
+		certificateFilename = argv[i];
+	    }
+	    else {
+		printf("-ocert option needs a value\n");
+		printUsage();
+	    }
 	}
 	else if (strcmp(argv[i],"-se0") == 0) {
 	    i++;
@@ -352,11 +362,12 @@ int main(int argc, char *argv[])
 	rc = TSS_File_WriteBinaryFile(readBuffer, readLength, datafilename);
     }
     if (rc == 0) {
+	/* if not tracing the certificate, trace the result */
 	if (!cert) {
 	    if (verbose) printf("nvread: success\n");
 	    TSS_PrintAll("nvread: data", readBuffer, readLength);
 	}
-	else {
+	if (cert || (certificateFilename != NULL)) {
 	    X509 		*x509Certificate = NULL;
 	    const uint8_t 	*tmpData = readBuffer;
 	    x509Certificate = d2i_X509(NULL,	/* freed @2 */
@@ -365,8 +376,14 @@ int main(int argc, char *argv[])
 		printf("nvread: Could not parse X509 certificate\n");
 		rc = TSS_RC_X509_ERROR;
 	    }
-	    if (rc == 0) {
+	    /* if cert, trace the certificate using openssl print function */
+	    if ((rc == 0) && cert) {
 		X509_print_fp(stdout, x509Certificate);
+	    }
+	    /* if a file name was specified, write the certificate in PEM format */
+	    if ((rc == 0) && (certificateFilename != NULL)) {
+		rc = convertX509ToPem(certificateFilename,
+				      x509Certificate);
 	    }
 	    if (x509Certificate != NULL) {
 		X509_free(x509Certificate);   	/* @2 */
@@ -397,8 +414,9 @@ static void printUsage(void)
     printf("\t-ha\tNV index handle\n");
     printf("\t[-pwdn\tpassword for NV index (default empty)]\n");
     printf("\t[-sz\tdata size (default to size of index)]\n");
-    printf("\t[-cert dumps the certificate, the number of bytes is embedded in the prefix]\n");
     printf("\t\tcounter, bits, pin read 8 bytes, extend reads based on hash algorithm\n");
+    printf("\t[-cert\tdumps the certificate\n");
+    printf("\t[-ocert\tcertificate file name, writes in PEM format\n");
     printf("\t[-off\toffset (default 0)]\n");
     printf("\t[-of\tdata file (default do not save)]\n");
     printf("\n");
