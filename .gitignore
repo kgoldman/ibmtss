@@ -101,6 +101,7 @@ tpmutils/unseal/Debug/
 tpmutils/verifysignature/Debug/
 .gitignore
 utils/*.o
+utils/h*.bin
 activatecredential
 certify
 certifycreation
