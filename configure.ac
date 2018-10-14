@@ -74,25 +74,30 @@ AC_ARG_ENABLE(tpm-1.2,
 AC_ARG_ENABLE(noprint,
    AS_HELP_STRING([--enable-noprint], [Build a TSS library without tracing or prints]))
    AM_CONDITIONAL([CONFIG_TSS_NOPRINT], [test "x$enable_noprint" = "xyes"])
+   AS_IF([test "$enable_noprint" != "yes"], [enable_noprint="no"])
 
 AC_ARG_ENABLE(nofile,
 	      AS_HELP_STRING([--enable-nofile], [Build a TSS library that does not
 		   use files to preserve state]))
    AM_CONDITIONAL([CONFIG_TSS_NOFILE], [test "x$enable_nofile" = "xyes"])
+   AS_IF([test "$enable_nofile" != "yes"], [enable_nofile="no"])
 
 AC_ARG_ENABLE(nocrypto,
 	      AS_HELP_STRING([--enable-nocrypto], [Build a TSS library that does not
 		   require a crypto library]))
    AM_CONDITIONAL([CONFIG_TSS_NOCRYPTO], [test "x$enable_nocrypto" = "xyes"])
+   AS_IF([test "$enable_nocrypto" != "yes"], [enable_nocrypto="no"])
 
 AC_ARG_ENABLE(noecc,
 	      AS_HELP_STRING([--enable-noecc], [Build a TSS library that does not
 		   require OpenSSL elliptic curve support]))
    AM_CONDITIONAL([CONFIG_TSS_NOECC], [test "x$enable_noecc" = "xyes"])
+   AS_IF([test "$enable_noecc" != "yes"], [enable_noecc="no"])
 
 AC_ARG_ENABLE(hwtpm,
    AS_HELP_STRING([--enable-hwtpm], [Configure to use the hardware TPM]))
    AM_CONDITIONAL([CONFIG_HWTPM], [test "x$enable_hwtpm" = "xyes"])
+   AS_IF([test "$enable_hwtpm" != "yes"], [enable_hwtpm="no"])
 
 AC_CONFIG_FILES([Makefile
 		utils/Makefile
@@ -102,11 +107,11 @@ AC_OUTPUT
 
 # Give some feedback
 echo   "Configuration:"
-echo   "	CFLAGS:	$CFLAGS"
-echo   "	tpm12:	$tpm12"
-echo   "	tpm20:	$tpm20"
-echo   "	hwtpm:	$enable_hwtpm"
-echo   "	nofile:	$enable_nofile"
+echo   "	CFLAGS:		$CFLAGS"
+echo   "	tpm12:		$tpm12"
+echo   "	tpm20:		$tpm20"
+echo   "	hwtpm:		$enable_hwtpm"
+echo   "	nofile:		$enable_nofile"
 echo   "	noprint:	$enable_noprint"
 echo   "	nocrypto:	$enable_nocrypto"
 echo   "	noecc:		$enable_noecc"
