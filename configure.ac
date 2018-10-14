@@ -13,6 +13,9 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_CANONICAL_HOST
 
+# save userspace CFLAGS options
+USER_CFLAGS=$CFLAGS
+
 # Checks for programs.
 AC_PROG_AWK
 AC_PROG_CC
@@ -49,6 +52,11 @@ AC_TYPE_UINT8_T
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([gethostbyname memmove memset socket strerror strtoul])
+
+# Replace autotools default optimization
+AC_ARG_ENABLE(debug,
+   AS_HELP_STRING([--enable-debug], [Build a TSS library used for debugging]))
+   AS_IF([test "$enable_debug" = "yes"], [CFLAGS="$USER_CFLAGS -g -ggdb -O0"])
 
 # Linux requires -DTPM_POSIX
 case $host_os in
