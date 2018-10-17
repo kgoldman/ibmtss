@@ -7,7 +7,7 @@
 	<meta name="author" content="Ken Goldman"/>
 	<meta name="created" content="2015-11-20T12:35:00"/>
 	<meta name="changedby" content="Ken Goldman"/>
-	<meta name="changed" content="2018-09-05T14:48:00"/>
+	<meta name="changed" content="2018-10-17T09:34:00"/>
 	<style type="text/css">
 		@page { size: 8.5in 11in; margin-right: 1.25in; margin-top: 1in; margin-bottom: 0.5in }
 		p { margin-bottom: 0.08in; direction: ltr; color: #000000; widows: 2; orphans: 2 }
@@ -54,8 +54,8 @@ Research</font></font></p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" align="center" style="margin-bottom: 0in"><font size="5" style="font-size: 20pt">July
-30September 5, 2018</font></p>
+<p class="western" align="center" style="margin-bottom: 0in"><font size="5" style="font-size: 20pt">September
+October 517, 2018</font></p>
 <p lang="da-DK" class="western" align="center" style="margin-bottom: 0in">
 <br/>
 
@@ -313,8 +313,7 @@ following calls:</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">#include
-&lt;ibmtss2/tss.h&gt;</p>
+<p class="western" style="margin-bottom: 0in">#include &lt;ibmtss/tss.h&gt;</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -373,8 +372,7 @@ with (TPM_RH_NULL, NULL, 0)</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">#include
-&lt;ibmtss2/tss.h&gt;</p>
+<p class="western" style="margin-bottom: 0in">#include &lt;ibmtss/tss.h&gt;</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -417,8 +415,7 @@ from the default first.
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">#include
-&lt;ibmtss2/tss.h&gt;</p>
+<p class="western" style="margin-bottom: 0in">#include &lt;ibmtss/tss.h&gt;</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -698,8 +695,7 @@ section is not applicable when using the TSS library in programs.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">#include
-&lt;ibmtss2/tss.h&gt;</p>
+<p class="western" style="margin-bottom: 0in">#include &lt;ibmtss/tss.h&gt;</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -799,13 +795,12 @@ needs the bind password so that it can calculate the session key.
 
 </p>
 <p class="western" style="margin-bottom: 0in">Headers are in the
-&hellip;/utils/ibmtss2 directory.  
+&hellip;/utils/ibmtss directory.  
 </p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">#include
-&lt;ibmtss2/tss.h&gt;</p>
+<p class="western" style="margin-bottom: 0in">#include &lt;ibmtss/tss.h&gt;</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -1689,11 +1684,8 @@ request.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">&gt; make
-makefiletpmcclean all builds a combined TPM 2.0 and TPM 1.2 TSS.</p>
+<p class="western" style="margin-bottom: 0in">&gt; make -f
+makefiletpmc clean all</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -1703,7 +1695,7 @@ TSS</p>
 
 </p>
 <p class="western" style="margin-bottom: 0in">&gt; make -f
-makefiuletpm120 builds a TPM 1.2 TSS.clean all</p>
+makefiletpm20 clean all</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -1714,9 +1706,6 @@ TSS</p>
 </p>
 <p class="western" style="margin-bottom: 0in">&gt; make -f
 makefiletpm12 clean all</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2088,7 +2077,8 @@ certificates and TPM 2.0 certificates validate.</p>
 
 </p>
 <p class="western" style="margin-bottom: 0in">&gt; cd &hellip;/utils</p>
-<p class="western" style="margin-bottom: 0in">&gt; make</p>
+<p class="western" style="margin-bottom: 0in">&gt; make -f
+makefiletpmc</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2599,13 +2589,13 @@ modified for a user application.</p>
 	with the 'tss' prefix.</p>
 	<li/>
 <p class="western" style="margin-bottom: 0in">the license -
-	/usr/share/doc/tss2ibmtss-nnn/LICENSE</p>
+	/usr/share/doc/ibmtss-nnn/LICENSE</p>
 </ul>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
 <p class="western" style="text-indent: 0.25in; margin-bottom: 0in">#
-rpm -ivh 	tss2ibmtss-nnn-1.el6.x86_64.rpm</p>
+rpm -ivh 	ibmtss-nnn-1.el6.x86_64.rpm</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2620,7 +2610,7 @@ rpm -ivh 	tss2ibmtss-nnn-1.el6.x86_64.rpm</p>
 <ul>
 	<li/>
 <p class="western" style="margin-bottom: 0in">the headers -
-	/usr/include/ibmtss2 
+	/usr/include/ibmtss 
 	</p>
 	<li/>
 <p class="western" style="margin-bottom: 0in">the library -
@@ -2628,13 +2618,13 @@ rpm -ivh 	tss2ibmtss-nnn-1.el6.x86_64.rpm</p>
 	</p>
 	<li/>
 <p class="western" style="margin-bottom: 0in">this
-	documentation - /usr/share/doc/tss2ibmtss-devel-nnn/ibmtss.doc</p>
+	documentation - /usr/share/doc/ibmtss-devel-nnn/ibmtss.doc</p>
 </ul>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
 <p class="western" style="text-indent: 0.25in; margin-bottom: 0in">#
-rpm -ivh	tss2ibmtss-devel-nnn-1.el6.x86_64.rpm</p>
+rpm -ivh	ibmtss-devel-nnn-1.el6.x86_64.rpm</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2647,7 +2637,7 @@ rpm -ivh	tss2ibmtss-devel-nnn-1.el6.x86_64.rpm</p>
 
 </p>
 <p class="western" style="text-indent: 0.25in; margin-bottom: 0in">#
-rpm -ivh 	tss2ibmtss-debuginfo-nnn-1.el6.x86_64.rpm</p>
+rpm -ivh 	ibmtss-debuginfo-nnn-1.el6.x86_64.rpm</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2670,11 +2660,11 @@ needed:</p>
 
 </p>
 <p class="western" style="margin-bottom: 0in"># yum erase
-tss2ibmtss-devel-nnn-1.el6.x86_64</p>
+ibmtss-devel-nnn-1.el6.x86_64</p>
 <p class="western" style="margin-bottom: 0in"># yum erase
-tss2ibmtss-nnn-1.el6.x86_64</p>
+ibmtss-nnn-1.el6.x86_64</p>
 <p class="western" style="margin-bottom: 0in"># yum erase
-tss2ibmtss-debuginfo-nnn-1.el6.x86_64</p>
+ibmtss-debuginfo-nnn-1.el6.x86_64</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2683,11 +2673,11 @@ tss2ibmtss-debuginfo-nnn-1.el6.x86_64</p>
 
 </p>
 <p class="western" style="margin-bottom: 0in"># dnf install
-./tss2ibmtss-nnn-1.el6.x86_64.rpm</p>
+./ibmtss-nnn-1.el6.x86_64.rpm</p>
 <p class="western" style="margin-bottom: 0in"># dnf install
-./tss2ibmtss-devel-nnn-1.el6.x86_64.rpm</p>
+./ibmtss-devel-nnn-1.el6.x86_64.rpm</p>
 <p class="western" style="margin-bottom: 0in"># dnf install
-./tss2ibmtss-debuginfo-nnn-1.el6.x86_64.rpm</p>
+./ibmtss-debuginfo-nnn-1.el6.x86_64.rpm</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2696,11 +2686,11 @@ tss2ibmtss-debuginfo-nnn-1.el6.x86_64</p>
 
 </p>
 <p class="western" style="margin-bottom: 0in"># yum install
-./tss2ibmtss-nnn-1.el6.x86_64.rpm</p>
+./ibmtss-nnn-1.el6.x86_64.rpm</p>
 <p class="western" style="margin-bottom: 0in"># yum install
-./tss2ibmtss-devel-nnn-1.el6.x86_64.rpm</p>
+./ibmtss-devel-nnn-1.el6.x86_64.rpm</p>
 <p class="western" style="margin-bottom: 0in"># yum install
-./tss2ibmtss-debuginfo-nnn-1.el6.x86_64.rpm</p>
+./ibmtss-debuginfo-nnn-1.el6.x86_64.rpm</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2762,7 +2752,7 @@ test:</p>
 
 </p>
 <p class="western" style="margin-bottom: 0in">&gt; cd
-~/rpmbuild/BUILD/tss2ibmtss-nnn/utils</p>
+~/rpmbuild/BUILD/ibmtss-nnn/utils</p>
 <p class="western" style="margin-bottom: 0in">&gt; ./reg.sh</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
@@ -2783,7 +2773,7 @@ non-root user)</p>
 
 </p>
 <p class="western" style="margin-bottom: 0in">&gt; rpm -ivh
-tss2ibmtss-nnn-1.el6.src.rpm</p>
+ibmtss-nnn-1.el6.src.rpm</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2794,9 +2784,9 @@ tarball and spec file.  To build:</p>
 </p>
 <p class="western" style="margin-bottom: 0in">&gt; cd ~/rpmbuild</p>
 <p class="western" style="margin-bottom: 0in">&gt; rpmbuild -bp
-SPECS/tss2ibmtss.spec</p>
+SPECS/ibmtss.spec</p>
 <p class="western" style="margin-bottom: 0in">&gt; cd
-BUILD/tss2ibmtss-nnn/utils</p>
+BUILD/ibmtss-nnn/utils</p>
 <p class="western" style="margin-bottom: 0in">&gt; make -f
 makefile.fedora</p>
 <p class="western" style="margin-bottom: 0in"><br/>
