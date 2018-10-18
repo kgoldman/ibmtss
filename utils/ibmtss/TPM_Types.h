@@ -3,7 +3,6 @@
 /*			 Headers from Part 2    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: TPM_Types.h 1315 2018-08-28 14:27:28Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -544,6 +543,11 @@ typedef UINT32 TPM_PT;
 							   that are implemented */
 #define TPM_PT_VENDOR_COMMANDS		(PT_FIXED + 43)	/* number of vendor commands that are implemented */
 #define TPM_PT_NV_BUFFER_MAX		(PT_FIXED + 44)	/* the maximum data size in one NV write command */
+#define TPM_PT_MODES			(PT_FIXED + 45)	/* a TPMA_MODES value, indicating that the
+							   TPM is designed for these modes. */
+#define TPM_PT_MAX_CAP_BUFFER		(PT_FIXED + 46)	/* the maximum size of a
+							   TPMS_CAPABILITY_DATA structure returned
+							   in TPM2_GetCapability(). */
 #define PT_VAR				(PT_GROUP * 2)	/* the group of variable properties returned
 							   as TPMS_TAGGED_PROPERTY */
 
