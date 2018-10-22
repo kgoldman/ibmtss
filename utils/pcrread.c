@@ -3,7 +3,6 @@
 /*			   PCR_Read 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -420,7 +419,7 @@ static void printUsage(void)
     printf("\t[-of\tdata file for first algorithm specified, in binary]\n");
     printf("\t[-ahalg\tfor session audit digest (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-iosad\tfile for session audit digest testing]\n");
-    printf("\t[-ns\tno space, no text, no newlines\n");
+    printf("\t[-ns\tno space, no text, no newlines]\n");
     printf("\t\tUsed for scripting policy construction\n");
     printf("\n");
     printf("\t-se0 session handle / attributes (default NULL)\n");
