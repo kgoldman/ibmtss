@@ -3,7 +3,6 @@
 #			Mac TPM2 Utilities Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.mac 1294 2018-08-09 19:08:34Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2017, 2018					#
 # 										#
@@ -437,6 +436,8 @@ ntc2preconfig:		ntc2preconfig.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2preconfig.o $(LNALIBS) -o ntc2preconfig
 ntc2lockconfig:		ntc2lockconfig.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2lockconfig.o $(LNALIBS) -o ntc2lockconfig
+publicname:		publicname.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) publicname.o $(LNALIBS) -o publicname
 
 # for applications, not for TSS library
 

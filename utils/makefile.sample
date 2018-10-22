@@ -3,7 +3,6 @@
 #		Linux TPM2 Makefile Sample for Fedora Installed rpms		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile.sample 1258 2018-06-28 16:46:10Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2014, 2018					#
 # 										#
@@ -164,7 +163,8 @@ ALL = 	activatecredential			\
 	createek				\
 	createekcert				\
 	tpm2pem					\
-	tpmpublic2eccpoint
+	tpmpublic2eccpoint			\
+	publicname
 
 all:	$(ALL)
 
@@ -205,14 +205,14 @@ contextload:		ibmtss/tss.h contextload.o
 			$(CC) $(LNFLAGS) contextload.o -o contextload
 contextsave:		ibmtss/tss.h contextsave.o
 			$(CC) $(LNFLAGS) contextsave.o -o contextsave
-create:			ibmtss/tss.h create.o 
-			$(CC) $(LNFLAGS) create.o -o create
-createloaded:		ibmtss/tss.h createloaded.o 
-			$(CC) $(LNFLAGS) createloaded.o -o createloaded
-createprimary:		ibmtss/tss.h createprimary.o 
-			$(CC) $(LNFLAGS) createprimary.o -o createprimary
+create:			ibmtss/tss.h create.o objecttemplates.o 
+			$(CC) $(LNFLAGS) create.o objecttemplates.o -o create
+createloaded:		ibmtss/tss.h createloaded.o objecttemplates.o 
+			$(CC) $(LNFLAGS) createloaded.o objecttemplates.o -o createloaded
+createprimary:		ibmtss/tss.h createprimary.o objecttemplates.o 
+			$(CC) $(LNFLAGS) createprimary.o objecttemplates.o -o createprimary
 dictionaryattacklockreset:		ibmtss/tss.h dictionaryattacklockreset.o
-			$(CC) $(LNFLAGS) dictionaryattacklibmtss/tss.h ockreset.o -o dictionaryattacklockreset
+			$(CC) $(LNFLAGS) dictionaryattacklockreset.o -o dictionaryattacklockreset
 dictionaryattackparameters:		ibmtss/tss.h dictionaryattackparameters.o
 			$(CC) $(LNFLAGS) dictionaryattackparameters.o -o dictionaryattackparameters
 duplicate:		ibmtss/tss.h duplicate.o
@@ -309,7 +309,7 @@ policycommandcode:	ibmtss/tss.h policycommandcode.o
 			$(CC) $(LNFLAGS) policycommandcode.o -o policycommandcode
 policycphash:		ibmtss/tss.h policycphash.o
 			$(CC) $(LNFLAGS) policycphash.o -o policycphash
-policynamehash:		ibmtss/tss.h tss2/tss.h policynamehash.o
+policynamehash:		ibmtss/tss.h policynamehash.o
 			$(CC) $(LNFLAGS) policynamehash.o -o policynamehash
 policycountertimer :	ibmtss/tss.h policycountertimer.o
 			$(CC) $(LNFLAGS) policycountertimer.o -o policycountertimer
@@ -379,16 +379,22 @@ unseal:			ibmtss/tss.h unseal.o
 			$(CC) $(LNFLAGS) unseal.o -o unseal
 verifysignature:	ibmtss/tss.h verifysignature.o 
 			$(CC) $(LNFLAGS) verifysignature.o -o verifysignature
+zgen2phase:		ibmtss/tss.h zgen2phase.o
+			$(CC) $(LNFLAGS) zgen2phase.o -o zgen2phase
 signapp:		ibmtss/tss.h signapp.o
 			$(CC) $(LNFLAGS) signapp.o -o signapp
 writeapp:		ibmtss/tss.h writeapp.o
 			$(CC) $(LNFLAGS) writeapp.o -o writeapp
 createek:		ibmtss/tss.h createek.o ekutils.o
 			$(CC) $(LNFLAGS) createek.o -o createek		
+createekcert:		ibmtss/tss.h createekcert.o
+			$(CC) $(LNFLAGS) createekcert.o -o createekcert
 tpm2pem:		ibmtss/tss.h tpm2pem.o cryptoutils.o
 			$(CC) $(LNFLAGS) tpm2pem.o -o tpm2pem		
 tpmpublic2eccpoint:	ibmtss/tss.h tpmpublic2eccpoint.o
 			$(CC) $(LNFLAGS) tpmpublic2eccpoint.o -o tpmpublic2eccpoint
+publicname:		ibmtss/tss.h publicname.o cryptoutils.o
+			$(CC) $(LNFLAGS) publicname.o  cryptoutils.o -o publicname
 
 # object files
 

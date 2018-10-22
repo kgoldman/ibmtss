@@ -100,7 +100,7 @@ endif
 if CONFIG_TPM20
 bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation changeeps changepps clear clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters ecephemeral encryptdecrypt eventsequencecomplete evictcontrol flushcontext getcommandauditdigest getcapability getrandom gettestresult getsessionauditdigest gettime hashsequencestart hash hierarchycontrol hierarchychangeauth hmac hmacstart \
 import importpem load loadexternal makecredential nvcertify nvchangeauth nvdefinespace nvextend nvglobalwritelock nvincrement nvread nvreadlock nvreadpublic nvsetbits nvundefinespace nvundefinespacespecial nvwrite nvwritelock objectchangeauth pcrallocate pcrevent pcrextend pcrread pcrreset policyauthorize policyauthvalue policycommandcode policycphash policynamehash policycountertimer policyduplicationselect policygetdigest policymaker policymakerpcr policyauthorizenv policynv policynvwritten \
-policyor policypassword policypcr policyrestart policysigned policysecret policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt sequenceupdate sequencecomplete setprimarypolicy shutdown sign startauthsession startup stirrandom unseal verifysignature zgen2phase signapp writeapp timepacket createek createekcert tpm2pem tpmpublic2eccpoint ntc2getconfig ntc2preconfig ntc2lockconfig
+policyor policypassword policypcr policyrestart policysigned policysecret policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt sequenceupdate sequencecomplete setprimarypolicy shutdown sign startauthsession startup stirrandom unseal verifysignature zgen2phase signapp writeapp timepacket createek createekcert tpm2pem tpmpublic2eccpoint publicname ntc2getconfig ntc2preconfig ntc2lockconfig
 
 UTILS_CFLAGS = $(OPENSSL_CFLAGS)
 
@@ -547,6 +547,10 @@ tpm2pem_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 tpmpublic2eccpoint_SOURCES = tpmpublic2eccpoint.c
 tpmpublic2eccpoint_CFLAGS = $(UTILS_CFLAGS)
 tpmpublic2eccpoint_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
+
+publicname_SOURCES = publicname.c
+publicname_CFLAGS = $(OPENSSL_CFLAGS)
+publicname_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 ntc2getconfig_SOURCES = ntc2getconfig.c
 ntc2getconfig_CFLAGS = $(UTILS_CFLAGS)
