@@ -3,7 +3,6 @@
 /*			OpenSSL Crypto Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: cryptoutils.c 1343 2018-10-02 21:23:33Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -906,7 +905,7 @@ TPM_RC convertRsaPemToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
-/* convertEcDerToKeyPair() converts an EC keypair stored in plaintext to a TPM2B_PUBLIC and
+/* convertEcDerToKeyPair() converts an EC keypair stored in DER to a TPM2B_PUBLIC and
    TPM2B_SENSITIVE.  Useful for LoadExternal.
 
 */
@@ -933,7 +932,11 @@ TPM_RC convertEcDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
     }    
     if (rc == 0) {
 	const unsigned char *tmpPtr = derBuffer;	/* because pointer moves */
-	d2i_ECPrivateKey(&ecKey, &tmpPtr, derSize);	/* freed @2 */
+	ecKey = d2i_ECPrivateKey(NULL, &tmpPtr, derSize);	/* freed @2 */
+	if (ecKey == NULL) {
+	    printf("convertEcDerToKeyPair: could not convert key to EC_KEY\n");
+	    rc = TPM_RC_VALUE;
+	}
     }
     if (rc == 0) {
 	rc = convertEcKeyToPrivate(NULL,		/* TPM2B_PRIVATE */
@@ -956,6 +959,60 @@ TPM_RC convertEcDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
     return rc;
 }
 
+/* convertEcDerToPublic() converts an EC public key stored in DER to a TPM2B_PUBLIC.  Useful to
+   calculate a Name.
+
+*/
+
+TPM_RC convertEcDerToPublic(TPM2B_PUBLIC 		*objectPublic,
+			    int				keyType,
+			    TPMI_ALG_SIG_SCHEME 	scheme,
+			    TPMI_ALG_HASH 		nalg,
+			    TPMI_ALG_HASH		halg,
+			    const char			*derKeyFilename)
+{
+    TPM_RC		rc = 0;
+    EVP_PKEY 		*evpPkey = NULL;
+    EC_KEY		*ecKey = NULL;
+    unsigned char	*derBuffer = NULL;
+    size_t		derSize;
+
+    /* read the DER file */
+    if (rc == 0) {
+	rc = TSS_File_ReadBinaryFile(&derBuffer,     	/* freed @1 */
+				     &derSize,
+				     derKeyFilename); 
+    }    
+    if (rc == 0) {
+	const unsigned char *tmpPtr = derBuffer;	/* because pointer moves */
+	evpPkey = d2i_PUBKEY(NULL, &tmpPtr, derSize);	/* freed @2 */
+	if (evpPkey == NULL) {
+	    printf("convertEcDerToPublic: could not convert key to EVP_PKEY\n");
+	    rc = TPM_RC_VALUE;
+	}
+    }
+    if (rc == 0) {
+	rc = convertEvpPkeyToEckey(&ecKey,		/* freed @3 */
+				   evpPkey);
+    }
+    if (rc == 0) {
+	rc = convertEcKeyToPublic(objectPublic,
+				  keyType,
+				  scheme,
+				  nalg,
+				  halg,
+				  ecKey);
+    }
+    free(derBuffer);			/* @1 */
+    if (evpPkey != NULL) {
+	EVP_PKEY_free(evpPkey);		/* @1 */
+    }
+    if (ecKey != NULL) {
+	EC_KEY_free(ecKey);		/* @2 */
+    }
+    return rc;
+}
+
 #endif	/* TPM_TSS_NOECC */
 #endif
 #endif
@@ -963,7 +1020,7 @@ TPM_RC convertEcDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
 
-/* convertRsaDerToKeyPair() converts an RSA keypair stored in plaintext to a TPM2B_PUBLIC and
+/* convertRsaDerToKeyPair() converts an RSA keypair stored in DER to a TPM2B_PUBLIC and
    TPM2B_SENSITIVE.  Useful for LoadExternal.
 
 */
@@ -990,7 +1047,12 @@ TPM_RC convertRsaDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
     }    
     if (rc == 0) {
 	const unsigned char *tmpPtr = derBuffer;	/* because pointer moves */
-	d2i_RSAPrivateKey(&rsaKey, &tmpPtr, derSize);	/* freed @2 */
+	rsaKey = d2i_RSAPrivateKey(NULL, &tmpPtr, derSize);	/* freed @2 */
+	if (rsaKey == NULL) {
+	    printf("convertRsaDerToKeyPair: could not convert key to RSA\n");
+	    rc = TPM_RC_VALUE;
+	}
+	
     }
     if (rc == 0) {
 	rc = convertRsaKeyToPrivate(NULL,		/* TPM2B_PRIVATE */
@@ -998,6 +1060,53 @@ TPM_RC convertRsaDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 				    rsaKey,
 				    password);	
     }	
+    if (rc == 0) {
+	rc = convertRsaKeyToPublic(objectPublic,
+				   keyType,
+				   scheme,
+				   nalg,
+				   halg,
+				   rsaKey);
+    }
+    free(derBuffer);			/* @1 */
+    if (rsaKey != NULL) {
+	RSA_free(rsaKey);		/* @2 */
+    }
+    return rc;
+}
+
+/* convertRsaDerToPublic() converts an RSA public key stored in DER to a TPM2B_PUBLIC.  Useful to
+   calculate a Name.
+
+*/
+
+TPM_RC convertRsaDerToPublic(TPM2B_PUBLIC 		*objectPublic,
+			     int			keyType,
+			     TPMI_ALG_SIG_SCHEME 	scheme,
+			     TPMI_ALG_HASH 		nalg,
+			     TPMI_ALG_HASH		halg,
+			     const char			*derKeyFilename)
+{
+    TPM_RC		rc = 0;
+    RSA 		*rsaKey = NULL;
+    unsigned char	*derBuffer = NULL;
+    size_t		derSize;
+
+    /* read the DER file */
+    if (rc == 0) {
+	rc = TSS_File_ReadBinaryFile(&derBuffer,     	/* freed @1 */
+				     &derSize,
+				     derKeyFilename); 
+    }    
+    if (rc == 0) {
+	const unsigned char *tmpPtr = derBuffer;	/* because pointer moves */
+	rsaKey = d2i_RSA_PUBKEY(NULL, &tmpPtr, derSize);	/* freed @2 */
+	if (rsaKey == NULL) {
+	    printf("convertRsaDerToPublic: could not convert key to RSA\n");
+	    rc = TPM_RC_VALUE;
+	}
+	
+    }
     if (rc == 0) {
 	rc = convertRsaKeyToPublic(objectPublic,
 				   keyType,
@@ -1630,7 +1739,7 @@ TPM_RC convertEcBinToTSignature(TPMT_SIGNATURE *tSignature,
 				size_t signatureBinLen)
 {
     TPM_RC rc = 0;
-    ECDSA_SIG* 		ecSig = NULL;
+    ECDSA_SIG 		*ecSig = NULL;
     int 		rBytes;
     int 		sBytes;
     const BIGNUM 	*pr;
