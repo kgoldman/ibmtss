@@ -110,6 +110,12 @@ extern "C" {
 				  TPMI_ALG_HASH		halg,
 				  const char		*derKeyFilename,
 				  const char 		*password);
+    TPM_RC convertRsaDerToPublic(TPM2B_PUBLIC 		*objectPublic,
+				 int			keyType,
+				 TPMI_ALG_SIG_SCHEME 	scheme,
+				 TPMI_ALG_HASH 		nalg,
+				 TPMI_ALG_HASH		halg,
+				 const char		*derKeyFilename);
     TPM_RC convertRsaPemToPublic(TPM2B_PUBLIC 		*objectPublic,
 				 int			keyType,
 				 TPMI_ALG_SIG_SCHEME 	scheme,
@@ -201,6 +207,12 @@ extern "C" {
 				 TPMI_ALG_HASH		halg,
 				 const char		*derKeyFilename,
 				 const char 		*password);
+    TPM_RC convertEcDerToPublic(TPM2B_PUBLIC 		*objectPublic,
+				int			keyType,
+				TPMI_ALG_SIG_SCHEME 	scheme,
+				TPMI_ALG_HASH 		nalg,
+				TPMI_ALG_HASH		halg,
+				const char		*derKeyFilename);
     TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,	
 				      const TPMS_ECC_POINT *tpmsEccPoint);
     TPM_RC verifyEcSignatureFromEvpPubKey(unsigned char *message,
