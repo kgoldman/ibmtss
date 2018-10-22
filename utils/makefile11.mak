@@ -3,7 +3,6 @@
 #			Windows MinGW TPM2 Makefile for Openssl 1.1		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile11.mak 1294 2018-08-09 19:08:34Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2018					#
 # 										#
@@ -240,7 +239,11 @@ tpm2pem.exe:	tpm2pem.o cryptoutils.o $(LIBTSS)
 tpmpublic2eccpoint.exe:	tpmpublic2eccpoint.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)
 
+pprovision.exe:	pprovision.o ekutils.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
+publicname.exe:	publicname.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)
 
 %.exe:		%.o applink.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)

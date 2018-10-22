@@ -1853,20 +1853,222 @@ echo "Flush signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
-rm -f tmppol.bin
-rm -r tmppriv.bin
-rm -r tmppub.bin
-rm -f tmpstpub.bin
-rm -f tmpstpriv.bin
-rm -f tmpsipub.bin
-rm -f tmpsipriv.bin
+# There are times that a policy creator has TPM, PEM, or DER format
+# information, but does not have access to a TPM.  The publicname
+# utility accepts these inputs and outputs the name in the 'no spaces'
+# format suitable for pasting into a policy.
+
+#!/bin/bash
+#
+
+# for rapid prototyping with scripts
+export TPM_ENCRYPT_SESSIONS=0
+export TPM_DATA_DIR=.
+export ITERATE_ALGS="sha1 sha256 sha384 sha512"
+
+PREFIX=./
+
+checkSuccess()
+{
+    if [ $1 -ne 0 ]; then
+	echo " ERROR:"
+	cat run.out
+	exit 255
+    else
+	echo " INFO:"
+    fi
+}
+
+checkFailure()
+{
+    if [ $1 -eq 0 ]; then
+	echo " ERROR:"
+	cat run.out
+	exit 255
+    else
+	echo " INFO:"
+    fi
+}
+
+# just for the prototype, start with basic keys
+
+./reg.sh -0
+
+
+echo ""
+echo "publicname RSA"
+echo ""
+
+for HALG in ${ITERATE_ALGS}
+do
+
+    echo "Create an rsa ${HALG} key under the primary key"
+    ${PREFIX}create -hp 80000000 -rsa -nalg ${HALG} -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    echo "Load the rsa ${HALG} key 80000001"
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    echo "Compute the TPM2B_PUBLIC Name"
+    ${PREFIX}publicname -ipu tmppub.bin -on tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the TPM2B_PUBLIC result"
+    diff tmp.bin h80000001.bin > run.out
+    checkSuccess $?
+
+    echo "Convert the rsa public key to PEM format"
+    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+    checkSuccess $?
+
+    echo "Flush the rsa ${HALG} key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "loadexternal the rsa PEM public key"
+    ${PREFIX}loadexternal -ipem tmppub.pem -si -rsa -nalg ${HALG} -halg ${HALG} -scheme rsassa > run.out
+    checkSuccess $?
+
+    echo "Compute the PEM Name"
+    ${PREFIX}publicname -ipem tmppub.pem -rsa -si -nalg ${HALG} -halg ${HALG} -on tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the PEM result"
+    diff tmp.bin h80000001.bin > run.out
+    checkSuccess $?
+
+    echo "Convert the TPM PEM key to DER"
+    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin
+    echo "INFO:"
+
+    echo "Compute the DER Name"
+    ${PREFIX}publicname -ider tmppub.der -rsa -si -nalg ${HALG} -halg ${HALG} -on tmp.bin -v > run.out
+    checkSuccess $?
+
+    echo "Verify the DER result"
+    diff tmp.bin h80000001.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the rsa ${HALG} key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+echo ""
+echo "publicname ECC"
+echo ""
+
+for HALG in ${ITERATE_ALGS}
+do
+
+    echo "Create an ecc nistp256 ${HALG} key under the primary key"
+    ${PREFIX}create -hp 80000000 -ecc nistp256 -nalg ${HALG} -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    echo "Load the ecc ${HALG} key 80000001"
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    echo "Compute the TPM2B_PUBLIC Name"
+    ${PREFIX}publicname -ipu tmppub.bin -on tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the TPM2B_PUBLIC result"
+    diff tmp.bin h80000001.bin > run.out
+    checkSuccess $?
+
+    echo "Convert the ecc public key to PEM format"
+    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+    checkSuccess $?
+
+    echo "Flush the ecc ${HALG} key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "loadexternal the ecc PEM public key"
+    ${PREFIX}loadexternal -ipem tmppub.pem -si -ecc -nalg ${HALG} -halg ${HALG} > run.out
+    checkSuccess $?
+
+    echo "Compute the PEM Name"
+    ${PREFIX}publicname -ipem tmppub.pem -ecc -si -nalg ${HALG} -halg ${HALG} -on tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the PEM result"
+    diff tmp.bin h80000001.bin > run.out
+    checkSuccess $?
+
+    echo "Convert the TPM PEM key to DER"
+    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin -pubout
+    echo "INFO:"
+
+    echo "Compute the DER Name"
+    ${PREFIX}publicname -ider tmppub.der -ecc -si -nalg ${HALG} -halg ${HALG} -on tmp.bin -v > run.out
+    checkSuccess $?
+
+    echo "Verify the DER result"
+    diff tmp.bin h80000001.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the ecc ${HALG} key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+echo ""
+echo "publicname NV"
+echo ""
+
+for HALG in ${ITERATE_ALGS}
+do
+
+    echo "NV Define Space ${HALG}"
+    ${PREFIX}nvdefinespace -hi o -ha 01000000 -sz 16 -nalg ${HALG} > run.out
+    checkSuccess $?
+
+    echo "NV Read Public"
+    ${PREFIX}nvreadpublic -ha 01000000 -opu tmppub.bin -on tmpname.bin > run.out
+    checkSuccess $?
+
+    echo "Compute the NV Index Name"
+    ${PREFIX}publicname -invpu tmppub.bin -on tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the NV Index result"
+    diff tmp.bin tmpname.bin > run.out
+    checkSuccess $?
+
+    echo "NV Undefine Space"
+    ${PREFIX}nvundefinespace -hi o -ha 01000000 > run.out
+    checkSuccess $?
+
+done
+
+# cleanup
+
 rm -f pssig.bin
-rm -f tkt.bin
-rm -f tmpdup.bin
-rm -f tmpss.bin
-rm -f tmpsipriv1.bin
-rm -f tmpsig.bin
 rm -f run.out
+rm -f sig.bin
+rm -f tkt.bin
+rm -f tmp.bin
+rm -f tmpdup.bin
+rm -f tmphkey.bin
+rm -f tmpname.bin
+rm -f tmppol.bin
+rm -f tmppriv.bin
+rm -f tmppriv.bin 
+rm -f tmppub.bin
+rm -f tmppub.der
+rm -f tmppub.pem
+rm -f tmpsig.bin
+rm -f tmpsipriv.bin
+rm -f tmpsipriv1.bin
+rm -f tmpsipub.bin
+rm -f tmpss.bin
+rm -f tmpstpriv.bin
+rm -f tmpstpub.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 01000000
