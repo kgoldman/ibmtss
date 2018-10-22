@@ -3,7 +3,6 @@
 /*			   Load External					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: loadexternal.c 1324 2018-08-31 16:36:12Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
@@ -452,6 +451,9 @@ int main(int argc, char *argv[])
 	    in.inPublic.publicArea.objectAttributes.val &= ~TPMA_OBJECT_USERWITHAUTH;
 	}
 	in.hierarchy = hierarchy;
+    }
+    if (rc == 0) {
+	if (verbose) TSS_TPMT_PUBLIC_Print(&in.inPublic.publicArea, 0);
     }
     /* Start a TSS context */
     if (rc == 0) {
