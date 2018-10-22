@@ -417,8 +417,8 @@ static void printUsage(void)
     printf("\t-halg\t(sha1, sha256, sha384, sha512) (default sha256)\n");
     printf("\t\t-halg may be specified more than once\n");
     printf("\t[-of\tdata file for first algorithm specified, in binary]\n");
-    printf("\t[-ahalg\tfor session audit digest (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t[-iosad\tfile for session audit digest testing]\n");
+    printf("\t[-ahalg\t to extend session audit digest for testing (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-iosad\t file for session audit digest testing]\n");
     printf("\t[-ns\tno space, no text, no newlines]\n");
     printf("\t\tUsed for scripting policy construction\n");
     printf("\n");

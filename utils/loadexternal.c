@@ -509,7 +509,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t[-hi\thierarchy (e, o, p, n) (default NULL)]\n");
     printf("\t[-nalg\tname hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-halg\tscheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\n");
     printf("\t[Asymmetric Key Algorithm]\n");
     printf("\n");
