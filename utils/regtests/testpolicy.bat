@@ -3,7 +3,6 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testpolicy.bat 1317 2018-08-29 18:14:51Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2015 - 2018					#
 REM # 										#
@@ -2483,20 +2482,238 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+REM # There are times that a policy creator has TPM, PEM, or DER format
+REM # information, but does not have access to a TPM.  The publicname
+REM # utility accepts these inputs and outputs the name in the 'no spaces'
+REM # format suitable for pasting into a policy.
+
+echo ""
+echo "publicname RSA"
+echo ""
+
+for %%H in (%ITERATE_ALGS%) do (
+
+    echo "Create an rsa %%H key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -rsa -nalg %%H -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Load the rsa %%H key 80000001"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Compute the TPM2B_PUBLIC Name"
+    %TPM_EXE_PATH%publicname -ipu tmppub.bin -on tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Verify the TPM2B_PUBLIC result"
+    diff tmp.bin h80000001.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Convert the rsa public key to PEM format"
+    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the rsa %%H key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "loadexternal the rsa PEM public key"
+    %TPM_EXE_PATH%loadexternal -ipem tmppub.pem -si -rsa -nalg %%H -halg %%H -scheme rsassa > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Compute the PEM Name"
+    %TPM_EXE_PATH%publicname -ipem tmppub.pem -rsa -si -nalg %%H -halg %%H -on tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Verify the PEM result"
+    diff tmp.bin h80000001.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Convert the TPM PEM key to DER"
+    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin
+    echo "INFO:"
+
+    echo "Compute the DER Name"
+    %TPM_EXE_PATH%publicname -ider tmppub.der -rsa -si -nalg %%H -halg %%H -on tmp.bin -v > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Verify the DER result"
+    diff tmp.bin h80000001.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the rsa %%H key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+)
+
+echo ""
+echo "publicname ECC"
+echo ""
+
+for %%H in (%ITERATE_ALGS%) do (
+
+    echo "Create an ecc nistp256 %%H key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -nalg %%H -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Load the ecc %%H key 80000001"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Compute the TPM2B_PUBLIC Name"
+    %TPM_EXE_PATH%publicname -ipu tmppub.bin -on tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Verify the TPM2B_PUBLIC result"
+    diff tmp.bin h80000001.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Convert the ecc public key to PEM format"
+    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the ecc %%H key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "loadexternal the ecc PEM public key"
+    %TPM_EXE_PATH%loadexternal -ipem tmppub.pem -si -ecc -nalg %%H -halg %%H > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Compute the PEM Name"
+    %TPM_EXE_PATH%publicname -ipem tmppub.pem -ecc -si -nalg %%H -halg %%H -on tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Verify the PEM result"
+    diff tmp.bin h80000001.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Convert the TPM PEM key to DER"
+    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin -pubout
+    echo "INFO:"
+
+    echo "Compute the DER Name"
+    %TPM_EXE_PATH%publicname -ider tmppub.der -ecc -si -nalg %%H -halg %%H -on tmp.bin -v > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Verify the DER result"
+    diff tmp.bin h80000001.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the ecc %%H key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+)
+
+echo ""
+echo "publicname NV"
+echo ""
+
+for %%H in (%ITERATE_ALGS%) do (
+
+    echo "NV Define Space %%H"
+    %TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -sz 16 -nalg %%H > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "NV Read Public"
+    %TPM_EXE_PATH%nvreadpublic -ha 01000000 -opu tmppub.bin -on tmpname.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Compute the NV Index Name"
+    %TPM_EXE_PATH%publicname -invpu tmppub.bin -on tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Verify the NV Index result"
+    diff tmp.bin tmpname.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "NV Undefine Space"
+    %TPM_EXE_PATH%nvundefinespace -hi o -ha 01000000 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+)
+
+rm pssig.bin
+rm run.out
+rm sig.bin
+rm tkt.bin
+rm tmp.bin
+rm tmpdup.bin
+rm tmphkey.bin
+rm tmpname.bin
 rm tmppol.bin
 rm tmppriv.bin
+rm tmppriv.bin 
 rm tmppub.bin
-rm tmpstpub.bin
-rm tmpstpriv.bin
-rm tmpsipub.bin
-rm tmpsipriv.bin
-rm pssig.bin
-rm tkt.bin
-rm tmpdup.bin
-rm tmpss.bin
-rm tmpsipriv1.bin
+rm tmppub.der
+rm tmppub.pem
 rm tmpsig.bin
-rm run.out
+rm tmpsipriv.bin
+rm tmpsipriv1.bin
+rm tmpsipub.bin
+rm tmpss.bin
+rm tmpstpriv.bin
+rm tmpstpub.bin
 
 exit /B 0
 
