@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
     int				noSpace = FALSE;
     TPM2B_PUBLIC		inPublic;
     TPM2B_NV_PUBLIC		nvPublic;
-    TPM2B_SENSITIVE		inPrivate; 		/* not used */
     int				keyType = TYPE_SI;
     TPMI_ALG_SIG_SCHEME 	scheme = TPM_ALG_RSASSA;
     uint32_t 			keyTypeSpecified = 0;
@@ -275,7 +274,6 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	inPrivate.t.size = 0;			/* inPrivate not used */
 	/* TPM format key, output from create */
 	if (publicKeyFilename != NULL) {
 	    rc = TSS_File_ReadStructureFlag(&inPublic,
@@ -438,12 +436,12 @@ static void printUsage(void)
     printf("\n");
     printf("\t[-rsa\t(default)]\n");
     printf("\t[-ecc\t]\n");
-    printf("\t[-scheme for signing key (default RSASSA scheme)]\n");
+    printf("\t[-scheme  for signing key (default RSASSA scheme)]\n");
     printf("\t\trsassa\n");
     printf("\t\trsapss\n");
     printf("\t\tnull\n");
     printf("\t[-nalg\tname hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t[-halg (sha1, sha256, sha384, sha512) (default sha256)]\n");
+    printf("\t[-halg\tscheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-uwa\tuserWithAuth attribute clear (default set)]\n");
     printf("\t[-si\tsigning (default) RSA]\n");
     printf("\t[-st\tstorage (default NULL scheme)]\n");

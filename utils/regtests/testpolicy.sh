@@ -1858,43 +1858,6 @@ checkSuccess $?
 # utility accepts these inputs and outputs the name in the 'no spaces'
 # format suitable for pasting into a policy.
 
-#!/bin/bash
-#
-
-# for rapid prototyping with scripts
-export TPM_ENCRYPT_SESSIONS=0
-export TPM_DATA_DIR=.
-export ITERATE_ALGS="sha1 sha256 sha384 sha512"
-
-PREFIX=./
-
-checkSuccess()
-{
-    if [ $1 -ne 0 ]; then
-	echo " ERROR:"
-	cat run.out
-	exit 255
-    else
-	echo " INFO:"
-    fi
-}
-
-checkFailure()
-{
-    if [ $1 -eq 0 ]; then
-	echo " ERROR:"
-	cat run.out
-	exit 255
-    else
-	echo " INFO:"
-    fi
-}
-
-# just for the prototype, start with basic keys
-
-./reg.sh -0
-
-
 echo ""
 echo "publicname RSA"
 echo ""
