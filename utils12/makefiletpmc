@@ -3,7 +3,6 @@
 #		Linux TPM 1.2 Utilities Makefile				#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	      $Id: makefile 1296 2018-08-10 13:56:48Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2018						#
 # 										#
@@ -57,7 +56,7 @@ CCFLAGS += 	-DTPM_POSIX
 CCLFLAGS += 	-I. 		\
 		-I../utils	\
 		-fPIC		\
-		-DTPM_TPM20
+		-DTPM_TPM12
 
 # compile - for applications
 
