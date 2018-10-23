@@ -3,7 +3,7 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testattest.bat 1306 2018-08-20 19:33:17Z kgoldman $	#
+REM #		$Id: testattest.bat 1341 2018-09-28 19:28:11Z kgoldman $	#
 REM #										#
 REM # (c) Copyright IBM Corporation 2018					#
 REM # 										#
@@ -178,6 +178,56 @@ echo "Flush the auth session"
 %TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
+)
+
+echo ""
+echo "Attestation with an HMAC key"
+echo ""
+
+echo "Generate an HMAC key"
+%TPM_EXE_PATH%getrandom -by 32 -of tmphkey.bin -ns > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+for %%H in (%ITERATE_ALGS%) do (
+
+    echo "Create a %%H HMAC key ${HMACKEY}"
+    %TPM_EXE_PATH%create -hp 80000000 -pwdp sto -kh -halg %%H -if tmphkey.bin -opu tmppub.bin -opr tmppriv.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Load the %%H HMAC key"
+    %TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Gettime signed with an HMAC key"
+    %TPM_EXE_PATH%gettime -hk 80000001 -halg %%H -salg hmac -os sig.bin -oa tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using TPM"
+    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if tmp.bin -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using OpenSSL"
+    %TPM_EXE_PATH%verifysignature -halg %%H -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Flush the %%H HMAC key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
 )
 
 echo ""
