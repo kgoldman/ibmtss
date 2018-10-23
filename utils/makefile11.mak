@@ -239,7 +239,6 @@ tpm2pem.exe:	tpm2pem.o cryptoutils.o $(LIBTSS)
 tpmpublic2eccpoint.exe:	tpmpublic2eccpoint.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)
 
-pprovision.exe:	pprovision.o ekutils.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
 publicname.exe:	publicname.o $(LIBTSS)
