@@ -49,7 +49,7 @@
 # c0 45 5b 24 6f 96 ae e8 5d 18 eb 3b e6 4d 66 6a 
 
 echo ""
-echo "Credential"
+echo "Make and Activate Credential"
 echo ""
 
 echo "Use a random number as the credential input"
@@ -96,12 +96,54 @@ echo "Flush the signing key"
 ${PREFIX}flushcontext -ha 80000002 > run.out
 checkSuccess $?
 
-rm tmprpub.bin
-rm tmprpriv.bin
-rm tmpcredin.bin
-rm tmpcredenc.bin
-rm tmpcreddec.bin
-rm tmpsecret.bin
+echo ""
+echo "EK Certificate"
+echo ""
+
+echo "Set platform hierarchy auth"
+${PREFIX}hierarchychangeauth -hi p -pwdn ppp > run.out
+checkSuccess $?
+
+for ALG in "rsa" "ecc"
+do 
+
+    echo "Create an ${ALG} EK certificate"
+    ${PREFIX}createekcert -alg ${ALG} -cakey cakey.pem -capwd rrrr -pwdp ppp -of tmp.der > run.out
+    checkSuccess $?
+
+    echo "Read the ${ALG} EK certificate"
+    ${PREFIX}createek -alg ${ALG} -ce > run.out
+    checkSuccess $?
+
+    echo "Read the ${ALG} template - should fail"
+    ${PREFIX}createek -alg ${ALG} -te > run.out
+    checkFailure $?
+
+    echo "Read the ${ALG} nonce - should fail"
+    ${PREFIX}createek -alg ${ALG} -no > run.out
+    checkFailure $?
+
+    echo "CreatePrimary and validate the ${ALG} EK against the EK certificate"
+    ${PREFIX}createek -alg ${ALG} -cp > run.out
+    checkSuccess $?
+
+    echo "Validate the ${ALG} EK certificate against the root"
+    ${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
+    checkSuccess $?
+
+done
+
+echo "Clear platform hierarchy auth"
+${PREFIX}hierarchychangeauth -hi p -pwda ppp > run.out
+checkSuccess $?
+
+rm -f tmprpub.bin
+rm -f tmprpriv.bin
+rm -f tmpcredin.bin
+rm -f tmpcredenc.bin
+rm -f tmpcreddec.bin
+rm -f tmpsecret.bin
+rm -f tmp.der
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 02000000
