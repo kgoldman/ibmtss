@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #	$Id: testcredential.sh 328 2015-06-09 18:26:00Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015 - 2018					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -117,12 +116,69 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+echo ""
+echo "EK Certificate"
+echo ""
+
+echo "Set platform hierarchy auth"
+%TPM_EXE_PATH%hierarchychangeauth -hi p -pwdn ppp > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+for %%A in (rsa ecc) do (
+
+    echo "Create an  %%A EK certificate"
+    %TPM_EXE_PATH%createekcert -alg  %%A -cakey cakey.pem -capwd rrrr -pwdp ppp -of tmp.der > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Read the  %%A EK certificate"
+    %TPM_EXE_PATH%createek -alg  %%A -ce > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Read the  %%A template - should fail"
+    %TPM_EXE_PATH%createek -alg  %%A -te > run.out
+    IF !ERRORLEVEL! EQU 0 (
+       exit /B 1
+    )
+
+    echo "Read the  %%A nonce - should fail"
+    %TPM_EXE_PATH%createek -alg  %%A -no > run.out
+    IF !ERRORLEVEL! EQU 0 (
+       exit /B 1
+    )
+
+    echo "CreatePrimary and validate the  %%A EK against the EK certificate"
+    %TPM_EXE_PATH%createek -alg  %%A -cp > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Validate the  %%A EK certificate against the root"
+    %TPM_EXE_PATH%createek -alg  %%A -root certificates/rootcerts.windows.txt > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+)
+
+echo "Clear platform hierarchy auth"
+%TPM_EXE_PATH%hierarchychangeauth -hi p -pwda ppp > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
 rm tmprpub.bin
 rm tmprpriv.bin
 rm tmpcredin.bin
 rm tmpcredenc.bin
 rm tmpcreddec.bin
 rm tmpsecret.bin
+rm tmp.der
 
 REM %TPM_EXE_PATH%getcapability -cap 1 -pr 80000000
 REM %TPM_EXE_PATH%getcapability -cap 1 -pr 02000000
