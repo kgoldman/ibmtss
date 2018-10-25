@@ -230,7 +230,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
     imaEvent->template_data = NULL;		/* for free */
 
     /* read the IMA pcr index */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	readSize = fread(&(imaEvent->pcrIndex),
 			 sizeof(((ImaEvent *)NULL)->pcrIndex), 1, inFile);
 	if (readSize != 1) {
@@ -244,12 +244,12 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    }
 	}
     }
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	imaEvent->pcrIndex = IMA_Uint32_Convert((uint8_t *)&imaEvent->pcrIndex, littleEndian);
     }
 #if 0	/* In the future, IMA may use multiple PCRs */
     /* sanity check the PCR index */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	if (imaEvent->pcrIndex != IMA_PCR) {
 	    printf("ERROR: IMA_Event_ReadFile: PCR index %u not PCR %u\n",
 		   imaEvent->pcrIndex, IMA_PCR);
@@ -258,7 +258,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
     }	
 #endif
     /* read the IMA digest, this is hard coded to SHA-1 */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	readSize = fread(&(imaEvent->digest),
 			 sizeof(((ImaEvent *)NULL)->digest), 1, inFile);
 	if (readSize != 1) {
@@ -273,7 +273,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	}
     }
     /* read the IMA name length */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	readSize = fread(&(imaEvent->name_len),
 			 sizeof(((ImaEvent *)NULL)->name_len), 1, inFile);
 	if (readSize != 1) {
@@ -287,11 +287,11 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    }
 	}
     }
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	imaEvent->name_len = IMA_Uint32_Convert((uint8_t *)&imaEvent->name_len, littleEndian);
     }
     /* bounds check the name length, leave a byte for the nul terminator */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	if (imaEvent->name_len > (sizeof(((ImaEvent *)NULL)->name)) -1) {
 	    printf("ERROR: IMA_Event_ReadFile: template name length too big: %u\n",
 		   imaEvent->name_len);
@@ -299,7 +299,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	}
     }
     /* read the template name */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	/* nul terminate first */
 	memset(imaEvent->name, 0, sizeof(((ImaEvent *)NULL)->name));
 	readSize = fread(&(imaEvent->name),
@@ -316,10 +316,10 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	}
     }
     /* record the template name as an int */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	IMA_Event_ParseName(imaEvent);
     }
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	if (imaEvent->nameInt != IMA_FORMAT_IMA) {	/* standard format */
 	    rc = IMA_TemplateData_ReadFile(imaEvent, endOfFile, inFile, littleEndian);
 	}
@@ -343,7 +343,7 @@ static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller
     size_t readSize;
 
     /* read template data length */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	readSize = fread(&(imaEvent->template_data_len),
 			 sizeof(((ImaEvent *)NULL)->template_data_len ), 1, inFile);
 	if (readSize != 1) {
@@ -357,20 +357,20 @@ static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller
 	    }
 	}
     }
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	imaEvent->template_data_len =
 	    IMA_Uint32_Convert((uint8_t *)&imaEvent->template_data_len,
 			       littleEndian);
     }
     /* bounds check the template data length */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	if (imaEvent->template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
 	    printf("ERROR: IMA_TemplateData_ReadFile: template data length too big: %u\n",
 		   imaEvent->template_data_len);
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	imaEvent->template_data = malloc(imaEvent->template_data_len);
 	if (imaEvent->template_data == NULL) {
 	    printf("ERROR: IMA_TemplateData_ReadFile: "
@@ -379,7 +379,7 @@ static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	readSize = fread(imaEvent->template_data,
 			 imaEvent->template_data_len, 1, inFile);
 	if (readSize != 1) {
@@ -409,11 +409,11 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
     int 	rc = 0;
     size_t 	readSize;
     uint8_t 	fileDataHash[SHA1_DIGEST_SIZE];		/* IMA hard coded to SHA-1 */
-    uint32_t 	fileNameLength;				/* ima log byte order */
-    uint32_t 	fileNameLengthHbo;			/* host byte order */
+    uint32_t 	fileNameLengthIbo;			/* ima log byte order */
+    uint32_t 	fileNameLength;				/* host byte order */
 
     /* read the fileDataHash digest, this is hard coded to SHA-1 */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	readSize = fread(&fileDataHash,
 			 sizeof(fileDataHash), 1, inFile);
 	if (readSize != 1) {
@@ -429,8 +429,8 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
 	}
     }
     /* read the IMA name length */
-    if (rc == 0) {
-	readSize = fread(&fileNameLength,
+    if ((rc == 0) && !(*endOfFile)) {
+	readSize = fread(&fileNameLengthIbo,
 			 sizeof(fileNameLength), 1, inFile);
 	if (readSize != 1) {
 	    if (feof(inFile)) {
@@ -444,20 +444,20 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
 	    }
 	}
     }
-    if (rc == 0) {
-	fileNameLengthHbo = IMA_Uint32_Convert((uint8_t *)&fileNameLength, littleEndian);
+    if ((rc == 0) && !(*endOfFile)) {
+	fileNameLength = IMA_Uint32_Convert((uint8_t *)&fileNameLengthIbo, littleEndian);
 	/* FIXME should check for addition overflow */
 	imaEvent->template_data_len = sizeof(fileDataHash) + sizeof(fileNameLength) + fileNameLength;
     }
     /* bounds check the template data length */
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	if (imaEvent->template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
 	    printf("ERROR: IMA_TemplateDataIma_ReadFile: template data length too big: %u\n",
 		   imaEvent->template_data_len);
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	imaEvent->template_data = malloc(imaEvent->template_data_len);
 	if (imaEvent->template_data == NULL) {
 	    printf("ERROR: IMA_TemplateData_ReadFile: "
@@ -466,7 +466,7 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
-    if (rc == 0) {
+    if ((rc == 0) && !(*endOfFile)) {
 	memcpy(imaEvent->template_data, fileDataHash, sizeof(fileDataHash));
 	memcpy(imaEvent->template_data + sizeof(fileDataHash),
 	       &fileNameLength, sizeof(fileNameLength));
