@@ -212,10 +212,10 @@ int main(int argc, char *argv[])
 	}
 	/* hash extend */
 	if ((rc == 0) && (prc != NULL)) {
-	    TSS_Hash_Generate(&digest,
-			      startSizeInBytes, (uint8_t *)&digest.digest,	/* extend */
-			      lineLength /2, lineBinary,
-			      0, NULL);
+	    rc = TSS_Hash_Generate(&digest,
+				   startSizeInBytes, (uint8_t *)&digest.digest,	/* extend */
+				   lineLength /2, lineBinary,
+				   0, NULL);
 	}
 	if ((rc == 0) && (prc != NULL)) {
 	    if (verbose) TSS_PrintAll("intermediate policy digest",
