@@ -241,8 +241,8 @@ tpmpublic2eccpoint.exe:	tpmpublic2eccpoint.o $(LIBTSS)
 
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
-publicname.exe:	publicname.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)
+publicname.exe:	publicname.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
 %.exe:		%.o applink.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)
