@@ -473,6 +473,10 @@
 #if defined ALG_SHA3_512 && ALG_SHA3_512 == YES
 #define TPM_ALGSHA3_512              (TPM_ALG_ID)(ALG_SHA3_512_VALUE)
 #endif
+#define  ALG_CMAC_VALUE               0x003f
+#if defined ALG_CMAC && ALG_CMAC == YES
+#define  TPM_ALG_CMAC                 (TPM_ALG_ID)(ALG_CMAC_VALUE)
+#endif
 #define  ALG_CTR_VALUE               0x0040
 #if defined ALG_CTR && ALG_CTR == YES
 #define  TPM_ALG_CTR                 (TPM_ALG_ID)(ALG_CTR_VALUE)
