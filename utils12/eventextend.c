@@ -3,7 +3,6 @@
 /*		      Extend a TPM 1.2 EVENT measurement file into PCRs		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventextend.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2018.						*/
 /*										*/
@@ -188,6 +187,10 @@ int main(int argc, char * argv[])
 	}
 	if ((rc == 0) && !endOfFile && sim) {	/* extend simulated PCRs */
 	    rc = TSS_EVENT_PCR_Extend(simPcrs, &event);
+	}
+	if ((rc == 0) && verbose && !endOfFile && sim) {
+	    TSS_PrintAll("eventextend: new PCR value",
+			 (uint8_t *)&simPcrs[event.pcrIndex].digest, SHA1_DIGEST_SIZE);
 	}
     }
     {
