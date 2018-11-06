@@ -571,7 +571,7 @@ TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
 	    x509Name = X509_get_subject_name(caCert[i]);
 	    subject = X509_NAME_oneline(x509Name, NULL, 0);
 	    printf("getCaStore: subject %u: %s\n", i, subject);
-	    free(subject);
+	    OPENSSL_free(subject);
 	}
 
 	/* add the CA X509 certificate to the certificate store */
