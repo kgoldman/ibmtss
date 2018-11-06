@@ -108,7 +108,7 @@ LIBTSSUTILS12=libibmtssutils12.so
 
 EXE =
 
-#
+# 
 
 ALL = $(LIBTSSUTILS12)
 TSS_HEADERS=
@@ -217,3 +217,4 @@ imaextend:		../utils/ibmtss/tss.h imaextend.o ../utils/imalib.o $(LIBTSS)
 
 %.o:		%.c
 		$(CC) $(CCFLAGS) $(CCAFLAGS) $< -o $@
+
