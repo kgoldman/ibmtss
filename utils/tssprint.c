@@ -254,6 +254,18 @@ void TSS_TPM_ALG_ID_Print(const char *string, TPM_ALG_ID source, unsigned int in
       case  ALG_CAMELLIA_VALUE:
 	printf("%s TPM_ALG_CAMELLIA\n", string);
 	break;
+      case ALG_SHA3_256_VALUE:
+	printf("%s TPM_ALG_SHA3_256\n", string);
+	break;
+      case ALG_SHA3_384_VALUE:
+	printf("%s TPM_ALG_SHA3_384\n", string);
+	break;
+      case ALG_SHA3_512_VALUE:
+	printf("%s TPM_ALG_SHA3_512\n", string);
+	break;
+      case ALG_CMAC_VALUE:
+	printf("%s TPM_ALG_CMAC\n", string);
+	break;
       case  ALG_CTR_VALUE:
 	printf("%s TPM_ALG_CTR\n", string);
 	break;
