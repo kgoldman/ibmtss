@@ -18,9 +18,6 @@ libibmtss_la_SOURCES += tss20.c tssauth20.c Commands.c tssprintcmd.c
 libibmtss_la_SOURCES += ntc2lib.c tssntc.c
 endif
 
-# TSS utilities shared library source
-libibmtss_la_SOURCES += cryptoutils.c ekutils.c imalib.c eventlib.c
-
 # (from utils/makefile-common12)
 if CONFIG_TPM12
 libibmtss_la_SOURCES += tss12.c tssauth12.c tssmarshal12.c Unmarshal12.c Commands12.c tssccattributes12.c CommandAttributeData12.c

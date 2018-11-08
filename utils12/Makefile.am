@@ -104,12 +104,12 @@ pcrread_CFLAGS = $(OPENSSL_CFLAGS) -I$(top_srcdir)/utils -DTPM_TPM12
 pcrread_LDFLAGS = -L$(top_srcdir)/utils
 pcrread_LDADD =  libibmtssutils12.la ../utils/libibmtss.la -lcrypto
 
-quote2_SOURCES = quote2.c
+quote2_SOURCES = quote2.c ../utils/cryptoutils.c
 quote2_CFLAGS = $(OPENSSL_CFLAGS) -I$(top_srcdir)/utils -DTPM_TPM12
 quote2_LDFLAGS = -L$(top_srcdir)/utils
 quote2_LDADD =  libibmtssutils12.la ../utils/libibmtss.la -lcrypto
 
-sign_SOURCES = sign.c
+sign_SOURCES = sign.c ../utils/cryptoutils.c
 sign_CFLAGS = $(OPENSSL_CFLAGS) -I$(top_srcdir)/utils -DTPM_TPM12
 sign_LDFLAGS = -L$(top_srcdir)/utils
 sign_LDADD =  libibmtssutils12.la ../utils/libibmtss.la -lcrypto
@@ -129,7 +129,8 @@ tpminit_CFLAGS = $(OPENSSL_CFLAGS) -I$(top_srcdir)/utils -DTPM_TPM12
 tpminit_LDFLAGS = -L$(top_srcdir)/utils
 tpminit_LDADD =  libibmtssutils12.la ../utils/libibmtss.la -lcrypto
 
-createekcert_SOURCES = createekcert.c
+createekcert_SOURCES = createekcert.c ekutils12.c \
+		       ../utils/cryptoutils.c ../utils/ekutils.c
 createekcert_CFLAGS = $(OPENSSL_CFLAGS) -I$(top_srcdir)/utils -DTPM_TPM12
 createekcert_LDFLAGS = -L$(top_srcdir)/utils
 createekcert_LDADD =  libibmtssutils12.la ../utils/libibmtss.la -lcrypto
@@ -139,12 +140,12 @@ makeekblob_CFLAGS = $(OPENSSL_CFLAGS) -I$(top_srcdir)/utils -DTPM_TPM12
 makeekblob_LDFLAGS = -L$(top_srcdir)/utils
 makeekblob_LDADD =  libibmtssutils12.la ../utils/libibmtss.la -lcrypto
 
-eventextend_SOURCES = eventextend.c
+eventextend_SOURCES = eventextend.c ../utils/eventlib.c
 eventextend_CFLAGS = $(OPENSSL_CFLAGS) -I$(top_srcdir)/utils -DTPM_TPM12
 eventextend_LDFLAGS = -L$(top_srcdir)/utils
 eventextend_LDADD =  libibmtssutils12.la ../utils/libibmtss.la -lcrypto
 
-imaextend_SOURCES = imaextend.c
+imaextend_SOURCES = imaextend.c ../utils/imalib.c
 imaextend_CFLAGS = $(OPENSSL_CFLAGS) -I$(top_srcdir)/utils -DTPM_TPM12
 imaextend_LDFLAGS = -L$(top_srcdir)/utils
 imaextend_LDADD =  libibmtssutils12.la ../utils/libibmtss.la -lcrypto
