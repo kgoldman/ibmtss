@@ -128,38 +128,38 @@ IF !ERRORLEVEL! NEQ 0 (
 
 for %%A in (rsa ecc) do (
 
-    echo "Create an  %%A EK certificate"
-    %TPM_EXE_PATH%createekcert -alg  %%A -cakey cakey.pem -capwd rrrr -pwdp ppp -of tmp.der > run.out
+    echo "Create an %%A EK certificate"
+    %TPM_EXE_PATH%createekcert -alg %%A -cakey cakey.pem -capwd rrrr -pwdp ppp -of tmp.der > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 
-    echo "Read the  %%A EK certificate"
-    %TPM_EXE_PATH%createek -alg  %%A -ce > run.out
+    echo "Read the %%A EK certificate"
+    %TPM_EXE_PATH%createek -alg %%A -ce > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 
-    echo "Read the  %%A template - should fail"
-    %TPM_EXE_PATH%createek -alg  %%A -te > run.out
+    echo "Read the %%A template - should fail"
+    %TPM_EXE_PATH%createek -alg %%A -te > run.out
     IF !ERRORLEVEL! EQU 0 (
        exit /B 1
     )
 
-    echo "Read the  %%A nonce - should fail"
-    %TPM_EXE_PATH%createek -alg  %%A -no > run.out
+    echo "Read the %%A nonce - should fail"
+    %TPM_EXE_PATH%createek -alg %%A -no > run.out
     IF !ERRORLEVEL! EQU 0 (
        exit /B 1
     )
 
-    echo "CreatePrimary and validate the  %%A EK against the EK certificate"
-    %TPM_EXE_PATH%createek -alg  %%A -cp > run.out
+    echo "CreatePrimary and validate the %%A EK against the EK certificate"
+    %TPM_EXE_PATH%createek -alg %%A -cp > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 
-    echo "Validate the  %%A EK certificate against the root"
-    %TPM_EXE_PATH%createek -alg  %%A -root certificates/rootcerts.windows.txt > run.out
+    echo "Validate the %%A EK certificate against the root"
+REM     %TPM_EXE_PATH%createek -alg %%A -root certificates/rootcerts.windows.txt > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
