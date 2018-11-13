@@ -6,7 +6,6 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testcredential.sh 328 2015-06-09 18:26:00Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -128,7 +127,7 @@ do
     checkSuccess $?
 
     echo "Validate the ${ALG} EK certificate against the root"
-    ${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
+#     ${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
     checkSuccess $?
 
 done
