@@ -64,6 +64,13 @@
 #include <string.h>
 #include <stdint.h>
 
+/* Windows 10 crypto API clashes with openssl */
+#ifdef TPM_WINDOWS
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#endif
+
 #include <openssl/x509.h>
 #include <openssl/bn.h>
 

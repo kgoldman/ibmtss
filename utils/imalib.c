@@ -3,7 +3,6 @@
 /*			     IMA Routines					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: imalib.c 963 2017-03-15 20:37:25Z kgoldman $			*/
 /*										*/
 /* (c) Copyright IBM Corporation 2016 - 2018.					*/
 /*										*/
@@ -91,7 +90,11 @@ typedef uint32_t (*TemplateDataParseFunction_t)(ImaTemplateData	*imaTemplateData
 						int 		littleEndian);
 static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataParseFunctions[],
 				       size_t templateDataParseFunctionsSize,
-				       unsigned int nameInt);
+				       ImaEvent *imaEvent);
+static uint32_t
+IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFunctions[],
+			     size_t templateDataParseFunctionsSize,
+			     ImaEvent *imaEvent);
 static uint32_t IMA_ParseD(ImaTemplateData	*imaTemplateData,
 			   uint8_t 		**buffer,
 			   size_t 		*length,
@@ -192,21 +195,23 @@ static void IMA_Event_ParseName(ImaEvent *imaEvent)
 void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 			    unsigned int nameInt)
 {
+    nameInt = nameInt;	/* obsolete not that custom templates are supported */
+    
     printf("IMA_TemplateData_Trace: hashLength %u\n", imaTemplateData->hashLength); 
     printf("IMA_TemplateData_Trace: hashAlg %s\n", imaTemplateData->hashAlg);
     TSS_PrintAll("IMA_Template_Trace: file data hash",
 		 imaTemplateData->fileDataHash, imaTemplateData->fileDataHashLength);
     printf("IMA_TemplateData_Trace: fileNameLength %u\n", imaTemplateData->fileNameLength);
-    printf("IMA_TemplateData_Trace: fileName %s\n", imaTemplateData->fileName);
-    if (nameInt == IMA_FORMAT_IMA_SIG) {
-	printf("IMA_TemplateData_Trace: sigLength %u\n", imaTemplateData->sigLength);
-	if (imaTemplateData->sigLength != 0) {
-	    TSS_PrintAll("IMA_TemplateData_Trace: sigHeader",
-			 imaTemplateData->sigHeader, imaTemplateData->sigHeaderLength);
-	    printf("IMA_TemplateData_Trace: signatureSize %u\n", imaTemplateData->signatureSize);
-	    TSS_PrintAll("IMA_TemplateData_Trace: signature",
-			 imaTemplateData->signature, imaTemplateData->signatureSize);
-	}
+    if (imaTemplateData->fileNameLength > 0) {
+	printf("IMA_TemplateData_Trace: fileName %s\n", imaTemplateData->fileName);
+    }
+    printf("IMA_TemplateData_Trace: sigLength %u\n", imaTemplateData->sigLength);
+    if (imaTemplateData->sigLength != 0) {
+	TSS_PrintAll("IMA_TemplateData_Trace: sigHeader",
+		     imaTemplateData->sigHeader, imaTemplateData->sigHeaderLength);
+	printf("IMA_TemplateData_Trace: signatureSize %u\n", imaTemplateData->signatureSize);
+	TSS_PrintAll("IMA_TemplateData_Trace: signature",
+		     imaTemplateData->signature, imaTemplateData->signatureSize);
     }
     return;    
 }
@@ -376,7 +381,7 @@ static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller
 	    printf("ERROR: IMA_TemplateData_ReadFile: "
 		   "could not allocate template data, size %u\n",
 		   imaEvent->template_data_len);
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
     if ((rc == 0) && !(*endOfFile)) {
@@ -463,7 +468,7 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
 	    printf("ERROR: IMA_TemplateData_ReadFile: "
 		   "could not allocate template data, size %u\n",
 		   imaEvent->template_data_len);
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
     if ((rc == 0) && !(*endOfFile)) {
@@ -488,8 +493,6 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
 }
  
 /* IMA_Event_ReadBuffer()  reads one IMA event from a buffer.
-
-   It currently supports these formats: ima, ima-ng, ima-sig.
 
    This is typically used at the server, reading from a client connection.
 
@@ -621,7 +624,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 			    printf("ERROR: IMA_Event_ReadBuffer: "
 				   "could not allocate template data, size %u\n",
 				   imaEvent->template_data_len);
-			    rc = TSS_RC_INSUFFICIENT_BUFFER;
+			    rc = TSS_RC_OUT_OF_MEMORY;
 			}
 		    }
 		    if (rc == 0) {
@@ -643,7 +646,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 
 static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataParseFunctions[],
 				       size_t templateDataParseFunctionsSize,
-				       unsigned int nameInt)
+				       ImaEvent *imaEvent)
 {
     uint32_t 	rc = 0;
     size_t	i;
@@ -654,7 +657,8 @@ static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataP
     }
     /* parse the name into the callback structure */
     if (rc == 0) {
-	switch (nameInt) {
+	switch (imaEvent->nameInt) {
+	    /* these are the pre-defined formats */
 	  case IMA_FORMAT_IMA_NG:
 	    /* d-ng | n-ng */
 	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNG;
@@ -670,9 +674,72 @@ static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataP
 	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseD;
 	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
 	    break;
+	    /* these are potentially the custom templates */
 	  default:
-	    printf("ERROR: IMA_TemplateName_Parse: template name %u unsupported\n", nameInt);
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;   
+	    rc = IMA_TemplateName_ParseCustom(templateDataParseFunctions,
+					      templateDataParseFunctionsSize,
+					      imaEvent);
+	}	    
+    }
+    return rc;
+}
+
+/* the mapping between a format string and the template data parse function */
+
+typedef struct {
+    const char *formatString;
+    TemplateDataParseFunction_t parseFunction;
+} ImaFormatMap; 
+
+static ImaFormatMap imaFormatMap[] = {
+    {"d", (TemplateDataParseFunction_t)IMA_ParseD},
+    {"d-ng", (TemplateDataParseFunction_t)IMA_ParseDNG},
+    {"n-ng", (TemplateDataParseFunction_t)IMA_ParseNNG},
+    {"sig", (TemplateDataParseFunction_t)IMA_ParseSIG}
+};
+	 
+static uint32_t
+IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFunctions[],
+			     size_t templateDataParseFunctionsSize,
+			     ImaEvent *imaEvent)
+{
+    uint32_t 	rc = 0;
+    size_t	i;		/* index into templateDataParseFunctions table */
+    size_t	j;		/* index into imaFormatMap table */
+    char 	*startName;
+    char	*endName;
+    char 	templateName[TCG_EVENT_NAME_LEN_MAX + 1];	/* one | separated item with nul */
+
+    /* parse the custom templates */
+    strcpy(templateName, imaEvent->name);	/* modify'able */
+    startName = templateName;
+
+    for (i = 0 ; (rc == 0) && (i < templateDataParseFunctionsSize) ; i++) {
+	endName = strchr(startName, '|');
+	if (endName != NULL) {	/* found a | character */
+	    *endName = '\0';	/* nul terminate the next format string */
+	}
+	printf("item %lu : %s\n", (unsigned long)i, startName);
+	/* search the table for the format string */
+	for (j = 0 ; j < (sizeof(imaFormatMap) / sizeof(ImaFormatMap)) ; j++) {
+	    int irc;
+	    irc = strcmp(startName, imaFormatMap[j].formatString);
+	    if (irc == 0) {
+		templateDataParseFunctions[i] = imaFormatMap[j].parseFunction;
+	    }
+	}
+	/* if no format string found */
+	if (templateDataParseFunctions[i] == NULL) {
+	    printf("ERROR: IMA_TemplateName_ParseCustom: unknown format string %s\n",
+		   startName);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+	/* if found an item, move the pointer */
+	if (rc == 0) {
+	    startName = endName + 1;
+	}
+	if (endName == NULL) {	/* no | character, last entry */
+	    break;
 	}
     }
     return rc;
@@ -934,7 +1001,6 @@ static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
 /* IMA_TemplateData_ReadBuffer() unmarshals the template data fields from the template data byte
    array.
 
-   It currently supports these formats: ima, ima-ng, ima-sig.
 */
 
 uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
@@ -946,10 +1012,20 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
     uint8_t 	*buffer = imaEvent->template_data;
     TemplateDataParseFunction_t templateDataParseFunctions[IMA_PARSE_FUNCTIONS_MAX];
     size_t	i;
-   
+
+    /* initialize all fields, since not all fields are included in all templates */
+    if (rc == 0) {
+	imaTemplateData->hashLength = 0;
+	imaTemplateData->fileDataHashLength = 0;
+	imaTemplateData->fileNameLength = 0;
+	imaTemplateData->fileName[0] = '\0';
+	imaTemplateData->sigLength = 0;
+	imaTemplateData->sigHeaderLength = 0;
+	imaTemplateData->signatureSize = 0;
+    }
     if (rc == 0) {
 	rc = IMA_TemplateName_Parse(templateDataParseFunctions, IMA_PARSE_FUNCTIONS_MAX,
-				    imaEvent->nameInt);	
+				    imaEvent);	
     }
     for (i = 0 ; (rc == 0) && (templateDataParseFunctions[i] != NULL) ; i++) {
 	rc = templateDataParseFunctions[i](imaTemplateData, &buffer, &length, littleEndian);

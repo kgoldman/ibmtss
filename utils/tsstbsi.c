@@ -66,9 +66,11 @@
 #include <errno.h>
 #include <limits.h>
 
+#include <winsock2.h>
 #include <windows.h>
 #include <winerror.h>
 #include <specstrings.h>
+#include <tbs.h>
 
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tssprint.h>
@@ -174,7 +176,8 @@ static uint32_t TSS_Tbsi_Open(
     uint32_t rc = 0;
 
     if (rc == 0) {
-	rc = Tbsi_Context_Create(contextParams, hContext);
+	/* cast is safe because caller sets the version member for the subclass */
+	rc = Tbsi_Context_Create((TBS_CONTEXT_PARAMS *)contextParams, hContext);
 	if (tssVverbose) printf("TSS_Tbsi_Open: Tbsi_Context_Create rc %08x\n", rc);
 	if (rc != 0) {
 	    if (tssVerbose) TSS_Tbsi_GetTBSError("TSS_Tbsi_Open: Error Tbsi_Context_Create ", rc);
