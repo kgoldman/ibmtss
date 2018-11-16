@@ -43,6 +43,7 @@
 #include <stdint.h>
 
 #ifdef TPM_WINDOWS
+#include <winsock2.h>
 #include <windows.h>
 #endif
 #if defined (TPM_POSIX) || defined (TPM_SYSTEM_P)
