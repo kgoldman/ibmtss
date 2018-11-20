@@ -6,7 +6,6 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy.sh 1317 2018-08-29 18:14:51Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015 - 2018					#
 # 										#
@@ -821,7 +820,7 @@ echo ""
 # 0000017f000000010004030000016768033e216468247bd031a0a2d9876d79818f8f
 
 # convert to binary policy
-# > policymaker -halg sha1 -if policypcr.txt -of policypcr.bin -pr -v
+# > policymaker -halg sha1 -if policies/policypcr.txt -of policies/policypcr.bin -pr -v
 
 # 85 33 11 83 19 03 12 f5 e8 3c 60 43 34 6f 9f 37
 # 21 04 76 8e
@@ -904,8 +903,8 @@ checkSuccess $?
 #
 # policynvargs.txt (binary)
 # args = hash of 0000 0000 0000 0000 | 0000 | 0000 (eight bytes of zero | offset | op ==)
-# hash -hi n -halg sha1 -if policynvargs.txt -v
-# openssl dgst -sha1 policynvargs.txt
+# hash -hi n -halg sha1 -if policies/policynvargs.txt -v
+# openssl dgst -sha1 policies/policynvargs.txt
 # 2c513f149e737ec4063fc1d37aee9beabc4b4bbf
 #
 # NV authorizing index
@@ -918,7 +917,7 @@ checkSuccess $?
 # append Name to policynvnv.txt
 #
 # convert to binary policy
-# > policymaker -halg sha1 -if policynvnv.txt -of policynvnv.bin -pr -v
+# > policymaker -halg sha1 -if policies/policynvnv.txt -of policies/policynvnv.bin -pr -v
 # bc 9b 4c 4f 7b 00 66 19 5b 1d d9 9c 92 7e ad 57 e7 1c 2a fc 
 #
 # file zero8.bin has 8 bytes of hex zero
@@ -1332,7 +1331,7 @@ checkSuccess $?
 # cpHash is
 # b5f919bbc01f0ebad02010169a67a8c158ec12f3
 # append to policycphash.txt 00000163 + cpHash
-# policymaker -halg sha1 -if policycphash.txt -of policycphash.bin -pr
+# policymaker -halg sha1 -if policies/policycphash.txt -of policies/policycphash.bin -pr
 #  06 e4 6c f9 f3 c7 0f 30 10 18 7c a6 72 69 b0 84 b4 52 11 6f 
 
 echo ""
@@ -1679,19 +1678,12 @@ checkSuccess $?
 # test using clockrateadjust and platform policy
 
 # operand A time is 64 bits at offset 0, operation GT (2)
-# policycountertimerargs.txt (binary)
-# args = hash of operandB | offset | operation
-# 0000 0000 0000 0000 | 0000 | 0002
-# hash -hi n -halg sha1 -if policycountertimerargs.txt -v
-# openssl dgst -sha1 policycountertimerargs.txt
-# 7a5836fe287e11ac39ee88d3c0794916d50b73c3
+# 0000016d 0000 0000 0000 0000 | 0000 | 0002
 # 
-# policycountertimer.txt 
-# policy CC_PolicyCounterTimer || args
-# 0000016d + args
 # convert to binary policy
-# > policymaker -halg sha1 -if policycountertimer.txt -of policycountertimer.bin -pr -v
-# e6 84 81 27 55 c0 39 d3 68 63 21 c8 93 50 25 dd aa 26 42 9a 
+# > policymaker -halg sha1 -if policies/policycountertimer.txt -of policies/policycountertimer.bin -pr -v
+# e6 84 81 27 55 c0 39 d3 68 63 21 c8 93 50 25 dd 
+# aa 26 42 9a 
 
 echo ""
 echo "Policy Counter Timer"
@@ -1741,15 +1733,15 @@ checkSuccess $?
 # policyccsign.txt  0000016c 0000015d (policy command code | sign)
 # policyccquote.txt 0000016c 00000158 (policy command code | quote)
 #
-# > policymaker -if policyccsign.txt -of policyccsign.bin -pr -v
+# > policymaker -if policies/policyccsign.txt -of policies/policyccsign.bin -pr -v
 # cc6918b226273b08f5bd406d7f10cf160f0a7d13dfd83b7770ccbcd1aa80d811
 #
-# > policymaker -if policyccquote.txt -of policyccquote.bin -pr -v
+# > policymaker -if policies/policyccquote.txt -of policies/policyccquote.bin -pr -v
 # a039cad5fe68870688f8233c3e3ee3cf27aac9e2efe3486aeb4e304c0e90cd27
 #
 # policyor.txt is CC_PolicyOR || digests
 # 00000171 | cc69 ... | a039 ...
-# > policymaker -if policyor.txt -of policyor.bin -pr -v
+# > policymaker -if  policies/policyor.txt -of  policies/policyor.bin -pr -v
 # 6b fe c2 3a be 57 b0 2a ce 39 dd 13 bb 60 fa 39 
 # 4d ac 7b 38 96 56 57 84 b3 73 fc 61 92 94 29 db 
 

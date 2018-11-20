@@ -3,7 +3,6 @@
 /*			   policymaker						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymaker.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
@@ -56,6 +55,8 @@
    Example input: policy command code with a command code of NV write
 
    0000016c00000137
+
+   TPM2_PolicyCounterTimer is handled as a special case, where there is a double hash.
 */
 
 #include <stdio.h>
@@ -204,22 +205,48 @@ int main(int argc, char *argv[])
 	if (rc == 0) {
 	    prc = fgets(lineString, sizeof(lineString), inFile);
 	}
-	/* convert hex ascii to binary */ 
-	if ((rc == 0) && (prc != NULL)) {
-	    lineLength = strlen(lineString);
-	    rc = Format_FromHexascii(lineBinary,
-				     lineString, lineLength/2);
-	}
-	/* hash extend */
-	if ((rc == 0) && (prc != NULL)) {
-	    rc = TSS_Hash_Generate(&digest,
-				   startSizeInBytes, (uint8_t *)&digest.digest,	/* extend */
-				   lineLength /2, lineBinary,
-				   0, NULL);
-	}
-	if ((rc == 0) && (prc != NULL)) {
-	    if (verbose) TSS_PrintAll("intermediate policy digest",
-				      (uint8_t *)&digest.digest, sizeInBytes);
+	if (prc != NULL) {
+	    /* convert hex ascii to binary */ 
+	    if (rc == 0) {
+		lineLength = strlen(lineString);
+		rc = Format_FromHexascii(lineBinary,
+					 lineString, lineLength/2);
+	    }
+	    if (rc == 0) {
+		/* not TPM2_PolicyCounterTimer */
+		if (memcmp(lineString, "0000016d", 8) != 0) {
+		    /* hash extend digest.digest with line */
+		    if (rc == 0) {
+			rc = TSS_Hash_Generate(&digest,
+					       startSizeInBytes, (uint8_t *)&digest.digest,
+					       lineLength /2, lineBinary,
+					       0, NULL);
+		    }
+		}
+		/* TPM2_PolicyCounterTimer is a special case - double hash */
+		else {
+		    TPMT_HA	args;
+		    args.hashAlg = digest.hashAlg;
+		    if (rc == 0) {
+			/* args is a hash of the arguments excluding the command code */
+			rc = TSS_Hash_Generate(&args,
+					       (lineLength /2) -4, lineBinary +4,
+					       0, NULL);
+		    }
+		    if (rc == 0) {
+			uint8_t commandCode[] = {0x00, 0x00, 0x01, 0x6d};
+			rc = TSS_Hash_Generate(&digest,
+					       startSizeInBytes, (uint8_t *)&digest.digest,
+					       sizeof(commandCode), commandCode,
+					       startSizeInBytes, (uint8_t *)&args.digest,
+					       0, NULL);
+		    }
+		}
+	    }
+	    if (rc == 0) {
+		if (verbose) TSS_PrintAll("intermediate policy digest",
+					  (uint8_t *)&digest.digest, sizeInBytes);
+	    }
 	}
     }
     while ((rc == 0) && (prc != NULL));
