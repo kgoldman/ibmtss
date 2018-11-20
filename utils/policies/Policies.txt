@@ -3,7 +3,6 @@
 #			TPM2 regression test Directory of files			#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: Policies.txt 1316 2018-08-29 14:34:01Z kgoldman $		#
 #										#
 # (c) Copyright IBM Corporation 2015, 2018					#
 # 										#
@@ -59,7 +58,6 @@ policyccsign.txt			policy command code sign
 policyccsign-auth.txt			policy command code sign + policy authvalue
 policyccundefinespacespecial-auth	policy command code undefinespacespecial + policy authvalue
 policycountertimer.txt			policy counter timer
-policycountertimerargs.txt		policy counter timer arguments input
 policycphash.txt			policy cphash
 policycphashhash.txt			policy cphash data
 policydupsel-no.txt			policy duplicatation select no includeObject
