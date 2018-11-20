@@ -48,7 +48,9 @@
 
 #include <openssl/objects.h>
 #include <openssl/rsa.h>
+#ifndef TPM_TSS_NOECC
 #include <openssl/ecdsa.h>
+#endif
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 
