@@ -3,7 +3,6 @@
 /*			    Get Capability	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
@@ -554,9 +553,16 @@ static TPM_RC responsePcrProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32
 static TPM_RC responseEccCurves(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property)
 {
     TPM_RC	rc = 0;
+    uint32_t	count;
+    TPML_ECC_CURVE *eccCurves = (TPML_ECC_CURVE *)&(capabilityData->data);
+    TPM_ECC_CURVE curve;
     property = property;
-    capabilityData = capabilityData;
-    printf("unimplemented\n");
+
+    printf("%u curves\n", eccCurves->count);
+    for (count = 0 ; count < eccCurves->count ; count++) {
+	curve = eccCurves->eccCurves[count];
+	TSS_TPM_ECC_CURVE_Print("", curve, 4);
+    }
     return rc;
 }
 
