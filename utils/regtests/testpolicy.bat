@@ -1088,10 +1088,10 @@ IF !ERRORLEVEL! NEQ 0 (
 REM # policypcr0.txt has 20 * 00
 
 REM # create AND term for policy PCR
-REM # > policymakerpcr -halg sha1 -bm 10000 -if policypcr0.txt -v -pr -of policypcr.txt
+REM # > policymakerpcr -halg sha1 -bm 10000 -if policies/policypcr0.txt -v -pr -of policies/policypcr.txt
 
 REM # convert to binary policy
-REM # > policymaker -halg sha1 -if policypcr.txt -of policypcr.bin -pr -v
+REM # > policymaker -halg sha1 -if policies/policypcr.txt -of policies/policypcr.bin -pr -v
 
 echo ""
 echo "Policy PCR"
@@ -1209,8 +1209,8 @@ REM # policy CC_PolicyNV || args || Name
 REM #
 REM # policynvargs.txt (binary)
 REM # args = hash of 0000 0000 0000 0000 | 0000 | 0000 (eight bytes of zero | offset | op ==)
-REM # hash -hi n -halg sha1 -if policynvargs.txt -v
-REM # openssl dgst -sha1 policynvargs.txt
+REM # hash -hi n -halg sha1 -if policies/policynvargs.txt -v
+REM # openssl dgst -sha1  policies/policynvargs.txt
 REM # 2c513f149e737ec4063fc1d37aee9beabc4b4bbf
 REM #
 REM # NV authorizing index
@@ -1223,7 +1223,7 @@ REM #
 REM # append Name to policynvnv.txt
 REM #
 REM # convert to binary policy
-REM # > policymaker -halg sha1 -if policynvnv.txt -of policynvnv.bin -pr -v
+REM # > policymaker -halg sha1 -if policies/policynvnv.txt -of policies/policynvnv.bin -pr -v
 REM # bc 9b 4c 4f 7b 00 66 19 5b 1d d9 9c 92 7e ad 57 e7 1c 2a fc 
 REM #
 REM # file zero8.bin has 8 bytes of hex zero
@@ -1768,7 +1768,7 @@ REM # openssl dgst -sha1 policycphashhash.txt
 REM # cpHash is
 REM # b5f919bbc01f0ebad02010169a67a8c158ec12f3
 REM # append to policycphash.txt 00000163 + cpHash
-REM # policymaker -halg sha1 -if policycphash.txt -of policycphash.bin -pr
+REM # policymaker -halg sha1 -if policies/policycphash.txt -of policies/policycphash.bin -pr
 REM #  06 e4 6c f9 f3 c7 0f 30 10 18 7c a6 72 69 b0 84 b4 52 11 6f 
 
 echo ""
@@ -2241,19 +2241,12 @@ IF !ERRORLEVEL! NEQ 0 (
 REM # test using clockrateadjust and platform policy
 
 REM # operand A time is 64 bits at offset 0, operation GT (2)
-REM # policycountertimerargs.txt (binary)
-REM # args = hash of operandB | offset | operation
-REM # 0000 0000 0000 0000 | 0000 | 0002
-REM # hash -hi n -halg sha1 -if policycountertimerargs.txt -v
-REM # openssl dgst -sha1 policycountertimerargs.txt
-REM # 7a5836fe287e11ac39ee88d3c0794916d50b73c3
+REM # 0000016d 0000 0000 0000 0000 | 0000 | 0002
 REM # 
-REM # policycountertimer.txt 
-REM # policy CC_PolicyCounterTimer || args
-REM # 0000016d + args
 REM # convert to binary policy
-REM # > policymaker -halg sha1 -if policycountertimer.txt -of policycountertimer.bin -pr -v
-REM # e6 84 81 27 55 c0 39 d3 68 63 21 c8 93 50 25 dd aa 26 42 9a 
+REM # > policymaker -halg sha1 -if policies/policycountertimer.txt -of policies/policycountertimer.bin -pr -v
+REM # e6 84 81 27 55 c0 39 d3 68 63 21 c8 93 50 25 dd 
+REM # aa 26 42 9a 
 
 echo ""
 echo "Policy Counter Timer"
@@ -2322,15 +2315,15 @@ IF !ERRORLEVEL! NEQ 0 (
 REM # policyccsign.txt  0000016c 0000015d (policy command code | sign)
 REM # policyccquote.txt 0000016c 00000158 (policy command code | quote)
 REM #
-REM # > policymaker -if policyccsign.txt -of policyccsign.bin -pr -v
+REM # > policymaker -if policies/policyccsign.txt -of policies/policyccsign.bin -pr -v
 REM # cc6918b226273b08f5bd406d7f10cf160f0a7d13dfd83b7770ccbcd1aa80d811
 REM #
-REM # > policymaker -if policyccquote.txt -of policyccquote.bin -pr -v
+REM # > policymaker -if policies/policyccquote.txt -of policies/policyccquote.bin -pr -v
 REM # a039cad5fe68870688f8233c3e3ee3cf27aac9e2efe3486aeb4e304c0e90cd27
 REM #
 REM # policyor.txt is CC_PolicyOR || digests
 REM # 00000171 | cc69 ... | a039 ...
-REM # > policymaker -if policyor.txt -of policyor.bin -pr -v
+REM # > policymaker -if policies/policyor.txt -of policies/policyor.bin -pr -v
 REM # 6b fe c2 3a be 57 b0 2a ce 39 dd 13 bb 60 fa 39 
 REM # 4d ac 7b 38 96 56 57 84 b3 73 fc 61 92 94 29 db 
 

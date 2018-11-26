@@ -62,7 +62,13 @@ policycphash.txt			policy cphash
 policycphashhash.txt			policy cphash data
 policydupsel-no.txt			policy duplicatation select no includeObject
 policydupsel-yes.txt			policy duplicatation select with includeObject
-policyiwgek.txt				standard IWG EK policy
+policyiwgek.txt				standard IWG EK policy, and IWG PolicyA (EH auth)
+policyiwgekcsha256.txt			standard IWG EK policyC (auth NV)
+policyiwgekcsha384.txt			standard IWG EK policyC
+policyiwgekcsha512.txt			standard IWG EK policyC
+policyiwgekbsha256.txt			standard IWG EK policyB (policy OR)
+policyiwgekbsha384.txt			standard IWG EK policyB (policy OR)
+policyiwgekbsha512.txt			standard IWG EK policyB (policy OR)
 policynvargs.txt			policy nv arguments
 policynvnv.txt				policy nv has name and args			
 policyor.txt				policy command code sign | quote
