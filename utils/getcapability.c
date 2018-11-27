@@ -467,6 +467,25 @@ static PT_TABLE ptTable [] = {
     {(PT_VAR + 20), "TPM_PT_AUDIT_COUNTER_1 - the low-order 32 bits of the command audit counter"},
 };
 
+static char get8(uint32_t value32, size_t offset);
+static uint16_t get16(uint32_t value32, size_t offset);
+
+/* get8() gets a char from a uint32_t at offset */
+
+static char get8(uint32_t value32, size_t offset)
+{
+    char value8 = (uint8_t)((value32 >> ((3 - offset) * 8)) & 0xff);
+    return value8;
+}
+
+/* get16() gets a uint16_t from a uint32_t at offset */
+
+static uint16_t get16(uint32_t value32, size_t offset)
+{
+    uint16_t value16 = (uint16_t)((value32 >> ((1 - offset) * 16)) & 0xffff);
+    return value16;
+}
+
 static TPM_RC responseTpmProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property)
 {
     TPM_RC		rc = 0;
@@ -489,6 +508,51 @@ static TPM_RC responseTpmProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32
 	    ptText = "PT unknown";
 	}
 	printf("TPM_PT %08x value %08x %s\n", tpmProperty->property, tpmProperty->value, ptText);
+	switch (tpmProperty->property) {
+	    char c;
+	  case TPM_PT_FAMILY_INDICATOR:
+	    printf("\tTPM ");
+	    for (i = 0 ; i < sizeof(uint32_t) ; i++) {
+		c = get8(tpmProperty->value, i);
+		printf("%c", c);
+	    }
+	    printf("\n");
+	    break;
+	  case TPM_PT_REVISION:
+	    printf("\trev %u\n", tpmProperty->value);
+	    break;
+	  case TPM_PT_DAY_OF_YEAR:
+	  case TPM_PT_YEAR:
+	  case TPM_PT_INPUT_BUFFER:
+	  case TPM_PT_NV_INDEX_MAX:
+	  case TPM_PT_CLOCK_UPDATE:
+	  case TPM_PT_MAX_COMMAND_SIZE:
+	  case TPM_PT_MAX_RESPONSE_SIZE:
+	  case TPM_PT_MAX_DIGEST:
+	  case TPM_PT_NV_BUFFER_MAX:
+	    printf("\t%u\n", tpmProperty->value);
+	    break;
+	  case TPM_PT_MANUFACTURER:
+	  case TPM_PT_VENDOR_STRING_1:
+	  case TPM_PT_VENDOR_STRING_2:
+	  case TPM_PT_VENDOR_STRING_3:
+	  case TPM_PT_VENDOR_STRING_4:
+	    printf("\t");
+	    for (i = 0 ; i < sizeof(uint32_t) ; i++) {
+		c = get8(tpmProperty->value, i);
+		printf("%c", c);
+	    }
+	    printf("\n");
+	    break;
+	  case TPM_PT_FIRMWARE_VERSION_1:
+	  case TPM_PT_FIRMWARE_VERSION_2:
+	    printf("\t%u.%u\n", get16(tpmProperty->value, 0), get16(tpmProperty->value, 1));
+	    break;
+	  case TPM_PT_PS_REVISION:
+	    printf("\t%u.%u\n", get8(tpmProperty->value, 2), get8(tpmProperty->value, 3));
+	    break;
+	    
+	}
     }
     return rc;
 }
