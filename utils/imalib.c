@@ -195,7 +195,7 @@ static void IMA_Event_ParseName(ImaEvent *imaEvent)
 void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 			    unsigned int nameInt)
 {
-    nameInt = nameInt;	/* obsolete not that custom templates are supported */
+    nameInt = nameInt;	/* obsolete now that custom templates are supported */
     
     printf("IMA_TemplateData_Trace: hashLength %u\n", imaTemplateData->hashLength); 
     printf("IMA_TemplateData_Trace: hashAlg %s\n", imaTemplateData->hashAlg);
@@ -693,6 +693,7 @@ typedef struct {
 
 static ImaFormatMap imaFormatMap[] = {
     {"d", (TemplateDataParseFunction_t)IMA_ParseD},
+    {"n", (TemplateDataParseFunction_t)IMA_ParseNNG},
     {"d-ng", (TemplateDataParseFunction_t)IMA_ParseDNG},
     {"n-ng", (TemplateDataParseFunction_t)IMA_ParseNNG},
     {"sig", (TemplateDataParseFunction_t)IMA_ParseSIG}
