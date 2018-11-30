@@ -3,7 +3,6 @@
 /*		      Extend an IMA measurement list into PCR 10		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: imaextend.c 1335 2018-09-20 21:24:10Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2014 - 2018.					*/
 /*										*/
@@ -220,9 +219,26 @@ int main(int argc, char * argv[])
 	    if ((rc == 0) && (lineNum >= beginEvent) && (lineNum <= endEvent) && !endOfFile) {
 		/* debug tracing */
 		if (rc == 0) {
+		    ImaTemplateData imaTemplateData;
 		    if (verbose) printf("\n");
 		    printf("imaextend: line %u\n", lineNum);
-		    if (verbose) IMA_Event_Trace(&imaEvent, FALSE);
+		    if (verbose) {
+			IMA_Event_Trace(&imaEvent, FALSE);
+			/* unmarshal the template data */
+			if (rc == 0) {
+			    rc = IMA_TemplateData_ReadBuffer(&imaTemplateData,
+							     &imaEvent,
+							     littleEndian);
+			}
+			if (rc == 0) {
+			    IMA_TemplateData_Trace(&imaTemplateData,
+						   imaEvent.nameInt);
+			}
+			else {
+			    printf("imaextend: Error parsing template data, event %u\n", lineNum);
+			    rc = 0;		/* not a fatal error */
+			}
+		    }
 		}
 		if (!sim) {
 		    if (rc == 0) {
