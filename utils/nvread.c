@@ -416,9 +416,11 @@ static void printUsage(void)
     printf("\t[-sz\tdata size (default to size of index)]\n");
     printf("\t\tcounter, bits, pin read 8 bytes, extend reads based on hash algorithm\n");
     printf("\t[-cert\tdumps the certificate\n");
-    printf("\t[-ocert\tcertificate file name, writes in PEM format\n");
-    printf("\t[-off\toffset (default 0)]\n");
-    printf("\t[-of\tdata file (default do not save)]\n");
+    printf("\t01c00002\tRSA EK certificate\n");
+    printf("\t01c0000a\tECC EK certificate\n");
+    printf("\t[-ocert\t certificate file name, writes in PEM format\n");
+    printf("\t[-off\t offset (default 0)]\n");
+    printf("\t[-of\t data file (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t01\tcontinue\n");
