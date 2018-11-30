@@ -556,7 +556,7 @@ void printUsageTemplate(void)
 	   "\t\t\tnf\tno fixedTPM (default for non-primary keys)\n"
 	   "\t\t\tnp\tno fixedParent (default for non-primary keys)\n"
 	   "\t\t\ted\tencrypted duplication (default not set)\n");
-    printf("\t\t[-da\tobject subject to DA protection (default no)]\n");
+    printf("\t[-da\tobject subject to DA protection (default no)]\n");
     printf("\t[-pol\tpolicy file (default empty)]\n");
     printf("\t[-uwa\tuserWithAuth attribute clear (default set)]\n");
     printf("\t[-if\tdata (inSensitive) file name]\n");
