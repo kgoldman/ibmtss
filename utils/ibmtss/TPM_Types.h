@@ -1672,6 +1672,7 @@ typedef union {
     TPML_TAGGED_TPM_PROPERTY	tpmProperties;	/* TPM_CAP_TPM_PROPERTIES */
     TPML_TAGGED_PCR_PROPERTY	pcrProperties;	/* TPM_CAP_PCR_PROPERTIES */
     TPML_ECC_CURVE		eccCurves;	/* TPM_CAP_ECC_CURVES */
+    TPML_TAGGED_POLICY		authPolicies;	/* TPM_CAP_AUTH_POLICIES */
 } TPMU_CAPABILITIES;
     
 /* Table 107 - Definition of TPMS_CAPABILITY_DATA Structure <OUT> */

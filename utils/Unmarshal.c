@@ -3,7 +3,6 @@
 /*			     Parameter Unmarshaling				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Unmarshal.c 790 2016-10-26 19:21:33Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015 - 2018					*/
 /*										*/
@@ -452,6 +451,7 @@ TSS_TPM_CAP_Unmarshalu(TPM_CAP *target, BYTE **buffer, uint32_t *size)
 	  case TPM_CAP_TPM_PROPERTIES:
 	  case TPM_CAP_PCR_PROPERTIES:
 	  case TPM_CAP_ECC_CURVES:
+	  case TPM_CAP_AUTH_POLICIES:
 	  case TPM_CAP_VENDOR_PROPERTY:
 	    break;
 	  default:
@@ -1835,6 +1835,22 @@ TSS_TPMS_TAGGED_PCR_SELECT_Unmarshalu(TPMS_TAGGED_PCR_SELECT *target, BYTE **buf
     return rc;
 }
 
+/* Table 100 - Definition of TPMS_TAGGED_POLICY Structure <OUT> */
+
+TPM_RC
+TSS_TPMS_TAGGED_POLICY_Unmarshalu(TPMS_TAGGED_POLICY *target, BYTE **buffer, uint32_t *size) 
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM_HANDLE_Unmarshalu(&target->handle, buffer, size);  
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPMT_HA_Unmarshalu(&target->policyHash, buffer, size, YES);
+    }
+    return rc;
+}
+
 /* Table 95 - Definition of TPML_CC Structure */
 
 TPM_RC
@@ -2083,7 +2099,29 @@ TSS_TPML_ECC_CURVE_Unmarshalu(TPML_ECC_CURVE *target, BYTE **buffer, uint32_t *s
     for (i = 0 ; (rc == TPM_RC_SUCCESS) && (i < target->count) ; i++) {
 	rc = TSS_TPM_ECC_CURVE_Unmarshalu(&target->eccCurves[i], buffer, size);
     }
-    return rc;
+    return rc;	
+}
+
+/* Table 112 - Definition of TPML_TAGGED_POLICY Structure <OUT> */
+
+TPM_RC
+TSS_TPML_TAGGED_POLICY_Unmarshalu(TPML_TAGGED_POLICY *target, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    uint32_t i;  
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_UINT32_Unmarshalu(&target->count, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	if (target->count > MAX_TAGGED_POLICIES) {
+	    rc = TPM_RC_SIZE;
+	}
+    }
+    for (i = 0 ; (rc == TPM_RC_SUCCESS) && (i < target->count) ; i++) {
+	rc = TSS_TPMS_TAGGED_POLICY_Unmarshalu(&target->policies[i], buffer, size);
+    }
+    return rc;	
 }
 
 /* Table 107 - Definition of TPMU_CAPABILITIES Union <OUT> */
@@ -2120,6 +2158,9 @@ TSS_TPMU_CAPABILITIES_Unmarshalu(TPMU_CAPABILITIES *target, BYTE **buffer, uint3
 	break;
       case TPM_CAP_ECC_CURVES:
 	rc = TSS_TPML_ECC_CURVE_Unmarshalu(&target->eccCurves, buffer, size);
+	break;
+      case TPM_CAP_AUTH_POLICIES:
+	rc = TSS_TPML_TAGGED_POLICY_Unmarshalu(&target->authPolicies, buffer, size);
 	break;
       default:
 	rc = TPM_RC_SELECTOR;
