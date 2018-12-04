@@ -3,7 +3,6 @@
 /*			     Structure Print and Scan Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 1340 2018-09-28 18:32:11Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -323,6 +322,15 @@ void TSS_TPM_ECC_CURVE_Print(const char *string, TPM_ECC_CURVE source, unsigned 
       default:
 	printf("%s TPM_ECC_CURVE value %04hx unknown\n", string, source);
     }
+    return;
+}
+
+/* Table 100 - Definition of TPMS_TAGGED_POLICY Structure <OUT> */
+
+void TSS_TPMS_TAGGED_POLICY_Print(TPMS_TAGGED_POLICY *source, unsigned int indent)
+{
+    TSS_TPM_HANDLE_Print("handle", source->handle, indent);
+    TSS_TPMT_HA_Print(&source->policyHash, indent);
     return;
 }
 
@@ -1123,6 +1131,8 @@ void TSS_TPMU_HA_Print(TPMU_HA *source, uint32_t selector, unsigned int indent)
 	TSS_PrintAlli("sm3_256", indent, source->sm3_256, SM3_256_DIGEST_SIZE);
 	break;
 #endif
+      case TPM_ALG_NULL:
+	break;
       default:
 	printf("%*s" "TPMU_HA: selection %08x not implemented\n", indent, "", selector);
     }

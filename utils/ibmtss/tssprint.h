@@ -3,7 +3,6 @@
 /*			     Structure Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -85,6 +84,8 @@ extern "C" {
     void TSS_TPM_ALG_ID_Print(const char *string, TPM_ALG_ID source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPM_ECC_CURVE_Print(const char *string, TPM_ECC_CURVE source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMS_TAGGED_POLICY_Print(TPMS_TAGGED_POLICY *source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPM_CC_Print(const char *string, TPM_CC source, unsigned int indent);
     LIB_EXPORT

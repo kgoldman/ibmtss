@@ -258,6 +258,7 @@ static void usagePcrs(void);
 static void usageTpmProperties(void);
 static void usagePcrProperties(void);
 static void usageEccCurves(void);
+static void usageAuthPolicies(void);
 
 static TPM_RC responseCapability(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
 static TPM_RC responseAlgs(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
@@ -269,6 +270,7 @@ static TPM_RC responsePcrs(TPMS_CAPABILITY_DATA *capabilityData, uint32_t proper
 static TPM_RC responseTpmProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
 static TPM_RC responsePcrProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
 static TPM_RC responseEccCurves(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
+static TPM_RC responseAuthPolicies(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
 
 static const CAPABILITY_TABLE capabilityTable [] = {
     {TPM_CAP_LAST + 1, usageCapability, responseCapability}, 
@@ -280,7 +282,8 @@ static const CAPABILITY_TABLE capabilityTable [] = {
     {TPM_CAP_PCRS, usagePcrs, responsePcrs} ,                
     {TPM_CAP_TPM_PROPERTIES, usageTpmProperties, responseTpmProperties},      
     {TPM_CAP_PCR_PROPERTIES, usagePcrProperties, responsePcrProperties},      
-    {TPM_CAP_ECC_CURVES, usageEccCurves, responseEccCurves}          
+    {TPM_CAP_ECC_CURVES, usageEccCurves, responseEccCurves},          
+    {TPM_CAP_AUTH_POLICIES, usageAuthPolicies, responseAuthPolicies}          
 };
 
 static TPM_RC printResponse(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property)
@@ -596,7 +599,7 @@ static TPM_RC responsePcrProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32
 	const char *ptPcrText = NULL;
 	size_t i;
 	for  (i = 0 ; i < (sizeof(ptPcrTable) / sizeof(PT_PCR_TABLE)) ; i++) {
-	    if (pcrProperty->tag == ptPcrTable[i].ptPcr) {			/* the property identifier */
+	    if (pcrProperty->tag == ptPcrTable[i].ptPcr) {	/* the property identifier */
 		ptPcrText = ptPcrTable[i].ptPcrText;
 		break;
 	    }
@@ -605,7 +608,8 @@ static TPM_RC responsePcrProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32
 	    ptPcrText = "PT unknown";
 	}
 	printf("TPM_PT_PCR %08x %s\n", pcrProperty->tag, ptPcrText);
-	for (i = 0 ; i < pcrProperty->sizeofSelect ; i++) {		/* the size in octets of the pcrSelect array */
+	for (i = 0 ; i < pcrProperty->sizeofSelect ; i++) {	/* the size in octets of the
+								   pcrSelect array */
 	    printf("PCR %u-%u  \tpcrSelect\t%02x\n",
 		   (unsigned int)i*8, (unsigned int)(i*8) + 7,
 		   pcrProperty->pcrSelect[i]); 
@@ -626,6 +630,20 @@ static TPM_RC responseEccCurves(TPMS_CAPABILITY_DATA *capabilityData, uint32_t p
     for (count = 0 ; count < eccCurves->count ; count++) {
 	curve = eccCurves->eccCurves[count];
 	TSS_TPM_ECC_CURVE_Print("", curve, 4);
+    }
+    return rc;
+}
+
+static TPM_RC responseAuthPolicies(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property)
+{
+    TPM_RC	rc = 0;
+    uint32_t	count;
+    TPML_TAGGED_POLICY *authPolicies = (TPML_TAGGED_POLICY *)&(capabilityData->data);
+    property = property;
+
+    printf("%u authPolicies\n", authPolicies->count);
+    for (count = 0 ; count < authPolicies->count ; count++) {
+	TSS_TPMS_TAGGED_POLICY_Print(&authPolicies->policies[count], 4);
     }
     return rc;
 }
@@ -673,6 +691,7 @@ static void usageCapability(void)
 	   "\t\tTPM_CAP_TPM_PROPERTIES      6\n"
 	   "\t\tTPM_CAP_PCR_PROPERTIES      7\n"
 	   "\t\tTPM_CAP_ECC_CURVES          8\n"
+	   "\t\tTPM_CAP_AUTH_POLICIES       9\n"
 	   );
     return;
 }
@@ -739,7 +758,12 @@ static void usagePcrProperties(void)
 
 static void usageEccCurves(void)
 {
-    printf("unimplemented\n");
+    printf("TPM_CAP_ECC_CURVES -pr is the first curve\n");
     return;
 }
 
+static void usageAuthPolicies(void)
+{
+    printf("TPM_CAP_AUTH_POLICIES -pr is the first handle in range 40000000\n");
+    return;
+}
