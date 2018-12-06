@@ -3,9 +3,8 @@
 /*			    TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss.c 1257 2018-06-27 20:52:08Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -85,12 +84,10 @@ TPM_RC TSS_Create(TSS_CONTEXT **tssContext)
 
     /* allocate the high level TSS structure */
     if (rc == 0) {
-	*tssContext = malloc(sizeof(TSS_CONTEXT));
-	if (*tssContext == NULL) {
-	    if (tssVerbose) printf("TSS_Create: malloc %u failed\n",
-				   (unsigned int)sizeof(TSS_CONTEXT));
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+	/* set to NULL for backward compatibility, caller may not have set tssContext to NULL before
+	   the call */
+	*tssContext = NULL;
+	rc = TSS_Malloc((unsigned char **)tssContext, sizeof(TSS_CONTEXT));
     }
     /* initialize the high level TSS structure */
     if (rc == 0) {

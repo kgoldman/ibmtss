@@ -4,7 +4,6 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
-/*	      $Id: tsscrypto.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
 /* (c) Copyright IBM Corporation 2015, 2018.					*/
 /*										*/
@@ -252,7 +251,7 @@ TPM_RC TSS_Hash_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
     if (rc == 0) {
 	mdctx = EVP_MD_CTX_create();
         if (mdctx == NULL) {
-	    if (tssVerbose) printf("TSS_Hash_Generate: malloc EVP_MD_CTX failed\n");
+	    if (tssVerbose) printf("TSS_Hash_Generate: EVP_MD_CTX_create failed\n");
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
@@ -816,12 +815,7 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     if (rc == 0) {
 	sizeInBytes = TSS_GetDigestSize(publicArea->nameAlg);
 	sizeInBits =  sizeInBytes * 8;
-	sharedXBin = malloc(BN_num_bytes(sharedX));		/* freed @9 */
-	if (sharedXBin == NULL) {
-	    if (tssVerbose) printf("TSS_ECC_Salt: "
-				   "malloc sharedXBin failed\n");
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+	rc = TSS_Malloc(&sharedXBin, BN_num_bytes(sharedX));		/* freed @9 */
     }
     if (rc == 0) {
 	lengthSharedXBin = (unsigned int)BN_bn2bin(sharedX, sharedXBin);
@@ -854,33 +848,18 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 				    "Retrieved X and Y coordinates from ephemeral public\n");
 	}
     }
-    if (rc == 0) {    
-	p_caller_Xbin = malloc(BN_num_bytes(p_caller_Xbn));	/* freed @12 */
-	if (p_caller_Xbin == NULL) {
-	    if (tssVerbose) printf("TSS_ECC_Salt: "
-				   "malloc p_caller_Xbin failed\n");
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+    if (rc == 0) {
+	rc = TSS_Malloc(&p_caller_Xbin, BN_num_bytes(p_caller_Xbn));	/* freed @12 */
     }
     if (rc == 0) {    
-	p_caller_Ybin = malloc(BN_num_bytes(p_caller_Ybn));	/* freed @13 */
-	if (p_caller_Ybin == NULL) {
-	    if (tssVerbose) printf("TSS_ECC_Salt: "
-				   "malloc p_caller_Ybin failed\n");
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+	rc = TSS_Malloc(&p_caller_Ybin , BN_num_bytes(p_caller_Ybn));	/* freed @13 */
     }
     if (rc == 0) {    
 	if (tssVverbose) printf("TSS_ECC_Salt: "
 				"Allocated space for ephemeral binary X and y\n");
     }
     if (rc == 0) {
-	p_tpmXbin = malloc(BN_num_bytes(p_tpmX));		/* freed @14 */
-	if (p_tpmXbin == NULL) {
-	    if (tssVerbose) printf("TSS_ECC_Salt: "
-				   "malloc p_tpmXbin failed\n");
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+	rc = TSS_Malloc(&p_tpmXbin, BN_num_bytes(p_tpmX));		/* freed @14 */
     }
     if (rc == 0) {
 	length_p_tpmXbin = (unsigned int)BN_bn2bin(p_tpmX, p_tpmXbin);
