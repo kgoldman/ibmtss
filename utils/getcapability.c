@@ -527,13 +527,29 @@ static TPM_RC responseTpmProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32
 	  case TPM_PT_DAY_OF_YEAR:
 	  case TPM_PT_YEAR:
 	  case TPM_PT_INPUT_BUFFER:
+	  case TPM_PT_ACTIVE_SESSIONS_MAX:
+	  case TPM_PT_PCR_COUNT:
 	  case TPM_PT_NV_INDEX_MAX:
 	  case TPM_PT_CLOCK_UPDATE:
+	  case TPM_PT_CONTEXT_SYM_SIZE:
 	  case TPM_PT_MAX_COMMAND_SIZE:
 	  case TPM_PT_MAX_RESPONSE_SIZE:
 	  case TPM_PT_MAX_DIGEST:
+	  case TPM_PT_MAX_OBJECT_CONTEXT:
+	  case TPM_PT_MAX_SESSION_CONTEXT:
+	  case TPM_PT_PS_DAY_OF_YEAR:
+	  case TPM_PT_PS_YEAR:
+	  case TPM_PT_SPLIT_MAX:
+	  case TPM_PT_TOTAL_COMMANDS:
+	  case TPM_PT_LIBRARY_COMMANDS:
+	  case TPM_PT_VENDOR_COMMANDS:
 	  case TPM_PT_NV_BUFFER_MAX:
-	    printf("\t%u\n", tpmProperty->value);
+	  case TPM_PT_MAX_CAP_BUFFER:
+	    
+	  case TPM_PT_HR_ACTIVE_AVAIL:
+	  case TPM_PT_HR_PERSISTENT_AVAIL:
+	  case TPM_PT_NV_COUNTERS_AVAIL:
+ 	    printf("\t%u\n", tpmProperty->value);
 	    break;
 	  case TPM_PT_MANUFACTURER:
 	  case TPM_PT_VENDOR_STRING_1:
@@ -552,9 +568,41 @@ static TPM_RC responseTpmProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32
 	    printf("\t%u.%u\n", get16(tpmProperty->value, 0), get16(tpmProperty->value, 1));
 	    break;
 	  case TPM_PT_PS_REVISION:
-	    printf("\t%u.%u\n", get8(tpmProperty->value, 2), get8(tpmProperty->value, 3));
+	    printf("\t%u.%u.%u.%u\n",
+		   get8(tpmProperty->value, 0), get8(tpmProperty->value, 1),
+		   get8(tpmProperty->value, 2), get8(tpmProperty->value, 3));
 	    break;
-	    
+	  case TPM_PT_CONTEXT_HASH:
+	  case TPM_PT_CONTEXT_SYM:
+	    TSS_TPM_ALG_ID_Print("algorithm", tpmProperty->value, 4);
+	    break;
+	  case TPM_PT_MEMORY:
+	      {
+		  TPMA_MEMORY tmp;
+		  tmp.val = tpmProperty->value;
+		  TSS_TPMA_MEMORY_Print(tmp, 4);
+	      }
+	      break;
+	  case TPM_PT_MODES :
+	      {
+		  TPMA_MODES tmp;
+		  TSS_TPMA_MODES_Print(tmp, 4);
+	      }
+	      break;
+	  case TPM_PT_PERMANENT:
+	      {
+		  TPMA_PERMANENT tmp;
+		  tmp.val = tpmProperty->value;
+		  TSS_TPMA_PERMANENT_Print(tmp, 4);
+	      }
+	      break;
+	  case TPM_PT_STARTUP_CLEAR:
+	      {
+		  TPMA_STARTUP_CLEAR tmp;
+		  tmp.val = tpmProperty->value;
+		  TSS_TPMA_STARTUP_CLEAR_Print(tmp, 4);
+	      }
+	      break; 
 	}
     }
     return rc;
