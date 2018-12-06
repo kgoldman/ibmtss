@@ -1051,12 +1051,18 @@ void TSS_TPMA_LOCALITY_Print(TPMA_LOCALITY source, unsigned int indent)
 
 void TSS_TPMA_PERMANENT_Print(TPMA_PERMANENT source, unsigned int indent)
 {
-    if (source.val & TPMA_PERMANENT_OWNERAUTHSET) printf("%*s" "TPMA_PERMANENT: ownerAuthSet\n", indent, "");
-    if (source.val & TPMA_PERMANENT_ENDORSEMENTAUTHSET) printf("%*s" "TPMA_PERMANENT: endorsementAuthSet\n", indent, "");
-    if (source.val & TPMA_PERMANENT_LOCKOUTAUTHSET) printf("%*s" "TPMA_PERMANENT: lockoutAuthSet\n", indent, "");
-    if (source.val & TPMA_PERMANENT_DISABLECLEAR) printf("%*s" "TPMA_PERMANENT: disableClear\n", indent, "");
-    if (source.val & TPMA_PERMANENT_INLOCKOUT) printf("%*s" "TPMA_PERMANENT: inLockout\n", indent, "");
-    if (source.val & TPMA_PERMANENT_TPMGENERATEDEPS) printf("%*s" "TPMA_PERMANENT: tpmGeneratedEPS\n", indent, "");
+    printf("%*s" "TPMA_PERMANENT: ownerAuthSet %s\n", indent, "",
+	   (source.val & TPMA_PERMANENT_OWNERAUTHSET) ? "yes" : "no"); 
+    printf("%*s" "TPMA_PERMANENT: endorsementAuthSet %s\n", indent, "",
+	   (source.val & TPMA_PERMANENT_ENDORSEMENTAUTHSET)  ? "yes" : "no"); 
+    printf("%*s" "TPMA_PERMANENT: lockoutAuthSet %s\n", indent, "",
+	   (source.val & TPMA_PERMANENT_LOCKOUTAUTHSET)  ? "yes" : "no"); 
+    printf("%*s" "TPMA_PERMANENT: disableClear %s\n", indent, "",
+	   (source.val & TPMA_PERMANENT_DISABLECLEAR) ? "yes" : "no"); 
+    printf("%*s" "TPMA_PERMANENT: inLockout %s\n", indent, "",
+	   (source.val & TPMA_PERMANENT_INLOCKOUT) ? "yes" : "no"); 
+    printf("%*s" "TPMA_PERMANENT: tpmGeneratedEPS %s\n", indent, "",
+	   (source.val & TPMA_PERMANENT_TPMGENERATEDEPS)  ? "yes" : "no"); 
     return;
 }
 
@@ -1064,11 +1070,16 @@ void TSS_TPMA_PERMANENT_Print(TPMA_PERMANENT source, unsigned int indent)
 
 void TSS_TPMA_STARTUP_CLEAR_Print(TPMA_STARTUP_CLEAR source, unsigned int indent)
 {
-    if (source.val & TPMA_STARTUP_CLEAR_PHENABLE) printf("%*s" "TPMA_STARTUP_CLEAR: phEnable\n", indent, "");
-    if (source.val & TPMA_STARTUP_CLEAR_SHENABLE) printf("%*s" "TPMA_STARTUP_CLEAR: shEnable\n", indent, "");
-    if (source.val & TPMA_STARTUP_CLEAR_EHENABLE) printf("%*s" "TPMA_STARTUP_CLEAR: ehEnable\n", indent, "");
-    if (source.val & TPMA_STARTUP_CLEAR_PHENABLENV) printf("%*s" "TPMA_STARTUP_CLEAR: phEnableNV\n", indent, "");
-    if (source.val & TPMA_STARTUP_CLEAR_ORDERLY) printf("%*s" "TPMA_STARTUP_CLEAR: orderly\n", indent, "");
+    printf("%*s" "TPMA_STARTUP_CLEAR: phEnable %s\n", indent, "",
+	   (source.val & TPMA_STARTUP_CLEAR_PHENABLE)  ? "yes" : "no"); 
+    printf("%*s" "TPMA_STARTUP_CLEAR: shEnable %s\n", indent, "",
+	   (source.val & TPMA_STARTUP_CLEAR_SHENABLE)  ? "yes" : "no"); 
+    printf("%*s" "TPMA_STARTUP_CLEAR: ehEnable %s\n", indent, "",
+	   (source.val & TPMA_STARTUP_CLEAR_EHENABLE)  ? "yes" : "no"); 
+    printf("%*s" "TPMA_STARTUP_CLEAR: phEnableNV %s\n", indent, "",
+	   (source.val & TPMA_STARTUP_CLEAR_PHENABLENV)  ? "yes" : "no"); 
+    printf("%*s" "TPMA_STARTUP_CLEAR: orderly %s\n", indent, "",
+	   (source.val & TPMA_STARTUP_CLEAR_ORDERLY)  ? "yes" : "no"); 
     return;
 }
 
@@ -1076,9 +1087,21 @@ void TSS_TPMA_STARTUP_CLEAR_Print(TPMA_STARTUP_CLEAR source, unsigned int indent
 
 void TSS_TPMA_MEMORY_Print(TPMA_MEMORY source, unsigned int indent)
 {
-    if (source.val & TPMA_MEMORY_SHAREDRAM) printf("%*s" "TPMA_MEMORY: sharedRAM\n", indent, "");
-    if (source.val & TPMA_MEMORY_SHAREDNV) printf("%*s" "TPMA_MEMORY: sharedNV\n", indent, "");
-    if (source.val & TPMA_MEMORY_OBJECTCOPIEDTORAM) printf("%*s" "TPMA_MEMORY: objectCopiedToRam\n", indent, "");
+    printf("%*s" "TPMA_MEMORY: sharedRAM %s\n", indent, "",
+	   (source.val & TPMA_MEMORY_SHAREDRAM) ? "yes" : "no");
+    printf("%*s" "TPMA_MEMORY: sharedNV %s\n", indent, "",
+	   (source.val & TPMA_MEMORY_SHAREDNV) ? "yes" : "no");
+    printf("%*s" "TPMA_MEMORY: objectCopiedToRam %s\n", indent, "",
+	   (source.val & TPMA_MEMORY_OBJECTCOPIEDTORAM) ? "yes" : "no");
+    return;
+}
+
+/* Table 38 - Definition of (UINT32) TPMA_MODES Bits <Out> */
+
+void TSS_TPMA_MODES_Print(TPMA_MODES source, unsigned int indent)
+{
+    printf("%*s" "TPMA_MODES: TPMA_MODES_FIPS_140_2 %s\n", indent, "",
+	   (source.val & TPMA_MODES_FIPS_140_2) ? "yes" : "no");
     return;
 }
 
