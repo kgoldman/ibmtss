@@ -119,6 +119,8 @@ extern "C" {
     LIB_EXPORT
     void TSS_TPMA_MEMORY_Print(TPMA_MEMORY source, unsigned int indent);
     LIB_EXPORT
+    void TSS_TPMA_MODES_Print(TPMA_MODES source, unsigned int indent);
+    LIB_EXPORT
     void TSS_TPMI_YES_NO_Print(const char *string, TPMI_YES_NO source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMU_HA_Print(TPMU_HA *source, uint32_t selector, unsigned int indent);
