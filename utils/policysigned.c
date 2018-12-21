@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
 	    }
 	}
 	if (rc == 0) {
-	    in.auth.signature.rsassa.sig.t.size = signatureLength;
+	    in.auth.signature.rsassa.sig.t.size = (uint16_t)signatureLength;
 	    memcpy(&in.auth.signature.rsassa.sig.t.buffer, signature, signatureLength); 
 	}
     }

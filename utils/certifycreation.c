@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	in.creationHash.t.size = length;
+	in.creationHash.t.size = (uint16_t)length;
 	memcpy(in.creationHash.t.buffer, buffer, length);
     }
     /* Start a TSS context */

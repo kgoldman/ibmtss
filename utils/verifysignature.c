@@ -329,7 +329,7 @@ int main(int argc, char *argv[])
 	}
 	else {
 	    if (verbose) printf("verifysignature: Using hash input file %s\n", messageFilename);
-	    in.digest.t.size = dataLength;
+	    in.digest.t.size = (uint16_t)dataLength;
 	    memcpy(&in.digest.t.buffer, (uint8_t *)data, dataLength);
 	}
 	if (rc == 0) {
