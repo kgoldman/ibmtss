@@ -586,6 +586,7 @@ static TPM_RC responseTpmProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32
 	  case TPM_PT_MODES :
 	      {
 		  TPMA_MODES tmp;
+		  tmp.val = tpmProperty->value;
 		  TSS_TPMA_MODES_Print(tmp, 4);
 	      }
 	      break;
