@@ -74,7 +74,7 @@ endif
 libibmtssutils_la_LDFLAGS = -version-info $(LIBIBMTSS_VERSION)
 libibmtssutils_la_LIBADD =  $(OPENSSL_LIBS)
 
-noinst_HEADERS = CommandAttributes.h imalib.h tssdev.h ntc2lib.h tssntc.h Commands_fp.h objecttemplates.h tssproperties.h cryptoutils.h Platform.h tssauth.h tsssocket.h ekutils.h tsstbsi.h eventlib.h tbs.h tssccattributes.h ibmtss/tss.h ibmtss/tsscryptoh.h ibmtss/tsscrypto.h ibmtss/tsserror.h ibmtss/tssfile.h ibmtss/tssmarshal.h ibmtss/tssprint.h ibmtss/tsstransmit.h ibmtss/tssresponsecode.h ibmtss/tssutils.h ibmtss/Unmarshal_fp.h ibmtss/Implementation.h
+noinst_HEADERS = CommandAttributes.h imalib.h tssdev.h ntc2lib.h tssntc.h Commands_fp.h objecttemplates.h tssproperties.h cryptoutils.h Platform.h tssauth.h tsssocket.h ekutils.h eventlib.h tssccattributes.h ibmtss/tss.h ibmtss/tsscryptoh.h ibmtss/tsscrypto.h ibmtss/tsserror.h ibmtss/tssfile.h ibmtss/tssmarshal.h ibmtss/tssprint.h ibmtss/tsstransmit.h ibmtss/tssresponsecode.h ibmtss/tssutils.h ibmtss/Unmarshal_fp.h ibmtss/Implementation.h
 
 if CONFIG_TPM20
 noinst_HEADERS += tss20.h tssauth20.h ibmtss/tssprintcmd.h
