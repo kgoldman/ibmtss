@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		if (argv[i][0] != 'e' && argv[i][0] != 'o' &&
-		    argv[i][0] != 'p' && argv[i][0] != 'h') {
+		    argv[i][0] != 'p' && argv[i][0] != 'n') {
 		    printUsage();
 		}
 		hierarchyChar = argv[i][0];
