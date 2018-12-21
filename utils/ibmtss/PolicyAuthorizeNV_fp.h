@@ -1,9 +1,8 @@
 /********************************************************************************/
 /*										*/
-/*			     				*/
+/*			     	PolicyAuthorizeNV				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: PolicyAuthorizeNV_fp.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/

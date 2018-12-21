@@ -1,9 +1,8 @@
 /********************************************************************************/
 /*                                                                              */
-/*                              TPM Constants                                   */
+/*                              TPM 1.2 Constants                               */
 /*                           Written by Ken Goldman                             */
 /*                     IBM Thomas J. Watson Research Center                     */
-/*            $Id: tpmconstants12.h 1257 2018-06-27 20:52:08Z kgoldman $         */
 /*                                                                              */
 /* (c) Copyright IBM Corporation 2006, 2010.					*/
 /*										*/
