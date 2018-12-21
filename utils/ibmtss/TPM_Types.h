@@ -1193,6 +1193,38 @@ typedef union {
 #define TPMA_CC_RES		0xc0000000
 #define TPMA_CC_RESERVED	(0x003f0000 | 0xc0000000)
 
+    /* Table 38 - Definition of (UINT32) TPMA_MODES Bits <Out> */
+
+#if defined TPM_BITFIELD_LE
+
+    typedef union {
+	struct {
+	    unsigned int FIPS_140_2	: 1;	/* 0 indicates that the TPM is designed to comply with all of the FIPS 140-2 requirements at Level 1 or higher */
+	    unsigned int Reserved	: 31;	/* 31:1	shall be zero */
+	};
+	UINT32 val;
+    } TPMA_MODES;
+    
+#elif defined TPM_BITFIELD_BE
+
+typedef union {
+    struct {
+	unsigned int Reserved	: 31;	/* 31:1	shall be zero */
+	unsigned int FIPS_140_2	: 1;	/* 0 indicates that the TPM is designed to comply with all of the FIPS 140-2 requirements at Level 1 or higher */
+    };
+    UINT32 val;
+} TPMA_MODES;
+    
+#else 
+
+    typedef struct {
+	UINT32 val;
+    } TPMA_MODES;
+
+#endif
+
+#define TPMA_MODES_FIPS_140_2	 0x00000001
+    
 /* Table 38 - Definition of (BYTE) TPMI_YES_NO Type */
 
 typedef BYTE TPMI_YES_NO;
