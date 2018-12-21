@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	if (length <= sizeof(in.nameHash.t.buffer)) {
-	    in.nameHash.t.size = length;
+	    in.nameHash.t.size = (uint16_t)length;
 	    memcpy(&in.nameHash.t.buffer, buffer, length);
 	}
 	else {

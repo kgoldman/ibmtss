@@ -1134,11 +1134,11 @@ static TPM_RC TSS_PR_CreateWrapKey(TSS_CONTEXT *tssContext,
     }
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_PR_CreateWrapKey: ADIP offset at %lu and %lu\n",
-				sizeof(TPM_TAG) + sizeof(UINT32) + sizeof(TPM_RESULT) +
-				sizeof(TPM_KEY_HANDLE),
-				sizeof(TPM_TAG) + sizeof(UINT32) + sizeof(TPM_RESULT) +
-				sizeof(TPM_KEY_HANDLE) +
-				SHA1_DIGEST_SIZE);
+				(unsigned long)(sizeof(TPM_TAG) + sizeof(UINT32) + sizeof(TPM_RESULT) +
+						sizeof(TPM_KEY_HANDLE)),
+				(unsigned long)(sizeof(TPM_TAG) + sizeof(UINT32) + sizeof(TPM_RESULT) +
+						sizeof(TPM_KEY_HANDLE) +
+						SHA1_DIGEST_SIZE));
     }
     return rc;
 }
@@ -1161,7 +1161,7 @@ static TPM_RC TSS_PR_MakeIdentity(TSS_CONTEXT *tssContext,
     }
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_PR_MakeIdentity: ADIP offset at %lu\n",
-				sizeof(TPM_TAG) + sizeof(UINT32) + sizeof(TPM_RESULT));
+				(unsigned long)(sizeof(TPM_TAG) + sizeof(UINT32) + sizeof(TPM_RESULT)));
     }
     return rc;
 }

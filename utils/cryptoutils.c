@@ -1723,7 +1723,7 @@ TPM_RC convertRsaBinToTSignature(TPMT_SIGNATURE *tSignature,
 
     tSignature->sigAlg = TPM_ALG_RSASSA;
     tSignature->signature.rsassa.hash = halg;
-    tSignature->signature.rsassa.sig.t.size = signatureBinLen;
+    tSignature->signature.rsassa.sig.t.size = (uint16_t)signatureBinLen;
     memcpy(&tSignature->signature.rsassa.sig.t.buffer, signatureBin, signatureBinLen);
     return rc;
 }
