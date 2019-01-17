@@ -3,9 +3,8 @@
 /*			    Startup		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: startup.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -98,7 +97,7 @@ int main(int argc, char *argv[])
     if ((rc == 0) && doStartup) {
 	rc = startupCommand(startupType);
     }
-    if ((rc == 0) && doSelftest ) {
+    if ((rc == 0) && doSelftest) {
 	rc = selftestCommand();
     }
     if (rc == 0) {
@@ -151,7 +150,6 @@ TPM_RC selftestCommand(void)
 {
     TPM_RC 		rc = 0;
     TSS_CONTEXT		*tssContext = NULL;
-    SelfTest_In 	in;
 
     /* Start a TSS context */
     if (rc == 0) {
@@ -159,12 +157,11 @@ TPM_RC selftestCommand(void)
     }
     /* call TSS to execute the command */
     if (rc == 0) {
-	in.fullTest = YES;
 	rc = TSS_Execute(tssContext,
 			 NULL, 
-			 (COMMAND_PARAMETERS *)&in,
 			 NULL,
-			 TPM_CC_SelfTest,
+			 NULL,
+			 TPM_ORD_ContinueSelfTest,
 			 TPM_RH_NULL, NULL, 0);
     }
     /* Delete the TSS context */

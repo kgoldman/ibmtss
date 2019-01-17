@@ -3,9 +3,8 @@
 /*			     TPM 1.2 TSS Authorization				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth12.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -87,6 +86,11 @@ static const MARSHAL_TABLE marshalTable12 [] = {
      (MarshalInFunction_t)TSS_ActivateIdentity_In_Marshalu,
      (UnmarshalOutFunction_t)TSS_ActivateIdentity_Out_Unmarshalu,
      (UnmarshalInFunction_t)ActivateIdentity_In_Unmarshal},
+
+    {TPM_ORD_ContinueSelfTest,"TPM_ORD_ContinueSelfTest",
+     (MarshalInFunction_t)NULL,
+     (UnmarshalOutFunction_t)NULL,
+     (UnmarshalInFunction_t)NULL},
 
     {TPM_ORD_CreateEndorsementKeyPair,"TPM_ORD_CreateEndorsementKeyPair",
      (MarshalInFunction_t)TSS_CreateEndorsementKeyPair_In_Marshalu,
