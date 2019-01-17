@@ -106,7 +106,7 @@ IF !ERRORLEVEL! NEQ 0 (
 call regtests\testcreateloaded.bat
 IF !ERRORLEVEL! NEQ 0 (
    echo ""
-   echo "Failedtestcreateloaded.bat"
+   echo "Failed testcreateloaded.bat"
    exit /B 1
 )
 
