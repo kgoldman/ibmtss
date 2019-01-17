@@ -44,7 +44,7 @@ ${PREFIX}tpminit -v > run.out
 checkSuccess $?
 
 echo "Startup"
-${PREFIX}startup -v > run.out
+${PREFIX}startup -c -st -v > run.out
 checkSuccess $?
 
 echo "Create Endorsement Key"

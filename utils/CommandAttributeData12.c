@@ -3,7 +3,6 @@
 /*			  Command Attributes Table for TPM 1.2			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	$Id: CommandAttributeData12.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2018					*/
+/*  (c) Copyright IBM Corp. and others, 2018 - 2019				*/
 /*										*/
 /********************************************************************************/
 
@@ -91,6 +90,7 @@ const TPMA_CC_TSS    s_ccAttr12 [] = {
     /*                                  R  N  E  F  C  R  V  R */
 
     {{TPM_ORD_ActivateIdentity,		0, 0, 0, 0, 1, 0, 0, 1}},
+    {{TPM_ORD_ContinueSelfTest,		0, 0, 0, 0, 0, 0, 0, 1}},
     {{TPM_ORD_CreateEndorsementKeyPair,	0, 1, 0, 0, 0, 0, 0, 1}},
     {{TPM_ORD_CreateWrapKey,		0, 0, 0, 0, 1, 0, 0, 1}},
     {{TPM_ORD_Extend,			0, 0, 0, 0, 1, 0, 0, 1}},

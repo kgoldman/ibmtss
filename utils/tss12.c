@@ -3,9 +3,8 @@
 /*			    TSS Primary API for TPM 1.2				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tss12.c 1294 2018-08-09 19:08:34Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -168,6 +167,7 @@ static const TSS_TABLE tssTable [] = {
 				 
     {TPM_ORD_Init, NULL, NULL, NULL},
     {TPM_ORD_ActivateIdentity, NULL, NULL, NULL},
+    {TPM_ORD_ContinueSelfTest, NULL, NULL, NULL},
     {TPM_ORD_CreateWrapKey, (TSS_PreProcessFunction_t)TSS_PR_CreateWrapKey, NULL, NULL},
     {TPM_ORD_CreateEndorsementKeyPair, NULL, NULL, NULL},
     {TPM_ORD_Extend, NULL, NULL, NULL},
