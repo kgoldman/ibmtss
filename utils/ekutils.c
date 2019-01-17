@@ -91,6 +91,8 @@
 
 extern int verbose;
 
+#ifdef TPM_TPM20
+
 /* readNvBufferMax() determines the maximum NV read/write block size.  The limit is typically set by
    the TPM property TPM_PT_NV_BUFFER_MAX.  However, it's possible that a value could be larger than
    the TSS side structure MAX_NV_BUFFER_SIZE.
@@ -382,6 +384,8 @@ TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
     free(certData);			/* @1 */
     return rc;
 }
+
+#endif	/* TPM20 */
 
 #ifndef TPM_TSS_NOFILE
 
@@ -736,7 +740,9 @@ TPM_RC verifyKeyUsage(X509 *ekX509Certificate,		/* X509 certificate */
     return rc;
 }
 
-#endif
+#endif	/* TPM_TSS_NOFILE */
+
+#ifdef TPM_TPM20
 
 /* processEKNonce()reads the EK nonce from NV and returns the contents and size */
    
@@ -760,8 +766,6 @@ TPM_RC processEKNonce(TSS_CONTEXT *tssContext,
     }
     return rc;
 }
-
-#ifdef TPM_TPM20
 
 /* processEKTemplate() reads the EK template from NV and returns the unmarshaled TPMT_PUBLIC */
 
@@ -796,8 +800,6 @@ TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-#endif
-
 /* processEKCertificate() reads the EK certificate from NV and returns an openssl X509 certificate
    structure.  It also extracts and returns the public modulus.
 
@@ -831,6 +833,8 @@ TPM_RC processEKCertificate(TSS_CONTEXT *tssContext,
     }
     return rc;
 }
+
+#endif	/* TPM20 */
 
 /* convertX509ToDer() serializes the openSSL X509 structure to a DER certificate
 
@@ -1832,6 +1836,8 @@ TPM_RC addCertSignatureRoot(X509 *x509Certificate,	/* certificate to be signed *
     return rc;
 }
 
+#ifdef TPM_TPM20
+
 /* processRoot() validates the certificate at ekCertIndex against the root CA certificates at
    rootFilename.
  */
@@ -2108,8 +2114,6 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,		/* from certificate */
 
 }
 
-#ifdef TPM_TPM20
-
 /* processPrimary() reads the EK nonce and EK template from NV.  It combines them to form the
    createprimary input.  It creates the primary key.
 
@@ -2187,5 +2191,5 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-#endif
+#endif	/* TPM20 */
 

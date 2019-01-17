@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
     int				noSpace = FALSE;
     uint32_t 			bankNum = 0;	/* PCR hash bank */
     unsigned int 		pcrNum = 0;	/* PCR number iterator */
-    TPM_PCRINDEX 		pcrMax = 7;
+    TPMI_DH_PCR 		pcrMax = 7;
     TPMT_HA 			simPcrs[HASH_COUNT][IMPLEMENTATION_PCR];
     TPMT_HA 			bootAggregates[HASH_COUNT];
     TCG_PCR_EVENT2 		event2;			/* TPM 2.0 event log entry */
