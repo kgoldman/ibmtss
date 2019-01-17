@@ -46,6 +46,13 @@
 #include <string.h>
 #include <stdint.h>
 
+#ifdef TPM_POSIX
+#include <netinet/in.h>
+#endif
+#ifdef TPM_WINDOWS
+#include <winsock2.h>
+#endif
+
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/rsa.h>

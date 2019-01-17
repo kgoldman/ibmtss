@@ -3,9 +3,8 @@
 /*			   TSS Primary API 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id:tss.h 656 2016-06-28 16:49:29Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -42,7 +41,9 @@
 
 #include <ibmtss/TPM_Types.h>
 #include <ibmtss/Parameters.h>
+#ifdef TPM_TPM12
 #include <ibmtss/Parameters12.h>
+#endif
 
 /* include this as a convenience to applications */
 #include <ibmtss/tsserror.h>

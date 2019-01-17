@@ -45,6 +45,13 @@
 #include <string.h>
 #include <stdint.h>
 
+#ifdef TPM_POSIX
+#include <netinet/in.h>
+#endif
+#ifdef TPM_WINDOWS
+#include <winsock2.h>
+#endif
+
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssresponsecode.h>
