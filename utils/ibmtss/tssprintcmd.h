@@ -3,9 +3,8 @@
 /*			     Structure Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprintcmd.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -55,7 +54,6 @@
 extern "C" {
 #endif
 
-#ifdef TPM_TPM20
     void ActivateCredential_In_Print(ActivateCredential_In *in, unsigned int indent);
     void CertifyCreation_In_Print(CertifyCreation_In *in, unsigned int indent);
     void Certify_In_Print(Certify_In *in, unsigned int indent);
@@ -164,7 +162,6 @@ extern "C" {
     void Unseal_In_Print(Unseal_In *in, unsigned int indent);
     void VerifySignature_In_Print(VerifySignature_In *in, unsigned int indent);
     void ZGen_2Phase_In_Print(ZGen_2Phase_In *in, unsigned int indent);
-#endif
     
 #ifdef __cplusplus
 }

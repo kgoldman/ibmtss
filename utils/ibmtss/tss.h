@@ -41,9 +41,7 @@
 
 #include <ibmtss/TPM_Types.h>
 #include <ibmtss/Parameters.h>
-#ifdef TPM_TPM12
 #include <ibmtss/Parameters12.h>
-#endif
 
 /* include this as a convenience to applications */
 #include <ibmtss/tsserror.h>
