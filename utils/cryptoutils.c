@@ -1681,6 +1681,8 @@ TPM_RC verifyEcSignatureFromEvpPubKey(unsigned char *message,
 
 #endif	/* TPM_TSS_NOECC */
 
+#ifndef TPM_TSS_NOFILE
+
 /* verifySignatureFromHmacKey() verifies the signature (MAC) against the digest 'message'
    using the HMAC key in raw binary format.
 */
@@ -1711,6 +1713,8 @@ TPM_RC verifySignatureFromHmacKey(unsigned char *message,
     }
     return rc;
 }
+
+#endif /* TPM_TSS_NOFILE */
 
 /* convertRsaBinToTSignature() converts an RSA binary signature to a TPMT_SIGNATURE */
 
