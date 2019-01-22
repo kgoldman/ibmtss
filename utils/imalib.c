@@ -784,6 +784,7 @@ static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
 			     int 		littleEndian)
 {
     uint32_t 	rc = 0;
+    size_t 	hashAlgSize;
     /* read the hash length, algorithm + hash */
     if (rc == 0) {
 	/* bounds check the length */
@@ -798,7 +799,6 @@ static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
 	}
     }
     /* read the hash algorithm, nul terminated string */
-    size_t hashAlgSize;
     if (rc == 0) {
     	/* NUL terminate first */
 	memset(imaTemplateData->hashAlg, 0, sizeof(((ImaTemplateData *)NULL)->hashAlg));
@@ -1391,8 +1391,9 @@ uint32_t IMA_Event_PcrExtend(TPMT_HA pcrs[IMA_PCR_BANKS][IMPLEMENTATION_PCR],
     /* process each event hash algorithm */
     if (rc == 0) {
 	unsigned char 	zeroDigest[SHA1_DIGEST_SIZE];
+	int 		notAllZero;
 	memset(zeroDigest, 0, SHA1_DIGEST_SIZE);
-	int notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
+	notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
 	/* for the SHA-256 zero extend */
 	memset(eventData, 0, SHA256_DIGEST_SIZE);
 	

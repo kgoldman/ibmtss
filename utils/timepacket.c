@@ -72,10 +72,11 @@ int main(int argc, char *argv[])
     size_t 			commandLength;
     unsigned int 		loops = 1;
     unsigned int 		count;
-    uint8_t 			responseBuffer[MAX_RESPONSE_SIZE];;
+    uint8_t 			responseBuffer[MAX_RESPONSE_SIZE];
     uint32_t 			responseLength;
     time_t 			startTime;
     time_t			endTime;
+    double 			timeDiff = 0;
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -138,7 +139,6 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	rc = TSS_Create(&tssContext);
     }
-    double timeDiff = 0;
     for (count = 0 ; (rc == 0) && (count < loops) ; count++) {
 	uint32_t usec;
 	RAND_bytes((unsigned char *)&usec, sizeof(uint32_t));

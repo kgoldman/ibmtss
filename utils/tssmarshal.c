@@ -5170,10 +5170,10 @@ TSS_TPMS_ALGORITHM_DETAIL_ECC_Marshalu(const TPMS_ALGORITHM_DETAIL_ECC *source, 
 	rc = TSS_UINT16_Marshalu(&source->keySize, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPMT_KDF_SCHEME_Marshalu(&source->kdf, written, buffer, size);;
+	rc = TSS_TPMT_KDF_SCHEME_Marshalu(&source->kdf, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPMT_ECC_SCHEME_Marshalu(&source->sign, written, buffer, size);;
+	rc = TSS_TPMT_ECC_SCHEME_Marshalu(&source->sign, written, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_TPM2B_ECC_PARAMETER_Marshalu(&source->p, written, buffer, size);

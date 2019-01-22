@@ -795,8 +795,9 @@ TSS_TPM4B_TPM_PCR_INFO_LONG_Marshalu(const TPM_PCR_INFO_LONG *source, uint16_t *
 	rc = TSS_TPM_PCR_INFO_LONG_Marshalu(source, &sizeWritten, buffer, size);
     }
     if (rc == 0) {
+	uint32_t sizeWritten32;
 	*written += sizeWritten;
-	uint32_t sizeWritten32 = sizeWritten;	/* back fill size */
+	sizeWritten32 = sizeWritten;	/* back fill size */
 	if (buffer != NULL) {
 	    rc = TSS_UINT32_Marshalu(&sizeWritten32, written, &sizePtr, size);
 	}
@@ -880,8 +881,9 @@ TSS_TPM4B_TPMU_PARMS_Marshalu(const TPMU_PARMS *source, uint16_t *written, BYTE 
 	rc = TSS_TPMU_PARMS_Marshalu(source, &sizeWritten, buffer, size, selector);
     }
     if (rc == 0) {
+	uint32_t sizeWritten32;
 	*written += sizeWritten;
-	uint32_t sizeWritten32 = sizeWritten;	/* back fill size */
+	sizeWritten32 = sizeWritten;	/* back fill size */
 	if (buffer != NULL) {
 	    rc = TSS_UINT32_Marshalu(&sizeWritten32, written, &sizePtr, size);
 	}
@@ -1003,7 +1005,7 @@ TSS_TPM_QUOTE_INFO2_Marshalu(const TPM_QUOTE_INFO2 *source, uint16_t *written, B
 	rc = TSS_Array_Marshalu(source->externalData, TPM_NONCE_SIZE, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM_PCR_INFO_SHORT_Marshalu(&source->infoShort, written, buffer, size);;
+	rc = TSS_TPM_PCR_INFO_SHORT_Marshalu(&source->infoShort, written, buffer, size);
     }
     return rc;
 }

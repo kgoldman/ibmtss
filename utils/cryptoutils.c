@@ -53,7 +53,9 @@
 #include <stdint.h>
 #include <limits.h>
 
+#ifndef TPM_TSS_NORSA
 #include <openssl/rsa.h>
+#endif /* TPM_TSS_NORSA */
 #include <openssl/objects.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -1233,10 +1235,12 @@ TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *public,
     /* convert TPM2B_PUBLIC to EVP_PKEY */
     if (rc == 0) {
 	switch (public->publicArea.type) {
+#ifndef TPM_TSS_NORSA
 	  case TPM_ALG_RSA:
 	    rc = convertRsaPublicToEvpPubKey(&evpPubkey,	/* freed @1 */
 					     &public->publicArea.unique.rsa);
 	    break;
+#endif /* TPM_TSS_NORSA */
 #ifndef TPM_TSS_NOECC
 	  case TPM_ALG_ECC:
 	    rc = convertEcPublicToEvpPubKey(&evpPubkey,		/* freed @1 */
@@ -1262,7 +1266,9 @@ TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *public,
     return rc;
 }
 
-#endif
+#endif /* TPM_TSS_NOFILE */
+
+#ifndef TPM_TSS_NORSA
 
 /* convertRsaPublicToEvpPubKey() converts an RSA TPM2B_PUBLIC to a EVP_PKEY.
 
@@ -1304,6 +1310,8 @@ TPM_RC convertRsaPublicToEvpPubKey(EVP_PKEY **evpPubkey,	/* freed by caller */
     }
     return rc;
 }
+
+#endif /* TPM_TSS_NORSA */
 
 #ifndef TPM_TSS_NOECC
 
@@ -1447,6 +1455,7 @@ TPM_RC verifySignatureFromPem(unsigned char *message,
     /* RSA or EC */
     if (rc == 0) {
 	switch(tSignature->sigAlg) {
+#ifndef TPM_TSS_NORSA
 	  case TPM_ALG_RSASSA:
 	  case TPM_ALG_RSAPSS:
 	    rc = verifyRSASignatureFromEvpPubKey(message,
@@ -1455,6 +1464,7 @@ TPM_RC verifySignatureFromPem(unsigned char *message,
 						 halg,
 						 evpPkey);
 	    break;
+#endif /* TPM_TSS_NORSA */
 #ifndef TPM_TSS_NOECC
 	  case TPM_ALG_ECDSA:
 	    rc = verifyEcSignatureFromEvpPubKey(message,

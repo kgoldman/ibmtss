@@ -255,8 +255,8 @@ int main(int argc, char *argv[])
 	TSS_PrintAll("policy digest", (uint8_t *)&digest.digest, sizeInBytes);
     }
     if ((rc == 0) && noSpace) {
-	printf("policy digest:\n");
 	unsigned int b;
+	printf("policy digest:\n");
 	for (b = 0 ; b < sizeInBytes ; b++) {
 	    printf("%02x", *(((uint8_t *)&digest.digest) + b));
 	}

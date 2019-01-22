@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     int				i;    		/* argc iterator */
     TSS_CONTEXT			*tssContext = NULL;
     NTC2_GetConfig_Out 		out;
+    NTC2_CFG_STRUCT 		preConfig;	
     int 			verify = FALSE;
     int 			verifyLocked = FALSE;
     int				p8 = FALSE;
@@ -132,7 +133,6 @@ int main(int argc, char *argv[])
 	printHexResponse(&out.preConfig);
     }
     /* required / expected values */
-    NTC2_CFG_STRUCT preConfig;	
     if (verify) {
 	if (rc == 0) {
 	    requiredConfig(&preConfig, p9);

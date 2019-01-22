@@ -90,6 +90,8 @@ int main(int argc, char * argv[])
     unsigned long	beginEvent = 0;			/* default beginning of log */
     unsigned long	endEvent = 0xffffffff;		/* default end of log */
     unsigned int	loopTime = 0;			/* default no loop */
+    ImaEvent 		imaEvent;
+    unsigned int 	lineNum;
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
@@ -191,8 +193,6 @@ int main(int argc, char * argv[])
 	    }
 	}
     }
-    ImaEvent imaEvent;
-    unsigned int lineNum;
     /*
       scan each measurement 'line' in the binary
     */
@@ -302,11 +302,12 @@ int main(int argc, char * argv[])
 	for (bankNum = 0 ; (rc == 0) && (bankNum < IMA_PCR_BANKS) ; bankNum++) {
 	    TSS_TPM_ALG_ID_Print("algorithmId", simPcrs[bankNum][0].hashAlg, 0);
 	    for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
-	        char pcrString[9];	/* PCR number */
+	        char 		pcrString[9];	/* PCR number */
+		uint16_t 	digestSize;
 		sprintf(pcrString, "PCR %02u:", pcrNum);
 		/* TSS_PrintAllLogLevel() with a log level of LOGLEVEL_INFO to print the byte
 		   array on one line with no length */
-		uint16_t digestSize = TSS_GetDigestSize(simPcrs[bankNum][pcrNum].hashAlg);
+		digestSize = TSS_GetDigestSize(simPcrs[bankNum][pcrNum].hashAlg);
 		TSS_PrintAllLogLevel(LOGLEVEL_INFO, pcrString, 1,
 				     simPcrs[bankNum][pcrNum].digest.tssmax,
 				     digestSize);
@@ -333,10 +334,10 @@ static TPM_RC copyDigest(PCR_Extend_In 	*in,
 {
     TPM_RC 		rc = 0;
     unsigned char 	zeroDigest[SHA1_DIGEST_SIZE];
-
+    int 		notAllZero;
     if (rc == 0) {
 	memset(zeroDigest, 0, SHA1_DIGEST_SIZE);
-	int notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
+	notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
 	/* the SHA-256 bank has already been 0 extended, so only the first 20 bytes need be
 	   copied */
 	if (notAllZero) {

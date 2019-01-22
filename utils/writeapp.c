@@ -130,11 +130,13 @@ int main(int argc, char *argv[])
     /* createprimary first for salt.  processPrimary() also reads the EK certificate and validates
        it against the primary key.   It doesn't walk the certificate chain.  */
     if (rc == 0) {
-	if (verbose) printf("INFO: Create a primary EK for the salt\n");
-	rc = processPrimary(tssContext,
-			    &ekKeyHandle,
-			    EK_CERT_RSA_INDEX, EK_NONCE_RSA_INDEX, EK_TEMPLATE_RSA_INDEX,
-			    TRUE, verbose);		/* do not flush */
+	if (!pwSession) {
+	    if (verbose) printf("INFO: Create a primary EK for the salt\n");
+	    rc = processPrimary(tssContext,
+				&ekKeyHandle,
+				EK_CERT_RSA_INDEX, EK_NONCE_RSA_INDEX, EK_TEMPLATE_RSA_INDEX,
+				TRUE, verbose);		/* do not flush */
+	}
     }
     /* start a session, salt with EK, unbound */
     if (rc == 0) {
