@@ -667,10 +667,12 @@ static TPM_RC TSS_Sessions_GetEncryptSession(unsigned int *isEncrypt,
 static TPM_RC TSS_HashToString(char *str, uint8_t *digest);
 #endif
 #ifndef TPM_TSS_NOCRYPTO
+#ifndef TPM_TSS_NORSA
 static TPM_RC TSS_RSA_Salt(TPM2B_DIGEST 		*salt,
 			   TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
 			   TPMT_PUBLIC			*publicArea);
-#endif
+#endif /* TPM_TSS_NORSA */
+#endif /* TPM_TSS_NOCRYPTO */
 extern int tssVerbose;
 extern int tssVverbose;
 extern int tssFirstCall;
@@ -2184,10 +2186,11 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 			       0, NULL);
     }
     if (rc == 0) {
+	TPMI_ALG_HASH nameAlgNbo;
 	/* copy the digest */
 	memcpy(name->t.name + sizeof(TPMI_ALG_HASH), (uint8_t *)&digest.digest, sizeInBytes);
 	/* copy the hash algorithm */
-	TPMI_ALG_HASH nameAlgNbo = htons(tpmtPublic->nameAlg);
+	nameAlgNbo = htons(tpmtPublic->nameAlg);
 	memcpy(name->t.name, (uint8_t *)&nameAlgNbo, sizeof(TPMI_ALG_HASH));
 	/* set the size */
 	name->t.size = sizeInBytes + sizeof(TPMI_ALG_HASH);
@@ -2418,10 +2421,11 @@ static TPM_RC TSS_NVPublic_GetName(TPM2B_NAME *name,
 			       0, NULL);
     }
     if (rc == 0) {
+	TPMI_ALG_HASH nameAlgNbo;
 	/* copy the digest */
 	memcpy(name->t.name + sizeof(TPMI_ALG_HASH), (uint8_t *)&digest.digest, sizeInBytes);
 	/* copy the hash algorithm */
-	TPMI_ALG_HASH nameAlgNbo = htons(nvPublic->nameAlg);
+	nameAlgNbo = htons(nvPublic->nameAlg);
 	memcpy(name->t.name, (uint8_t *)&nameAlgNbo, sizeof(TPMI_ALG_HASH));
 	/* set the size */
 	name->t.size = sizeInBytes + sizeof(TPMI_ALG_HASH);
@@ -3826,11 +3830,13 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
 				  &bPublic.publicArea);
 		break;
 #endif	/* TPM_TSS_NOECC */
+#ifndef TPM_TSS_NORSA
 	      case TPM_ALG_RSA:
 		rc = TSS_RSA_Salt(&extra->salt,
 				  &in->encryptedSalt,
 				  &bPublic.publicArea);
 		break;
+#endif 	/* TPM_TSS_NORSA */
 	      default:
 		if (tssVerbose)
 		    printf("TSS_PR_StartAuthSession: public key type %04x not supported\n",
@@ -3847,6 +3853,7 @@ static TPM_RC TSS_PR_StartAuthSession(TSS_CONTEXT *tssContext,
 }
 
 #ifndef TPM_TSS_NOCRYPTO
+#ifndef TPM_TSS_NORSA
 
 /* TSS_RSA_Salt() returns both the plaintext and excrypted salt, based on the salt key bPublic. */
 
@@ -3926,7 +3933,8 @@ static TPM_RC TSS_RSA_Salt(TPM2B_DIGEST 		*salt,
     return rc;
 }
 
-#endif
+#endif /* TPM_TSS_NORSA */
+#endif /* TPM_TSS_NOCRYPTO */
 
 static TPM_RC TSS_PR_NV_DefineSpace(TSS_CONTEXT *tssContext,
 				    NV_DefineSpace_In *in,

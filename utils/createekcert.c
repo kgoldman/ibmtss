@@ -103,6 +103,11 @@ int main(int argc, char *argv[])
     const char 		*caKeyFileName = NULL;
     const char 		*caKeyPassword = "";
     const char		*platformPassword = NULL; 
+    TPMT_PUBLIC 	tpmtPublicOut;		/* primary key public part */
+    char 		*x509CertString = NULL;
+    char 		*pemCertString = NULL;
+    uint32_t 		certLength;
+    unsigned char 	*certificate = NULL;
 
     /* FIXME may be better from command line or config file */
     char *subjectEntries[] = {
@@ -252,7 +257,6 @@ int main(int argc, char *argv[])
 	rc = TSS_Create(&tssContext);
     }
     /* create a primary EK using the default IWG template */
-    TPMT_PUBLIC 	tpmtPublicOut;		/* primary key public part */
     if (rc == 0) {
 	TPM_HANDLE keyHandle;
 	rc = processCreatePrimary(tssContext,
@@ -265,10 +269,6 @@ int main(int argc, char *argv[])
 				  verbose);		/* print errors */
     }
     /* create the EK certificate from the EK public key, using the above issuer and subject */
-    char *x509CertString = NULL;
-    char *pemCertString = NULL;
-    uint32_t certLength;
-    unsigned char *certificate = NULL;
     if (rc == 0) {
 	rc = createCertificate(&x509CertString,			/* freed @3 */
 			       &pemCertString,			/* freed @2 */

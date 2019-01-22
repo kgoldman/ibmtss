@@ -1306,11 +1306,15 @@ void TSS_TPMS_CLOCK_INFO_Print(TPMS_CLOCK_INFO *source, unsigned int indent)
 
 void TSS_TPMS_TIME_INFO_Print(TPMS_TIME_INFO *source, unsigned int indent)
 {
+    uint64_t days;
+    uint64_t hours;
+    uint64_t minutes;
+    uint64_t seconds;
     printf("%*s" "TPMS_TIME_INFO time %"PRIu64" msec", indent, "", source->time);
-    uint64_t days = source->time/(1000 * 60 * 60 * 24);
-    uint64_t hours = (source->time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
-    uint64_t minutes = (source->time % (1000 * 60 * 60)) / (1000 * 60);
-    uint64_t seconds = (source->time % (1000 * 60)) / (1000);
+    days = source->time/(1000 * 60 * 60 * 24);
+    hours = (source->time % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
+    minutes = (source->time % (1000 * 60 * 60)) / (1000 * 60);
+    seconds = (source->time % (1000 * 60)) / (1000);
     printf(" - %"PRIu64" days %"PRIu64" hours %"PRIu64" minutes %"PRIu64" seconds\n",
 	   days, hours, minutes, seconds);
     TSS_TPMS_CLOCK_INFO_Print(&source->clockInfo, indent+2);

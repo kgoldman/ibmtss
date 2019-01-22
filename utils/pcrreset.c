@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (rc == 0) {
-	in.pcrHandle = pcrHandle;;
+	in.pcrHandle = pcrHandle;
     }
     /* Start a TSS context */
     if (rc == 0) {

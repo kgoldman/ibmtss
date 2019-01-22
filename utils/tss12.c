@@ -1356,6 +1356,7 @@ static TPM_RC TSS_PO_OSAP(TSS_CONTEXT *tssContext,
     TPM_RC 		rc = 0;
     TSS_HMAC12_CONTEXT 	*session = NULL;
     TPM2B_KEY		hmacKey;
+    TPMT_HA 		usageAuth;		/* digest of the OSAP password */
 
     /* allocate a TSS_HMAC_CONTEXT session context */
     if (rc == 0) {
@@ -1371,7 +1372,6 @@ static TPM_RC TSS_PO_OSAP(TSS_CONTEXT *tssContext,
 	memcpy(session->nonceEvenOSAP, out->nonceEvenOSAP, SHA1_DIGEST_SIZE);
     }
     /* SHA1 hash the usageAuth */
-    TPMT_HA 			usageAuth;		/* digest of the OSAP password */
     if (rc == 0) {
 	if (extra->usagePassword != NULL) {	/* if a password was specified, hash it */
 	    usageAuth.hashAlg = TPM_ALG_SHA1;

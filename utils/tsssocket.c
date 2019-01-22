@@ -433,6 +433,7 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
     int 	mssim;		/* boolean, true for MS simulator packet format, false for raw
 				   packet format */
     int		rawsingle;
+    TPM_RC 	acknowledgement;	/* MS sim acknowledgement */
     
     /* get the server packet type, MS sim or raw */
     if (rc == 0) {
@@ -485,7 +486,6 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
 		     buffer, responseSize);
     }
     /* read the MS sim acknowledgement */
-    TPM_RC 	acknowledgement;
     if ((rc == 0) && mssim) {
 	rc = TSS_Socket_ReceiveBytes(tssContext->sock_fd,
 				     (uint8_t *)&acknowledgement, sizeof(uint32_t));

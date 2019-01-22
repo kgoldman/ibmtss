@@ -53,7 +53,9 @@
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/aes.h>
+#ifndef TPM_TSS_NORSA
 #include <openssl/rsa.h>
+#endif
 #include <openssl/rand.h>
 #include <openssl/engine.h>
 
@@ -80,7 +82,9 @@ static TPM_RC TSS_BN_new(BIGNUM **bn);
 static TPM_RC TSS_BN_hex2bn(BIGNUM **bn, const char *str);
 #endif	/* TPM_TSS_NOECC */
 
+#ifndef TPM_TSS_NORSA
 static TPM_RC TSS_bin2bn(BIGNUM **bn, const unsigned char *bin, unsigned int bytes);
+#endif	/* TPM_TSS_NORSA */
 
 /*
   Initialization
@@ -309,6 +313,8 @@ TPM_RC TSS_RandBytes(unsigned char *buffer, uint32_t size)
   RSA functions
 */
 
+#ifndef TPM_TSS_NORSA
+
 /* TSS_RSAGeneratePublicToken() generates an RSA key token from n and e
  */
 
@@ -434,6 +440,8 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
     free(padded_data);                  /* @2 */
     return rc;
 }
+
+#endif /* TPM_TSS_NORSA */
 
 #ifndef TPM_TSS_NOECC
 
@@ -1052,6 +1060,8 @@ static TPM_RC TSS_BN_hex2bn(BIGNUM **bn, const char *str)	/* freed by caller */
 
 #endif	/* TPM_TSS_NOECC */
 
+#ifndef TPM_TSS_NORSA
+
 /* TSS_bin2bn() wraps the openSSL function in a TPM error handler
 
    Converts a char array to bignum
@@ -1079,6 +1089,8 @@ static TPM_RC TSS_bin2bn(BIGNUM **bn, const unsigned char *bin, unsigned int byt
     }
     return rc;
 }
+
+#endif /* TPM_TSS_NORSA */
 
 /*
   AES

@@ -80,7 +80,7 @@ int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
 			 sizeof(((TCG_PCR_EVENT *)NULL)->pcrIndex), 1, inFile);
 	if (readSize != 1) {
 	    if (feof(inFile)) {
-		*endOfFile = TRUE;;
+		*endOfFile = TRUE;
 	    }
 	    else {
 		printf("TSS_EVENT_Line_Read: Error, could not read pcrIndex, returned %lu\n",
@@ -391,8 +391,10 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 {
     int rc = 0;
     size_t readSize;
-    *endOfFile = FALSE;
+    uint32_t maxCount; 
+    uint32_t count;
 
+    *endOfFile = FALSE;
     /* read the PCR index */
     if (rc == 0) {
 	readSize = fread(&(event->pcrIndex),
@@ -427,7 +429,6 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	event->eventType = Uint32_Convert(event->eventType);
     }
     /* read the TPML_DIGEST_VALUES count */
-    uint32_t maxCount; 
     if (!*endOfFile && (rc == 0)) {
 	maxCount = sizeof((TPML_DIGEST_VALUES *)NULL)->digests / sizeof(TPMT_HA);
 	readSize = fread(&(event->digests.count),
@@ -454,9 +455,9 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
-    uint32_t count;
     /* read all the TPMT_HA, loop through all the digest algorithms */
     for (count = 0 ; !*endOfFile && (count < event->digests.count) ; count++) {
+	uint16_t digestSize;
 	/* read the digest algorithm */
 	if (rc == 0) {
 	    readSize = fread(&(event->digests.digests[count].hashAlg),
@@ -474,7 +475,6 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 		Uint16_Convert(event->digests.digests[count].hashAlg);
 	}
 	/* map from the digest algorithm to the digest length */
-	uint16_t digestSize;
 	if (rc == 0) {
 	    digestSize = TSS_GetDigestSize(event->digests.digests[count].hashAlg);
 	    if (digestSize == 0) {
@@ -712,14 +712,15 @@ UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size)
 
 void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
 {
+    uint32_t count;
+    uint16_t digestSize;
     printf("TSS_EVENT2_Line_Trace: PCR index %u\n", event->pcrIndex);
     TSS_EVENT_EventType_Trace(event->eventType);
     printf("TSS_EVENT2_Line_Trace: digest count %u\n", event->digests.count);
-    uint32_t count;
     for (count = 0 ; count < event->digests.count ; count++) {
 	printf("TSS_EVENT2_Line_Trace: digest %u algorithm %04x\n",
 	       count, event->digests.digests[count].hashAlg);
-	uint16_t digestSize = TSS_GetDigestSize(event->digests.digests[count].hashAlg);
+	digestSize = TSS_GetDigestSize(event->digests.digests[count].hashAlg);
 	TSS_PrintAll("TSS_EVENT2_Line_Trace: PCR",
 		     (uint8_t *)&event->digests.digests[count].digest, digestSize);
     }

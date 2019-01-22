@@ -670,7 +670,7 @@ int main(int argc, char *argv[])
       validate the creation data
     */
     {
-	uint16_t	written = 0;;
+	uint16_t	written = 0;
 	uint8_t		*buffer = NULL;		/* for the free */
 	uint32_t 	sizeInBytes;
 	TPMT_HA		digest;
