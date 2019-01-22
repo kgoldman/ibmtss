@@ -48,11 +48,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifndef TPM_TSS_NORSA
 #include <openssl/rsa.h>
+#endif
 #ifndef TPM_TSS_NOECC
 #include <openssl/ec.h>
 #endif
-#include <openssl/bn.h>
 
 #include <ibmtss/tss.h>
 
@@ -93,7 +94,8 @@ extern "C" {
 					  const unsigned char *p,
 					  int plen,
 					  TPMI_ALG_HASH halg);	
-    LIB_EXPORT
+#ifndef TPM_TSS_NORSA
+   LIB_EXPORT
     TPM_RC TSS_RSAPublicEncrypt(unsigned char* encrypt_data,
 				size_t encrypt_data_size,
 				const unsigned char *decrypt_data,
@@ -112,10 +114,13 @@ extern "C" {
 				      const unsigned char *earr,   	/* public exponent */
 				      uint32_t ebytes);
 
+#endif
+#ifndef TPM_TSS_NOECC
     TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 			TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
 			TPMT_PUBLIC		*publicArea);
 
+#endif
     TPM_RC TSS_AES_GetEncKeySize(size_t *tssSessionEncKeySize);
     TPM_RC TSS_AES_GetDecKeySize(size_t *tssSessionDecKeySize);
     TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
