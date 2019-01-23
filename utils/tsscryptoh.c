@@ -3,9 +3,8 @@
 /*			     TSS Library Independent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.c 838 2016-11-22 22:44:57Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -39,6 +38,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef TPM_POSIX
 #include <netinet/in.h>
@@ -46,14 +46,6 @@
 #ifdef TPM_WINDOWS
 #include <winsock2.h>
 #endif
-
-#include <openssl/err.h>
-#include <openssl/evp.h>
-#include <openssl/hmac.h>
-#include <openssl/aes.h>
-#include <openssl/rsa.h>
-#include <openssl/rand.h>
-#include <openssl/engine.h>
 
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tssutils.h>
@@ -470,12 +462,12 @@ TPM_RC TSS_RSA_padding_add_PKCS1_OAEP(unsigned char *em, uint32_t emLen,
 {	
     TPM_RC		rc = 0;
     TPMT_HA 		lHash;
-    unsigned char 	*db;
+    unsigned char 	*db = NULL;		/* compiler false positive */
     
     unsigned char *dbMask = NULL;			/* freed @1 */
     unsigned char *seed = NULL;				/* freed @2 */
     unsigned char *maskedDb;
-    unsigned char *seedMask;
+    unsigned char *seedMask = NULL;		/* compiler false positive */
     unsigned char *maskedSeed;
 
     uint16_t hlen = TSS_GetDigestSize(halg);
