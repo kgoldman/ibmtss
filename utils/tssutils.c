@@ -112,7 +112,7 @@ TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size)
 TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size)
 {
     TPM_RC          	rc = 0;
-    unsigned char 	*tmpptr;
+    unsigned char 	*tmpptr = NULL;
     
     /* verify that the size is not "too large" */
     if (rc == 0) {

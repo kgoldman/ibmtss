@@ -2167,7 +2167,7 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 #ifndef TPM_TSS_NOCRYPTO
     uint16_t 	written = 0;
     TPMT_HA	digest;
-    uint32_t 	sizeInBytes;
+    uint32_t 	sizeInBytes = 0;
     uint8_t 	buffer[MAX_RESPONSE_SIZE];
 
     /* marshal the TPMT_PUBLIC */
@@ -2402,7 +2402,7 @@ static TPM_RC TSS_NVPublic_GetName(TPM2B_NAME *name,
     
     uint16_t 	written = 0;
     TPMT_HA	digest;
-    uint32_t 	sizeInBytes;
+    uint32_t 	sizeInBytes = 0;
     uint8_t 	buffer[MAX_RESPONSE_SIZE];
 
     /* marshal the TPMS_NV_PUBLIC */

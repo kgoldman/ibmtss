@@ -2702,8 +2702,8 @@ TPM_RC
 TSS_TPM2B_SENSITIVE_CREATE_Unmarshalu(TPM2B_SENSITIVE_CREATE *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
-    
-    INT32 startSize;
+    uint32_t startSize = 0;
+
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(&target->size, buffer, size);
     }
@@ -3482,8 +3482,8 @@ TPM_RC
 TSS_TPM2B_ECC_POINT_Unmarshalu(TPM2B_ECC_POINT *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    uint32_t startSize = 0;
 
-    INT32 startSize;
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(&target->size, buffer, size);
     }
@@ -4043,8 +4043,8 @@ TPM_RC
 TSS_TPM2B_PUBLIC_Unmarshalu(TPM2B_PUBLIC *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    uint32_t startSize = 0;
     
-    INT32 startSize;
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(&target->size, buffer, size);
     }
@@ -4142,8 +4142,8 @@ TPM_RC
 TSS_TPM2B_SENSITIVE_Unmarshalu(TPM2B_SENSITIVE *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    uint32_t startSize = 0;
     
-    INT32 startSize;
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(&target->t.size, buffer, size);
     }
@@ -4238,8 +4238,8 @@ TPM_RC
 TSS_TPM2B_NV_PUBLIC_Unmarshalu(TPM2B_NV_PUBLIC *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    uint32_t startSize = 0;
     
-    uint32_t startSize;
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(&target->size, buffer, size);
     }
@@ -4363,8 +4363,8 @@ TPM_RC
 TSS_TPM2B_CREATION_DATA_Unmarshalu(TPM2B_CREATION_DATA *target, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    uint32_t startSize = 0;
     
-    uint32_t startSize;
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(&target->size, buffer, size);
     }
