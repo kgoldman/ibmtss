@@ -3,9 +3,8 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.c 1308 2018-08-21 16:55:56Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,6 +51,14 @@
 #include <ibmtss/tssprint.h>
 
 #include "tssproperties.h"
+
+/* For systems where there are no environment variables, GETENV returns NULL.  This simulates the
+   situation when an environment variable is not set, causing the compiled in default to be used. */
+#ifndef TPM_TSS_NOENV
+#define GETENV(x) getenv(x)
+#else
+#define GETENV(x) NULL
+#endif
 
 /* local prototypes */
 
@@ -129,7 +136,7 @@ TPM_RC TSS_GlobalProperties_Init(void)
 
     /* trace level is global, tssContext can be null */
     if (rc == 0) {
-	value = getenv("TPM_TRACE_LEVEL");
+	value = GETENV("TPM_TRACE_LEVEL");
 	rc = TSS_SetTraceLevel(value);
     }
     return rc;
@@ -186,42 +193,42 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 #endif
     /* data directory */
     if (rc == 0) {
-	value = getenv("TPM_DATA_DIR");
+	value = GETENV("TPM_DATA_DIR");
 	rc = TSS_SetDataDirectory(tssContext, value);
     }
     /* flag whether session state should be encrypted */
     if (rc == 0) {
-	value = getenv("TPM_ENCRYPT_SESSIONS");
+	value = GETENV("TPM_ENCRYPT_SESSIONS");
 	rc = TSS_SetEncryptSessions(tssContext, value);
     }
     /* TPM socket command port */
     if (rc == 0) {
-	value = getenv("TPM_COMMAND_PORT");
+	value = GETENV("TPM_COMMAND_PORT");
 	rc = TSS_SetCommandPort(tssContext, value);
     }
     /* TPM simulator socket platform port */
     if (rc == 0) {
-	value = getenv("TPM_PLATFORM_PORT");
+	value = GETENV("TPM_PLATFORM_PORT");
 	rc = TSS_SetPlatformPort(tssContext, value);
     }
     /* TPM socket host name */
     if (rc == 0) {
-	value = getenv("TPM_SERVER_NAME");
+	value = GETENV("TPM_SERVER_NAME");
 	rc = TSS_SetServerName(tssContext, value);
     }
     /* TPM socket server type */
     if (rc == 0) {
-	value = getenv("TPM_SERVER_TYPE");
+	value = GETENV("TPM_SERVER_TYPE");
 	rc = TSS_SetServerType(tssContext, value);
     }
     /* TPM interface type */
     if (rc == 0) {
-	value = getenv("TPM_INTERFACE_TYPE");
+	value = GETENV("TPM_INTERFACE_TYPE");
 	rc = TSS_SetInterfaceType(tssContext, value);
     }
     /* TPM device within the interface type */
     if (rc == 0) {
-	value = getenv("TPM_DEVICE");
+	value = GETENV("TPM_DEVICE");
 	rc = TSS_SetDevice(tssContext, value);
     }
     return rc;
