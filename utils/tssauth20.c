@@ -3,9 +3,8 @@
 /*			     TPM 2.0 TSS Authorization				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth20.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -756,14 +755,21 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     /* unmarshal to validate the input parameters */
     if ((rc == 0) && (tssAuthContext->unmarshalInFunction != NULL)) {
-	COMMAND_PARAMETERS target;
+	COMMAND_PARAMETERS *target = NULL;
 	TPM_HANDLE 	handles[MAX_HANDLE_NUM];
-	size = sizeof(tssAuthContext->commandBuffer) -
-	       (tssAuthContext->commandHandleCount * sizeof(TPM_HANDLE));
-	rc = tssAuthContext->unmarshalInFunction(&target, &bufferu, &size, handles);
-	if ((rc != 0) && tssVerbose) {
-	    printf("TSS_Marshal: Invalid command parameter\n");
+	if (rc == 0) {
+	    rc = TSS_Malloc((unsigned char **)&target,
+			    sizeof(COMMAND_PARAMETERS));	/* freed @1 */
 	}
+	if (rc == 0) {
+	    size = sizeof(tssAuthContext->commandBuffer) -
+		   (tssAuthContext->commandHandleCount * sizeof(TPM_HANDLE));
+	    rc = tssAuthContext->unmarshalInFunction(target, &bufferu, &size, handles);
+	    if ((rc != 0) && tssVerbose) {
+		printf("TSS_Marshal: Invalid command parameter\n");
+	    }
+	}
+	free(target);		/* @1 */
     }
     /* back fill the correct commandSize */
     if (rc == 0) {
