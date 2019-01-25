@@ -3,9 +3,8 @@
 /*			     TSS Library Independent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscryptoh.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -50,11 +49,18 @@ extern "C" {
 #endif
 
     LIB_EXPORT
-    uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg);
+    uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
 
     LIB_EXPORT
-
-    uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg);
+    uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
 
     LIB_EXPORT
     TPM_RC TSS_Hash_Generate(TPMT_HA *digest,
@@ -88,7 +94,11 @@ extern "C" {
 		    uint32_t         sizeInBits);
 
     uint16_t TSS_Sym_GetBlockSize(TPM_ALG_ID	symmetricAlg, 
-				  uint16_t	keySizeInBits);
+				  uint16_t	keySizeInBits)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
 
 #ifdef __cplusplus
 }

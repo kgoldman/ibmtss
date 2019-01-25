@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -1452,6 +1452,8 @@ TSS_TPMI_ALG_CIPHER_MODE_Unmarshalu(TPMI_ALG_CIPHER_MODE*target, BYTE **buffer, 
 }
 
 /* Table 68 - Definition of TPMS_EMPTY Structure <IN/OUT> */
+
+/* NOTE: Marked as const function in header */
 
 TPM_RC
 TSS_TPMS_EMPTY_Unmarshalu(TPMS_EMPTY *target, BYTE **buffer, uint32_t *size)
@@ -3016,6 +3018,8 @@ TSS_TPMS_ENC_SCHEME_OAEP_Unmarshalu(TPMS_ENC_SCHEME_OAEP *target, BYTE **buffer,
 }
 
 /* Table 146 - Definition of Types for {RSA} Encryption Schemes */
+
+/* NOTE: Marked as const function in header */
 
 TPM_RC
 TSS_TPMS_ENC_SCHEME_RSAES_Unmarshalu(TPMS_ENC_SCHEME_RSAES *target, BYTE **buffer, uint32_t *size)
@@ -4649,6 +4653,8 @@ TPM_RC TPMI_ALG_CIPHER_MODE_Unmarshal(TPMI_ALG_CIPHER_MODE *target, BYTE **buffe
     return TSS_TPMI_ALG_CIPHER_MODE_Unmarshalu(target, buffer, (uint32_t *)size, allowNull);
 }
 
+/* NOTE: Marked as const function in header */
+
 TPM_RC TPMS_EMPTY_Unmarshal(TPMS_EMPTY *target, BYTE **buffer, INT32 *size)
 {
     return TSS_TPMS_EMPTY_Unmarshalu(target, buffer, (uint32_t *)size);
@@ -5037,6 +5043,8 @@ TPM_RC TPMS_ENC_SCHEME_OAEP_Unmarshal(TPMS_ENC_SCHEME_OAEP *target, BYTE **buffe
 {
     return TSS_TPMS_ENC_SCHEME_OAEP_Unmarshalu(target, buffer, (uint32_t *)size);
 }
+
+/* NOTE: Marked as const function in header */
 
 TPM_RC TPMS_ENC_SCHEME_RSAES_Unmarshal(TPMS_ENC_SCHEME_RSAES *target, BYTE **buffer, INT32 *size)
 {

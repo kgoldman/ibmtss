@@ -3,9 +3,8 @@
 /*			     Command Code Attributes				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 703 2016-07-28 17:21:46Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -49,6 +48,12 @@
 
 #include "tssccattributes.h"
 
+/* CommandCodeToCommandIndex() returns the index into the s_ccAttr table for the commandCode.
+   Returns UNIMPLEMENTED_COMMAND_INDEX if the command is unimplemented.
+*/
+
+/* NOTE: Marked as const function in header declaration */
+
 COMMAND_INDEX CommandCodeToCommandIndex(TPM_CC commandCode)
 {
     COMMAND_INDEX i;
@@ -62,14 +67,29 @@ COMMAND_INDEX CommandCodeToCommandIndex(TPM_CC commandCode)
     return UNIMPLEMENTED_COMMAND_INDEX;
 }
 
+/* getCommandHandleCount() returns the number of command parameter handles */
+
+/* NOTE: Marked as const function in header declaration */
+
 uint32_t getCommandHandleCount(COMMAND_INDEX index)
 {
     return s_ccAttr[index].cHandles;
 }
+
+/* getresponseHandleCount() returns the number of command parameter handles */
+
+/* NOTE: Marked as const function in header declaration */
+
 uint32_t getresponseHandleCount(COMMAND_INDEX index)
 {
     return s_ccAttr[index].rHandle;
 }
+
+/* getDecryptSize() returns 0 if the command does not support command parameter encryption, 2 if the
+   command does support command parameter encryption and the size is a uint16_t.  There is an unused
+   provision for a 4 for a uint32_t size. */
+
+/* NOTE: Marked as const function in header declaration */
 
 int getDecryptSize(COMMAND_INDEX    commandIndex)
 {
@@ -82,6 +102,12 @@ int getDecryptSize(COMMAND_INDEX    commandIndex)
     return 0;
 }
 
+/* getEecryptSize() returns 0 if the response does not support response parameter encryption, 2 if
+   the command does support response parameter encryption and the size is a uint16_t.  There is an
+   unused provision for a 4 for a uint32_t size. */
+
+/* NOTE: Marked as const function in header declaration */
+
 int getEncryptSize(COMMAND_INDEX    commandIndex)
 {
     COMMAND_ATTRIBUTES  ca = s_commandAttributes[commandIndex];
@@ -91,6 +117,12 @@ int getEncryptSize(COMMAND_INDEX    commandIndex)
 	return 4;
     return 0;
 }
+
+/* getCommandAuthRole() returns the authorization role for the handle: user, admin, or dup.
+
+ */
+
+/* NOTE: Marked as const function in header declaration */
 
 AUTH_ROLE getCommandAuthRole(
 			     COMMAND_INDEX    	commandIndex,  // IN: command index

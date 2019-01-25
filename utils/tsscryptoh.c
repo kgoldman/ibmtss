@@ -274,6 +274,8 @@ TPM_RC TSS_Hash_Generate(TPMT_HA *digest,		/* largest size of a digest */
    Returns 0 for an unknown algorithm.
 */
 
+/* NOTE: Marked as const function in header */
+
 uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
 {
     uint16_t size;
@@ -302,6 +304,13 @@ uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
     return size;
 }
 
+/* TSS_GetDigestBlockSize() returns the digest block size in bytes based on the hash algorithm.
+
+   Returns 0 for an unknown algorithm.
+*/
+
+/* NOTE: Marked as const function in header */
+
 uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg)
 {
     uint16_t size;
@@ -316,10 +325,10 @@ uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg)
       case TPM_ALG_SHA384:
 	size = SHA384_BLOCK_SIZE;
 	break;
-#if 0
       case TPM_ALG_SHA512:
 	size = SHA512_BLOCK_SIZE;
 	break;
+#if 0
       case TPM_ALG_SM3_256:
 	size = SM3_256_BLOCK_SIZE;
 	break;
@@ -329,7 +338,6 @@ uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg)
     }
     return size;
 }
-
 
 /* TPM_MGF1() generates an MGF1 'array' of length 'arrayLen' from 'seed' of length 'seedlen'
 
@@ -579,6 +587,12 @@ void TSS_XOR(unsigned char *out,
 */
 
 #define TSS_AES_KEY_BITS 128
+
+/* TSS_Sym_GetBlockSize() returns the block size for the symmetric algorithm.  Returns 0 on for an
+   unknown algorithm.
+*/
+
+/* NOTE: Marked as const function in header */
 
 uint16_t TSS_Sym_GetBlockSize(TPM_ALG_ID	symmetricAlg, 
 			      uint16_t		keySizeInBits)

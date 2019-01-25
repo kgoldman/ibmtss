@@ -3,9 +3,8 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.c 1303 2018-08-20 16:49:52Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -4749,6 +4748,8 @@ TSS_TPMT_SIG_SCHEME_Marshalu(const TPMT_SIG_SCHEME *source, uint16_t *written, B
 
 /* Table 146 - Definition of Types for {RSA} Encryption Schemes */
 
+/* NOTE: Marked as const function in header */
+
 TPM_RC
 TSS_TPMS_ENC_SCHEME_OAEP_Marshalu(const TPMS_ENC_SCHEME_OAEP *source, uint16_t *written, BYTE **buffer, uint32_t *size)
 {
@@ -4760,6 +4761,8 @@ TSS_TPMS_ENC_SCHEME_OAEP_Marshalu(const TPMS_ENC_SCHEME_OAEP *source, uint16_t *
 }
 
 /* Table 146 - Definition of Types for {RSA} Encryption Schemes */
+
+/* NOTE: Marked as const function in header */
 
 TPM_RC
 TSS_TPMS_ENC_SCHEME_RSAES_Marshalu(const TPMS_ENC_SCHEME_RSAES *source, uint16_t *written, BYTE **buffer, uint32_t *size)
@@ -6587,11 +6590,17 @@ TSS_TPMT_SIG_SCHEME_Marshal(const TPMT_SIG_SCHEME *source, UINT16 *written, BYTE
 {
     return TSS_TPMT_SIG_SCHEME_Marshalu(source, written, buffer, (uint32_t *)size);
 }
+
+/* NOTE: Marked as const function in header */
+
 TPM_RC
 TSS_TPMS_ENC_SCHEME_OAEP_Marshal(const TPMS_ENC_SCHEME_OAEP *source, UINT16 *written, BYTE **buffer, INT32 *size)
 {
     return TSS_TPMS_ENC_SCHEME_OAEP_Marshalu(source, written, buffer, (uint32_t *)size);
 }
+
+/* NOTE: Marked as const function in header */
+
 TPM_RC
 TSS_TPMS_ENC_SCHEME_RSAES_Marshal(const TPMS_ENC_SCHEME_RSAES *source, UINT16 *written, BYTE **buffer, INT32 *size)
 {

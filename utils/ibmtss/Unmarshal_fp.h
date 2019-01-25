@@ -3,7 +3,6 @@
 /*			   Unmarshal Functions  				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Unmarshal_fp.h 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2018				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2019				*/
 /*										*/
 /********************************************************************************/
 
@@ -190,7 +189,11 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TPMI_ALG_CIPHER_MODE_Unmarshalu(TPMI_ALG_CIPHER_MODE *target, BYTE **buffer, uint32_t *size, BOOL allowNull);
     LIB_EXPORT TPM_RC
-    TSS_TPMS_EMPTY_Unmarshalu(TPMS_EMPTY *target, BYTE **buffer, uint32_t *size);
+    TSS_TPMS_EMPTY_Unmarshalu(TPMS_EMPTY *target, BYTE **buffer, uint32_t *size)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
     LIB_EXPORT TPM_RC
     TSS_TPMU_HA_Unmarshalu(TPMU_HA *target, BYTE **buffer, uint32_t *size, UINT32 selector);
     LIB_EXPORT TPM_RC
@@ -346,7 +349,11 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TPMS_ENC_SCHEME_OAEP_Unmarshalu(TPMS_ENC_SCHEME_OAEP *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
-    TSS_TPMS_ENC_SCHEME_RSAES_Unmarshalu(TPMS_ENC_SCHEME_RSAES *target, BYTE **buffer, uint32_t *size);
+    TSS_TPMS_ENC_SCHEME_RSAES_Unmarshalu(TPMS_ENC_SCHEME_RSAES *target, BYTE **buffer, uint32_t *size)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
     LIB_EXPORT TPM_RC
     TSS_TPMS_KEY_SCHEME_ECDH_Unmarshalu(TPMS_KEY_SCHEME_ECDH *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
@@ -531,7 +538,11 @@ extern "C" {
     TPM_RC TPMI_ST_COMMAND_TAG_Unmarshal(TPMI_ST_COMMAND_TAG *target, BYTE **buffer, INT32 *size);
     TPM_RC TPMI_ALG_MAC_SCHEME_Unmarshal(TPMI_ALG_MAC_SCHEME *target, BYTE **buffer, INT32 *size, BOOL allowNull);
     TPM_RC TPMI_ALG_CIPHER_MODE_Unmarshal(TPMI_ALG_CIPHER_MODE *target, BYTE **buffer, INT32 *size, BOOL allowNull);
-    TPM_RC TPMS_EMPTY_Unmarshal(TPMS_EMPTY *target, BYTE **buffer, INT32 *size);
+    TPM_RC TPMS_EMPTY_Unmarshal(TPMS_EMPTY *target, BYTE **buffer, INT32 *size)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
     TPM_RC TPMU_HA_Unmarshal(TPMU_HA *target, BYTE **buffer, INT32 *size, UINT32 selector);
     TPM_RC TPMT_HA_Unmarshal(TPMT_HA *target, BYTE **buffer, INT32 *size, BOOL allowNull);
     TPM_RC TPM2B_DIGEST_Unmarshal(TPM2B_DIGEST *target, BYTE **buffer, INT32 *size);
@@ -609,7 +620,11 @@ extern "C" {
     TPM_RC TPMU_SIG_SCHEME_Unmarshal(TPMU_SIG_SCHEME *target, BYTE **buffer, INT32 *size, UINT32 selector);
     TPM_RC TPMT_SIG_SCHEME_Unmarshal(TPMT_SIG_SCHEME *target, BYTE **buffer, INT32 *size, BOOL allowNull);
     TPM_RC TPMS_ENC_SCHEME_OAEP_Unmarshal(TPMS_ENC_SCHEME_OAEP *target, BYTE **buffer, INT32 *size);
-    TPM_RC TPMS_ENC_SCHEME_RSAES_Unmarshal(TPMS_ENC_SCHEME_RSAES *target, BYTE **buffer, INT32 *size);
+    TPM_RC TPMS_ENC_SCHEME_RSAES_Unmarshal(TPMS_ENC_SCHEME_RSAES *target, BYTE **buffer, INT32 *size)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
     TPM_RC TPMS_KEY_SCHEME_ECDH_Unmarshal(TPMS_KEY_SCHEME_ECDH *target, BYTE **buffer, INT32 *size);
     TPM_RC TPMS_KEY_SCHEME_ECMQV_Unmarshal(TPMS_KEY_SCHEME_ECMQV *target, BYTE **buffer, INT32 *size);
     TPM_RC TPMS_SCHEME_KDF1_SP800_108_Unmarshal(TPMS_SCHEME_KDF1_SP800_108 *target, BYTE **buffer, INT32 *size);
