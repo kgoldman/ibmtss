@@ -306,7 +306,7 @@ TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,
 static TPM_RC TSS_SetTraceLevel(const char *value)
 {
     TPM_RC		rc = 0;
-    int			irc;
+    int			irc = 0;
     int 		level;
 
     if (rc == 0) {
@@ -314,6 +314,7 @@ static TPM_RC TSS_SetTraceLevel(const char *value)
 	    value = TPM_TRACE_LEVEL_DEFAULT;
 	}
     }
+#ifndef __ULTRAVISOR__
     if (rc == 0) {
 	irc = sscanf(value, "%u", &level);
 	if (irc != 1) {
@@ -321,6 +322,10 @@ static TPM_RC TSS_SetTraceLevel(const char *value)
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
+#else	/* disable tracing within the ultravisor, which doesn't implement sscanf() anyway */
+    irc = irc;
+    level = 0;
+#endif
     if (rc == 0) {
 	switch (level) {
 	  case 0:
@@ -363,8 +368,8 @@ static TPM_RC TSS_SetDataDirectory(TSS_CONTEXT *tssContext, const char *value)
 
 static TPM_RC TSS_SetCommandPort(TSS_CONTEXT *tssContext, const char *value)
 {
-    int			irc;
     TPM_RC		rc = 0;
+    int			irc = 0;
 
     /* close an open connection before changing property */
     if (rc == 0) {
@@ -375,6 +380,7 @@ static TPM_RC TSS_SetCommandPort(TSS_CONTEXT *tssContext, const char *value)
 	    value = TPM_COMMAND_PORT_DEFAULT;
 	}
     }
+#ifndef __ULTRAVISOR__
     if (rc == 0) {
 	irc = sscanf(value, "%hu", &tssContext->tssCommandPort);
 	if (irc != 1) {
@@ -382,13 +388,18 @@ static TPM_RC TSS_SetCommandPort(TSS_CONTEXT *tssContext, const char *value)
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
+#else	/* disable within the ultravisor, which doesn't implement sscanf() anyway.  It's a don't
+	   care because the ultravisor does not use sockets. */
+    tssContext->tssCommandPort = 0;
+    irc = irc;
+#endif
     return rc;
 }
 
 static TPM_RC TSS_SetPlatformPort(TSS_CONTEXT *tssContext, const char *value)
 {
     TPM_RC		rc = 0;
-    int			irc;
+    int			irc = 0;
 
     /* close an open connection before changing property */
     if (rc == 0) {
@@ -399,13 +410,19 @@ static TPM_RC TSS_SetPlatformPort(TSS_CONTEXT *tssContext, const char *value)
 	    value = TPM_PLATFORM_PORT_DEFAULT;
 	}
     }
-    if (rc == 0) {
+#ifndef __ULTRAVISOR__
+   if (rc == 0) {
 	irc = sscanf(value, "%hu", &tssContext->tssPlatformPort);
 	if (irc != 1) {
 	    if (tssVerbose) printf("TSS_SetPlatformPort: Error, , value invalid\n");
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
+#else	/* disable within the ultravisor, which doesn't implement sscanf() anyway.  It's a don't
+	   care because the ultravisor does not use sockets. */
+   tssContext->tssPlatformPort = 0;
+    irc = irc;
+#endif
     return rc;
 }
 
@@ -488,19 +505,25 @@ static TPM_RC TSS_SetDevice(TSS_CONTEXT *tssContext, const char *value)
 static TPM_RC TSS_SetEncryptSessions(TSS_CONTEXT *tssContext, const char *value)
 {
     TPM_RC		rc = 0;
-    int			irc;
+    int			irc = 0;
 
     if (rc == 0) {
 	if (value == NULL) {
 	    value = TPM_ENCRYPT_SESSIONS_DEFAULT;
 	}
     }
-    if (rc == 0) {
+#ifndef __ULTRAVISOR__
+   if (rc == 0) {
 	irc = sscanf(value, "%u", &tssContext->tssEncryptSessions);
 	if (irc != 1) {
 	    if (tssVerbose) printf("TSS_SetEncryptSessions: Error, value invalid\n");
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
-    return rc;
+#else	/* disable within the ultravisor, which doesn't implement sscanf() anyway.  It's a don't
+	   care because the ultravisor does not use files. */
+   tssContext->tssEncryptSessions = TRUE;
+   irc = irc;
+#endif
+   return rc;
 }
