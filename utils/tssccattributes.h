@@ -3,9 +3,8 @@
 /*			     Command Code Attributes				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprint.c 703 2016-07-28 17:21:46Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -56,12 +55,36 @@ typedef UINT32          AUTH_ROLE;
 
 #define UNIMPLEMENTED_COMMAND_INDEX     ((COMMAND_INDEX)(~0))
 
-COMMAND_INDEX CommandCodeToCommandIndex(TPM_CC commandCode);
-uint32_t getCommandHandleCount(COMMAND_INDEX index);
-uint32_t getresponseHandleCount(COMMAND_INDEX index);
-int getDecryptSize(COMMAND_INDEX    commandIndex);
-int getEncryptSize(COMMAND_INDEX    commandIndex);
+COMMAND_INDEX CommandCodeToCommandIndex(TPM_CC commandCode)
+#ifdef __ULTRAVISOR__
+__attribute__ ((const))
+#endif
+    ;
+uint32_t getCommandHandleCount(COMMAND_INDEX index)
+#ifdef __ULTRAVISOR__
+    __attribute__ ((const))
+#endif
+    ;
+uint32_t getresponseHandleCount(COMMAND_INDEX index)
+#ifdef __ULTRAVISOR__
+    __attribute__ ((const))
+#endif
+    ;
+int getDecryptSize(COMMAND_INDEX    commandIndex)
+#ifdef __ULTRAVISOR__
+    __attribute__ ((const))
+#endif
+    ;
+int getEncryptSize(COMMAND_INDEX    commandIndex)
+#ifdef __ULTRAVISOR__
+    __attribute__ ((const))
+#endif
+    ;
 AUTH_ROLE getCommandAuthRole(COMMAND_INDEX    	commandIndex,
-			     size_t		handleIndex);
+			     size_t		handleIndex)
+#ifdef __ULTRAVISOR__
+    __attribute__ ((const))
+#endif
+    ;
 
 #endif

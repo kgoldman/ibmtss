@@ -3,9 +3,8 @@
 /*			 TSS Marshal and Unmarshal    				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssmarshal.h 1289 2018-07-30 16:31:47Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -1094,9 +1093,17 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TPMT_SIG_SCHEME_Marshalu(const TPMT_SIG_SCHEME *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
-    TSS_TPMS_ENC_SCHEME_OAEP_Marshalu(const TPMS_ENC_SCHEME_OAEP *source, UINT16 *written, BYTE **buffer, uint32_t *size);
+    TSS_TPMS_ENC_SCHEME_OAEP_Marshalu(const TPMS_ENC_SCHEME_OAEP *source, UINT16 *written, BYTE **buffer, uint32_t *size)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
     LIB_EXPORT TPM_RC
-    TSS_TPMS_ENC_SCHEME_RSAES_Marshalu(const TPMS_ENC_SCHEME_RSAES *source, UINT16 *written, BYTE **buffer, uint32_t *size);
+    TSS_TPMS_ENC_SCHEME_RSAES_Marshalu(const TPMS_ENC_SCHEME_RSAES *source, UINT16 *written, BYTE **buffer, uint32_t *size)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
     LIB_EXPORT TPM_RC
     TSS_TPMS_KEY_SCHEME_ECDH_Marshalu(const TPMS_KEY_SCHEME_ECDH *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
@@ -1481,9 +1488,17 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TPMT_SIG_SCHEME_Marshal(const TPMT_SIG_SCHEME *source, UINT16 *written, BYTE **buffer, INT32 *size);
     LIB_EXPORT TPM_RC
-    TSS_TPMS_ENC_SCHEME_OAEP_Marshal(const TPMS_ENC_SCHEME_OAEP *source, UINT16 *written, BYTE **buffer, INT32 *size);
+    TSS_TPMS_ENC_SCHEME_OAEP_Marshal(const TPMS_ENC_SCHEME_OAEP *source, UINT16 *written, BYTE **buffer, INT32 *size)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
     LIB_EXPORT TPM_RC
-    TSS_TPMS_ENC_SCHEME_RSAES_Marshal(const TPMS_ENC_SCHEME_RSAES *source, UINT16 *written, BYTE **buffer, INT32 *size);
+    TSS_TPMS_ENC_SCHEME_RSAES_Marshal(const TPMS_ENC_SCHEME_RSAES *source, UINT16 *written, BYTE **buffer, INT32 *size)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
     LIB_EXPORT TPM_RC
     TSS_TPMS_KEY_SCHEME_ECDH_Marshal(const TPMS_KEY_SCHEME_ECDH *source, UINT16 *written, BYTE **buffer, INT32 *size);
     LIB_EXPORT TPM_RC
