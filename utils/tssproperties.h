@@ -42,9 +42,6 @@
 #ifndef TSSPROPERTIES_H
 #define TSSPROPERTIES_H
 
-#ifndef TPM_TSS
-#define TPM_TSS
-#endif
 #include <ibmtss/TPM_Types.h>
 
 #ifdef TPM_WINDOWS

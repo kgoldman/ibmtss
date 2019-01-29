@@ -40,10 +40,6 @@
 #ifndef TSS12_H
 #define TSS12_H
 
-#ifndef TPM_TSS
-#define TPM_TSS
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

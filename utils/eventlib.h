@@ -45,7 +45,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#define TPM_TSS
 #include <ibmtss/TPM_Types.h>
 
 #define TCG_EVENT_LEN_MAX	0x10000

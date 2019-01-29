@@ -45,10 +45,6 @@
 #ifndef TSSMARSHAL_H
 #define TSSMARSHAL_H
 
-#ifndef TPM_TSS
-#define TPM_TSS
-#endif
-
 #include "BaseTypes.h"
 #include <ibmtss/TPM_Types.h>
 
