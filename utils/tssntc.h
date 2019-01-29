@@ -45,9 +45,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#ifndef TPM_TSS
-#define TPM_TSS
-#endif
 #include <ibmtss/TPM_Types.h>
 #include "Commands_fp.h"
 
