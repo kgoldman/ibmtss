@@ -3,9 +3,8 @@
 /*		Linux Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.c 1294 2018-08-09 19:08:34Z kgoldman $ 		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -46,8 +45,6 @@
 #include <errno.h>
 
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
 #include <fcntl.h>
 
 #include <ibmtss/tssresponsecode.h>
