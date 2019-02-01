@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -1302,10 +1302,9 @@ TPM_RC TSS_AES_Decrypt(void *tssSessionDecKey,
     return rc;
 }
 
-TPM_RC TSS_AES_EncryptCFB(uint8_t	*dOut,		/* OUT: the encrypted */
-			  uint32_t	keySizeInBits,	/* IN: key size in bit */
-			  uint8_t 	*key,           /* IN: key buffer. The size of this buffer
-							   in */
+TPM_RC TSS_AES_EncryptCFB(uint8_t	*dOut,		/* OUT: the encrypted data */
+			  uint32_t	keySizeInBits,	/* IN: key size in bits */
+			  uint8_t 	*key,           /* IN: key buffer */
 			  uint8_t 	*iv,		/* IN/OUT: IV for decryption */
 			  uint32_t	dInSize,       	/* IN: data size */
 			  uint8_t 	*dIn)		/* IN: data buffer */
@@ -1339,9 +1338,8 @@ TPM_RC TSS_AES_EncryptCFB(uint8_t	*dOut,		/* OUT: the encrypted */
 }
 
 TPM_RC TSS_AES_DecryptCFB(uint8_t *dOut,          	/* OUT: the decrypted data */
-			  uint32_t keySizeInBits, 	/* IN: key size in bit */
-			  uint8_t *key,           	/* IN: key buffer. The size of this buffer
-							   in */
+			  uint32_t keySizeInBits, 	/* IN: key size in bits */
+			  uint8_t *key,           	/* IN: key buffer */
 			  uint8_t *iv,            	/* IN/OUT: IV for decryption. */
 			  uint32_t dInSize,       	/* IN: data size */
 			  uint8_t *dIn)			/* IN: data buffer */
