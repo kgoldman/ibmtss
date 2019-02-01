@@ -170,8 +170,10 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 #endif
 #endif
 #ifndef TPM_TSS_NOCRYPTO
+#ifndef TPM_TSS_NOFILE
 	tssContext->tssSessionEncKey = NULL;
 	tssContext->tssSessionDecKey = NULL;
+#endif
 #endif
     }
     /* for a minimal TSS with no file support */
