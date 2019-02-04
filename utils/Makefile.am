@@ -28,6 +28,10 @@ if CONFIG_HWTPM
 libibmtss_la_CFLAGS += -DTPM_INTERFACE_TYPE_DEFAULT="\"dev\""
 endif
 
+if CONFIG_RMTPM
+libibmtss_la_CFLAGS += -DTPM_DEVICE_DEFAULT="\"/dev/tpmrm0\""
+endif
+
 if CONFIG_TPM20
 libibmtss_la_CFLAGS += -DTPM_TPM20
 endif

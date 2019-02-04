@@ -103,9 +103,14 @@ AC_ARG_ENABLE(noecc,
    AS_IF([test "$enable_noecc" != "yes"], [enable_noecc="no"])
 
 AC_ARG_ENABLE(hwtpm,
-   AS_HELP_STRING([--enable-hwtpm], [Configure to use the hardware TPM]))
+   AS_HELP_STRING([--disable-hwtpm], [Use a software TPM instead of the hardware one]),, [enable_hwtpm="yes"])
    AM_CONDITIONAL([CONFIG_HWTPM], [test "x$enable_hwtpm" = "xyes"])
    AS_IF([test "$enable_hwtpm" != "yes"], [enable_hwtpm="no"])
+
+AC_ARG_ENABLE(rmtpm,
+   AS_HELP_STRING([--disable-rmtpm], [Do not use the resource manager]),, [enable_rmtpm="yes"])
+   AM_CONDITIONAL([CONFIG_RMTPM], [test "x$enable_rmtpm" = "xyes"])
+   AS_IF([test "$enable_rmtpm" != "yes"], [enable_rmtpm="no"])
 
 AC_CONFIG_FILES([Makefile
 		utils/Makefile
@@ -119,6 +124,7 @@ echo   "	CFLAGS:		$CFLAGS"
 echo   "	tpm12:		$tpm12"
 echo   "	tpm20:		$tpm20"
 echo   "	hwtpm:		$enable_hwtpm"
+echo   "	rmtpm:		$enable_rmtpm"
 echo   "	nofile:		$enable_nofile"
 echo   "	noprint:	$enable_noprint"
 echo   "	nocrypto:	$enable_nocrypto"

@@ -37,7 +37,7 @@ install the package in ${HOME}/local/bin and ${HOME}/local/lib directories
 execute the following shell commands:
 
 $ autoreconf -i
-$ ./configure --prefix=${HOME}/local
+$ ./configure --prefix=${HOME}/local --disable-hwtpm
 $ make clean
 $ make
 $ make install
@@ -47,7 +47,8 @@ to enable/disable different features.
 
 --disable-tpm-2.0 - include only TPM 1.2 support
 --disable-tpm-1.2 - include only TPM 2.0 support
---enable-hwtpm    - configure to use the hardware TPM
+--disable-hwtpm   - don't use the hardware TPM, use a software one instead
+--disable-rmtpm   - when using a hardware TPM, don't use the resource manager
 --enable-noprint  - build a TSS library without tracing or prints
 --enable-nofile   - build a TSS library that does not use files to preserve state
 --enable-nocrypto - build a TSS library that does not require a crypto library
@@ -61,7 +62,7 @@ privileges.  Executing the following shell commands will make and install the
 package in the default directories.
 
 $ autoreconf -i
-$ ./configure --enable-hwtpm
+$ ./configure
 $ make clean
 $ make
 $ sudo make install
@@ -84,7 +85,7 @@ directories, compile for the gdb debugger, and connect by default to a socket
 simulator TPM at command port 3333, execute the following shell commands:
 
 $ autoreconf -i
-$ ./configure --prefix=${HOME}/local --enable-debug \
+$ ./configure --prefix=${HOME}/local --enable-debug --disable-hwtpm \
 CFLAGS='-DTPM_INTERFACE_TYPE_DEFAULT="\"socsim\"" -DTPM_COMMAND_PORT_DEFAULT="\"3333\""'
 $ make clean
 $ make
