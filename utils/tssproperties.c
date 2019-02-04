@@ -110,7 +110,11 @@ int tssFirstCall = TRUE;
 #endif
 
 #ifndef TPM_INTERFACE_TYPE_DEFAULT
+#ifndef TPM_NOSOCKET
 #define TPM_INTERFACE_TYPE_DEFAULT	"socsim"	/* default to MS simulator interface */
+#else
+#define TPM_INTERFACE_TYPE_DEFAULT	"dev"		/* if no sockets, default to device driver */
+#endif
 #endif
 
 #ifndef TPM_DEVICE_DEFAULT
