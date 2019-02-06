@@ -157,7 +157,7 @@ Add to CCFLAGS
 
 Add to CCFLAGS
 
-	-DTPM_TSS_NOPRINT
+	-DTPM_TSS_NO_PRINT
 
 8) To remove elliptic curve dependencies
 
