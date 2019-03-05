@@ -87,6 +87,8 @@ noinst_HEADERS = CommandAttributes.h imalib.h tssdev.h ntc2lib.h tssntc.h Comman
 # install every header in ibmtss
 nobase_include_HEADERS = ibmtss/*.h
 
+man_MANS = man/man1/*.1
+
 if CONFIG_TPM20
 noinst_HEADERS += tss20.h tssauth20.h ibmtss/tssprintcmd.h
 endif
