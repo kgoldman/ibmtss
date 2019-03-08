@@ -36,7 +36,7 @@ tpmutils/hierarchycontrol/Debug/
 tpmutils/hmac/Debug/
 tpmutils/hmacstart/Debug/
 tpmutils/import/Debug/
-tpmutils/importpem/
+tpmutils/importpem/Debug/
 tpmutils/load/Debug/
 tpmutils/loadexternal/Debug/
 tpmutils/makecredential/Debug/
@@ -195,6 +195,7 @@ policysigned
 policytemplate
 policyticket
 powerup
+publicname
 quote
 readclock
 readpublic
