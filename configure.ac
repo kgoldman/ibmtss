@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(ibmtss, 1.0, kgold@linux.ibm.com)
+AC_INIT(ibmtss, 1.2.0, kgold@linux.ibm.com)
 AC_PREREQ([2.63])
 
 # Put autotools auxiliary files in a subdir, so they don't clutter top dir:
