@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testsalt.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -45,7 +44,18 @@ echo ""
 echo "Salt Session - Load"
 echo ""
 
-for ASY in "-rsa" "-ecc nistp256"
+# mbedtls port does not support ECC salted sessions yet
+
+if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
+    SALTALGS=("-rsa" "-ecc nistp256")
+elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
+    SALTALGS=("-rsa")
+else
+    echo "Error: crypto library ${CRYPTOLIBRARY} not supported"
+    exit 255
+fi
+
+for ASY in "${SALTALGS[@]}"
 do
     for HALG in ${ITERATE_ALGS}
     do
@@ -112,26 +122,28 @@ do
 
 done
 
-for HALG in ${ITERATE_ALGS}
-do
+if [ ${CRYPTOLIBRARY} == "openssl" ]; then
+    for HALG in ${ITERATE_ALGS}
+    do
 
-    echo "Load the ECC openssl key pair in the NULL hierarchy 80000001 - ${HALG}"
-    ${PREFIX}loadexternal -ecc -halg ${HALG} -st -ider tmpkeypairecc.der > run.out
-    checkSuccess $?
+	echo "Load the ECC openssl key pair in the NULL hierarchy 80000001 - ${HALG}"
+	${PREFIX}loadexternal -ecc -halg ${HALG} -st -ider tmpkeypairecc.der > run.out
+	checkSuccess $?
 
-    echo "Start a salted HMAC auth session"
-    ${PREFIX}startauthsession -se h -hs 80000001 > run.out
-    checkSuccess $?
+	echo "Start a salted HMAC auth session"
+	${PREFIX}startauthsession -se h -hs 80000001 > run.out
+	checkSuccess $?
 
-    echo "Create a signing key using the salt"
-    ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
-    checkSuccess $?
+	echo "Create a signing key using the salt"
+	${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 333 -se0 02000000 0 > run.out
+	checkSuccess $?
 
-    echo "Flush the storage key"
-    ${PREFIX}flushcontext -ha 80000001 > run.out
-    checkSuccess $?
+	echo "Flush the storage key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
 
-done
+    done
+fi
 
 echo ""
 echo "Salt Session - CreatePrimary storage key"
