@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -53,9 +53,6 @@
 #ifdef TPM_WINDOWS
 #include <winsock2.h>
 #endif
-
-#include <openssl/sha.h>
-#include <openssl/engine.h>
 
 #include <ibmtss/TPM_Types.h>
 #include <ibmtss/tsscryptoh.h>
@@ -820,11 +817,11 @@ static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
     if (rc == 0) {
 	if (strcmp(imaTemplateData->hashAlg, "sha1:") == 0) {
 	    imaTemplateData->fileDataHashLength = SHA1_DIGEST_SIZE;
-	    imaTemplateData->hashNid = NID_sha1;
+	    imaTemplateData->hashAlgId = TPM_ALG_SHA1;
 	}
 	else if (strcmp(imaTemplateData->hashAlg, "sha256:") == 0) {
 	    imaTemplateData->fileDataHashLength = SHA256_DIGEST_SIZE;
-	    imaTemplateData->hashNid = NID_sha256;
+	    imaTemplateData->hashAlgId = TPM_ALG_SHA256;
 	}
 	else {
 	    printf("ERROR: IMA_ParseDNG: Unknown file data hash algorithm: %s\n",
@@ -955,9 +952,9 @@ static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
 	/* consistency check signature header contents */
 	if (rc == 0) {
 	    int goodHashAlgo = (((imaTemplateData->sigHeader[2] == HASH_ALGO_SHA1) &&
-				 (imaTemplateData->hashNid = NID_sha1)) ||
+				 (imaTemplateData->hashAlgId = TPM_ALG_SHA1)) ||
 				((imaTemplateData->sigHeader[2] == HASH_ALGO_SHA256) &&
-				 (imaTemplateData->hashNid = NID_sha256)));
+				 (imaTemplateData->hashAlgId = TPM_ALG_SHA256)));
 	    int goodSigSize = ((imaTemplateData->signatureSize == 128) ||
 			       (imaTemplateData->signatureSize == 256));
 	    /* xattr type */
