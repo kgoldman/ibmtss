@@ -76,6 +76,15 @@ static TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
 			     TPMI_ALG_HASH hashAlg);
 
 #ifndef TPM_TSS_NOECC
+
+/* ECC salt */
+
+typedef struct
+{
+    EC_GROUP            *G;
+    BN_CTX              *ctx;
+} CURVE_DATA;
+
 static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData,
 						   EC_KEY *myecc);
 static TPM_RC TSS_BN_new(BIGNUM **bn);
@@ -315,8 +324,57 @@ TPM_RC TSS_RandBytes(unsigned char *buffer, uint32_t size)
 
 #ifndef TPM_TSS_NORSA
 
-/* TSS_RSAGeneratePublicToken() generates an RSA key token from n and e
- */
+/* TSS_RsaNew() allocates an openssl RSA key token.
+
+   This abstracts the crypto library specific allocation.
+
+   For Openssl, rsaKey is an RSA structure.
+*/
+
+TPM_RC TSS_RsaNew(void **rsaKey)
+{
+    TPM_RC  	rc = 0;
+
+    /* sanity check for the free */
+    if (rc == 0) {
+	if (*rsaKey != NULL) {
+            if (tssVerbose)
+		printf("TSS_RsaNew: Error (fatal), token %p should be NULL\n",
+		       *rsaKey);
+            rc = TSS_RC_ALLOC_INPUT;
+	}
+    }
+    /* construct the OpenSSL private key object */
+    if (rc == 0) {
+        *rsaKey = RSA_new();                        	/* freed by caller */
+        if (*rsaKey == NULL) {
+            if (tssVerbose) printf("TSS_RsaNew: Error in RSA_new()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+        }
+    }
+    return rc;
+}
+
+/* TSS_RsaFree() frees an openssl RSA key token.
+
+   This abstracts the crypto library specific free.
+   
+   For Openssl, rsaKey is an RSA structure.
+*/
+
+void TSS_RsaFree(void *rsaKey)
+{
+    if (rsaKey != NULL) {
+        RSA_free(rsaKey); 
+    }
+    return;
+}
+
+/* TSS_RSAGeneratePublicToken() is deprecated for application use, since it is openssl library
+   dependent.
+
+   Use TSS_RSAGeneratePublicTokenI().
+*/
 
 TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
 				  const unsigned char *narr,    /* public modulus */
@@ -325,25 +383,33 @@ TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
 				  uint32_t ebytes)
 {
     TPM_RC  	rc = 0;
+    rc = TSS_RSAGeneratePublicTokenI((void **)rsa_pub_key,
+				     narr, 
+				     nbytes,
+				     earr,
+				     ebytes);
+    return rc;
+}
+
+/* TSS_RSAGeneratePublicTokenI() generates an RSA key token from n and e
+
+   Free rsa_pub_key using TSS_RsaFree();
+ */
+
+TPM_RC TSS_RSAGeneratePublicTokenI(void **rsa_pub_key,		/* freed by caller */
+				   const unsigned char *narr,    /* public modulus */
+				   uint32_t nbytes,
+				   const unsigned char *earr,    /* public exponent */
+				   uint32_t ebytes)
+{
+    TPM_RC  	rc = 0;
     BIGNUM *    n = NULL;
     BIGNUM *    e = NULL;
+    RSA **	rsaPubKey = (RSA **)rsa_pub_key;	/* openssl specific structure */
 
-    /* sanity check for the free */
-    if (rc == 0) {
-	if (*rsa_pub_key != NULL) {
-            if (tssVerbose)
-		printf("TSS_RSAGeneratePublicToken: Error (fatal), token %p should be NULL\n",
-		       *rsa_pub_key );
-            rc = TSS_RC_ALLOC_INPUT;
-	}
-    }
     /* construct the OpenSSL private key object */
     if (rc == 0) {
-        *rsa_pub_key = RSA_new();                        	/* freed by caller */
-        if (*rsa_pub_key == NULL) {
-            if (tssVerbose) printf("TSS_RSAGeneratePublicToken: Error in RSA_new()\n");
-            rc = TSS_RC_RSA_KEY_CONVERT;
-        }
+	rc = TSS_RsaNew(rsa_pub_key);
     }
     if (rc == 0) {
         rc = TSS_bin2bn(&n, narr, nbytes);	/* freed by caller */
@@ -353,13 +419,13 @@ TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
     }
     if (rc == 0) {
 #if OPENSSL_VERSION_NUMBER < 0x10100000
-        (*rsa_pub_key)->n = n;
-        (*rsa_pub_key)->e = e;
-        (*rsa_pub_key)->d = NULL;
+        (*rsaPubKey)->n = n;
+        (*rsaPubKey)->e = e;
+        (*rsaPubKey)->d = NULL;
 #else
-	int irc = RSA_set0_key(*rsa_pub_key, n, e, NULL);
+	int irc = RSA_set0_key(*rsaPubKey, n, e, NULL);
 	if (irc != 1) {
-            if (tssVerbose) printf("TSS_RSAGeneratePublicToken: Error in RSA_set0_key()\n");
+            if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: Error in RSA_set0_key()\n");
             rc = TSS_RC_RSA_KEY_CONVERT;
 	}
 #endif
@@ -396,11 +462,11 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
     }
     /* construct the OpenSSL public key object */
     if (rc == 0) {
-	rc = TSS_RSAGeneratePublicToken(&rsa_pub_key,	/* freed @1 */
-					narr,      	/* public modulus */
-					nbytes,
-					earr,      	/* public exponent */
-					ebytes);
+	rc = TSS_RSAGeneratePublicTokenI((void **)&rsa_pub_key,	/* freed @1 */
+					 narr,      	/* public modulus */
+					 nbytes,
+					 earr,      	/* public exponent */
+					 ebytes);
     }
     if (rc == 0) {
 	padded_data[0] = 0x00;
@@ -434,9 +500,7 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
     if (rc == 0) {
         if (tssVverbose) printf("  TSS_RSAPublicEncrypt: RSA_public_encrypt() success\n");
     }
-    if (rsa_pub_key != NULL) {
-        RSA_free(rsa_pub_key);          /* @1 */
-    }
+    TSS_RsaFree(rsa_pub_key);          /* @1 */
     free(padded_data);                  /* @2 */
     return rc;
 }
@@ -446,7 +510,10 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
 #ifndef TPM_TSS_NOECC
 
 /* TSS_GeneratePlatformEphemeralKey sets the EC parameters to NIST P256 for generating the ephemeral
-   key. Some OpenSSL versions do not come with NIST p256.  */
+   key. Some OpenSSL versions do not come with NIST p256.
+
+   On success, eCurveData->G must be freed by the caller.
+*/
 
 static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KEY *myecc)
 {
@@ -581,10 +648,11 @@ static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KE
     if (p != NULL)	BN_clear_free(p);	/* @1 */
     if (a != NULL)	BN_clear_free(a);	/* @2 */
     if (b != NULL) 	BN_clear_free(b);	/* @3 */
-    if (rc != 0) {
+    if (rc != 0) {				/* else freed by caller */
 	EC_GROUP_free(eCurveData->G);	/* @4 */	
-	EC_POINT_free(G);		/* @5  */
+	/* EC_POINT_free(G);		/\* @5  *\/ */
     }
+    EC_POINT_free(G);		/* @5  */
     if (x != NULL)	BN_clear_free(x);	/* @6 */
     if (y != NULL)	BN_clear_free(y);	/* @7 */
     if (z != NULL)	BN_clear_free(z);	/* @8 */
@@ -665,7 +733,8 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
        key is actually the 'encrypted' salt. */
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_ECC_Salt: "
-				"Calling TSS_ECC_GeneratePlatformEphemeralKey\n"); 
+				"Calling TSS_ECC_GeneratePlatformEphemeralKey\n");
+	/* eCurveData->G freed @17 */
 	rc = TSS_ECC_GeneratePlatformEphemeralKey(&eCurveData, myecc);
     }
     if (rc == 0) {
@@ -1005,7 +1074,9 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     free(p_caller_Ybin);					/* @13 */
     free(p_tpmXbin);						/* @14 */
     if (bigY != NULL)           BN_clear_free(bigY);		/* @15 */
+    EC_GROUP_free(eCurveData.G);				/* @17 */	
     if (eCurveData.ctx != NULL)	BN_CTX_free(eCurveData.ctx);	/* @16 */
+
     return rc;
 }
 
