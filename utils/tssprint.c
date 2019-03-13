@@ -2179,6 +2179,7 @@ void TSS_TPMT_SENSITIVE_Print(TPMT_SENSITIVE *source, unsigned int indent)
     TSS_TPM_ALG_ID_Print("sensitiveType", source->sensitiveType, indent+2);
     TSS_TPM2B_Print("TPMT_SENSITIVE authValue", indent+2, &source->authValue.b);
     TSS_TPM2B_Print("TPMT_SENSITIVE seedValue", indent+2, &source->seedValue.b);
+    TSS_TPMU_SENSITIVE_COMPOSITE_Print(&source->sensitive, source->sensitiveType, indent+2);
     return;
 }
 
