@@ -50,8 +50,8 @@ CC = /usr/bin/gcc
 
 CCFLAGS  += \
 	-DTPM_POSIX		\
-	-DTPM_TSS_NOFILE	\
-	-DTPM_TSS_NOCRYPTO
+	-DTPM_TSS_NOCRYPTO	\
+	-DTPM_TSS_NORSA
 
 # -DTPM_NOSOCKET
 
@@ -66,6 +66,7 @@ CCLFLAGS += 	-I.			\
 
 CCAFLAGS += 	-I.		\
 		-DTPM_TPM20	\
+		-DTPM_TSS_NORSA	\
 		-fPIE
 
 # link - common flags flags TSS library and applications

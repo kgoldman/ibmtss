@@ -476,6 +476,8 @@ ntc2lockconfig:		ntc2lockconfig.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) ntc2lockconfig.o $(LNALIBS) -o ntc2lockconfig
 publicname:		publicname.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) publicname.o $(LNALIBS) -o publicname
+getcryptolibrary:	getcryptolibrary.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) getcryptolibrary.o $(LNALIBS) -o getcryptolibrary
 
 # for applications, not for TSS library
 
