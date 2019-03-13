@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -99,42 +99,49 @@ echo ""
 echo "EK Certificate"
 echo ""
 
-echo "Set platform hierarchy auth"
-${PREFIX}hierarchychangeauth -hi p -pwdn ppp > run.out
-checkSuccess $?
+# The mbedtls port does not support EC certificate creation yet */
 
-for ALG in "rsa" "ecc"
-do 
+if [ ${CRYPTOLIBRARY} == "openssl" ]; then
 
-    echo "Create an ${ALG} EK certificate"
-    ${PREFIX}createekcert -alg ${ALG} -cakey cakey.pem -capwd rrrr -pwdp ppp -of tmp.der > run.out
+    echo "Set platform hierarchy auth"
+    ${PREFIX}hierarchychangeauth -hi p -pwdn ppp > run.out
     checkSuccess $?
 
-    echo "Read the ${ALG} EK certificate"
-    ${PREFIX}createek -alg ${ALG} -ce > run.out
+    for ALG in "rsa" "ecc"
+    do 
+
+	echo "Create an ${ALG} EK certificate"
+	${PREFIX}createekcert -alg ${ALG} -cakey cakey.pem -capwd rrrr -pwdp ppp -of tmp.der > run.out
+	checkSuccess $?
+
+	echo "Read the ${ALG} EK certificate"
+	${PREFIX}createek -alg ${ALG} -ce > run.out
+	checkSuccess $?
+
+	echo "Read the ${ALG} template - should fail"
+	${PREFIX}createek -alg ${ALG} -te > run.out
+	checkFailure $?
+
+	echo "Read the ${ALG} nonce - should fail"
+	${PREFIX}createek -alg ${ALG} -no > run.out
+	checkFailure $?
+
+	echo "CreatePrimary and validate the ${ALG} EK against the EK certificate"
+	${PREFIX}createek -alg ${ALG} -cp > run.out
+	checkSuccess $?
+
+	echo "Validate the ${ALG} EK certificate against the root"
+	${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
+	checkSuccess $?
+
+    done
+
+    echo "Clear platform hierarchy auth"
+    ${PREFIX}hierarchychangeauth -hi p -pwda ppp > run.out
     checkSuccess $?
 
-    echo "Read the ${ALG} template - should fail"
-    ${PREFIX}createek -alg ${ALG} -te > run.out
-    checkFailure $?
-
-    echo "Read the ${ALG} nonce - should fail"
-    ${PREFIX}createek -alg ${ALG} -no > run.out
-    checkFailure $?
-
-    echo "CreatePrimary and validate the ${ALG} EK against the EK certificate"
-    ${PREFIX}createek -alg ${ALG} -cp > run.out
-    checkSuccess $?
-
-    echo "Validate the ${ALG} EK certificate against the root"
-#     ${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
-    checkSuccess $?
-
-done
-
-echo "Clear platform hierarchy auth"
-${PREFIX}hierarchychangeauth -hi p -pwda ppp > run.out
-checkSuccess $?
+# openssl vs mbedtls
+fi
 
 echo ""
 echo "EK Policies using optional policy in NV"
@@ -180,9 +187,9 @@ SIZ=(34 50 66)
 HBIN=(000b 000c 000d)
 # Name from Table 14: Policy Index Names
 NVNAME=(
-000b0c9d717e9c3fe69fda41769450bb145957f8b3610e084dbf65591a5d11ecd83f
-000cdb62fca346612c976732ff4e8621fb4e858be82586486504f7d02e621f8d7d61ae32cfc60c4d120609ed6768afcf090c
-000d1c47c0bbcbd3cf7d7cae6987d31937c171015dde3b7f0d3c869bca1f7e8a223b9acfadb49b7c9cf14d450f41e9327de34d9291eece2c58ab1dc10e9059cce560
+    000b0c9d717e9c3fe69fda41769450bb145957f8b3610e084dbf65591a5d11ecd83f
+    000cdb62fca346612c976732ff4e8621fb4e858be82586486504f7d02e621f8d7d61ae32cfc60c4d120609ed6768afcf090c
+    000d1c47c0bbcbd3cf7d7cae6987d31937c171015dde3b7f0d3c869bca1f7e8a223b9acfadb49b7c9cf14d450f41e9327de34d9291eece2c58ab1dc10e9059cce560
 )
 
 for ((i = 0 ; i < 3; i++))
@@ -271,7 +278,7 @@ done
  # 2c c0 12 08 07 3a 92 8d 5d 66 d5 9e f7 9e 49 a4 
  # 29 c4 1a 6b 26 95 71 d5 7e db 25 fb db 18 38 42 
  # 56 08 b4 13 cd 61 6a 5f 6d b5 b6 07 1a f9 9b ea 
- 
+
 echo ""
 echo "Test the EK policies"
 echo ""
@@ -355,7 +362,7 @@ do
     echo "Flush the policy session ${HALG[i]} 03000000"
     ${PREFIX}flushcontext -ha 03000000 > run.out
     checkSuccess $?
- 
+    
     echo "Flush the primary key ${HALG[i]} 80000001"
     ${PREFIX}flushcontext -ha 80000001 > run.out
     checkSuccess $?

@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: reg.sh 1291 2018-08-01 15:53:40Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2014 - 2018					#
+# (c) Copyright IBM Corporation 2014 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -63,9 +62,12 @@
 
 PREFIX=./
 
-# The rpm release prefixes all the utility names with tss, so PREFIX is set to tss
+# The distro releases prefix all the TPM 2.0 utility names with tss,
+# so PREFIX is set to tss
 
 # PREFIX=tss
+
+#PREFIX="valgrind ./"
 
 # hash algorithms to be used for testing
 
@@ -213,12 +215,15 @@ initprimary()
     checkSuccess $?
 }
 
+
 export -f checkSuccess
 export -f checkWarning
 export -f checkFailure
 export WARN
 export PREFIX
 export -f initprimary
+# hack because the mbedtls port is incomplete
+export CRYPTOLIBRARY=`${PREFIX}getcryptolibrary`
 
 # example for running scripts with encrypted sessions, see TPM_SESSION_ENCKEY=getrandom below
 export TPM_SESSION_ENCKEY
@@ -231,6 +236,9 @@ main ()
 
     if [ "$1" == "-h" ]; then
 	printUsage
+	echo ""
+	echo "crypto library is ${CRYPTOLIBRARY}"
+	echo ""
 	exit 0
     else
 	# the MS simulator needs power up and startup
