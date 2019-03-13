@@ -3,9 +3,8 @@
 /*			    VerifySignature					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: verifysignature.c 1340 2018-09-28 18:32:11Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -45,14 +44,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-
-#include <openssl/objects.h>
-#include <openssl/rsa.h>
-#ifndef TPM_TSS_NOECC
-#include <openssl/ecdsa.h>
-#endif
-#include <openssl/evp.h>
-#include <openssl/pem.h>
 
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>

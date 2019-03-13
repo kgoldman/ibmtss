@@ -76,8 +76,6 @@
 #endif
 #endif
 
-#include <openssl/err.h>
-
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssresponsecode.h>
@@ -159,8 +157,6 @@ int main(int argc, char *argv[])
     TPMT_SIGNATURE		signature;
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
-    ERR_load_crypto_strings ();
-    OpenSSL_add_all_algorithms();	/* needed when crypto is local, not in the TSS */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
     /* command line argument defaults */

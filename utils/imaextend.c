@@ -1,10 +1,10 @@
 /********************************************************************************/
 /*										*/
-/*		      Extend an IMA measurement list into PCR 10		*/
+/*		      Extend an IMA measurement list into PCRs			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2014 - 2018.					*/
+/* (c) Copyright IBM Corporation 2014 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -53,8 +53,6 @@
 #include <string.h>
 
 #include <unistd.h>
-
-#include <openssl/err.h>
 
 #include <ibmtss/tss.h>
 #include <ibmtss/tssresponsecode.h>

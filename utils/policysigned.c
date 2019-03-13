@@ -3,9 +3,8 @@
 /*			    PolicySigned	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policysigned.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -53,17 +52,14 @@
 #include <winsock2.h>
 #endif
 
-#include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
-
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tsscryptoh.h>
 #include <ibmtss/tsscrypto.h>
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tssmarshal.h>
+
+#include "cryptoutils.h"
 
 static void printUsage(void);
 static TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
@@ -98,8 +94,6 @@ int main(int argc, char *argv[])
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-    OpenSSL_add_all_algorithms();
-    ERR_load_crypto_strings();
 
     /* command line argument defaults */
 
@@ -398,12 +392,9 @@ TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
 		 const char *signingKeyPassword)
 {
     TPM_RC		rc = 0;
-    int			irc;
-    RSA			*rsaKey = NULL;
-    FILE		*keyFile = NULL;
-    int			nid;			/* openssl hash algorithm */
+    void		*rsaKey = NULL;
     uint32_t  		sizeInBytes;		/* hash algorithm mapped to size */
-    unsigned int 	length;			/* RSA_Sign() output */
+    size_t	 	signatureLength;	/* RSA_Sign() output */
 
     if (rc == 0) {
 	sizeInBytes = TSS_GetDigestSize(aHash->hashAlg);
@@ -414,77 +405,27 @@ TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
 	}
 #endif
     }
-    /* map the hash algorithm to the openssl NID */
+    /* read the PEM format private key into the private key structure */
     if (rc == 0) {
-	switch (aHash->hashAlg) {
-	  case TPM_ALG_SHA1:
-	    nid = NID_sha1;
-	    break;
-	  case TPM_ALG_SHA256:
-	    nid = NID_sha256;
-	    break;
-	  case TPM_ALG_SHA384:
-	    nid = NID_sha384;
-	    break;
-	  case TPM_ALG_SHA512:
-	    nid = NID_sha512;
-	    break;
-	  default:
-	    printf("signAHash: Error, hash algorithm %04hx unsupported\n", aHash->hashAlg);
-	    rc = -1;
-	}
+	rc = convertPemToRsaPrivKey((void **)&rsaKey,	/* freed @1 */
+				    signingKeyFilename, (void *)signingKeyPassword);
     }
-    /* read the PEM format private key into the OpenSSL structure */
+    /* sign aHash */
     if (rc == 0) {
-	keyFile = fopen(signingKeyFilename, "r");
-	if (keyFile == NULL) {
-	    printf("signAHash: Error opening %s\n", signingKeyFilename);
-	    rc = -1;
-	}
+	rc = signRSAFromRSA(signature->t.buffer, &signatureLength,
+			    sizeof(signature->t.buffer),
+			    (uint8_t *)(&aHash->digest), sizeInBytes,
+			    aHash->hashAlg,
+			    rsaKey);
     }
     if (rc == 0) {
-	rsaKey = PEM_read_RSAPrivateKey(keyFile, NULL, NULL, (void *)signingKeyPassword);
-	if (rsaKey == NULL) {
-	    printf("signAHash: Error in OpenSSL PEM_read_RSAPrivateKey()\n");
-	    ERR_print_errors_fp(stdout);
-	    rc = -1;
-	}
-    }
-    /* validate that the length of the resulting signature will fit in the
-       TPMT_SIGNATURE->TPMU_SIGNATURE->TPMS_SIGNATURE_RSASSA->
-       TPMS_SIGNATURE_RSA->TPM2B_PUBLIC_KEY_RSA structure */
-    if (rc == 0) {
-	unsigned int keySize = RSA_size(rsaKey);
-	if (keySize > sizeof(signature->t.buffer)) {
-	    printf("signAHash: Error, private key length %u > signature buffer %u\n",
-		   keySize, (unsigned int) sizeof(signature->t.buffer));
-	    rc = -1;
-	}
-    }
-    if (rc == 0) {
-	irc = RSA_sign(nid,
-		       (uint8_t *)(&aHash->digest), sizeInBytes,
-		       signature->t.buffer, &length,
-		       rsaKey);
-	if (irc != 1) {
-	    printf("signAHash: Error in OpenSSL RSA_sign()\n");
-	    ERR_print_errors_fp(stdout);
-	    rc = -1;
-	}
-    }
-    if (rc == 0) {
-	signature->t.size = length;	/* length of RSA key checked above */
+	signature->t.size = signatureLength;	/* length of RSA key checked above */
 #if 0
 	if (verbose) TSS_PrintAll("signAHash: signature",
 				  signature->t.buffer, signature->t.size);
 #endif
     }
-    if (keyFile != NULL) {
-	fclose(keyFile);
-    }
-    if (rsaKey != NULL) {
-	RSA_free(rsaKey);
-    }
+    TSS_RsaFree(rsaKey);	/* @1 *//* FIXME may be wrong for mbedtls */
     return rc;
 }
 
