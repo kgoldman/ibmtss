@@ -101,6 +101,7 @@
 #define TSS_RC_EC_KEY_CONVERT		0x000b007c	/* EC key conversion failed */
 #define TSS_RC_BAD_SIGNATURE_ALGORITHM	0x000b007d	/* Unimplemented signature algorithm */
 #define TSS_RC_X509_ERROR		0x000b007e	/* X509 parse error */
+#define TSS_RC_PEM_ERROR		0x000b007f	/* PEM parse error */
 #define TSS_RC_COMMAND_UNIMPLEMENTED	0x000b0080	/* Unimplemented command */
 #define TSS_RC_IN_PARAMETER		0x000b0081	/* Bad in parameter to TSS_Execute */
 #define TSS_RC_OUT_PARAMETER		0x000b0082	/* Bad out parameter to TSS_Execute */
