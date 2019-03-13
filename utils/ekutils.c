@@ -356,7 +356,7 @@ void getEccTemplate(TPMT_PUBLIC *tpmtPublic)
 */
 
 TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
-			       X509 **certificate,		/* freed by caller */
+			       void **certificate,		/* freed by caller */
 			       TPMI_RH_NV_INDEX nvIndex)
 {
     TPM_RC			rc = 0;
@@ -614,7 +614,7 @@ TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
 
 */
 
-TPM_RC verifyCertificate(X509 *x509Certificate,
+TPM_RC verifyCertificate(void *x509Certificate,
 			 const char *rootFilename[],
 			 unsigned int rootFileCount,
 			 int print)
@@ -805,13 +805,17 @@ TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-/* processEKCertificate() reads the EK certificate from NV and returns an openssl X509 certificate
+/* processEKCertificate() reads the EK certificate from NV and returns an X509 certificate
    structure.  It also extracts and returns the public modulus.
 
+   The return is void because the structure is opaque to the caller.  This accomodates other crypto
+   libraries.
+
+   ekCertificate is an X509 structure.
 */
     
 TPM_RC processEKCertificate(TSS_CONTEXT *tssContext,
-			    X509 **ekCertificate,	/* freed by caller */
+			    void **ekCertificate,	/* freed by caller */
 			    uint8_t **modulusBin,	/* freed by caller */
 			    int *modulusBytes,
 			    TPMI_RH_NV_INDEX ekCertIndex,
@@ -925,11 +929,15 @@ TPM_RC convertX509ToEc(EC_KEY **ecKey,	/* freed by caller */
 
    If print is true, prints the EK certificate
 
+   The return is void because the structure is opaque to the caller.  This accomodates other crypto
+   libraries.
+
+   ekCertificate is an X509 structure.
 */
 
 TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 				int *modulusBytes,
-				X509 *ekCertificate,
+				void *ekCertificate,
 				TPMI_RH_NV_INDEX ekCertIndex,
 				int print)
 {
@@ -1178,6 +1186,52 @@ uint32_t convertPemToX509(X509 **x509,				/* freed by caller */
 
 #endif
 
+/* convertDerToX509() converts a DER stream to an OpenSSL X509 structure
+
+   The return is void because the structure is opaque to the caller.  This accomodates other crypto
+   libraries.
+*/
+
+uint32_t convertDerToX509(void **x509Certificate,			/* freed by caller */
+			  uint16_t readLength,
+			  const unsigned char *readBuffer)
+{
+    uint32_t 	rc = 0;
+    *x509Certificate = d2i_X509(NULL,					/* freed by caller */
+				&readBuffer, readLength);
+    if (x509Certificate == NULL) {
+	printf("convertDerToX509: Could not parse X509 certificate\n");
+	rc = TSS_RC_X509_ERROR;
+    }
+    return rc;
+}
+
+/* x509FreeStructure() is the library specific free structure.
+
+   The parameter is void because the structure is opaque to the caller.  This accomodates other
+   crypto libraries.
+*/
+
+void x509FreeStructure(void *x509)
+{
+    if (x509 != NULL) {
+	X509_free(x509);
+    }
+    return;
+}
+
+/* x509PrintStructure() prints the structure to stdout
+
+   The parameter is void because the structure is opaque to the caller.  This accomodates other
+   crypto libraries.
+*/
+
+void x509PrintStructure(void *x509)
+{
+    X509_print_fp(stdout, x509);
+    return;
+}
+
 /* convertPemMemToX509() converts an in-memory PEM format X509 certificate to an openssl X509
    structure.
 
@@ -1233,10 +1287,14 @@ uint32_t convertPemMemToX509(X509 **x509,		/* freed by caller */
 
 /* convertX509ToPem() writes an OpenSSL X509 structure to a PEM format file
 
- */
+   The return is void because the structure is opaque to the caller.  This accomodates other crypto
+   libraries.
+ 
+   For OpenSSL, the type is X509*
+*/
 
 TPM_RC convertX509ToPem(const char *pemFilename,
-			X509 *x509)
+			void *x509)
 {
     TPM_RC 	rc = 0;
     int		irc;
@@ -1647,6 +1705,10 @@ TPM_RC createX509Name(X509_NAME **x509Name,
 
     nameEntry = NULL;
 
+    /* Precalculate the openssl nids, into global table */
+    if (rc == 0) {
+	rc = calculateNid();
+    }
     if (rc == 0) {
 	*x509Name = X509_NAME_new();
 	if (*x509Name == NULL) {
@@ -1874,8 +1936,8 @@ TPM_RC processRoot(TSS_CONTEXT *tssContext,
 		   unsigned int rootFileCount,
 		   int print)
 {
-    TPM_RC			rc = 0;
-    X509 			*ekCertificate = NULL;		/* freed @1 */
+    TPM_RC	rc = 0;
+    void	*ekCertificate = NULL;		/* freed @1 */
 
     /* read the EK X509 certificate from NV */
     if (rc == 0) {
@@ -2169,7 +2231,7 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
 		      int print)
 {
     TPM_RC			rc = 0;
-    X509 			*ekCertificate = NULL;
+    void 			*ekCertificate = NULL;
     unsigned char 		*nonce = NULL;
     uint16_t 			nonceSize;
     TPMT_PUBLIC 		tpmtPublicIn;		/* template */
