@@ -3,9 +3,8 @@
 /*			    TSS and Application File Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssfile.c 1324 2018-08-31 16:36:12Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -212,6 +211,14 @@ TPM_RC TSS_File_ReadStructure(void 			*structure,
     free(buffer);
     return rc;
 }
+
+/* TSS_File_ReadStructureFlag() is a general purpose "read a structure" function.
+
+   It reads the filename, and then unmarshals the structure using "unmarshalFunction".
+
+   It is similar to TSS_File_ReadStructure() but is used when the structure unmarshal function
+   requires the allowNull flag.
+*/
 
 TPM_RC TSS_File_ReadStructureFlag(void 				*structure,
 				  UnmarshalFunctionFlag_t 	unmarshalFunction,
