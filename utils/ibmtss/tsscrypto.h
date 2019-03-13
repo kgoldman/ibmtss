@@ -3,9 +3,8 @@
 /*			     TSS Library Dependent Crypto Support		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsscrypto.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -57,16 +56,6 @@
 
 #include <ibmtss/tss.h>
 
-/* ECC salt */
-
-#ifndef TPM_TSS_NOECC
-typedef struct
-{
-    EC_GROUP            *G;
-    BN_CTX              *ctx;
-} CURVE_DATA;
-#endif	/* TPM_TSS_NOECC */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -95,7 +84,10 @@ extern "C" {
 					  int plen,
 					  TPMI_ALG_HASH halg);	
 #ifndef TPM_TSS_NORSA
-   LIB_EXPORT
+    LIB_EXPORT
+    void TSS_RsaFree(void *rsaKey);
+
+    LIB_EXPORT
     TPM_RC TSS_RSAPublicEncrypt(unsigned char* encrypt_data,
 				size_t encrypt_data_size,
 				const unsigned char *decrypt_data,
@@ -107,12 +99,29 @@ extern "C" {
 				unsigned char *p,
 				int pl,
 				TPMI_ALG_HASH halg);
+    /*
+      deprecated OpenSSL specific functions
+    */
+#ifndef TPM_TSS_NO_OPENSSL
+
+    LIB_EXPORT
+    TPM_RC TSS_RsaNew(void **rsaKey);
+
     LIB_EXPORT
     TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
 				      const unsigned char *narr,   	/* public modulus */
 				      uint32_t nbytes,
 				      const unsigned char *earr,   	/* public exponent */
 				      uint32_t ebytes);
+#endif /* TPM_TSS_NO_OPENSSL */
+
+    /* crypto library independent */
+    LIB_EXPORT
+    TPM_RC TSS_RSAGeneratePublicTokenI(void **rsa_pub_key,		/* freed by caller */
+				       const unsigned char *narr,   	/* public modulus */
+				       uint32_t nbytes,
+				       const unsigned char *earr,   	/* public exponent */
+				       uint32_t ebytes);
 
 #endif
 #ifndef TPM_TSS_NOECC
