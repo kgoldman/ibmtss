@@ -3,9 +3,8 @@
 /*			IWG EK Index Parsing Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.h 1315 2018-08-28 14:27:28Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2017.					*/
+/* (c) Copyright IBM Corporation 2016 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -47,9 +46,11 @@
 #endif
 #endif
 
+#ifndef TPM_TSS_NO_OPENSSL
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/bn.h>
+#endif	/* TPM_TSS_NO_OPENSSL */
 
 #include <ibmtss/tss.h>
 
@@ -69,6 +70,10 @@
 extern "C" {
 #endif
 
+    /*
+      crypto library independent functions
+    */
+    
     TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
 			   uint32_t *nvBufferMax);
     TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
@@ -84,30 +89,10 @@ extern "C" {
 			    TPMI_RH_NV_INDEX nvIndex);
     void getRsaTemplate(TPMT_PUBLIC *tpmtPublic);
     void getEccTemplate(TPMT_PUBLIC *tpmtPublic);
-    TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
-				   X509 **certificate,
-				   TPMI_RH_NV_INDEX nvIndex);
-    uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
-				      X509 **x509,
-				      const char *derCertificateFileName);
-    uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
-				   X509 *x509);
     TPM_RC getRootCertificateFilenames(char *rootFilename[],
 				       unsigned int *rootFileCount,
 				       const char *listFilename,
 				       int print);
-    TPM_RC getCaStore(X509_STORE **caStore,
-		      X509 *caCert[],
-		      const char *rootFilename[],
-		      unsigned int rootFileCount);
-    TPM_RC verifyCertificate(X509 *x509Certificate,
-			     const char *rootFilename[],
-			     unsigned int rootFileCount,
-			     int print);
-    TPM_RC verifyKeyUsage(X509 *ekX509Certificate,
-			  int pkeyType,
-			  int print);
-
     TPM_RC processEKNonce(TSS_CONTEXT *tssContext,
 			  unsigned char **nonce,
 			  uint16_t *nonceSize,
@@ -117,50 +102,30 @@ extern "C" {
 			     TPMT_PUBLIC *tpmtPublic,
 			     TPMI_RH_NV_INDEX ekTemplateIndex,
 			     int print);
+    TPM_RC convertDerToX509(void **x509Certificate,
+			    uint16_t readLength,
+			    const unsigned char *readBuffer);
+    TPM_RC convertX509PemToDer(uint32_t *certLength,
+				unsigned char **certificate,
+				const char *pemCertificateFilename);
+    TPM_RC convertX509ToPem(const char *pemFilename,
+			    void *x509);
+    void x509FreeStructure(void *x509);
+    void x509PrintStructure(void *x509);
     TPM_RC processEKCertificate(TSS_CONTEXT *tssContext,
-				X509 **ekCertificate,
+				void **ekCertificate,
 				uint8_t **modulusBin,
 				int *modulusBytes,
 				TPMI_RH_NV_INDEX ekCertIndex,
 				int print);
-    TPM_RC convertX509ToDer(uint32_t *certLength,
-			    unsigned char **certificate,
-			    X509 *x509Certificate);
-#ifndef TPM_TSS_NOECC
-    TPM_RC convertX509ToEc(EC_KEY **ecKey,
-			   X509 *x509);
-#endif	/* TPM_TSS_NOECC */
-    TPM_RC convertX509PemToDer(uint32_t *certLength,
-				unsigned char **certificate,
-				const char *pemCertificateFilename);
-    TPM_RC convertPemToX509(X509 **x509,
-			    const char *pemCertificateFilename);
-    TPM_RC convertPemMemToX509(X509 **x509,
-			       const char *pemCertificate);
-    TPM_RC convertX509ToPem(const char *pemFilename,
-			      X509 *x509);
-    TPM_RC convertX509ToPemMem(char **pemString,
-			       X509 *x509);
-    TPM_RC convertX509ToString(char **x509String,
-				 X509 *x509);
+    TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
+				   void **certificate,
+				   TPMI_RH_NV_INDEX nvIndex);
     TPM_RC convertCertificatePubKey(uint8_t **modulusBin,
 				    int *modulusBytes,
-				    X509 *ekCertificate,
+				    void *ekCertificate,
 				    TPMI_RH_NV_INDEX ekCertIndex,
 				    int print);
-    TPM_RC convertCertificatePubKey12(uint8_t **modulusBin,
-				      int *modulusBytes,
-				      X509 *ekCertificate);
-
-    /* certificate key to nid mapping array */
-
-    typedef struct tdCertificateName
-    {
-	const char *key;
-	int nid;
-    } CertificateName;
-
-    TPM_RC calculateNid(void);
     TPM_RC createCertificate(char **x509CertString,
 			     char **pemCertString,
 			     uint32_t *certLength,
@@ -172,33 +137,15 @@ extern "C" {
 			     size_t subjectEntriesSize,
 			     char **subjectEntries,
 			     const char *caKeyPassword);
-    TPM_RC startCertificate(X509 *x509Certificate,
-			    uint16_t keyLength,
-			    const unsigned char *keyBuffer,
-			    size_t issuerEntriesSize,
-			    char **issuerEntries,
-			    size_t subjectEntriesSize,
-			    char **subjectEntries);
-    TPM_RC createX509Name(X509_NAME **x509Name,
-			  size_t entriesSize,
-			  char **entries);
-    TPM_RC addCertExtension(X509 *x509Certificate, int nid, char *value);
-    TPM_RC addCertKeyRsa(X509 *x509Certificate,
-			 const TPM2B_PUBLIC_KEY_RSA *tpm2bRsa);
-#ifndef TPM_TSS_NOECC
-    TPM_RC addCertKeyEcc(X509 *x509Certificate,
-			 const TPMS_ECC_POINT *tpmsEccPoint);
-#endif	/* TPM_TSS_NOECC */
-    TPM_RC addCertSignatureRoot(X509 *x509Certificate,
-				const char *caKeyFileName,
-				const char *caKeyPassword);
-
-
     TPM_RC processRoot(TSS_CONTEXT *tssContext,
 		       TPMI_RH_NV_INDEX ekCertIndex,
 		       const char *rootFilename[],
 		       unsigned int rootFileCount,
 		       int print);
+    TPM_RC verifyCertificate(void *x509Certificate,
+			     const char *rootFilename[],
+			     unsigned int rootFileCount,
+			     int print);
     TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
 				TPM_HANDLE *keyHandle,
 				TPMI_RH_NV_INDEX ekCertIndex,
@@ -221,6 +168,77 @@ extern "C" {
 			  unsigned int noFlush,
 			  int print);
 
+    /*
+      deprecated OpenSSL specific functions
+    */
+   
+#ifndef TPM_TSS_NO_OPENSSL
+
+
+    uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
+				      X509 **x509,
+				      const char *derCertificateFileName);
+    uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
+				   X509 *x509);
+    TPM_RC getCaStore(X509_STORE **caStore,
+		      X509 *caCert[],
+		      const char *rootFilename[],
+		      unsigned int rootFileCount);
+    TPM_RC verifyKeyUsage(X509 *ekX509Certificate,
+			  int pkeyType,
+			  int print);
+    TPM_RC convertX509ToDer(uint32_t *certLength,
+			    unsigned char **certificate,
+			    X509 *x509Certificate);
+#ifndef TPM_TSS_NOECC
+    TPM_RC convertX509ToEc(EC_KEY **ecKey,
+			   X509 *x509);
+#endif	/* TPM_TSS_NOECC */
+    TPM_RC convertX509ToDer(uint32_t *certLength,
+			    unsigned char **certificate,
+			    X509 *x509Certificate);
+    TPM_RC convertPemToX509(X509 **x509,
+			    const char *pemCertificateFilename);
+    TPM_RC convertPemMemToX509(X509 **x509,
+			       const char *pemCertificate);
+    TPM_RC convertX509ToPemMem(char **pemString,
+			       X509 *x509);
+    TPM_RC convertX509ToString(char **x509String,
+			       X509 *x509);
+    TPM_RC convertCertificatePubKey12(uint8_t **modulusBin,
+				      int *modulusBytes,
+				      X509 *ekCertificate);
+
+    /* certificate key to nid mapping array */
+
+    TPM_RC startCertificate(X509 *x509Certificate,
+			    uint16_t keyLength,
+			    const unsigned char *keyBuffer,
+			    size_t issuerEntriesSize,
+			    char **issuerEntries,
+			    size_t subjectEntriesSize,
+			    char **subjectEntries);
+
+    typedef struct tdCertificateName
+    {
+	const char *key;
+	int nid;
+    } CertificateName;
+
+    TPM_RC calculateNid(void);
+    TPM_RC createX509Name(X509_NAME **x509Name,
+			  size_t entriesSize,
+			  char **entries);
+    TPM_RC addCertExtension(X509 *x509Certificate, int nid, char *value);
+    TPM_RC addCertKeyRsa(X509 *x509Certificate,
+			 const TPM2B_PUBLIC_KEY_RSA *tpm2bRsa);
+#ifndef TPM_TSS_NOECC
+    TPM_RC addCertKeyEcc(X509 *x509Certificate,
+			 const TPMS_ECC_POINT *tpmsEccPoint);
+#endif	/* TPM_TSS_NOECC */
+    TPM_RC addCertSignatureRoot(X509 *x509Certificate,
+				const char *caKeyFileName,
+				const char *caKeyPassword);
     TPM_RC TSS_RSAGetKey(const BIGNUM **n,
 			 const BIGNUM **e,
 			 const BIGNUM **d,
@@ -229,6 +247,9 @@ extern "C" {
 			 const RSA *rsaKey);
 
     int TSS_Pubkey_GetAlgorithm(EVP_PKEY *pkey);
+
+
+#endif /* TPM_TSS_NO_OPENSSL */
 
 #ifdef __cplusplus
 }
