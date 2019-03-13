@@ -3,9 +3,8 @@
 /*		TPM 2.0 Attestation - Client EK and EK certificate  		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: createekcert.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -65,8 +64,6 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #endif
-
-#include "openssl/pem.h"
 
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
@@ -247,10 +244,6 @@ int main(int argc, char *argv[])
     if (caKeyFileName == NULL) {
 	printf("ERROR: Missing -cakey\n");
 	printUsage();
-    }
-    /* Precalculate the openssl nids, into global table */
-    if (rc == 0) {
-	rc = calculateNid();
     }
     /* Start a TSS context */
     if (rc == 0) {

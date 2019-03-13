@@ -3,9 +3,8 @@
 /*			   Time a TPM Command					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: timepacket.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017 - 2018					*/
+/* (c) Copyright IBM Corporation 2017 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -49,12 +48,13 @@
 
 #include <unistd.h>
 
-#include <openssl/rand.h>
-
 #include <ibmtss/tss.h>
 #include <ibmtss/tsstransmit.h>
 #include <ibmtss/tssfile.h>
 #include <ibmtss/tssresponsecode.h>
+#include <ibmtss/tsscrypto.h>
+
+#include "cryptoutils.h"
 
 static void printUsage(void);
 
@@ -141,19 +141,21 @@ int main(int argc, char *argv[])
     }
     for (count = 0 ; (rc == 0) && (count < loops) ; count++) {
 	uint32_t usec;
-	RAND_bytes((unsigned char *)&usec, sizeof(uint32_t));
-	usec %= 1000000;
-	usleep(usec);
-	startTime = time(NULL);
-	rc = TSS_Transmit(tssContext,
-			  responseBuffer, &responseLength,
-			  commandBuffer, commandLength,
-			  NULL);
-	endTime = time(NULL);
-	printf("End Pass %u\n", count +1);
- 	timeDiff += difftime(endTime, startTime);
-   }
-    if (rc == 0) {
+	if (rc == 0) {
+	    rc = TSS_RandBytes((unsigned char *)&usec, sizeof(uint32_t));
+	}
+	if (rc == 0) {
+	    usec %= 1000000;
+	    usleep(usec);
+	    startTime = time(NULL);
+	    rc = TSS_Transmit(tssContext,
+			      responseBuffer, &responseLength,
+			      commandBuffer, commandLength,
+			      NULL);
+	    endTime = time(NULL);
+	    printf("End Pass %u\n", count +1);
+	    timeDiff += difftime(endTime, startTime);
+	}
     }
     {
 	TPM_RC rc1 = TSS_Delete(tssContext);

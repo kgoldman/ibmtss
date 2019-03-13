@@ -368,26 +368,21 @@ int main(int argc, char *argv[])
 	    TSS_PrintAll("nvread: data", readBuffer, readLength);
 	}
 	if (cert || (certificateFilename != NULL)) {
-	    X509 		*x509Certificate = NULL;
-	    const uint8_t 	*tmpData = readBuffer;
-	    x509Certificate = d2i_X509(NULL,	/* freed @2 */
-				       (const unsigned char **)&tmpData, readLength);
-	    if (x509Certificate == NULL) {
-		printf("nvread: Could not parse X509 certificate\n");
-		rc = TSS_RC_X509_ERROR;
-	    }
+	    void *x509Certificate = NULL;	/* opaque structure */
+	    /* convert the DER stream to crypto library structure */
+	    rc = convertDerToX509(&x509Certificate,	/* freed @2 */
+				  readLength,
+				  readBuffer);
 	    /* if cert, trace the certificate using openssl print function */
 	    if ((rc == 0) && cert) {
-		X509_print_fp(stdout, x509Certificate);
+		x509PrintStructure(x509Certificate);
 	    }
 	    /* if a file name was specified, write the certificate in PEM format */
 	    if ((rc == 0) && (certificateFilename != NULL)) {
 		rc = convertX509ToPem(certificateFilename,
 				      x509Certificate);
 	    }
-	    if (x509Certificate != NULL) {
-		X509_free(x509Certificate);   	/* @2 */
-	    }
+	    x509FreeStructure(x509Certificate);   	/* @2 */
 	}
     }
     else {

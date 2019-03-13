@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id: sign.c 1324 2018-08-31 16:36:12Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,8 +52,6 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #endif
-
-#include <openssl/rsa.h>
 
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
@@ -396,7 +394,7 @@ int main(int argc, char *argv[])
        format key token */
     if (publicKeyFilename != NULL) {
 	TPM2B_PUBLIC 	public;
-	RSA         	*rsaPubKey = NULL;
+	void         	*rsaPubKey = NULL;
 	if (rc == 0) {
 	    rc = TSS_File_ReadStructureFlag(&public,
 					    (UnmarshalFunctionFlag_t)TSS_TPM2B_PUBLIC_Unmarshalu,
@@ -406,7 +404,7 @@ int main(int argc, char *argv[])
 	/* construct the OpenSSL RSA public key token */
 	if (rc == 0) {
 	    unsigned char earr[3] = {0x01, 0x00, 0x01};
-	    rc = TSS_RSAGeneratePublicToken
+	    rc = TSS_RSAGeneratePublicTokenI
 		 (&rsaPubKey,					/* freed @2 */
 		  public.publicArea.unique.rsa.t.buffer, 	/* public modulus */
 		  public.publicArea.unique.rsa.t.size,
@@ -424,11 +422,9 @@ int main(int argc, char *argv[])
 					   rsaPubKey);
 
 	}
-	if (rsaPubKey != NULL) {
-	    RSA_free(rsaPubKey); 	/* @2 */
-	}
+	TSS_RsaFree(rsaPubKey); 		/* @2 */
     }
-    free(data);				/* @1 */
+    free(data);					/* @1 */
     if (rc == 0) {
 	if (verbose) printf("sign: success\n");
     }

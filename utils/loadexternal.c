@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -61,11 +61,6 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #endif
-
-#include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
 
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>

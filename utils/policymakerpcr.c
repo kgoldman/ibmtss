@@ -3,9 +3,8 @@
 /*			   policymakerpcr					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: policymakerpcr.c 1337 2018-09-25 19:24:03Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -72,9 +71,6 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include <openssl/err.h>
-#include <openssl/evp.h>
-
 #ifdef TPM_POSIX
 #include <netinet/in.h>
 #endif
@@ -121,11 +117,11 @@ int main(int argc, char *argv[])
     uint8_t		pcrBytes[IMPLEMENTATION_PCR * sizeof(TPMU_HA)];
     uint16_t		pcrLength;
 
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
+    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+
     /* command line defaults */
     digest.hashAlg = TPM_ALG_SHA256;
-
-    ERR_load_crypto_strings ();
-    OpenSSL_add_all_algorithms ();
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-halg") == 0) {

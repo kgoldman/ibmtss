@@ -3,9 +3,8 @@
 /*			     IWG EK Index Parsing				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createek.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -71,9 +70,6 @@
 #endif
 #endif
 
-#include <openssl/x509.h>
-#include <openssl/bn.h>
-
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssresponsecode.h>
@@ -116,7 +112,7 @@ int main(int argc, char *argv[])
     unsigned int		rootFileCount = 0;
     unsigned char 		*nonce = NULL; 		/* freed @1 */
     uint16_t 			nonceSize;
-    X509 			*ekCertificate = NULL;
+    void 			*ekCertificate = NULL;
     uint8_t 			*modulusBin = NULL;
     int				modulusBytes;
     unsigned int 		noFlush = 0;		/* default flush after validation */
@@ -266,9 +262,7 @@ int main(int argc, char *argv[])
 	}
     }
     free(nonce);			/* @1 */
-    if (ekCertificate != NULL) {
-	X509_free(ekCertificate);   	/* @2 */
-    }
+    x509FreeStructure(ekCertificate);  	/* @2 */
     free(modulusBin);			/* @3 */
     for (ui = 0 ; ui < rootFileCount ; ui++) {
 	free(rootFilename[ui]);		/* @4 */

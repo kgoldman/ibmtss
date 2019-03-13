@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -65,9 +65,6 @@
 #include <stdint.h>
 #include <errno.h>
 
-#include <openssl/err.h>
-#include <openssl/evp.h>
-
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tsscryptoh.h>
@@ -99,11 +96,11 @@ int main(int argc, char *argv[])
     FILE 		*inFile = NULL;
     FILE 		*outFile = NULL;
 
-	/* command line defaults */
-    digest.hashAlg = TPM_ALG_SHA256;
+    setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
+    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
-    ERR_load_crypto_strings ();
-    OpenSSL_add_all_algorithms ();
+    /* command line defaults */
+    digest.hashAlg = TPM_ALG_SHA256;
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-halg") == 0) {

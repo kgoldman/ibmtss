@@ -3,9 +3,8 @@
 /*			   Import a PEM keypair 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: importpem.c 1340 2018-09-28 18:32:11Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2018					*/
+/* (c) Copyright IBM Corporation 2016 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -50,8 +49,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <openssl/pem.h>
-
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssresponsecode.h>
@@ -91,8 +88,6 @@ int main(int argc, char *argv[])
     unsigned int		sessionAttributes1 = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
     unsigned int		sessionAttributes2 = 0;
-
-    RSA				*rsaKey = NULL;
     FILE 			*pemKeyFile = NULL;
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
@@ -444,9 +439,6 @@ int main(int argc, char *argv[])
 	TSS_ResponseCode_toString(&msg, &submsg, &num, rc);
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
-    }
-    if (rsaKey != NULL) {
-	RSA_free(rsaKey);			/* @1 */
     }
     if (pemKeyFile != NULL) {
 	fclose(pemKeyFile);			/* @2 */
