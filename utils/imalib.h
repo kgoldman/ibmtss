@@ -3,9 +3,8 @@
 /*			     	IMA Routines					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: imalib.h 1020 2017-06-09 18:46:45Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016, 2018					*/
+/* (c) Copyright IBM Corporation 2016 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -124,7 +123,7 @@ typedef struct ImaEvent {
 typedef struct ImaTemplateData {
     uint32_t hashLength;
     char hashAlg[64+1];		/* FIXME need verification */
-    int hashNid;
+    TPMI_ALG_HASH hashAlgId;
     uint32_t fileDataHashLength;
     uint8_t fileDataHash[SHA256_DIGEST_SIZE];
     uint32_t fileNameLength;
