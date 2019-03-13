@@ -153,7 +153,8 @@ ALL += 	activatecredential$(EXE)		\
 	createekcert$(EXE)			\
 	tpm2pem$(EXE)				\
 	tpmpublic2eccpoint$(EXE)		\
-	publicname$(EXE)
+	publicname$(EXE)			\
+	getcryptolibrary$(EXE)
 
 ALL	+= 					\
 	ntc2getconfig$(EXE)			\
