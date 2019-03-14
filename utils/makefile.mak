@@ -4,7 +4,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2018					#
+# (c) Copyright IBM Corporation 201 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -221,6 +221,9 @@ nvwrite.exe:	nvwrite.o ekutils.o cryptoutils.o $(LIBTSS)
 readpublic.exe:	readpublic.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
+policysigned.exe:	policysigned.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
+
 sign.exe:	sign.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
@@ -246,6 +249,9 @@ tpmpublic2eccpoint.exe:	tpmpublic2eccpoint.o $(LIBTSS)
 
 publicname.exe:	publicname.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
+getcryptolibrary.exe:	getcryptolibrary.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
 
 %.exe:		%.o applink.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)
