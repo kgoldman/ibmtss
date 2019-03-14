@@ -18,10 +18,10 @@
     <ClCompile Include="..\..\utils\applink.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\utils\publicname.c">
+    <ClCompile Include="..\..\utils\cryptoutils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\utils\cryptoutils.c">
+    <ClCompile Include="..\..\utils\publicname.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
