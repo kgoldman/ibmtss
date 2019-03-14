@@ -762,21 +762,24 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
     struct TSS_HMAC_CONTEXT *session[MAX_SESSION_NUM];
     TPM2B_NAME *names[MAX_SESSION_NUM];
 	
-    /* Step 1: initialization */
-    if (tssVverbose) printf("TSS_Execute_valist: Step 1: initialization\n");
-    for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) ; i++) {
+    
+    for (i = 0 ; i < MAX_SESSION_NUM ; i++) {
 	authCommand[i] = NULL;		/* for safe free */
 	authResponse[i] = NULL;		/* for safe free */
+ 	names[i] = NULL;		/* for safe free */
 	authC[i] = NULL;		/* array of TPMS_AUTH_COMMAND structures, NULL for
 					   TSS_SetCmdAuths */
 	authR[i] = NULL;		/* array of TPMS_AUTH_RESPONSE structures, NULL for
 					   TSS_GetRspAuths */
 	session[i] = NULL;		/* for free, used for HMAC and encrypt/decrypt sessions */
-	names[i] = NULL;		/* for safe free */
 	/* the varargs list inputs */
 	sessionHandle[i] = TPM_RH_NULL;
 	password[i] = NULL;
 	sessionAttributes[i] = 0;
+    }
+    /* Step 1: initialization */
+    if (tssVverbose) printf("TSS_Execute_valist: Step 1: initialization\n");
+    for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) ; i++) {
 	if (rc == 0) {
 	    rc = TSS_Malloc((unsigned char **)&authCommand[i],	/* freed @1 */
 			    sizeof(TPMS_AUTH_COMMAND));
