@@ -3,7 +3,6 @@
 /*		    TSS Implementation Specific Constants			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Implementation.h 1299 2018-08-14 13:23:19Z kgoldman $	*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2018				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2019				*/
 /*										*/
 /********************************************************************************/
 
@@ -177,17 +176,29 @@
 
 // From Vendor-Specific: Table 2 - Defines for Implemented Algorithms
 
+#ifndef ALG_RSA
 #define  ALG_RSA               ALG_YES
+#endif
+#ifndef ALG_SHA1
 #define  ALG_SHA1              ALG_YES
+#endif
 #define  ALG_HMAC              ALG_YES
+#ifndef ALG_TDES
 #define  ALG_TDES              ALG_YES
+#endif
 #define  ALG_AES               ALG_YES
 #define  ALG_MGF1              ALG_YES
 #define  ALG_XOR               ALG_YES
 #define  ALG_KEYEDHASH         ALG_YES
+#ifndef ALG_SHA256
 #define  ALG_SHA256            ALG_YES
+#endif
+#ifndef ALG_SHA384
 #define  ALG_SHA384            ALG_YES
+#endif
+#ifndef ALG_SHA512
 #define  ALG_SHA512            ALG_YES
+#endif
 #define  ALG_SHA3_256          ALG_NO
 #define  ALG_SHA3_384          ALG_NO
 #define  ALG_SHA3_512          ALG_NO
@@ -197,7 +208,9 @@
 #define  ALG_RSAES             (ALG_YES*ALG_RSA)
 #define  ALG_RSAPSS            (ALG_YES*ALG_RSA)
 #define  ALG_OAEP              (ALG_YES*ALG_RSA)
+#ifndef ALG_ECC
 #define  ALG_ECC               ALG_YES
+#endif
 #define  ALG_ECDH              (ALG_YES*ALG_ECC)
 #define  ALG_ECDSA             (ALG_YES*ALG_ECC)
 #define  ALG_ECDAA             (ALG_YES*ALG_ECC)
