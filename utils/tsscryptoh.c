@@ -282,18 +282,26 @@ uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
     uint16_t size;
     
     switch (hashAlg) {
+#ifdef TPM_ALG_SHA1
       case TPM_ALG_SHA1:
 	size = SHA1_DIGEST_SIZE;
 	break;
-      case TPM_ALG_SHA256:
+#endif
+#ifdef TPM_ALG_SHA256	
+     case TPM_ALG_SHA256:
 	size = SHA256_DIGEST_SIZE;
 	break;
+#endif
+#ifdef TPM_ALG_SHA384
       case TPM_ALG_SHA384:
 	size = SHA384_DIGEST_SIZE;
 	break;
-      case TPM_ALG_SHA512:
+#endif
+#ifdef TPM_ALG_SHA512
+     case TPM_ALG_SHA512:
 	size = SHA512_DIGEST_SIZE;
 	break;
+#endif
 #if 0
       case TPM_ALG_SM3_256:
 	size = SM3_256_DIGEST_SIZE;
@@ -317,18 +325,26 @@ uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg)
     uint16_t size;
     
     switch (hashAlg) {
-      case TPM_ALG_SHA1:
+#ifdef TPM_ALG_SHA1
+     case TPM_ALG_SHA1:
 	size = SHA1_BLOCK_SIZE;
 	break;
+#endif
+#ifdef TPM_ALG_SHA256	
       case TPM_ALG_SHA256:
 	size = SHA256_BLOCK_SIZE;
 	break;
-      case TPM_ALG_SHA384:
+#endif
+#ifdef TPM_ALG_SHA384
+     case TPM_ALG_SHA384:
 	size = SHA384_BLOCK_SIZE;
 	break;
+#endif
+#ifdef TPM_ALG_SHA512
       case TPM_ALG_SHA512:
 	size = SHA512_BLOCK_SIZE;
 	break;
+#endif
 #if 0
       case TPM_ALG_SM3_256:
 	size = SM3_256_BLOCK_SIZE;
