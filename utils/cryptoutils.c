@@ -231,7 +231,7 @@ TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
 				   const EC_KEY *ecKey)
 {
     TPM_RC 		rc = 0;
-    const BIGNUM 	*privateKeyBn;
+    const BIGNUM 	*privateKeyBn = NULL;
 
     /* get the ECC private key as a BIGNUM */
     if (rc == 0) {
@@ -260,7 +260,7 @@ TPM_RC convertRsaKeyToPrivateKeyBin(int 	*privateKeyBytes,
 				    const RSA	*rsaKey)
 {
     TPM_RC 		rc = 0;
-    const BIGNUM 	*p;
+    const BIGNUM 	*p = NULL;
     const BIGNUM 	*q;
 
     /* get the private primes */
@@ -289,8 +289,8 @@ TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
 				  const EC_KEY 	*ecKey)
 {
     TPM_RC 		rc = 0;
-    const EC_POINT 	*ecPoint;
-    const EC_GROUP 	*ecGroup;
+    const EC_POINT 	*ecPoint = NULL;
+    const EC_GROUP 	*ecGroup = NULL;
 
     if (rc == 0) {
 	ecPoint = EC_KEY_get0_public_key(ecKey);
@@ -301,7 +301,7 @@ TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
     }
     if (rc == 0) {   
 	ecGroup = EC_KEY_get0_group(ecKey);
-	if (ecGroup  == NULL) {
+	if (ecGroup == NULL) {
 	    printf("convertEcKeyToPublicKeyBin: Error extracting EC group from EC public key\n");
 	    rc = EXIT_FAILURE;
 	}
@@ -333,7 +333,7 @@ TPM_RC convertRsaKeyToPublicKeyBin(int 		*modulusBytes,
 				   void 	*rsaKey)
 {
     TPM_RC 		rc = 0;
-    const BIGNUM 	*n;
+    const BIGNUM 	*n = NULL;
     const BIGNUM 	*e;
     const BIGNUM 	*d;
 
@@ -1860,8 +1860,8 @@ TPM_RC convertEcBinToTSignature(TPMT_SIGNATURE *tSignature,
     ECDSA_SIG 		*ecSig = NULL;
     int 		rBytes;
     int 		sBytes;
-    const BIGNUM 	*pr;
-    const BIGNUM 	*ps;
+    const BIGNUM 	*pr = NULL;
+    const BIGNUM 	*ps = NULL;
     
     if (rc == 0) {
 	tSignature->sigAlg = TPM_ALG_ECDSA;
