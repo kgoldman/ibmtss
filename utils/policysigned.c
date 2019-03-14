@@ -419,7 +419,7 @@ TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
 			    rsaKey);
     }
     if (rc == 0) {
-	signature->t.size = signatureLength;	/* length of RSA key checked above */
+	signature->t.size = (uint16_t)signatureLength;	/* length of RSA key checked above */
 #if 0
 	if (verbose) TSS_PrintAll("signAHash: signature",
 				  signature->t.buffer, signature->t.size);
