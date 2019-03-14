@@ -39,6 +39,14 @@
 #ifndef CRYPTUTILS_H
 #define CRYPTUTILS_H
 
+#ifdef TPM_WINDOWS
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
 /* TPM_TSS_NO_OPENSSL is a legacy macro.  cryptoutils was exposing several OpenSSL specific
    functions.  They are not available for other crypto libraries.  For OpenSSL, they are available
    but deprecated.  */
