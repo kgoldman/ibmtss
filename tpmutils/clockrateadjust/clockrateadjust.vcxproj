@@ -14,7 +14,7 @@
     <ProjectGuid>{6BB93AB7-5574-49C8-B248-CCA85638C2F1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>clockrateadjust</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

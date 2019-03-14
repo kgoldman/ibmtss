@@ -14,7 +14,7 @@
     <ProjectGuid>{2805603E-37DB-4BFA-9E75-6B71CA77E3C1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>nvextend</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

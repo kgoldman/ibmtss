@@ -14,7 +14,7 @@
     <ProjectGuid>{15A0FC5B-8B9C-4FB8-948B-AD9D73030C42}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>hmac</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
