@@ -41,12 +41,12 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssresponsecode.h>
-#include <ibmtss/Unmarshal_fp.h>
 #include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
 #include <ibmtss/tsscryptoh.h>
-#include <ibmtss/TPM_Types.h>
 #include "objecttemplates.h"
 #include "cryptoutils.h"
 
