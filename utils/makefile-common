@@ -97,6 +97,3 @@ TSS_OBJS += 	tss.o			\
 		tssprint.o		\
 		Unmarshal.o 		\
 		CommandAttributeData.o
-
-#		tssprintcmd.o		\
-
