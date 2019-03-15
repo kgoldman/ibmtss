@@ -478,6 +478,8 @@ publicname:		publicname.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) publicname.o $(LNALIBS) -o publicname
 getcryptolibrary:	getcryptolibrary.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getcryptolibrary.o $(LNALIBS) -o getcryptolibrary
+printattr:		printattr.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) printattr.o $(LNALIBS) -o printattr
 
 # for applications, not for TSS library
 
