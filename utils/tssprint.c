@@ -2233,7 +2233,7 @@ void TSS_TPMA_NV_Print(TPMA_NV source, unsigned int indent)
 	printf("%*s" "TPM_NT_PIN_PASS\n", indent, "");
 	break;
       default:
-	printf("%*s %02x" "TPMA_NV type unknown\n", indent, "", nvType);
+	printf("%*s" "TPMA_NV type %02x unknown\n", indent, "", nvType);
     }
 
     if (source.val & TPMA_NVA_POLICY_DELETE) printf("%*s" "TPMA_NV_POLICY_DELETE\n", indent, "");
