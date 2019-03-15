@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 				     &length,
 				     inFilename);
     }
@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 	    memcpy(in2.inData.t.buffer, buffer, length);
 	}
     }
-    free (buffer);
+    free (buffer);	/* @1 */
     buffer = NULL;
 
     /* Start a TSS context */
@@ -305,7 +305,7 @@ int main(int argc, char *argv[])
 	rc = TSS_TPM2B_MAX_BUFFER_Marshalu(&out.outData, &written, NULL, NULL);
     }
     if ((rc == 0) && (outFilename != NULL)) {
-	buffer = realloc(buffer, written);
+	buffer = realloc(buffer, written);	/* freed @2 */
 	buffer1 = buffer;
 	written = 0;
 	rc = TSS_TPM2B_MAX_BUFFER_Marshalu(&out.outData, &written, &buffer1, NULL);
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
 				      written - sizeof(uint16_t),
 				      outFilename);
     }    
-    free(buffer);
+    free(buffer);	/* @2 */
     if (rc == 0) {
 	if (verbose) printDecrypt(&out);
 	if (verbose) printf("encryptdecrypt: success\n");

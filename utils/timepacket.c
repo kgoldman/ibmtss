@@ -120,7 +120,8 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&commandBufferString, &commandStringLength, commandFilename);
+	rc = TSS_File_ReadBinaryFile(&commandBufferString,	/* freed @2 */
+				     &commandStringLength, commandFilename);
     }
     if (rc == 0) {
 	if (commandBufferString[commandStringLength-1] != ' ') {
@@ -178,7 +179,7 @@ int main(int argc, char *argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
-    free(commandBufferString);
+    free(commandBufferString);		/* @2 */
     free(commandBuffer);		/* @1 */
     return rc;
 }

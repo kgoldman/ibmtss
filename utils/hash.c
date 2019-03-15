@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
     }
     if (inFilename != NULL) {
 	if (rc == 0) {
-	    rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+	    rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 					 &length,
 					 inFilename);
 	}
@@ -262,7 +262,6 @@ int main(int argc, char *argv[])
 				     (MarshalFunction_t)TSS_TPMT_TK_HASHCHECK_Marshal,
 				     ticketFilename);
     }
-    free(buffer);
     if (rc == 0) {
 	if (verbose) printHash(&out);
 	if (noSpace) {
@@ -283,6 +282,7 @@ int main(int argc, char *argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
+    free(buffer);	/* @1 */
     return rc;
 }
 

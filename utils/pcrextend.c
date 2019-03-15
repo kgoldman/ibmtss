@@ -198,7 +198,8 @@ int main(int argc, char *argv[])
 	unsigned char 	*fileData = NULL;
 	size_t 		length;
 	if (rc == 0) {
-	    rc = TSS_File_ReadBinaryFile(&fileData, &length, datafilename);
+	    rc = TSS_File_ReadBinaryFile(&fileData,			/* freed @1 */
+					 &length, datafilename);
 	}
 	if (rc == 0) {
 	    if (length > sizeof(TPMU_HA)) {
@@ -214,7 +215,7 @@ int main(int argc, char *argv[])
 		memcpy((uint8_t *)&in.digests.digests[algs].digest, fileData, length);
 	    }
 	}
-	free(fileData);
+	free(fileData);		/* @1 */
     }
     /* Start a TSS context */
     if (rc == 0) {

@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 	unsigned char *data = NULL;
 	size_t length;
 	if (rc == 0) {
-	    rc = TSS_File_ReadBinaryFile(&data, &length, clockFilename);
+	    rc = TSS_File_ReadBinaryFile(&data, &length, clockFilename);	/* freed @1 */
 	}
 	if (rc == 0) {
 	    if (length != sizeof(in.newTime)) {
@@ -235,6 +235,7 @@ int main(int argc, char *argv[])
 	if (rc == 0) {
 	    memcpy((uint8_t *)&in.newTime, data, length);
 	}
+	free(data);	/* @1 */
     }	
     /* Table 50 - TPMI_RH_HIERARCHY authHandle */
     if (rc == 0) {

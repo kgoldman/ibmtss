@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 				     &length,
 				     decryptFilename);
     }
@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 	    in.label.t.size = 0;
 	}
     }
-    free (buffer);
+    free (buffer);	/* @1 */
     buffer = NULL;
     /* Start a TSS context */
     if (rc == 0) {
