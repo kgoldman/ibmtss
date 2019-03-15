@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
 	    size_t 			length = 0;
 	    /* read new auth value from the file */
 	    if (rc == 0) {
-		rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+		rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 					     &length,
 					     newPasswordFilename);
 	    }
@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 		rc = TSS_TPM2B_StringCopy(&in.newAuth.b,
 					  (const char *)buffer, sizeof(in.newAuth.t.buffer));
 	    }
-	    free(buffer);
+	    free(buffer);	/* @1 */
 	    buffer = NULL;
 	}
 	/* no new auth specified */

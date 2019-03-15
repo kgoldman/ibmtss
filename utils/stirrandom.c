@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 				     &length,
 				     inputFilename);
     }
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 	in.inData.t.size =  (uint16_t)length;	/* cast safe, range tested above */
 	memcpy(in.inData.t.buffer, buffer, length);
     }
-    free(buffer);
+    free(buffer);	/* @1 */
     buffer = NULL;
     
     /* Start a TSS context */

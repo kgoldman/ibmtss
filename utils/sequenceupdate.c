@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (rc == 0) {
-	rc = TSS_File_ReadBinaryFile(&buffer,     /* must be freed by caller */
+	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 				     &length,
 				     inFilename);
     }
@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 	    rc = rc1;
 	}
     }
-    free(buffer);
+    free(buffer);	/* @1 */
     if (rc == 0) {
 	if (verbose) printf("sequenceupdate: success\n");
     }

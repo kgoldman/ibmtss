@@ -516,7 +516,7 @@ int main(int argc, char *argv[])
 	else if (parentPasswordFilename != NULL) {
 	    if (rc == 0) {
 		/* must be freed by caller */
-		rc = TSS_File_ReadBinaryFile(&parentPasswordBuffer,
+		rc = TSS_File_ReadBinaryFile(&parentPasswordBuffer,	/* freed @1 */
 					     &parentPasswordLength,
 					     parentPasswordFilename);
 	    }
@@ -759,7 +759,7 @@ int main(int argc, char *argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
-    free(parentPasswordBuffer);
+    free(parentPasswordBuffer);		/* @1 */
     parentPasswordBuffer = NULL;
     return rc;
 }

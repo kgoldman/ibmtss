@@ -1189,7 +1189,7 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
     const char 		*envKeyString = NULL;
     unsigned char 	*envKeyBin = NULL;
     size_t 		envKeyBinLen;
-    
+
     if (rc == 0) {
 	envKeyString = getenv("TPM_SESSION_ENCKEY");
     }
@@ -1197,6 +1197,8 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
 	/* If the env variable TPM_SESSION_ENCKEY is not set, generate a random key for this
 	   TSS_CONTEXT */
 	if (rc == 0) {
+	    /* initialize userKey to silence valgrind false positive */
+	    memset(userKey, 0, sizeof(userKey));
 	    rc = TSS_RandBytes(userKey, AES_128_BLOCK_SIZE_BYTES);
 	}
     }
