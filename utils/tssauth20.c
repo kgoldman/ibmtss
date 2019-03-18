@@ -773,7 +773,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     /* back fill the correct commandSize */
     if (rc == 0) {
-	uint16_t written;		/* dummy */
+	uint16_t written = 0;		/* dummy */
 	uint32_t commandSize = tssAuthContext->commandSize;
 	buffer = tssAuthContext->commandBuffer + sizeof(TPMI_ST_COMMAND_TAG);
 	TSS_UINT32_Marshalu(&commandSize, &written, &buffer, NULL);
@@ -915,7 +915,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	/* marshal the authorizationSize area, where cpBuffer was before move */
 	if (rc == 0) {
 	    uint32_t authorizationSize32 = authorizationSize;
-	    uint16_t written;		/* dummy */
+	    uint16_t written = 0;		/* dummy */
 	    TSS_UINT32_Marshalu(&authorizationSize32, &written, &cpBuffer, NULL);
 	}
 	/* marshal the command authorization areas */
@@ -935,7 +935,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 	}
 	va_end(ap);
 	if (rc == 0) {
-	    uint16_t written;		/* dummy */
+	    uint16_t written = 0;		/* dummy */
 	    uint32_t commandSize;
 	    /* mark cpBuffer new location, size doesn't change */
 	    tssAuthContext->cpBuffer += sizeof (uint32_t) + authorizationSize;
@@ -1186,6 +1186,7 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
     /* sessions -> parameterSize */
     else {
 	if (rc == 0) {
+	    /* validate that there are enough response bytes for uint32_t parameterSize */
 	    if ((offsetSize + sizeof(uint32_t)) > tssAuthContext->responseSize) {
 		if (tssVerbose)
 		    printf("TSS_GetRpBuffer: offset %u past response buffer %u\n",
@@ -1202,6 +1203,13 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
 	    offsetSize += sizeof(uint32_t);
 	    *rpBufferSize = parameterSize;
 	    *rpBuffer = tssAuthContext->responseBuffer + offsetSize;
+	    /* range check parameterSize */
+	    if ((offsetSize + *rpBufferSize) > tssAuthContext->responseSize) {
+		if (tssVerbose)
+		    printf("TSS_GetRpBuffer: rpBufferSize %u past response buffer %u\n",
+			   offsetSize, tssAuthContext->responseSize);
+		rc = TSS_RC_MALFORMED_RESPONSE;
+	    }
 	}
     }
     return rc;
