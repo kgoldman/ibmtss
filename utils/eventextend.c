@@ -3,9 +3,8 @@
 /*		      Extend an EVENT measurement file into PCRs		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventextend.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -162,6 +161,14 @@ int main(int argc, char * argv[])
     if ((rc == 0) && !nospec && !endOfFile) {
 	rc = TSS_SpecIdEvent_Unmarshal(&specIdEvent,
 				       event.eventDataSize, event.event);
+    }
+    /* range check numberOfAlgorithms before the trace */
+    if ((rc == 0) && !nospec && !endOfFile) {
+	if (specIdEvent.numberOfAlgorithms > HASH_COUNT) {
+	    printf("specIdEvent.numberOfAlgorithms %u greater than %u\n",
+		   specIdEvent.numberOfAlgorithms, HASH_COUNT);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
     }
     /* trace the specIdEvent event */
     if ((rc == 0) && !nospec && !endOfFile && verbose) {
