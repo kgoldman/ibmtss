@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     NV_Read_Out			out;
     uint16_t 			offset = 0;			/* default 0 */
     uint16_t 			readLength = 0;			/* bytes to read */
+    int 			ireadLength = 0;		/* bytes to read as integer */
     int 			cert = FALSE;			/* boolean, read certificate */
     const char			*certificateFilename = NULL;
     int				readLengthSet = FALSE;
@@ -138,11 +139,18 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-sz") == 0) {
 	    i++;
 	    if (i < argc) {
-		readLength = atoi(argv[i]);
+		ireadLength = atoi(argv[i]);
 		readLengthSet  = TRUE;
 	    }
 	    else {
 		printf("-sz option needs a value\n");
+		printUsage();
+	    }
+	    if ((ireadLength >= 0) && (ireadLength <= 0xffff)) {
+		readLength = (uint16_t)ireadLength;
+	    }
+	    else {
+		printf("-sz %d out of range\n", ireadLength);
 		printUsage();
 	    }
 	}
