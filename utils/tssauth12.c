@@ -344,7 +344,7 @@ TPM_RC TSS_Marshal12(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     /* back fill the correct commandSize */
     if (rc == 0) {
-	uint16_t written;		/* dummy */
+	uint16_t written = 0;		/* dummy */
 	uint32_t commandSize = tssAuthContext->commandSize;
 	buffer = tssAuthContext->commandBuffer + sizeof(TPMI_ST_COMMAND_TAG);
 	TSS_UINT32_Marshalu(&commandSize, &written, &buffer, NULL);
@@ -495,7 +495,7 @@ TPM_RC TSS_SetCmdAuths12(TSS_AUTH_CONTEXT 	*tssAuthContext,
 	}
     }	
     if (rc == 0) {
-	uint16_t written;		/* dummy */
+	uint16_t written = 0;		/* dummy */
 	uint32_t commandSize;
 	/* record command stream used size */
 	tssAuthContext->commandSize = cpBuffer - tssAuthContext->commandBuffer;
