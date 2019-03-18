@@ -231,7 +231,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
     
     imaEvent->template_data = NULL;		/* for free */
 
-    /* read the IMA pcr index */
+    /* read the IMA PCR index */
     if ((rc == 0) && !(*endOfFile)) {
 	readSize = fread(&(imaEvent->pcrIndex),
 			 sizeof(((ImaEvent *)NULL)->pcrIndex), 1, inFile);
@@ -246,19 +246,15 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	    }
 	}
     }
+    /* PCR index endian convert */
     if ((rc == 0) && !(*endOfFile)) {
 	imaEvent->pcrIndex = IMA_Uint32_Convert((uint8_t *)&imaEvent->pcrIndex, littleEndian);
-    }
-#if 0	/* In the future, IMA may use multiple PCRs */
-    /* sanity check the PCR index */
-    if ((rc == 0) && !(*endOfFile)) {
-	if (imaEvent->pcrIndex != IMA_PCR) {
-	    printf("ERROR: IMA_Event_ReadFile: PCR index %u not PCR %u\n",
-		   imaEvent->pcrIndex, IMA_PCR);
+	/* range check the PCR index */
+	if (imaEvent->pcrIndex >= IMPLEMENTATION_PCR) {
+	    printf("ERROR: IMA_Event_ReadFile: PCR index %u out of range\n", imaEvent->pcrIndex);
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }	
-#endif
     /* read the IMA digest, this is hard coded to SHA-1 */
     if ((rc == 0) && !(*endOfFile)) {
 	readSize = fread(&(imaEvent->digest),
@@ -448,7 +444,14 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
     }
     if ((rc == 0) && !(*endOfFile)) {
 	fileNameLength = IMA_Uint32_Convert((uint8_t *)&fileNameLengthIbo, littleEndian);
-	/* FIXME should check for addition overflow */
+	/* should check for addition overflowing a uint32_t */
+	if ((0xffffffff - fileNameLength) > (uint32_t)(sizeof(fileDataHash) + sizeof(fileNameLength)))
+	    printf("ERROR: IMA_TemplateDataIma_ReadFile: file name length too big: %u\n",
+		   fileNameLength);
+	rc = TSS_RC_INSUFFICIENT_BUFFER;
+    }
+    if ((rc == 0) && !(*endOfFile)) {
+	/* addition is safe because of above check */
 	imaEvent->template_data_len = sizeof(fileDataHash) + sizeof(fileNameLength) + fileNameLength;
     }
     /* bounds check the template data length */
@@ -468,10 +471,14 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
+    /* copy results to template_data */
     if ((rc == 0) && !(*endOfFile)) {
+	/* copy file data hash */
 	memcpy(imaEvent->template_data, fileDataHash, sizeof(fileDataHash));
+	/* copy file name length */
 	memcpy(imaEvent->template_data + sizeof(fileDataHash),
 	       &fileNameLength, sizeof(fileNameLength));
+	/* read and copy the file name */
 	readSize = fread(imaEvent->template_data + sizeof(fileDataHash) + sizeof(fileNameLength),
 			 fileNameLength, 1, inFile);
 	if (readSize != 1) {
@@ -952,9 +959,9 @@ static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
 	/* consistency check signature header contents */
 	if (rc == 0) {
 	    int goodHashAlgo = (((imaTemplateData->sigHeader[2] == HASH_ALGO_SHA1) &&
-				 (imaTemplateData->hashAlgId = TPM_ALG_SHA1)) ||
+				 (imaTemplateData->hashAlgId == TPM_ALG_SHA1)) ||
 				((imaTemplateData->sigHeader[2] == HASH_ALGO_SHA256) &&
-				 (imaTemplateData->hashAlgId = TPM_ALG_SHA256)));
+				 (imaTemplateData->hashAlgId == TPM_ALG_SHA256)));
 	    int goodSigSize = ((imaTemplateData->signatureSize == 128) ||
 			       (imaTemplateData->signatureSize == 256));
 	    /* xattr type */
@@ -1380,7 +1387,7 @@ uint32_t IMA_Event_PcrExtend(TPMT_HA pcrs[IMA_PCR_BANKS][IMPLEMENTATION_PCR],
     
     /* validate PCR number */
     if (rc == 0) {
-	if (imaEvent->pcrIndex > IMPLEMENTATION_PCR) {
+	if (imaEvent->pcrIndex >= IMPLEMENTATION_PCR) {
 	    printf("ERROR: IMA_Event_PcrExtend: PCR number %u out of range\n", imaEvent->pcrIndex);
 	    rc = TSS_RC_BAD_PROPERTY;
 	}
