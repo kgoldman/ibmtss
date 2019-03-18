@@ -2289,7 +2289,6 @@ static TPM_RC TSS_NVPublic_Delete(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	sprintf(nvpFilename, "%s/nvp%08x.bin", tssContext->tssDataDirectory, nvIndex);
 	rc = TSS_File_DeleteFile(nvpFilename);
-	return rc;    
     }
     return rc;
 }
@@ -3357,7 +3356,8 @@ static TPM_RC TSS_Response_Encrypt(TSS_AUTH_CONTEXT *tssAuthContext,
 	    /* can this be a decrypt command */
 	    encryptSize = getEncryptSize(tpmCommandIndex);
 	    if (encryptSize == 0) {
-		if (tssVerbose) printf("TSS_Response_Encrypt: Error, response cannot be encrypted\n");
+		if (tssVerbose) printf("TSS_Response_Encrypt: "
+				       "Error, response cannot be encrypted\n");
 		rc = TSS_RC_NO_ENCRYPT_PARAMETER;
 	    }
 	}
@@ -3381,7 +3381,8 @@ static TPM_RC TSS_Response_Encrypt(TSS_AUTH_CONTEXT *tssAuthContext,
 		rc = TSS_Response_EncryptAes(tssAuthContext, session[encryptSession]);
 		break;
 	      default:
-		if (tssVerbose) printf("TSS_Response_Encrypt: Error, algorithm %04x not implemented\n",
+		if (tssVerbose) printf("TSS_Response_Encrypt: "
+				       "Error, algorithm %04x not implemented\n",
 				       session[encryptSession]->symmetric.algorithm);
 		rc = TSS_RC_BAD_ENCRYPT_ALGORITHM;
 		break;
