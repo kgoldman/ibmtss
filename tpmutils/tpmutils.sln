@@ -228,6 +228,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "getcryptolibrary", "getcryp
 		{5C11AF70-45A6-4888-A66A-C0A70302BD89} = {5C11AF70-45A6-4888-A66A-C0A70302BD89}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "timepacket", "timepacket\timepacket.vcxproj", "{6498A6AF-C90C-430D-95F1-5578A18170C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1574,6 +1576,20 @@ Global
 		{D95B2CAA-2548-41BE-AA63-49A6B0A39630}.Release|Win32.Build.0 = Release|Win32
 		{D95B2CAA-2548-41BE-AA63-49A6B0A39630}.Release|x64.ActiveCfg = Release|x64
 		{D95B2CAA-2548-41BE-AA63-49A6B0A39630}.Release|x64.Build.0 = Release|x64
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Debug|Win32.Build.0 = Debug|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Debug|x64.ActiveCfg = Debug|x64
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Debug|x64.Build.0 = Debug|x64
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Release|Any CPU.ActiveCfg = Release|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Release|Win32.ActiveCfg = Release|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Release|Win32.Build.0 = Release|Win32
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Release|x64.ActiveCfg = Release|x64
+		{6498A6AF-C90C-430D-95F1-5578A18170C8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
