@@ -261,19 +261,21 @@ echo ""
 # and not the PKCS8 format
 # -----BEGIN ENCRYPTED PRIVATE KEY-----
 #
-# For now, hack around this by generating a legacy key that is not password protected
-#
 
 echo "generate the signing key with openssl"
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
     openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem
+
 elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
-    openssl ecparam -name prime256v1 -genkey -noout -out tmpecprivkey.pem
+# plaintext key pair, legacy plaintext -----BEGIN PRIVATE KEY-----
+    openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -text -out tmpecprivkeydec.pem
+# encrypt key pair, legacy encrypted -----BEGIN EC PRIVATE KEY-----
+    openssl ec -aes128 -passout pass:rrrr -in tmpecprivkeydec.pem -out tmpecprivkey.pem 
+
 else
     echo "Error: crypto library ${CRYPTOLIBRARY} not supported"
     exit 255
 fi
-
 
 for SESS in "" "-se0 02000000 1"
 do
@@ -602,6 +604,7 @@ rm -f tmpk2pub.bin
 rm -f tmposs.bin 
 rm -f tmpprivkey.pem
 rm -f tmpecprivkey.pem
+rm -f tmpecprivkeydec.pem
 rm -f tmppub.bin
 rm -f tmppriv.bin
 rm -f tmpekpub.pem
