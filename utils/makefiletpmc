@@ -272,9 +272,9 @@ clean:
 activatecredential:	ibmtss/tss.h activatecredential.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) activatecredential.o $(LNALIBS) -o activatecredential
 eventextend:		eventextend.o eventlib.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o eventlib.o $(LNALIBS) -o eventextend
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o $(LNALIBS) -o eventextend
 imaextend:		imaextend.o imalib.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o imalib.o $(LNALIBS) -o imaextend
+			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o $(LNALIBS) -o imaextend
 certify:		ibmtss/tss.h certify.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) certify.o $(LNALIBS) -o certify
 certifycreation:	ibmtss/tss.h certifycreation.o $(LIBTSS) $(LIBTSSUTILS)

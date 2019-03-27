@@ -1,10 +1,10 @@
 #################################################################################
 #										#
-#			Windows MinGW TPM2 Makefile				#
+#			Windows MinGW TPM2 Makefile OpenSSL 1.1	32-bit		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 201 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -37,6 +37,13 @@
 #										#
 #################################################################################
 
+# Windows OpenSSL 1.1 32-bit with mingw
+
+# Comments for OpenSSL 1.0 are included
+
+# Please contribute a solution for OpenSSL 64-bit (Shining Light),
+# which does not include the mingw .a files.
+
 # C compiler
 
 CC = "c:/program files/mingw/bin/gcc.exe"
@@ -64,8 +71,6 @@ CCAFLAGS += 			\
 LNFLAGS +=					\
 	-D_MT					\
 	-DTPM_WINDOWS				\
-	-I"c:/program files/MinGW/include"	\
-	-I"c:/program files/openssl/include"	\
 	-I.
 
 # link - for TSS library
@@ -76,9 +81,13 @@ LNLFLAGS +=
 
 LNAFLAGS += 
 
-LNLIBS = 	"c:/program files/openssl/lib/mingw/libeay32.a" \
-		"c:/program files/openssl/lib/mingw/ssleay32.a" \
+LNLIBS = 	"c:/program files/openssl/lib/mingw/libcrypto-1_1.a" \
 		"c:/program files/MinGW/lib/libws2_32.a"
+
+# OpenSSL 1.0 Shining Light library names
+# LNLIBS = 	"c:/program files/openssl/lib/mingw/libeay32.a" \
+#		"c:/program files/openssl/lib/mingw/ssleay32.a" \
+#		"c:/program files/MinGW/lib/libws2_32.a"
 
 # shared library
 
@@ -104,20 +113,35 @@ TSS_OBJS = 	tssfile.o 		\
 include makefile-common
 include makefile-common20
 
-# Uncomment for TBSI
+#
+# Start Windows TBSI
+#
 
-# CCFLAGS +=	-DTPM_WINDOWS_TBSI		\
-# 		-DTPM_WINDOWS_TBSI_WIN8		\
-# 		-D_WIN32_WINNT=0x0600
+# mingw libraries are apparently no longer compatible with Windows
+# Kits for TBS.  Contributions are welcome.  Until then, use the
+# Visual Studio solution for the hardware TPM.
 
-# or 
-# 		-DTPM_WINDOWS_TBSI_WIN7		\
+#TSS_OBJS += tsstbsi.o
 
+#CCFLAGS +=	-DTPM_WINDOWS_TBSI
+#CCFLAGS +=	-D_WIN32_WINNT=0x0600
 
-# TSS_OBJS += tsstbsi.o 
+# Windows 10
 
-# LNLIBS += C:\PROGRA~2\WI3CF2~1\8.0\Lib\win8\um\x86\Tbs.lib
-# #LNLIBS += c:/progra~1/Micros~2/Windows/v7.1/lib/Tbs.lib
+#CCFLAGS +=	-DTPM_WINDOWS_TBSI_WIN8
+#CCFLAGS +=	-I"c:\Program Files (x86)\Windows Kits\10\Include\10.0.17763.0\shared"
+
+#LNLIBS += "c:/Program Files (x86)/Windows Kits/10/Lib/10.0.17763.0/um/x64/tbs.lib"
+
+# Windows 7
+
+#CCFLAGS +=	-DTPM_WINDOWS_TBSI_WIN7
+
+#LNLIBS += c:/progra~1/Micros~2/Windows/v7.1/lib/Tbs.lib
+
+#
+# End Windows TBSI
+#
 
 # default build target
 
