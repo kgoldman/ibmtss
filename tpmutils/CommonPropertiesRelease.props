@@ -9,7 +9,7 @@
       <PreprocessorDefinitions>TPM_WINDOWS;TPM_TPM20;_CRT_SECURE_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;TPM_ENCRYPT_SESSIONS_DEFAULT="0";TPM_WINDOWS_TBSI;TPM_WINDOWS_TBSI_WIN8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>libeay32md.lib;ssleay32md.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcrypto32md.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>c:\program files\openssl\lib\vc</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
