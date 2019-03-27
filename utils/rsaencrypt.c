@@ -3,9 +3,8 @@
 /*			   RSA_Encrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsaencrypt.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -153,6 +152,8 @@ int main(int argc, char *argv[])
 	}
 	/* label */
 	{
+	    /* NOTE: label requires the last byte to be zero.  I.e., when implemented, do not set
+	       the in.label.t.size to strlen() */
 	    /* Table 73 - Definition of TPM2B_DATA Structure */
 	    in.label.t.size = 0;
 	}
