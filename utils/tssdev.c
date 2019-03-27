@@ -59,7 +59,7 @@
 static uint32_t TSS_Dev_Open(TSS_CONTEXT *tssContext);
 static uint32_t TSS_Dev_SendCommand(int dev_fd, const uint8_t *buffer, uint16_t length,
 				    const char *message);
-static uint32_t TSS_Dev_ReceiveCommand(int dev_fd, uint8_t *buffer, uint32_t *length);
+static uint32_t TSS_Dev_ReceiveResponse(int dev_fd, uint8_t *buffer, uint32_t *length);
 
 /* global configuration */
 
@@ -94,7 +94,7 @@ TPM_RC TSS_Dev_Transmit(TSS_CONTEXT *tssContext,
     /* receive the response from the dev_fd.  Returns dev_fd errors, malformed response errors.
        Else returns the TPM response code. */
     if (rc == 0) {
-	rc = TSS_Dev_ReceiveCommand(tssContext->dev_fd, responseBuffer, read);
+	rc = TSS_Dev_ReceiveResponse(tssContext->dev_fd, responseBuffer, read);
     }
     return rc;
 }
@@ -146,7 +146,7 @@ static uint32_t TSS_Dev_SendCommand(int dev_fd,
     return rc;
 }
 
-/* TSS_Dev_ReceiveCommand() reads a response buffer from the device.  'buffer' must be at least
+/* TSS_Dev_ReceiveResponse() reads a response buffer from the device.  'buffer' must be at least
    MAX_RESPONSE_SIZE bytes.
 
    Returns TPM packet error code.
@@ -154,33 +154,33 @@ static uint32_t TSS_Dev_SendCommand(int dev_fd,
    Validates that the packet length and the packet responseSize match 
 */
 
-static uint32_t TSS_Dev_ReceiveCommand(int dev_fd, uint8_t *buffer, uint32_t *length)
+static uint32_t TSS_Dev_ReceiveResponse(int dev_fd, uint8_t *buffer, uint32_t *length)
 {
     uint32_t 	rc = 0;
     int 	irc;
     uint32_t 	responseSize = 0;
     uint32_t 	responseCode = 0;
 
-    if (tssVverbose) printf("TSS_Dev_ReceiveCommand:\n");
+    if (tssVverbose) printf("TSS_Dev_ReceiveResponse:\n");
     /* read the TPM device */
     if (rc == 0) {
 	irc = read(dev_fd, buffer, MAX_RESPONSE_SIZE);
 	if (irc <= 0) {
 	    rc = TSS_RC_BAD_CONNECTION;
 	    if (irc < 0) {
-		if (tssVerbose) printf("TSS_Dev_ReceiveCommand: read error %d %s\n",
+		if (tssVerbose) printf("TSS_Dev_ReceiveResponse: read error %d %s\n",
 				       errno, strerror(errno));
 	    }
 	}
     }
     if ((rc == 0) && tssVverbose) {
-	TSS_PrintAll("TSS_Dev_ReceiveCommand",
+	TSS_PrintAll("TSS_Dev_ReceiveResponse",
 		     buffer, irc);
     }
     /* verify that there is at least a tag, responseSize, and responseCode */
     if (rc == 0) {
 	if ((unsigned int)irc < (sizeof(TPM_ST) + sizeof(uint32_t) + sizeof(uint32_t))) {
-	    if (tssVerbose) printf("TSS_Dev_ReceiveCommand: read bytes %u < header\n", irc);
+	    if (tssVerbose) printf("TSS_Dev_ReceiveResponse: read bytes %u < header\n", irc);
 	    rc = TSS_RC_MALFORMED_RESPONSE;
 	}
     }
@@ -189,7 +189,7 @@ static uint32_t TSS_Dev_ReceiveCommand(int dev_fd, uint8_t *buffer, uint32_t *le
 	responseSize = ntohl(*(uint32_t *)(buffer + sizeof(TPM_ST)));
 	/* sanity check against the length actually received, the return code */
 	if ((uint32_t)irc != responseSize) {
-	    if (tssVerbose) printf("TSS_Dev_ReceiveCommand: read bytes %u != responseSize %u\n",
+	    if (tssVerbose) printf("TSS_Dev_ReceiveResponse: read bytes %u != responseSize %u\n",
 				   (uint32_t)irc, responseSize);
 	    rc = TSS_RC_BAD_CONNECTION;
 	}
@@ -203,7 +203,7 @@ static uint32_t TSS_Dev_ReceiveCommand(int dev_fd, uint8_t *buffer, uint32_t *le
     }
 	
     *length = responseSize;
-    if (tssVverbose) printf("TSS_Dev_ReceiveCommand: rc %08x\n", rc);
+    if (tssVverbose) printf("TSS_Dev_ReceiveResponse: rc %08x\n", rc);
     return rc;
 }	
 
