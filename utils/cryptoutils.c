@@ -224,27 +224,65 @@ TPM_RC convertEvpPkeyToRsakey(RSA **rsaKey,		/* freed by caller */
 
 #ifndef TPM_TSS_NOECC
 
-/* convertEcKeyToPrivateKeyBin() converts an OpenSSL EC_KEY to a binary array */
+/* convertEcKeyToPrivateKeyBin() converts an OpenSSL EC_KEY to a binary array
+
+   FIXME  Only supports NIST P256 curve.
+*/
 
 TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
 				   uint8_t 	**privateKeyBin,	/* freed by caller */
 				   const EC_KEY *ecKey)
 {
     TPM_RC 		rc = 0;
+    const EC_GROUP 	*ecGroup = NULL;
+    int			nid;
     const BIGNUM 	*privateKeyBn = NULL;
-
-    /* get the ECC private key as a BIGNUM */
+    int 		bnBytes;
+    
+    /* get the group from the key */
+    if (rc == 0) {   
+	ecGroup = EC_KEY_get0_group(ecKey);
+	if (ecGroup == NULL) {
+	    printf("convertEcKeyToPrivateKeyBin: Error extracting EC group from EC key\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    /* and then the curve from the group */
+    if (rc == 0) {
+	nid = EC_GROUP_get_curve_name(ecGroup);
+	/* map NID to size of private key */
+	switch (nid) {
+	  case NID_X9_62_prime256v1:
+	    *privateKeyBytes = 32;
+	    break;
+	  default:
+	    printf("convertEcKeyToPrivateKeyBin: Error, curve NID %u not supported\n", nid);
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    /* get the ECC private key as a BIGNUM from the EC_KEY */
     if (rc == 0) {
 	privateKeyBn = EC_KEY_get0_private_key(ecKey);
     }
-    /* allocate a buffer for the private key array */
+    /* sanity check the BN size against the curve */
     if (rc == 0) {
-	*privateKeyBytes = BN_num_bytes(privateKeyBn);
+	bnBytes = BN_num_bytes(privateKeyBn);
+	if (bnBytes > *privateKeyBytes) {
+	    printf("convertEcKeyToPrivateKeyBin: Error, private key %d bytes too large for curve\n",
+		   bnBytes);
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    /* allocate a buffer for the private key array  based on the curve */
+    if (rc == 0) {
 	rc = TSS_Malloc(privateKeyBin, *privateKeyBytes);
     }
     /* convert the private key bignum to binary */
     if (rc == 0) {
-	BN_bn2bin(privateKeyBn, *privateKeyBin);
+	/* TPM rev 116 required the ECC private key to be zero padded in the duplicate parameter of
+	   import */
+	memset(*privateKeyBin, 0, *privateKeyBytes - bnBytes);
+	BN_bn2bin(privateKeyBn, (*privateKeyBin) + (*privateKeyBytes - bnBytes));
 	if (verbose) TSS_PrintAll("convertEcKeyToPrivateKeyBin:", *privateKeyBin, *privateKeyBytes);
     }
     return rc;
@@ -296,14 +334,14 @@ TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
 	ecPoint = EC_KEY_get0_public_key(ecKey);
 	if (ecPoint == NULL) {
 	    printf("convertEcKeyToPublicKeyBin: Error extracting EC point from EC public key\n");
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
     }
     if (rc == 0) {   
 	ecGroup = EC_KEY_get0_group(ecKey);
 	if (ecGroup == NULL) {
 	    printf("convertEcKeyToPublicKeyBin: Error extracting EC group from EC public key\n");
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
     }
     /* get the public modulus */
