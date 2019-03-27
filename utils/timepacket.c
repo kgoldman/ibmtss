@@ -46,7 +46,14 @@
 #include <stdint.h>
 #include <time.h>
 
+#ifdef TPM_WINDOWS
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
+#ifdef TPM_POSIX
 #include <unistd.h>
+#endif
 
 #include <ibmtss/tss.h>
 #include <ibmtss/tsstransmit.h>
@@ -147,7 +154,12 @@ int main(int argc, char *argv[])
 	}
 	if (rc == 0) {
 	    usec %= 1000000;
-	    usleep(usec);
+#ifdef TPM_POSIX
+	    usleep(usec);	/* usleep() units are usec */
+#endif
+#ifdef TPM_WINDOWS
+	    Sleep(usec/1000);	/* Sleep units are msec */
+#endif
 	    startTime = time(NULL);
 	    rc = TSS_Transmit(tssContext,
 			      responseBuffer, &responseLength,
