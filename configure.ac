@@ -7,7 +7,7 @@ AC_PREREQ([2.63])
 # Put autotools auxiliary files in a subdir, so they don't clutter top dir:
 AC_CONFIG_AUX_DIR([build-aux])
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
