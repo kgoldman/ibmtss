@@ -7,9 +7,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpolicy138.sh 1277 2018-07-23 20:30:23Z kgoldman $	#
 #										#
-# (c) Copyright IBM Corporation 2016 - 2018					#
+# (c) Copyright IBM Corporation 2016 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -42,7 +41,13 @@
 #										#
 #################################################################################
 
-# Policy command code - sign
+# used for the name in policy ticket
+
+if [ -z $TPM_DATA_DIR ]; then
+    TPM_DATA_DIR=.
+fi
+
+# PolicyCommandCode - sign
 
 # cc69 18b2 2627 3b08 f5bd 406d 7f10 cf16
 # 0f0a 7d13 dfd8 3b77 70cc bcd1 aa80 d811
@@ -53,7 +58,7 @@
 # 5e8e bdf0 4581 9419 070c 7d57 77bf eb61 
 # ffac 4996 ea4b 6fba de6d a42b 632d 4918   
 
-# Policy Authorize NV with above Name
+# PolicyAuthorizeNV with above Name
                               
 # 66 1f a1 02 db cd c2 f6 a0 61 7b 33 a0 ee 6d 95 
 # ab f6 2c 76 b4 98 b2 91 10 0d 30 91 19 f4 11 fa 
@@ -259,7 +264,212 @@ echo "Flush the primary key 80000001"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
+#
+# Use case of the PCR brittleness solution using PolicyAuthorize, but
+# where the authorizing public key is not hard coded in the sealed
+# blob policy.  Rather, it's in an NV Index, so that the authorizing
+# key can be changed.  Here, the authorization to change is platform
+# auth.  The NV index is locked until reboot as a second level of
+# protection.
+#
 
+# Policy design
+
+# PolicyAuthorizeNV and Name of NV index AND Unseal
+# where the NV index holds PolicyAuthorize with the Name of the authorizing signing key
+# where PolicyAuthorize will authorize command Unseal AND PCR values
+
+# construct Policies
+
+# Provision the NV Index data first.  The NV Index Name is needed for the policy
+# PolicyAuthorize with the Name of the authorizing signing key.  
+
+# The authorizing signing key Name can be obtained using the TPM from
+# loadexternal below.  It can also be calculated off line using this
+# utility
+
+# > publicname -ipem policies/rsapubkey.pem -halg sha256 -nalg sha256 -v -ns
+
+# policyauthorize and CA public key
+# policies/policyauthorizesha256.txt
+# 0000016a000b64ac921a035c72b3aa55ba7db8b599f1726f52ec2f682042fc0e0d29fae81799
+# (need blank line for policyRef)
+# > policymaker -halg sha256 -if policies/policyauthorizesha256.txt -pr -v -ns -of policies/policyauthorizesha256.bin
+#  intermediate policy digest length 32
+#  fc 17 cd 86 c0 4f be ca d7 17 5f ef c7 75 5b 63 
+#  a8 90 49 12 c3 2e e6 9a 4c 99 1a 7b 5a 59 bd 82 
+#  intermediate policy digest length 32
+#  eb a3 f9 8c 5e af 1e a8 f9 4f 51 9b 4d 2a 31 83 
+#  ee 79 87 66 72 39 8e 23 15 d9 33 c2 88 a8 e5 03 
+#  policy digest length 32
+#  eb a3 f9 8c 5e af 1e a8 f9 4f 51 9b 4d 2a 31 83 
+#  ee 79 87 66 72 39 8e 23 15 d9 33 c2 88 a8 e5 03 
+# policy digest:
+# eba3f98c5eaf1ea8f94f519b4d2a3183ee79876672398e2315d933c288a8e503
+
+# Once the NV Index Name is known, calculated the sealed blob policy.
+
+# PolicyAuthorizeNV and Name of NV Index AND Unseal
+#
+# get NV Index Name from nvreadpublic after provisioning
+# 000b56e16f0b810a6418daab06822be142858beaf9a79d66f66ad7e8e541f142498e
+#
+# policies/policyauthorizenv-unseal.txt
+# 
+# policyauthorizenv and Name of NV Index
+# 00000192000b56e16f0b810a6418daab06822be142858beaf9a79d66f66ad7e8e541f142498e
+# policy command code unseal
+# 0000016c0000015e
+#
+# > policymaker -halg sha256 -if policies/policyauthorizenv-unseal.txt -of policies/policyauthorizenv-unseal.bin -pr -v -ns
+# intermediate policy digest length 32
+#  2f 7a d9 b7 53 26 35 e5 03 8c e7 7b 8f 63 5e 4c 
+#  f9 96 c8 62 18 13 98 94 c2 71 45 e7 7d d5 e8 e8 
+#  intermediate policy digest length 32
+#  cd 1b 24 26 fe 10 08 6c 52 35 85 94 22 a0 59 69 
+#  33 4b 88 47 82 0d 0b d9 8c 43 1f 7f f7 36 34 5d 
+#  policy digest length 32
+#  cd 1b 24 26 fe 10 08 6c 52 35 85 94 22 a0 59 69 
+#  33 4b 88 47 82 0d 0b d9 8c 43 1f 7f f7 36 34 5d 
+# policy digest:
+# cd1b2426fe10086c5235859422a05969334b8847820d0bd98c431f7ff736345d
+
+# The authorizing signer signs the PCR white list, here just PCR 16 extended with aaa
+# PCR 16 is the resettable debug PCR, convenient for development
+
+echo ""
+echo "PolicyAuthorizeNV -> PolicyAuthorize -> PolicyPCR"
+echo ""
+
+# Initial provisioning (NV Index)
+
+echo "NV Define Space"
+${PREFIX}nvdefinespace -ha 01000000 -hi p -hia p -sz 34 +at wst +at ar > run.out
+checkSuccess $?
+
+echo "Write algorithm ID into NV index 01000000"
+${PREFIX}nvwrite -ha 01000000 -hia p -off 0 -if policies/sha256.bin > run.out
+checkSuccess $?
+
+echo "Write the NV index at offset 2 with policy authorize and the Name of the CA signing key"
+${PREFIX}nvwrite -ha 01000000 -hia p -off 2 -if policies/policyauthorizesha256.bin > run.out
+checkSuccess $?
+
+echo "Lock the NV Index"
+${PREFIX}nvwritelock -ha 01000000 -hia p
+checkSuccess $?
+
+echo "Read the NV Index Name to be used above in Policy"
+${PREFIX}nvreadpublic -ha 01000000 -ns > run.out
+checkSuccess $?
+
+# Initial provisioning (Sealed Data)
+
+echo "Create a sealed data object"
+${PREFIX}create -hp 80000000 -nalg sha256 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto  -uwa -if msg.bin -pol policies/policyauthorizenv-unseal.bin > run.out
+checkSuccess $?
+
+# Once per new PCR approved values, signer authorizing PCRs in policysha256.bin
+
+echo "Openssl generate and sign aHash (empty policyRef) ${HALG}"
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policypcr16aaasha256.bin
+echo " INFO:"
+
+# Once per boot, simulating setting PCRs to authorized values, lock
+# the NV index, which is unloaded at reboot to permit platform auth to
+# roll the authorized signing key
+
+echo "Lock the NV Index"
+${PREFIX}nvwritelock -ha 01000000 -hia p
+checkSuccess $?
+
+echo "PCR 16 Reset"
+${PREFIX}pcrreset -ha 16 > run.out
+checkSuccess $?
+
+echo "Extend PCR 16 to correct value"
+${PREFIX}pcrextend -halg sha256 -ha 16 -if policies/aaa > run.out
+checkSuccess $?
+
+# At each unseal, or reuse the ticket tkt.bin for its lifetime
+
+echo "Load external just the public part of PEM authorizing key sha256 80000001"
+${PREFIX}loadexternal -hi p -halg sha256 -nalg sha256 -ipem policies/rsapubkey.pem -ns > run.out
+checkSuccess $?
+
+echo "Verify the signature to generate ticket 80000001 sha256"
+${PREFIX}verifysignature -hk 80000001 -halg sha256 -if policies/policypcr16aaasha256.bin -is pssig.bin -raw -tk tkt.bin > run.out
+checkSuccess $?
+
+# Run time unseal
+
+echo "Start a policy session"
+${PREFIX}startauthsession -se p -halg sha256 > run.out
+checkSuccess $?
+
+echo "Policy PCR, update with the correct PCR 16 value"
+${PREFIX}policypcr -halg sha256 -ha 03000000 -bm 10000 > run.out
+checkSuccess $?
+
+echo "Policy get digest - should be policies/policypcr16aaasha256.bin"
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+# policyauthorize process
+
+echo "Policy authorize using the ticket"
+${PREFIX}policyauthorize -ha 03000000 -appr policies/policypcr16aaasha256.bin -skn ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin > run.out
+checkSuccess $?
+
+echo "Get policy digest, should be policies/policyauthorizesha256.bin"
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Flush the authorizing public key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Policy Authorize NV against NV Index 01000000"
+${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000 > run.out
+checkSuccess $?
+
+echo "Get policy digest, should be policies/policyauthorizenv-unseal.bin intermediate"
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Policy command code - unseal"
+${PREFIX}policycommandcode -ha 03000000 -cc 0000015e > run.out
+checkSuccess $?
+
+echo "Get policy digest, should be policies/policyauthorizenv-unseal.bin final"
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Load the sealed data object"
+${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+checkSuccess $?
+
+echo "Unseal the data blob"
+${PREFIX}unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out
+checkSuccess $?
+
+echo "Verify the unsealed result"
+diff msg.bin tmp.bin > run.out
+checkSuccess $?
+
+echo "Flush the sealed object"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Flush the policy session"
+${PREFIX}flushcontext -ha 03000000 > run.out
+checkSuccess $?
+
+echo "NV Undefine Space"
+${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
+checkSuccess $?
+
+# cleanup 
 
 
 rm -f tmppriv.bin

@@ -2696,7 +2696,6 @@ rm tmphkey.bin
 rm tmpname.bin
 rm tmppol.bin
 rm tmppriv.bin
-rm tmppriv.bin 
 rm tmppub.bin
 rm tmppub.der
 rm tmppub.pem
