@@ -86,7 +86,10 @@ static uint32_t TSS_Socket_SendBytes(TSS_SOCKET_FD sock_fd, const uint8_t *buffe
 static uint32_t TSS_Socket_GetServerType(TSS_CONTEXT *tssContext,
 					 int *mssim,
 					 int *rawsingle);
-
+#ifdef TPM_WINDOWS
+static void TSS_Socket_PrintError(int err);
+#endif
+    
 extern int tssVverbose;
 extern int tssVerbose;
 
@@ -283,10 +286,14 @@ static uint32_t TSS_Socket_Open(TSS_CONTEXT *tssContext, short port)
 #endif
 #ifdef TPM_WINDOWS
     if (connect(tssContext->sock_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0) {
-	if (tssVerbose) printf("TSS_Socket_Open: Error on connect to %s:%u\n",
+	if (tssVerbose) {
+	    int err;
+	    printf("TSS_Socket_Open: Error on connect to %s:%u\n",
 			       tssContext->tssServerName, port);
-	if (tssVerbose) printf("TSS_Socket_Open: client connect: error %d %s\n",
-			       errno,strerror(errno));
+	    err = WSAGetLastError();
+	    printf("TSS_Socket_Open: client connect: error %d\n", err);
+	    TSS_Socket_PrintError(err);
+	}
 	return TSS_RC_NO_CONNECTION;
     }
 #endif
@@ -626,3 +633,32 @@ TPM_RC TSS_Socket_Close(TSS_CONTEXT *tssContext)
     return rc;
 }
 #endif 	/* TPM_NOSOCKET */
+
+#ifdef TPM_WINDOWS
+
+/* The Windows equivalent to strerror().  It also traces the error message.
+ */
+
+static void TSS_Socket_PrintError(int err)
+{
+    DWORD rc;
+    char *buffer = NULL;
+    /* mingw seems to output UTF-8 for FormatMessage().  For Visual Studio, FormatMessage() outputs
+       UTF-16, which would require wprintf(). FormatMessageA() outputs UTF-8, permitting printf()
+       for both compilers. */
+    rc = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,	/* formatting */
+			err,
+			0,	/* language */
+			(LPSTR)&buffer, 
+			0, 
+			NULL);
+    if (rc != 0) {
+	printf("%s\n", buffer);
+    }
+    LocalFree(buffer);
+    return;
+}
+#endif
+
+
