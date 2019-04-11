@@ -251,7 +251,8 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 	imaEvent->pcrIndex = IMA_Uint32_Convert((uint8_t *)&imaEvent->pcrIndex, littleEndian);
 	/* range check the PCR index */
 	if (imaEvent->pcrIndex >= IMPLEMENTATION_PCR) {
-	    printf("ERROR: IMA_Event_ReadFile: PCR index %u out of range\n", imaEvent->pcrIndex);
+	    printf("ERROR: IMA_Event_ReadFile: PCR index %u %08x out of range\n",
+		   imaEvent->pcrIndex, imaEvent->pcrIndex);
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }	
@@ -445,10 +446,11 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
     if ((rc == 0) && !(*endOfFile)) {
 	fileNameLength = IMA_Uint32_Convert((uint8_t *)&fileNameLengthIbo, littleEndian);
 	/* should check for addition overflowing a uint32_t */
-	if ((0xffffffff - fileNameLength) > (uint32_t)(sizeof(fileDataHash) + sizeof(fileNameLength)))
+	if (fileNameLength > (0xffffffff - (uint32_t)(sizeof(fileDataHash) + sizeof(fileNameLength)))) {
 	    printf("ERROR: IMA_TemplateDataIma_ReadFile: file name length too big: %u\n",
 		   fileNameLength);
-	rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
     }
     if ((rc == 0) && !(*endOfFile)) {
 	/* addition is safe because of above check */
@@ -1388,7 +1390,8 @@ uint32_t IMA_Event_PcrExtend(TPMT_HA pcrs[IMA_PCR_BANKS][IMPLEMENTATION_PCR],
     /* validate PCR number */
     if (rc == 0) {
 	if (imaEvent->pcrIndex >= IMPLEMENTATION_PCR) {
-	    printf("ERROR: IMA_Event_PcrExtend: PCR number %u out of range\n", imaEvent->pcrIndex);
+	    printf("ERROR: IMA_Event_PcrExtend: PCR number %u %08x out of range\n",
+		   imaEvent->pcrIndex, imaEvent->pcrIndex);
 	    rc = TSS_RC_BAD_PROPERTY;
 	}
     }
