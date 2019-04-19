@@ -1204,6 +1204,7 @@ static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
     }
 #ifndef TPM_TSS_NOFILE
     if (rc == 0) {
+#ifndef TPM_TSS_NOCRYPTO
 	/* if the flag is set, encrypt the session state before store */
 	if (tssContext->tssEncryptSessions) {
 	    rc = TSS_AES_Encrypt(tssContext->tssSessionEncKey,
@@ -1214,9 +1215,12 @@ static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
 	}
 	/* else store the session state in plaintext */
 	else {
+#endif	/* TPM_TSS_NOCRYPTO */
 	    outBuffer = buffer;
 	    outLength = written;
+#ifndef TPM_TSS_NOCRYPTO
 	}
+#endif	/* TPM_TSS_NOCRYPTO */
     }
     /* save the session in a hard coded file name hxxxxxxxx.bin where xxxxxxxx is the session
        handle */
@@ -1274,6 +1278,7 @@ static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
 				     sessionFilename);
     }
     if (rc == 0) {
+#ifndef TPM_TSS_NOCRYPTO
 	/* if the flag is set, decrypt the session state before unmarshal */
 	if (tssContext->tssEncryptSessions) {
 	    rc = TSS_AES_Decrypt(tssContext->tssSessionDecKey,
@@ -1284,9 +1289,12 @@ static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
 	}
 	/* else the session was loaded in plaintext */
 	else {
+#endif	/* TPM_TSS_NOCRYPTO */
 	    inData = buffer;
 	    inLength = length;
+#ifndef TPM_TSS_NOCRYPTO
 	}
+#endif	/* TPM_TSS_NOCRYPTO */
     }
 #else		/* no file support, load from context */
     if (rc == 0) {
@@ -2218,11 +2226,11 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 	/* set the size */
 	name->t.size = sizeInBytes + sizeof(TPMI_ALG_HASH);
     }
+    free(buffer);	/* @1 */
 #else
     tpmtPublic = tpmtPublic;
     name->t.size = 0;
 #endif
-    free(buffer);	/* @1 */
     return rc;
 }
 
