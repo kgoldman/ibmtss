@@ -88,7 +88,7 @@ LNLLIBS += -lcrypto
 
 LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 
-LNALIBS +=  -libmtssutils -libmtssmin -lcrypto
+LNALIBS +=  -libmtssutils -libmtssmin
 
 # versioned shared library
 LIBTSSVERSIONED=libibmtssmin.so.1.1

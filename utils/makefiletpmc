@@ -100,7 +100,7 @@ LNLLIBS += -lcrypto
 # hardening flags for linking executables
 LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 
-LNALIBS +=  -libmtssutils -libmtss -lcrypto
+LNALIBS +=  -libmtssutils -libmtss
 
 # shared library
 
@@ -249,7 +249,8 @@ $(LIBTSS): 	$(TSS_OBJS)
 # TSS utilities shared library
 
 $(LIBTSSUTILS):	$(TSSUTILS_OBJS)
-		$(CC) $(LNFLAGS) $(LNLFLAGS) -Wl,-soname,$(LIBTSSUTILSSONAME) -o $(LIBTSSUTILSVERSIONED) $(TSSUTILS_OBJS) $(LNLLIBS)
+		$(CC) $(LNFLAGS) $(LNLFLAGS) -Wl,-soname,$(LIBTSSUTILSSONAME) -o $(LIBTSSUTILSVERSIONED) \
+			$(TSSUTILS_OBJS) $(LNLLIBS)
 		rm -f $(LIBTSSSUTILSONAME)
 		ln -sf $(LIBTSSUTILSVERSIONED) $(LIBTSSUTILSSONAME)
 		rm -f $(LIBTSSUTILS)

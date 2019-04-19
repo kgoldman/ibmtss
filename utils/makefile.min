@@ -50,6 +50,7 @@ CC = /usr/bin/gcc
 
 CCFLAGS  += \
 	-DTPM_POSIX		\
+	-DTPM_TSS_NOFILE	\
 	-DTPM_TSS_NOCRYPTO	\
 	-DTPM_TSS_NORSA
 
@@ -66,7 +67,6 @@ CCLFLAGS += 	-I.			\
 
 CCAFLAGS += 	-I.		\
 		-DTPM_TPM20	\
-		-DTPM_TSS_NORSA	\
 		-fPIE
 
 # link - common flags flags TSS library and applications
@@ -76,14 +76,11 @@ LNFLAGS += 	-DTPM_POSIX		\
 
 # link - for TSS library
 
-#	This is an alternative to using the bfd linker on Ubuntu
-#LNLFLAGS = -lcrypto
-
 # link - for applications, TSS path, TSS and OpenSSl libraries
 
 LNAFLAGS += -Wl,-rpath,.
 
-LNALIBS +=  -libmtssmin -lcrypto
+LNALIBS +=  -libmtssmin
 
 # shared library
 
@@ -105,7 +102,7 @@ include makefile-common20
 
 # default build target
 
-all:	writeapp signapp
+all:	writeapp
 
 # TSS shared library source
 
@@ -167,15 +164,10 @@ clean:
 
 # applications
 
-signapp:		ibmtss/tss.h signapp.o ekutils.o cryptoutils.o tsscryptoh.o tsscrypto.o $(LIBTSS) 
-
-			$(CC) $(LNFLAGS) $(LNAFLAGS) signapp.o \
-			ekutils.o cryptoutils.o tsscryptoh.o tsscrypto.o $(LNALIBS) -o signapp
-
-writeapp:		ibmtss/tss.h writeapp.o ekutils.o cryptoutils.o tsscryptoh.o tsscrypto.o $(LIBTSS) 
+writeapp:		ibmtss/tss.h writeapp.o $(LIBTSS) 
 
 			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o \
-			ekutils.o cryptoutils.o tsscryptoh.o tsscrypto.o $(LNALIBS) -o writeapp
+			$(LNALIBS) -o writeapp
 
 # for applications, not for TSS library
 

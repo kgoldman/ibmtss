@@ -99,7 +99,7 @@ LNLLIBS += -lcrypto
 # hardening flags for linking executables
 LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 
-LNALIBS +=  -libmtss -lcrypto
+LNALIBS +=  -libmtss
 
 # shared library
 
