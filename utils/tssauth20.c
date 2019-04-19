@@ -1153,7 +1153,7 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
 {
     TPM_RC 	rc = 0;
     TPM_ST 	tag;			/* response tag */
-    uint32_t 	offsetSize;		/* to beginning of parameter area */
+    uint32_t 	offsetSize;		/* to beginning of parameter area, to parameterSize */
     uint32_t 	size;			/* tmp for unmarshal */
     uint8_t 	*buffer;		/* tmp for unmarshal */
     uint32_t 	parameterSize;		/* response parameter (if sessions) */
@@ -1185,8 +1185,8 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     /* sessions -> parameterSize */
     else {
+	/* validate that there are enough response bytes for uint32_t parameterSize */
 	if (rc == 0) {
-	    /* validate that there are enough response bytes for uint32_t parameterSize */
 	    if ((offsetSize + sizeof(uint32_t)) > tssAuthContext->responseSize) {
 		if (tssVerbose)
 		    printf("TSS_GetRpBuffer: offset %u past response buffer %u\n",
@@ -1194,22 +1194,35 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
 		rc = TSS_RC_MALFORMED_RESPONSE;
 	    }
 	}
+	/* unmarshal the parameterSize */
 	if (rc == 0) {
 	    size = tssAuthContext->responseSize - offsetSize;
 	    buffer = tssAuthContext->responseBuffer + offsetSize;
 	    rc = TSS_UINT32_Unmarshalu(&parameterSize, &buffer, &size);
+	    offsetSize += sizeof(uint32_t);	/* move offset past parameterSize, to rpBuffer */
 	}
+	/* range check parameterSize */
+	/* first, check that addition willl not overflow */
 	if (rc == 0) {
-	    offsetSize += sizeof(uint32_t);
-	    *rpBufferSize = parameterSize;
-	    *rpBuffer = tssAuthContext->responseBuffer + offsetSize;
-	    /* range check parameterSize */
-	    if ((offsetSize + *rpBufferSize) > tssAuthContext->responseSize) {
-		if (tssVerbose)
-		    printf("TSS_GetRpBuffer: rpBufferSize %u past response buffer %u\n",
-			   offsetSize, tssAuthContext->responseSize);
+	    if (parameterSize > (0xffffffff - offsetSize)) {
+		if (tssVerbose) printf("TSS_GetRpBuffer: parameterSize %u too large\n",
+				       parameterSize);
 		rc = TSS_RC_MALFORMED_RESPONSE;
 	    }
+	}
+	/* second, range check parameterSize vs. entire response buffer */
+	if (rc == 0) {
+	    if ((offsetSize + parameterSize) > tssAuthContext->responseSize) {
+		if (tssVerbose)
+		    printf("TSS_GetRpBuffer: parameterSize %u past response buffer %u\n",
+			   parameterSize, tssAuthContext->responseSize);
+		rc = TSS_RC_MALFORMED_RESPONSE;
+	    }
+	}
+	/* assignment safe after above checks */
+	if (rc == 0) {
+	    *rpBufferSize = parameterSize;	/* by definition when there are auth sessions */
+	    *rpBuffer = tssAuthContext->responseBuffer + offsetSize;
 	}
     }
     return rc;
