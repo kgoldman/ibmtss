@@ -260,6 +260,15 @@ int main(int argc, char * argv[])
 		    }
 		}
 		else {		/* sim */
+		    /* even though IMA_Event_ReadFile() range checks the PCR index, range check it
+		       again here to silence the static analysis tool */
+		    if (rc == 0) {
+			if (imaEvent.pcrIndex >= IMPLEMENTATION_PCR) {
+			    printf("imaextend: PCR index %u %08x out of range\n",
+				   imaEvent.pcrIndex, imaEvent.pcrIndex);
+			    rc = TSS_RC_BAD_PROPERTY_VALUE;
+			}
+		    }
 		    if (rc == 0) {
 			rc = IMA_Event_PcrExtend(simPcrs, &imaEvent);
 		    }
