@@ -171,7 +171,7 @@ TPM_RC convertPemToRsaPrivKey(void **rsaKey,		/* freed by caller */
     }
     if (rc == 0) {
 	*rsaKey = (void *)PEM_read_RSAPrivateKey(pemKeyFile, NULL, NULL, (void *)password);
-	if (rsaKey == NULL) {
+	if (*rsaKey == NULL) {
 	    printf("convertPemToRsaPrivKey: Error in OpenSSL PEM_read_RSAPrivateKey()\n");
 	    rc = EXIT_FAILURE;
 	}
@@ -1139,7 +1139,6 @@ TPM_RC convertRsaDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 	    printf("convertRsaDerToKeyPair: could not convert key to RSA\n");
 	    rc = TPM_RC_VALUE;
 	}
-	
     }
     if (rc == 0) {
 	rc = convertRsaKeyToPrivate(NULL,		/* TPM2B_PRIVATE */
@@ -1190,7 +1189,6 @@ TPM_RC convertRsaDerToPublic(TPM2B_PUBLIC 		*objectPublic,
 	    printf("convertRsaDerToPublic: could not convert key to RSA\n");
 	    rc = TPM_RC_VALUE;
 	}
-	
     }
     if (rc == 0) {
 	rc = convertRsaKeyToPublic(objectPublic,

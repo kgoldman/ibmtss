@@ -3,9 +3,8 @@
 /*			EK Index Parsing Utilities (and more)			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils.c 1315 2018-08-28 14:27:28Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -408,7 +407,7 @@ uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
 	fp = fopen(derCertificateFileName, "rb");
 	if (fp == NULL) {
 	    printf("getPubkeyFromDerCertFile: Error opening %s\n", derCertificateFileName);
-	    rc = 1;
+	    rc = TSS_RC_FILE_OPEN;
 	}
     }
     /* read the file and convert the X509 DER to OpenSSL format */
@@ -416,7 +415,7 @@ uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
 	*x509 = d2i_X509_fp(fp, NULL);
 	if (*x509 == NULL) {
 	    printf("getPubkeyFromDerCertFile: Error converting %s\n", derCertificateFileName);
-	    rc = 1;
+	    rc = TSS_RC_X509_ERROR;
 	}
     }
     /* extract the OpenSSL format public key from the X509 token */
@@ -451,14 +450,14 @@ uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
 	evpPkey = X509_get_pubkey(x509);	/* freed @1 */
 	if (evpPkey == NULL) {
 	    printf("getPubKeyFromX509Cert: X509_get_pubkey failed\n");  
-	    rc = 1;
+	    rc = TSS_RC_X509_ERROR;
 	}
     }
     if (rc == 0) {
 	*rsaPkey = EVP_PKEY_get1_RSA(evpPkey);
 	if (*rsaPkey == NULL) {
 	    printf("getPubKeyFromX509Cert: EVP_PKEY_get1_RSA failed\n");  
-	    rc = 1;
+	    rc = TSS_RC_X509_ERROR;
 	}
     }
     if (evpPkey != NULL) {
@@ -1199,7 +1198,7 @@ uint32_t convertDerToX509(void **x509Certificate,			/* freed by caller */
     uint32_t 	rc = 0;
     *x509Certificate = d2i_X509(NULL,					/* freed by caller */
 				&readBuffer, readLength);
-    if (x509Certificate == NULL) {
+    if (*x509Certificate == NULL) {
 	printf("convertDerToX509: Could not parse X509 certificate\n");
 	rc = TSS_RC_X509_ERROR;
     }
