@@ -216,10 +216,10 @@ int main(int argc, char *argv[])
     if (!pwSession) {
 	if (verbose) printf("INFO: Flush the session\n");
 	flush(tssContext, sessionHandle);
+	/* flush the primary key */
+	if (verbose) printf("INFO: Flush the primary key\n");
+	flush(tssContext, ekKeyHandle);
     }
-    /* flush the primary key */
-    if (verbose) printf("INFO: Flush the primary key\n");
-    flush(tssContext, ekKeyHandle);
     {
 	TPM_RC rc1;
 	if (verbose) printf("INFO: Delete the TSS context\n");
