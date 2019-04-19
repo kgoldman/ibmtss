@@ -3,9 +3,8 @@
 /*			    NV Write Application				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: writeapp.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -122,11 +121,18 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
     }
+#ifdef TPM_TSS_NOCRYPTO
+    if (!pwSession) {
+	printf("\n-pwsess is required when compiled for no crypto\n");
+	printUsage();
+    }
+#endif
     /* Start a TSS context */
     if (rc == 0) {
 	if (verbose) printf("INFO: Create a TSS context\n");
 	rc = TSS_Create(&tssContext);
     }
+#ifndef TPM_TSS_NOCRYPTO
     /* createprimary first for salt.  processPrimary() also reads the EK certificate and validates
        it against the primary key.   It doesn't walk the certificate chain.  */
     if (rc == 0) {
@@ -138,6 +144,7 @@ int main(int argc, char *argv[])
 				TRUE, verbose);		/* do not flush */
 	}
     }
+#endif	/* TPM_TSS_NOCRYPTO */
     /* start a session, salt with EK, unbound */
     if (rc == 0) {
 	if (!pwSession) {
