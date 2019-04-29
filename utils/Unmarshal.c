@@ -667,11 +667,7 @@ TSS_TPMI_DH_ENTITY_Unmarshalu(TPMI_DH_ENTITY *target, BYTE **buffer, uint32_t *s
 	BOOL isNotTransient = (*target < TRANSIENT_FIRST) || (*target > TRANSIENT_LAST);
 	BOOL isNotPersistent = (*target < PERSISTENT_FIRST) || (*target > PERSISTENT_LAST);
 	BOOL isNotNv = (*target < NV_INDEX_FIRST) || (*target > NV_INDEX_LAST);
-#if PCR_FIRST != 0
-	BOOL isNotPcr = (*target < PCR_FIRST) || (*target > PCR_LAST);
-#else
 	BOOL isNotPcr = (*target > PCR_LAST);
-#endif
 	BOOL isNotAuth = (*target < TPM_RH_AUTH_00) || (*target > TPM_RH_AUTH_FF);
 	BOOL isNotLegalNull = (*target != TPM_RH_NULL) || !allowNull;
 	if (isNotOwner &&
@@ -701,11 +697,7 @@ TSS_TPMI_DH_PCR_Unmarshalu(TPMI_DH_PCR *target, BYTE **buffer, uint32_t *size, B
 	rc = TSS_TPM_HANDLE_Unmarshalu(target, buffer, size);  
     }
     if (rc == TPM_RC_SUCCESS) {
-#if PCR_FIRST != 0
-	BOOL isNotPcr = (*target < PCR_FIRST) || (*target > PCR_LAST);
-#else
 	BOOL isNotPcr = (*target > PCR_LAST);
-#endif
 	BOOL isNotLegalNull = (*target != TPM_RH_NULL) || !allowNull;
 	if (isNotPcr &&
 	    isNotLegalNull) {
