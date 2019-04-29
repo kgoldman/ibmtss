@@ -245,7 +245,9 @@ int main(int argc, char *argv[])
 	    memset(in.ivIn.t.buffer, 0, MAX_SYM_BLOCK_SIZE);
 	    /* the data to be encrypted/decrypted */
 	    in.inData.t.size = (uint16_t)length;
-	    memcpy(in.inData.t.buffer, buffer, length);
+	    if (length > 0) {	/* if length is 0, buffer is NULL */
+		memcpy(in.inData.t.buffer, buffer, length);
+	    }
 	}
 	else {
 	    /* the symmetric key used for the operation */
@@ -259,7 +261,9 @@ int main(int argc, char *argv[])
 	    memset(in2.ivIn.t.buffer, 0, MAX_SYM_BLOCK_SIZE);
 	    /* the data to be encrypted/decrypted */
 	    in2.inData.t.size = (uint16_t)length;
-	    memcpy(in2.inData.t.buffer, buffer, length);
+	    if (length > 0) {	/* if length is 0, buffer is NULL */
+		memcpy(in2.inData.t.buffer, buffer, length);
+	    }
 	}
     }
     free (buffer);	/* @1 */

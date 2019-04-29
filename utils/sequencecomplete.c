@@ -262,7 +262,9 @@ int main(int argc, char *argv[])
 
 	/* data for update */
 	in.buffer.t.size = (uint16_t)length;
-	memcpy(in.buffer.t.buffer, buffer, length);
+	if (length > 0) {
+	    memcpy(in.buffer.t.buffer, buffer, length);
+	}
     }
     free(buffer);	/* @1 */
     /* Start a TSS context */

@@ -232,7 +232,9 @@ TPM_RC TSS_TPM2B_Create(TPM2B *target, uint8_t *buffer, uint16_t size, uint16_t 
     }
     if (rc == 0) {
 	target->size = size;
-	memmove(target->buffer, buffer, size);
+	if (size != 0) {	/* because buffer can be NULL if size os 0 */
+	    memmove(target->buffer, buffer, size);
+	}
     }
     return rc;
 }
