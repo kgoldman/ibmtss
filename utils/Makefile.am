@@ -81,7 +81,7 @@ endif
 #current[:revision[:age]]
 #result: [current-age].age.revision
 libibmtssutils_la_LDFLAGS = -version-info $(LIBIBMTSS_VERSION)
-libibmtssutils_la_LIBADD =  $(OPENSSL_LIBS)
+libibmtssutils_la_LIBADD =  $(OPENSSL_LIBS) libibmtss.la
 
 noinst_HEADERS = CommandAttributes.h imalib.h tssdev.h ntc2lib.h tssntc.h Commands_fp.h objecttemplates.h tssproperties.h cryptoutils.h Platform.h tssauth.h tsssocket.h ekutils.h eventlib.h tssccattributes.h
 # install every header in ibmtss
