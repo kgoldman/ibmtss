@@ -26,11 +26,8 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 LT_INIT([disable-static])
 
-PKG_CHECK_MODULES(OPENSSL, [ openssl >= 1.0.1 ])
-AC_SUBST(OPENSSL_CFLAGS)
-AC_SUBST(OPENSSL_LIBS)
+PKG_CHECK_MODULES(LIBCRYPTO, [libcrypto >= 1.0.1 ])
 AC_CHECK_HEADERS(openssl/conf.h)
-AC_CHECK_LIB([crypto], [AES_set_encrypt_key])
 
 # Checks for header files.
 AC_HEADER_STDC
