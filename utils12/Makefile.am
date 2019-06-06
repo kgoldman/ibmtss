@@ -61,12 +61,12 @@ nvdefinespace_LDADD = libibmtssutils12.la ../utils/libibmtss.la
 nvreadvalueauth_SOURCES = nvreadvalueauth.c
 nvreadvalueauth_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 nvreadvalueauth_LDFLAGS = -L$(top_srcdir)/utils
-nvreadvalueauth_LDADD = libibmtssutils12.la ../utils/libibmtss.la
+nvreadvalueauth_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)
 
 nvreadvalue_SOURCES = nvreadvalue.c
 nvreadvalue_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 nvreadvalue_LDFLAGS = -L$(top_srcdir)/utils
-nvreadvalue_LDADD = libibmtssutils12.la ../utils/libibmtss.la
+nvreadvalue_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)
 
 nvwritevalueauth_SOURCES = nvwritevalueauth.c
 nvwritevalueauth_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
@@ -106,12 +106,12 @@ pcrread_LDADD = libibmtssutils12.la ../utils/libibmtss.la
 quote2_SOURCES = quote2.c ../utils/cryptoutils.c
 quote2_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 quote2_LDFLAGS = -L$(top_srcdir)/utils
-quote2_LDADD = libibmtssutils12.la ../utils/libibmtss.la
+quote2_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)
 
 sign_SOURCES = sign.c ../utils/cryptoutils.c
 sign_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 sign_LDFLAGS = -L$(top_srcdir)/utils
-sign_LDADD = libibmtssutils12.la ../utils/libibmtss.la
+sign_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)
 
 startup_SOURCES = startup.c
 startup_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
@@ -132,7 +132,7 @@ createekcert_SOURCES = createekcert.c ekutils12.c \
 		       ../utils/cryptoutils.c ../utils/ekutils.c
 createekcert_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 createekcert_LDFLAGS = -L$(top_srcdir)/utils
-createekcert_LDADD = libibmtssutils12.la ../utils/libibmtss.la
+createekcert_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)
 
 makeekblob_SOURCES = makeekblob.c
 makeekblob_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12

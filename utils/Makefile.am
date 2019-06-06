@@ -81,7 +81,7 @@ endif
 #current[:revision[:age]]
 #result: [current-age].age.revision
 libibmtssutils_la_LDFLAGS = -version-info $(LIBIBMTSS_VERSION)
-libibmtssutils_la_LIBADD = libibmtss.la
+libibmtssutils_la_LIBADD = libibmtss.la $(LIBCRYPTO_LIBS)
 
 noinst_HEADERS = CommandAttributes.h imalib.h tssdev.h ntc2lib.h tssntc.h Commands_fp.h objecttemplates.h tssproperties.h cryptoutils.h Platform.h tssauth.h tsssocket.h ekutils.h eventlib.h tssccattributes.h
 # install every header in ibmtss
@@ -304,7 +304,7 @@ nvincrement_LDADD = libibmtssutils.la libibmtss.la
 
 nvread_SOURCES = nvread.c
 nvread_CFLAGS = $(UTILS_CFLAGS)
-nvread_LDADD = libibmtssutils.la libibmtss.la
+nvread_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 nvreadlock_SOURCES = nvreadlock.c
 nvreadlock_CFLAGS = $(UTILS_CFLAGS)
@@ -392,11 +392,11 @@ policygetdigest_LDADD = libibmtssutils.la libibmtss.la
 
 policymaker_SOURCES = policymaker.c
 policymaker_CFLAGS = $(UTILS_CFLAGS)
-policymaker_LDADD = libibmtssutils.la libibmtss.la
+policymaker_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 policymakerpcr_SOURCES = policymakerpcr.c
 policymakerpcr_CFLAGS = $(UTILS_CFLAGS)
-policymakerpcr_LDADD = libibmtssutils.la libibmtss.la
+policymakerpcr_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 policyauthorizenv_SOURCES = policyauthorizenv.c
 policyauthorizenv_CFLAGS = $(UTILS_CFLAGS)
@@ -420,7 +420,7 @@ policypassword_LDADD = libibmtssutils.la libibmtss.la
 
 policypcr_SOURCES = policypcr.c
 policypcr_CFLAGS = $(UTILS_CFLAGS)
-policypcr_LDADD = libibmtssutils.la libibmtss.la
+policypcr_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 policyrestart_SOURCES = policyrestart.c
 policyrestart_CFLAGS = $(UTILS_CFLAGS)
@@ -428,7 +428,7 @@ policyrestart_LDADD = libibmtssutils.la libibmtss.la
 
 policysigned_SOURCES = policysigned.c
 policysigned_CFLAGS = $(UTILS_CFLAGS)
-policysigned_LDADD = libibmtssutils.la libibmtss.la
+policysigned_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 policysecret_SOURCES = policysecret.c
 policysecret_CFLAGS = $(UTILS_CFLAGS)
@@ -492,7 +492,7 @@ shutdown_LDADD = libibmtssutils.la libibmtss.la
 
 sign_SOURCES = sign.c
 sign_CFLAGS = $(UTILS_CFLAGS)
-sign_LDADD = libibmtssutils.la libibmtss.la
+sign_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 startauthsession_SOURCES = startauthsession.c
 startauthsession_CFLAGS = $(UTILS_CFLAGS)
@@ -520,7 +520,7 @@ zgen2phase_LDADD = libibmtssutils.la libibmtss.la
 
 signapp_SOURCES = signapp.c
 signapp_CFLAGS = $(UTILS_CFLAGS)
-signapp_LDADD = libibmtssutils.la libibmtss.la
+signapp_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 writeapp_SOURCES = writeapp.c
 writeapp_CFLAGS = $(UTILS_CFLAGS)
@@ -528,11 +528,11 @@ writeapp_LDADD = libibmtssutils.la libibmtss.la
 
 timepacket_SOURCES = timepacket.c
 timepacket_CFLAGS = $(UTILS_CFLAGS)
-timepacket_LDADD = libibmtssutils.la libibmtss.la
+timepacket_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 createek_SOURCES = createek.c
 createek_CFLAGS = $(UTILS_CFLAGS)
-createek_LDADD = libibmtssutils.la libibmtss.la
+createek_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 createekcert_SOURCES = createekcert.c
 createekcert_CFLAGS = $(UTILS_CFLAGS)
