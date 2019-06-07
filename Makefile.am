@@ -1,5 +1,5 @@
 SUBDIRS = utils utils12
-EXTRA_DIST = utils/policies utils/certificates utils/regtests utils/man demo
+EXTRA_DIST = utils/policies utils/certificates utils/regtests utils/man utils/reg.sh utils/cakey.pem demo
 ACLOCAL_AMFLAGS = -I m4
 
 pkgname = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)
