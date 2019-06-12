@@ -109,6 +109,7 @@ printUsage ()
     echo "-27 Duplication"
     echo "-28 ECC"
     echo "-29 Credential"
+    echo "-30 Attestation - rev 155" 
     echo "-35 Shutdown (only run for simulator)"
     echo "-40 Tests under development (not part of all)"
     echo ""
@@ -488,6 +489,14 @@ main ()
     fi
     if [ "$1" == "-a" ] || [ "$1" == "-29" ]; then
     	./regtests/testcredential.sh
+    	RC=$?
+	if [ $RC -ne 0 ]; then
+	    exit 255
+	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-30" ]; then
+    	./regtests/testattest155.sh
     	RC=$?
 	if [ $RC -ne 0 ]; then
 	    exit 255

@@ -5,9 +5,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: reg.bat 1292 2018-08-01 17:27:24Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2019					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -282,6 +281,13 @@ call regtests\testcredential.bat
 IF !ERRORLEVEL! NEQ 0 (
       echo ""
       echo "Failed testcredential.bat"
+  exit /B 1
+)
+
+call regtests\testattest155.bat
+IF !ERRORLEVEL! NEQ 0 (
+      echo ""
+      echo "Failed testattest155.bat"
   exit /B 1
 )
 

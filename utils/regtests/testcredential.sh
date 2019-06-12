@@ -390,7 +390,6 @@ do
 
 done
 
-rm -f msg.bin
 rm -f run.out
 rm -f sig.bin
 rm -f tmprpub.bin

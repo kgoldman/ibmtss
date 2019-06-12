@@ -336,9 +336,6 @@ echo ""
 echo "Test the EK policies"
 echo ""
 
-REM # test message to be signed
-echo -n "1234567890123456" > msg.bin
-
 REM # Change endorsement and platform hierarchy passwords for testing
 
 echo "Change endorsement hierarchy password"
@@ -487,7 +484,6 @@ for /L %%j in (1,1,!L!) do (
 
 )
 
-rm msg.bin
 rm run.out
 rm sig.bin
 rm tmp.der
