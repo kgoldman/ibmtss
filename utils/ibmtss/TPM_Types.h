@@ -416,6 +416,7 @@ typedef UINT16 TPM_ST;
 #define TPM_ST_ATTEST_QUOTE		0x8018	/* tag for an attestation structure	 */
 #define TPM_ST_ATTEST_TIME		0x8019	/* tag for an attestation structure	 */
 #define TPM_ST_ATTEST_CREATION		0x801A	/* tag for an attestation structure	*/
+#define TPM_ST_ATTEST_NV_DIGEST	        0x801C	/* tag for an attestation structure	*/
 #define TPM_ST_CREATION			0x8021	/* tag for a ticket type	 */
 #define TPM_ST_VERIFIED			0x8022	/* tag for a ticket type	 */
 #define TPM_ST_AUTH_SECRET		0x8023	/* tag for a ticket type	 */
@@ -1787,7 +1788,11 @@ typedef struct {
     TPM2B_MAX_NV_BUFFER nvContents;	/* contents of the NV Index */
 } TPMS_NV_CERTIFY_INFO;
 
-/* Table 117 - Definition of (TPM_ST) TPMI_ST_ATTEST Type <OUT> */
+/* Table 125 - Definition of TPMS_NV_DIGEST_CERTIFY_INFO Structure <OUT> */
+typedef struct {
+    TPM2B_NAME		indexName;
+    TPM2B_DIGEST	nvDigest;
+} TPMS_NV_DIGEST_CERTIFY_INFO; 
 
 typedef TPM_ST TPMI_ST_ATTEST;
 
@@ -1801,6 +1806,7 @@ typedef union {
     TPMS_SESSION_AUDIT_INFO	sessionAudit;	/* TPM_ST_ATTEST_SESSION_AUDIT */
     TPMS_TIME_ATTEST_INFO	time;		/* TPM_ST_ATTEST_TIME */
     TPMS_NV_CERTIFY_INFO	nv;		/* TPM_ST_ATTEST_NV */
+    TPMS_NV_DIGEST_CERTIFY_INFO	nvDigest;	/* TPM_ST_ATTEST_NV_DIGEST */
 } TPMU_ATTEST;
 
 /* Table 119 - Definition of TPMS_ATTEST Structure <OUT> */

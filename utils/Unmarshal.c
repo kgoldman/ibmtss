@@ -372,6 +372,7 @@ TSS_TPM_ST_Unmarshalu(TPM_ST *target, BYTE **buffer, uint32_t *size)
 	  case TPM_ST_ATTEST_QUOTE:
 	  case TPM_ST_ATTEST_TIME:
 	  case TPM_ST_ATTEST_CREATION:
+	  case TPM_ST_ATTEST_NV_DIGEST:
 	  case TPM_ST_CREATION:
 	  case TPM_ST_VERIFIED:
 	  case TPM_ST_AUTH_SECRET:
@@ -2337,6 +2338,21 @@ TSS_TPMS_NV_CERTIFY_INFO_Unmarshalu(TPMS_NV_CERTIFY_INFO *target, BYTE **buffer,
     return rc;
 }
 
+/* Table 125 - Definition of TPMS_NV_DIGEST_CERTIFY_INFO Structure <OUT> */
+TPM_RC
+TSS_TPMS_NV_DIGEST_CERTIFY_INFO_Unmarshalu(TPMS_NV_DIGEST_CERTIFY_INFO *target, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_NAME_Unmarshalu(&target->indexName, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_DIGEST_Unmarshalu(&target->nvDigest, buffer, size);
+    }
+    return rc;
+}
+
 /* Table 118 - Definition of (TPM_ST) TPMI_ST_ATTEST Type <OUT> */
 
 TPM_RC
@@ -2356,6 +2372,7 @@ TSS_TPMI_ST_ATTEST_Unmarshalu(TPMI_ST_ATTEST *target, BYTE **buffer, uint32_t *s
 	  case TPM_ST_ATTEST_SESSION_AUDIT:
 	  case TPM_ST_ATTEST_TIME:
 	  case TPM_ST_ATTEST_NV:
+	  case TPM_ST_ATTEST_NV_DIGEST:
 	    break;
 	  default:
 	    rc = TPM_RC_SELECTOR;
@@ -2392,6 +2409,9 @@ TSS_TPMU_ATTEST_Unmarshalu(TPMU_ATTEST *target, BYTE **buffer, uint32_t *size, u
 	break;
       case TPM_ST_ATTEST_NV:
 	rc = TSS_TPMS_NV_CERTIFY_INFO_Unmarshalu(&target->nv, buffer, size);
+	break;
+      case TPM_ST_ATTEST_NV_DIGEST:
+	rc = TSS_TPMS_NV_DIGEST_CERTIFY_INFO_Unmarshalu(&target->nvDigest, buffer, size);
 	break;
       default:
 	rc = TPM_RC_SELECTOR;

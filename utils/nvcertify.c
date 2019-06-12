@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id: nvcertify.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -72,8 +72,10 @@ int main(int argc, char *argv[])
     TPMI_RH_NV_INDEX		nvIndex = 0;
     uint16_t 			size = 0;
     uint16_t 			offset = 0;			/* default 0 */
+    TPMS_ATTEST 		tpmsAttest;
     const char			*signatureFilename = NULL;
     const char			*attestInfoFilename = NULL;
+    const char			*certifyDataFilename = NULL;
     int				useRsa = 1;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
@@ -211,6 +213,16 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i],"-od") == 0) {
+	    i++;
+	    if (i < argc) {
+		certifyDataFilename = argv[i];
+	    }
+	    else {
+		printf("-od option needs a value\n");
+		printUsage();
+	    }
+	}
 	else if (strcmp(argv[i],"-se0") == 0) {
 	    i++;
 	    if (i < argc) {
@@ -314,10 +326,6 @@ int main(int argc, char *argv[])
 	printf("NV index handle not specified or out of range, MSB not 01\n");
 	printUsage();
     }
-    if (size == 0) {
-	printf("Size not specified\n");
-	printUsage();
-    }
     if (rc == 0) {
 	in.signHandle = signHandle;
 	in.nvIndex = nvIndex;
@@ -369,12 +377,28 @@ int main(int argc, char *argv[])
 				      out.certifyInfo.t.size,
 				      attestInfoFilename);
     }
+    /* unmarshal the TPM2B_ATTEST output to a TPMS_ATTEST structure */
     if (rc == 0) {
-	TPMS_ATTEST 		tpmsAttest;
 	uint8_t *tmpBuffer = out.certifyInfo.t.attestationData;
 	uint32_t tmpSize = out.certifyInfo.t.size;
 	rc = TSS_TPMS_ATTEST_Unmarshalu(&tpmsAttest, &tmpBuffer, &tmpSize);
+    }
+    if (rc == 0) {
 	if (verbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
+    }
+    if ((rc == 0) && (certifyDataFilename != NULL)) {
+	/* TPMS_NV_DIGEST_CERTIFY_INFO */
+	if ((offset == 0) && (size == 0)) {
+	    rc = TSS_File_WriteBinaryFile(tpmsAttest.attested.nvDigest.nvDigest.t.buffer,
+					  tpmsAttest.attested.nvDigest.nvDigest.t.size,
+					  certifyDataFilename);
+	}
+	/* TPMS_NV_CERTIFY_INFO */
+	else {
+	    rc = TSS_File_WriteBinaryFile(tpmsAttest.attested.nv.nvContents.t.buffer,
+					  tpmsAttest.attested.nv.nvContents.t.size,
+					  certifyDataFilename);
+	}
     }
     if (rc == 0) {
 	if (verbose) printSignature(&out);
@@ -416,6 +440,7 @@ static void printUsage(void)
     printf("\t[-off\toffset (default 0)]\n");
     printf("\t[-os\tsignature file name  (default do not save)]\n");
     printf("\t[-oa\tattestation output file name (default do not save)]\n");
+    printf("\t[-od\tcertified data file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t01\tcontinue\n");

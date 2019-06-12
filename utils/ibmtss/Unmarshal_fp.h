@@ -283,6 +283,8 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TPMS_NV_CERTIFY_INFO_Unmarshalu(TPMS_NV_CERTIFY_INFO *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
+    TSS_TPMS_NV_DIGEST_CERTIFY_INFO_Unmarshalu(TPMS_NV_DIGEST_CERTIFY_INFO *target, BYTE **buffer, uint32_t *size);
+    LIB_EXPORT TPM_RC
     TSS_TPMI_ST_ATTEST_Unmarshalu(TPMI_ST_ATTEST *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TSS_TPMU_ATTEST_Unmarshalu(TPMU_ATTEST *target, BYTE **buffer, uint32_t *size, UINT32 selector);

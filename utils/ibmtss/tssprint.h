@@ -167,6 +167,8 @@ extern "C" {
     LIB_EXPORT
     void TSS_TPMS_NV_CERTIFY_INFO_Print(TPMS_NV_CERTIFY_INFO  *source, unsigned int indent);
     LIB_EXPORT
+    void TSS_TPMS_NV_DIGEST_CERTIFY_INFO_Print(TPMS_NV_DIGEST_CERTIFY_INFO  *source, unsigned int indent);
+    LIB_EXPORT
     void TSS_TPMI_ST_ATTEST_Print(const char *string, TPMI_ST_ATTEST selector, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMU_ATTEST_Print(TPMU_ATTEST *source, TPMI_ST_ATTEST selector, unsigned int indent);

@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -829,6 +829,9 @@ void TSS_TPM_ST_Print(const char *string, TPM_ST source, unsigned int indent)
       case TPM_ST_ATTEST_CREATION:
 	printf("%s TPM_ST_ATTEST_CREATION\n", string);
 	break;
+      case TPM_ST_ATTEST_NV_DIGEST:
+	printf("%s TPM_ST_ATTEST_NV_DIGEST\n", string);
+	break;
       case TPM_ST_CREATION:
 	printf("%s TPM_ST_CREATION\n", string);
 	break;
@@ -1380,11 +1383,19 @@ void TSS_TPMS_CREATION_INFO_Print(TPMS_CREATION_INFO *source, unsigned int inden
 
 /* Table 123 - Definition of TPMS_NV_CERTIFY_INFO Structure */
 
-void TSS_TPMS_NV_CERTIFY_INFO_Print(TPMS_NV_CERTIFY_INFO  *source, unsigned int indent)
+void TSS_TPMS_NV_CERTIFY_INFO_Print(TPMS_NV_CERTIFY_INFO *source, unsigned int indent)
 {
     TSS_TPM2B_Print("TPMS_NV_CERTIFY_INFO indexName", indent, &source->indexName.b);
     printf("%*s" "TPMS_NV_CERTIFY_INFO offset %d\n", indent, "",  source->offset);
     TSS_TPM2B_Print("TPMS_NV_CERTIFY_INFO nvContents", indent, &source->nvContents.b);
+    return;
+}
+
+/* Table 125 - Definition of TPMS_NV_DIGEST_CERTIFY_INFO Structure <OUT> */
+void TSS_TPMS_NV_DIGEST_CERTIFY_INFO_Print(TPMS_NV_DIGEST_CERTIFY_INFO  *source, unsigned int indent)
+{
+    TSS_TPM2B_Print("TPMS_NV_DIGEST_CERTIFY_INFO indexName", indent, &source->indexName.b);
+    TSS_TPM2B_Print("TPMS_NV_DIGEST_CERTIFY_INFO nvDigest", indent, &source->nvDigest.b);
     return;
 }
 
@@ -1414,6 +1425,9 @@ void TSS_TPMI_ST_ATTEST_Print(const char *string, TPMI_ST_ATTEST selector, unsig
 	break;
       case TPM_ST_ATTEST_NV:
 	printf("%s TPM_ST_ATTEST_NV\n", string);
+	break;
+      case TPM_ST_ATTEST_NV_DIGEST:
+	printf("%s TPM_ST_ATTEST_NV_DIGEST\n", string);
 	break;
       default:
 	printf("%s TPMI_ST_ATTEST_Print: selection %04hx not implemented\n", string, selector);
@@ -1446,6 +1460,9 @@ void TSS_TPMU_ATTEST_Print(TPMU_ATTEST *source, TPMI_ST_ATTEST selector, unsigne
 	break;
       case TPM_ST_ATTEST_NV:
 	TSS_TPMS_NV_CERTIFY_INFO_Print(&source->nv, indent+2);
+	break;
+      case TPM_ST_ATTEST_NV_DIGEST:
+	TSS_TPMS_NV_DIGEST_CERTIFY_INFO_Print(&source->nvDigest, indent+2);
 	break;
       default:
 	printf("%*s" "TPMU_ATTEST selection %04hx not implemented\n", indent, "", selector);
@@ -2188,7 +2205,9 @@ void TSS_TPMT_SENSITIVE_Print(TPMT_SENSITIVE *source, unsigned int indent)
 void TSS_TPM2B_SENSITIVE_Print(TPM2B_SENSITIVE *source, unsigned int indent)
 {
     printf("%*s" "TPM2B_SENSITIVE size %u\n", indent+2, "", source->t.size);
-    TSS_TPMT_SENSITIVE_Print(&source->t.sensitiveArea, indent+2);
+    if (source->t.size != 0) {
+	TSS_TPMT_SENSITIVE_Print(&source->t.sensitiveArea, indent+2);
+    }
     return;
 }
 
