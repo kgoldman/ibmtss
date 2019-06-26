@@ -4,6 +4,13 @@
 AC_INIT(ibmtss, 1.2.0, kgold@linux.ibm.com)
 AC_PREREQ([2.63])
 
+# Convert major.minor.micro to libtool versioning (current-revision-age)
+TSSLIB_VER_MAJOR=1
+TSSLIB_VER_MINOR=2
+TSSLIB_VER_MICRO=0
+TSSLIB_VERSION_INFO=`expr $TSSLIB_VER_MAJOR + $TSSLIB_VER_MINOR`:$TSSLIB_VER_MICRO:$TSSLIB_VER_MINOR
+AC_SUBST([TSSLIB_VERSION_INFO], [$TSSLIB_VERSION_INFO])
+
 # Put autotools auxiliary files in a subdir, so they don't clutter top dir:
 AC_CONFIG_AUX_DIR([build-aux])
 

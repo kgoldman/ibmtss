@@ -57,11 +57,7 @@ libibmtss_la_CFLAGS += -DTPM_TSS_NOECC
 endif
 
 libibmtss_la_CCFLAGS = -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
-
-#current[:revision[:age]]
-#result: [current-age].age.revision
-LIBIBMTSS_VERSION = 0:1:0
-libibmtss_la_LDFLAGS = -version-info $(LIBIBMTSS_VERSION)
+libibmtss_la_LDFLAGS = -version-info @TSSLIB_VERSION_INFO@
 
 libibmtssutils_la_SOURCES = cryptoutils.c ekutils.c imalib.c eventlib.c
 libibmtssutils_la_CFLAGS = -fPIC
@@ -80,7 +76,7 @@ endif
 
 #current[:revision[:age]]
 #result: [current-age].age.revision
-libibmtssutils_la_LDFLAGS = -version-info $(LIBIBMTSS_VERSION)
+libibmtssutils_la_LDFLAGS = -version-info @TSSLIB_VERSION_INFO@
 libibmtssutils_la_LIBADD = libibmtss.la $(LIBCRYPTO_LIBS)
 
 noinst_HEADERS = CommandAttributes.h imalib.h tssdev.h ntc2lib.h tssntc.h Commands_fp.h objecttemplates.h tssproperties.h cryptoutils.h Platform.h tssauth.h tsssocket.h ekutils.h eventlib.h tssccattributes.h
