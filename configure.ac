@@ -1,6 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
+# Set package release version here to "1.2.0"
+# After committing set git tag version.
 AC_INIT(ibmtss, 1.2.0, kgold@linux.ibm.com)
 AC_PREREQ([2.63])
 
