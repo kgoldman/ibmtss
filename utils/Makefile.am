@@ -94,7 +94,7 @@ noinst_HEADERS += tss12.h Commands12_fp.h tssauth12.h tssccattributes12.h ibmtss
 endif
 
 if CONFIG_TPM20
-bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation changeeps changepps clear clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters ecephemeral encryptdecrypt eventsequencecomplete evictcontrol flushcontext getcommandauditdigest getcapability getrandom gettestresult getsessionauditdigest gettime hashsequencestart hash hierarchycontrol hierarchychangeauth hmac hmacstart \
+bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation changeeps changepps clear clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters ecephemeral encryptdecrypt eventsequencecomplete evictcontrol flushcontext getcommandauditdigest getcapability getcryptolibrary getrandom gettestresult getsessionauditdigest gettime hashsequencestart hash hierarchycontrol hierarchychangeauth hmac hmacstart \
 import importpem load loadexternal makecredential nvcertify nvchangeauth nvdefinespace nvextend nvglobalwritelock nvincrement nvread nvreadlock nvreadpublic nvsetbits nvundefinespace nvundefinespacespecial nvwrite nvwritelock objectchangeauth pcrallocate pcrevent pcrextend pcrread pcrreset policyauthorize policyauthvalue policycommandcode policycphash policynamehash policycountertimer policyduplicationselect policygetdigest policymaker policymakerpcr policyauthorizenv policynv policynvwritten \
 policyor policypassword policypcr policyrestart policysigned policysecret policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt sequenceupdate sequencecomplete setprimarypolicy shutdown sign startauthsession startup stirrandom unseal verifysignature zgen2phase signapp writeapp timepacket createek createekcert tpm2pem tpmpublic2eccpoint ntc2getconfig ntc2preconfig ntc2lockconfig publicname
 
@@ -213,6 +213,10 @@ getcommandauditdigest_LDADD = libibmtssutils.la libibmtss.la
 getcapability_SOURCES = getcapability.c
 getcapability_CFLAGS = $(UTILS_CFLAGS)
 getcapability_LDADD = libibmtssutils.la libibmtss.la
+
+getcryptolibrary_SOURCES = getcryptolibrary.c
+getcryptolibrary_CFLAGS = $(UTILS_CFLAGS)
+getcryptolibrary_LDADD = libibmtssutils.la libibmtss.la
 
 getrandom_SOURCES = getrandom.c
 getrandom_CFLAGS = $(UTILS_CFLAGS)
