@@ -1,8 +1,17 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
+# Set package release version here to "1.2.0"
+# After committing set git tag version.
 AC_INIT(ibmtss, 1.2.0, kgold@linux.ibm.com)
 AC_PREREQ([2.63])
+
+# Convert major.minor.micro to libtool versioning (current-revision-age)
+TSSLIB_VER_MAJOR=1
+TSSLIB_VER_MINOR=2
+TSSLIB_VER_MICRO=0
+TSSLIB_VERSION_INFO=`expr $TSSLIB_VER_MAJOR + $TSSLIB_VER_MINOR`:$TSSLIB_VER_MICRO:$TSSLIB_VER_MINOR
+AC_SUBST([TSSLIB_VERSION_INFO], [$TSSLIB_VERSION_INFO])
 
 # Put autotools auxiliary files in a subdir, so they don't clutter top dir:
 AC_CONFIG_AUX_DIR([build-aux])
@@ -24,13 +33,10 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-LT_INIT()
+LT_INIT([disable-static])
 
-PKG_CHECK_MODULES(OPENSSL, [ openssl >= 1.0.1 ])
-AC_SUBST(OPENSSL_CFLAGS)
-AC_SUBST(OPENSSL_LIBS)
+PKG_CHECK_MODULES(LIBCRYPTO, [libcrypto >= 1.0.1 ])
 AC_CHECK_HEADERS(openssl/conf.h)
-AC_CHECK_LIB([crypto], [AES_set_encrypt_key])
 
 # Checks for header files.
 AC_HEADER_STDC
