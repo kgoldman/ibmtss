@@ -3,9 +3,8 @@
 /*		     	TPM2 Measurement Log Common Routines			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: eventlib.c 1290 2018-08-01 14:45:24Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -622,7 +621,7 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
 		if (rc == 0) {
 		    digestSize = TSS_GetDigestSize(event2->digests.digests[i].hashAlg);
 		    if (digestSize == 0) {
-			printf("ERROR: TSS_EVENT2_PCR_Extend: hash algorithm %04hx unlnown\n",
+			printf("ERROR: TSS_EVENT2_PCR_Extend: hash algorithm %04hx unknown\n",
 			       event2->digests.digests[i].hashAlg);
 			rc = 1;
 		    }
