@@ -3,9 +3,8 @@
 /*			     Command Print Utilities				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssprintcmd.c 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -367,7 +366,8 @@ void IncrementalSelfTest_In_Print(IncrementalSelfTest_In *in, unsigned int inden
 void LoadExternal_In_Print(LoadExternal_In *in, unsigned int indent)
 {
     printf("%*s" "TPM2_LoadExternal\n", indent, "");
-    TSS_TPMT_SENSITIVE_Print(&in->inPrivate.t.sensitiveArea, indent);
+    printf("%*s" "inPrivate\n", indent, "");
+    TSS_TPM2B_SENSITIVE_Print(&in->inPrivate, indent);
     TSS_TPM2B_PUBLIC_Print("inPublic", &in->inPublic, indent);
     TSS_TPM_HANDLE_Print("hierarchy", in->hierarchy, indent);
     return;
