@@ -3,9 +3,8 @@
 /*			     TPM2 Response Code Printer				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssresponsecode.c 1257 2018-06-27 20:52:08Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -333,6 +332,7 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_MALFORMED_RESPONSE, "TSS_RC_MALFORMED_RESPONSE - A response packet was fundamentally malformed"},
     {TSS_RC_NULL_PARAMETER, "TSS_RC_NULL_PARAMETER - A required parameter was NULL"},
     {TSS_RC_NOT_IMPLEMENTED, "TSS_RC_NOT_IMPLEMENTED - TSS function is not implemented"},
+    {TSS_RC_BAD_READ_VALUE, "TSS_RC_BAD_READ_VALUE - Actual read value different from expected"},
     {TSS_RC_FILE_OPEN, "TSS_RC_FILE_OPEN - The file could not be opened"},
     {TSS_RC_FILE_SEEK, "TSS_RC_FILE_SEEK - A file seek failed"},
     {TSS_RC_FILE_FTELL, "TSS_RC_FILE_FTELL - A file ftell failed"},
