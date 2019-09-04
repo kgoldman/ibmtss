@@ -3,9 +3,8 @@
 /*			    NV GlobalWriteLock	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvglobalwritelock.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -228,8 +227,8 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_NV_GlobalWriteLock\n");
     printf("\n");
-    printf("\t[-hia\thierarchy authorization (o, p)(default index authorization)]\n");
-    printf("\t-pwd\tauthorization password (default empty)\n");
+    printf("\t-hia\thierarchy authorization (o, p)\n");
+    printf("\t[-pwd\tauthorization password (default empty)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t01\tcontinue\n");
