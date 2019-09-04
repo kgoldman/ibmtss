@@ -3,9 +3,8 @@ REM #										    #
 REM #			TPM2 regression test					    #
 REM #			     Written by Ken Goldman				    #
 REM #		       IBM Thomas J. Watson Research Center			    #
-REM #		$Id: testnvpin.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										    #
-REM # (c) Copyright IBM Corporation 2016					    #
+REM # (c) Copyright IBM Corporation 2016 - 2019					    #
 REM # 										    #
 REM # All rights reserved.							    #
 REM # 										    #
@@ -84,7 +83,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "NV Define Space, 01000002, ordinary index, with policysecret for pin pass fail 01000000"
+echo "NV Define Space, 01000002, ordinary index, with policysecret for pin fail index 01000000"
 %TPM_EXE_PATH%nvdefinespace -ha 01000002 -hi o -pwdn pfi -ty o -hia p -sz 1 -pol policies/policysecretnvpf.bin  > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -131,13 +130,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Platform read does not affect count"
-%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 > run.out
+%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 -id 0 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Platform read does not affect count, should succeed"
-%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 > run.out
+%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8  -id 0 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -160,8 +159,8 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Policy read"
-%TPM_EXE_PATH%nvread -ha 01000000 -se0 03000000 1 > run.out
+echo "Policy read should not increment pin count"
+%TPM_EXE_PATH%nvread -ha 01000000  -id 0 1 -se0 03000000 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -172,8 +171,8 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Index read"
-%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
+echo "Index read should increment pin count"
+%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 8 -id 1 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -185,7 +184,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Platform read, no uses"
-%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 > run.out
+%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 -id 1 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -212,7 +211,7 @@ IF !ERRORLEVEL! EQU 0 (
   exit /B 1
 )
 
-echo "Policy Secret with PWAP session"
+echo "Policy Secret with PWAP session, should consume pin couunt"
 %TPM_EXE_PATH%policysecret -ha 01000000 -hs 03000000 -pwde nnn > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -443,7 +442,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Platform read"
-%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 > run.out
+%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 -id 0 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -466,7 +465,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Policy write, 01000000, 1 failure"
+echo "Policy write, 01000000, platform auth"
 %TPM_EXE_PATH%nvwrite -ha 01000000 -id 0 1 -se0 03000000 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -479,19 +478,19 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy read, 01000000"
-%TPM_EXE_PATH%nvread -ha 01000000 -sz 8 -se0 03000000 1 > run.out
+%TPM_EXE_PATH%nvread -ha 01000000 -sz 8 -id 0 1 -se0 03000000 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Platform write, 01000000, 1 failure"
+echo "Platform write, 01000000, 0/ 1 failure"
 %TPM_EXE_PATH%nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Index read, 01000000, correct password"
-%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
+%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 8 -id 0 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -502,20 +501,20 @@ IF !ERRORLEVEL! EQU 0 (
   exit /B 1
 )
 
-echo "Index read, 01000000, correct password - should fail"
+echo "Index read, 01000000, correct password - should fail because tries used"
 %TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
 IF !ERRORLEVEL! EQU 0 (
   exit /B 1
 )
 
-echo "Platform write, 01000000, 1 failure"
+echo "Platform write, 01000000, 0 / 1 failure"
 %TPM_EXE_PATH%nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Index read, 01000000"
-%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
+%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 8 -id 0 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -766,8 +765,265 @@ IF !ERRORLEVEL! EQU 0 (
   exit /B 1
 )
 
+rem #
+rem # Additional test for pinCount update when NV auth is not used.  This
+rem # tests for a bug fix
+rem #
+
+rem #
+rem # policy calculation
+rem #
+
+echo "Create the policy digest that will be used for the NvIndex write term"
+%TPM_EXE_PATH%startauthsession -se t > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "policycommandcode TPM_CC_NV_Write"
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 137 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Get the policycommandcode write term"
+%TPM_EXE_PATH%policygetdigest -ha 03000000 -of tmppw.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Restart the trial policy session"
+%TPM_EXE_PATH%policyrestart -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "policycommandcode TPM_CC_NV_Read"
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 14e > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Get the policycommandcode read term"
+%TPM_EXE_PATH%policygetdigest -ha 03000000 -of tmppr.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Restart the trial policy session"
+%TPM_EXE_PATH%policyrestart -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Trial Policy OR"
+%TPM_EXE_PATH%policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Get the policyor result"
+%TPM_EXE_PATH%policygetdigest -ha 03000000 -of tmpor.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Flush the trial policy session"
+%TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+rem #
+rem # Test PIN fail
+rem #
+
+rem # Write the PIN fail index
+
+echo "Creating the NvIndex as PIN Fail, remove authwrite, authread, add ownerread"
+%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -ty f -pwdn pass -pol tmpor.bin -at aw -at ar +at or > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Start policy sesion"
+%TPM_EXE_PATH%startauthsession -se p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "policycommandcode TPM_CC_NV_Write"
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 137 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Policy OR"
+%TPM_EXE_PATH%policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Writing count 0, limit 2"
+%TPM_EXE_PATH%nvwrite -ha 01000000 -id 0 2 -se0 03000000 01 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+rem # test the PIN fail index
+
+echo "Using with PolicySecret, first failure case, increments count"
+%TPM_EXE_PATH%policysecret -ha 01000000 -hs 03000000 -pwde pas > run.out
+IF !ERRORLEVEL! EQU 0 (
+  exit /B 1
+)
+
+echo "policycommandcode TPM_CC_NV_Read"
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 14e > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Policy OR"
+%TPM_EXE_PATH%policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Read the index, should be 1 2"
+%TPM_EXE_PATH%nvread -ha 01000000 -id 1 2 -se0 03000000 01 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Using with PolicySecret, second failure case"
+%TPM_EXE_PATH%policysecret -ha 01000000 -hs 03000000 -pwde pas > run.out
+IF !ERRORLEVEL! EQU 0 (
+  exit /B 1
+)
+
+echo "Read the index, owner auth, should be 2 2"
+%TPM_EXE_PATH%nvread -ha 01000000 -hia o -id 2 2 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+rem # cleanup
+
+echo "Undefine the PIN fail index"
+%TPM_EXE_PATH%nvundefinespace -ha 01000000 -hi o > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+rem #
+rem # Test PIN pass
+rem #
+
+rem # Write the PIN pass index
+
+echo "Creating the NvIndex as PIN Pass, remove authwrite, authread, add ownerread"
+%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -ty p -pwdn pass -pol tmpor.bin -at aw -at ar +at or > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "policycommandcode TPM_CC_NV_Write"
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 137 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Policy OR"
+%TPM_EXE_PATH%policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Writing count 0, limit 2"
+%TPM_EXE_PATH%nvwrite -ha 01000000 -id 0 2 -se0 03000000 01 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+rem # test the PIN pass index
+
+echo "policycommandcode TPM_CC_NV_Read"
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 14e > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Policy OR"
+%TPM_EXE_PATH%policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Read the index, should be 0 2"
+%TPM_EXE_PATH%nvread -ha 01000000 -id 0 2 -se0 03000000 01 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Read the index, owner auth, should be 0 2"
+%TPM_EXE_PATH%nvread -ha 01000000 -hia o -id 0 2 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Using with PolicySecret, success, increments count"
+%TPM_EXE_PATH%policysecret -ha 01000000 -hs 03000000 -pwde pass > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Restart the policy session"
+%TPM_EXE_PATH%policyrestart -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "policycommandcode TPM_CC_NV_Read"
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 14e > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Policy OR"
+%TPM_EXE_PATH%policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Read the index, should be 1 2"
+%TPM_EXE_PATH%nvread -ha 01000000 -id 1 2 -se0 03000000 00 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Read the index, owner auth, should be 1 2"
+%TPM_EXE_PATH%nvread -ha 01000000 -hia o -id 1 2 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+rem # cleanup
+
+echo "Undefine the PIN fail index"
+%TPM_EXE_PATH%nvundefinespace -ha 01000000 -hi o > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+rm -r tmppw.bin
+rm -r tmppr.bin
+rm -r tmpor.bin
+
+rem # %TPM_EXE_PATH%getcapability  -cap 1 -pr 80000000
+rem # %TPM_EXE_PATH%getcapability  -cap 1 -pr 02000000
+rem # %TPM_EXE_PATH%getcapability  -cap 1 -pr 03000000
+rem # %TPM_EXE_PATH%getcapability  -cap 1 -pr 01000000
+
 exit /B 0
 
-REM # %TPM_EXE_PATH%getcapability  -cap 1 -pr 80000000
-REM # %TPM_EXE_PATH%getcapability  -cap 1 -pr 02000000
-REM # %TPM_EXE_PATH%getcapability  -cap 1 -pr 01000000

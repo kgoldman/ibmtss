@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testnvpin.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2016 - 2018					#
+# (c) Copyright IBM Corporation 2016 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -80,7 +79,7 @@ echo "Platform write to set written bit"
 ${PREFIX}nvwrite -ha 01000001 -hia p -ic 0 > run.out
 checkSuccess $?
 
-echo "NV Define Space, 01000002, ordinary index, with policysecret for pin pass fail 01000000"
+echo "NV Define Space, 01000002, ordinary index, with policysecret for pin fail index 01000000"
 ${PREFIX}nvdefinespace -ha 01000002 -hi o -pwdn pfi -ty o -hia p -sz 1 -pol policies/policysecretnvpf.bin > run.out
 checkSuccess $?
 
@@ -113,11 +112,11 @@ ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
 echo "Platform read does not affect count"
-${PREFIX}nvread -ha 01000000 -hia p -sz 8 > run.out
+${PREFIX}nvread -ha 01000000 -hia p -sz 8 -id 0 1 > run.out
 checkSuccess $?
 
 echo "Platform read does not affect count, should succeed"
-${PREFIX}nvread -ha 01000000 -hia p -sz 8 > run.out
+${PREFIX}nvread -ha 01000000 -hia p -sz 8 -id 0 1 > run.out
 checkSuccess $?
 
 echo "Policy Secret with PWAP session, platform auth"
@@ -132,16 +131,16 @@ echo "Policy Secret with PWAP session, platform auth"
 ${PREFIX}policysecret -ha 4000000c -hs 03000000 > run.out
 checkSuccess $?
 
-echo "Policy read"
-${PREFIX}nvread -ha 01000000 -se0 03000000 1 > run.out
+echo "Policy read should not increment pin count"
+${PREFIX}nvread -ha 01000000 -id 0 1 -se0 03000000 1 > run.out
 checkSuccess $?
 
 echo "Platform write, 1 use, 0 / 1"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
-echo "Index read"
-${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
+echo "Index read should increment pin count"
+${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 -id 1 1 > run.out
 checkSuccess $?
 
 echo "Index read, no uses - should fail"
@@ -149,7 +148,7 @@ ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
 checkFailure $?
 
 echo "Platform read, no uses"
-${PREFIX}nvread -ha 01000000 -hia p -sz 8 > run.out
+${PREFIX}nvread -ha 01000000 -hia p -sz 8 -id 1 1 > run.out
 checkSuccess $?
 
 echo ""
@@ -168,7 +167,7 @@ echo "Policy Secret with PWAP session, bad password does not consume pinCount - 
 ${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde nnnx > run.out
 checkFailure $?
 
-echo "Policy Secret with PWAP session"
+echo "Policy Secret with PWAP session, should consume pin couunt"
 ${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde nnn > run.out
 checkSuccess $?
 
@@ -329,7 +328,7 @@ ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
 echo "Platform read"
-${PREFIX}nvread -ha 01000000 -hia p -sz 8 > run.out
+${PREFIX}nvread -ha 01000000 -hia p -sz 8 -id 0 1 > run.out
 checkSuccess $?
 
 echo "Platform read with bad password - should fail"
@@ -344,7 +343,7 @@ echo "Policy Secret with PWAP session, platform auth"
 ${PREFIX}policysecret -ha 4000000c -hs 03000000 > run.out
 checkSuccess $?
 
-echo "Policy write, 01000000, 1 failure"
+echo "Policy write, 01000000, platform auth"
 ${PREFIX}nvwrite -ha 01000000 -id 0 1 -se0 03000000 1 > run.out
 checkSuccess $?
 
@@ -353,31 +352,31 @@ ${PREFIX}policysecret -ha 4000000c -hs 03000000 > run.out
 checkSuccess $?
 
 echo "Policy read, 01000000"
-${PREFIX}nvread -ha 01000000 -sz 8 -se0 03000000 1 > run.out
+${PREFIX}nvread -ha 01000000 -sz 8 -id 0 1 -se0 03000000 1 > run.out
 checkSuccess $?
 
-echo "Platform write, 01000000, 1 failure"
+echo "Platform write, 01000000, 0 / 1 failure"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
 echo "Index read, 01000000, correct password"
-${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
+${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 -id 0 1 > run.out
 checkSuccess $?
 
 echo "Index read, 01000000, bad password - should fail"
 ${PREFIX}nvread -ha 01000000 -pwdn nn -sz 8 > run.out
 checkFailure $?
 
-echo "Index read, 01000000, correct password - should fail"
+echo "Index read, 01000000, correct password - fail because tries used"
 ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
 checkFailure $?
 
-echo "Platform write, 01000000, 1 failure"
+echo "Platform write, 01000000, 0 / 1 failure"
 ${PREFIX}nvwrite -ha 01000000 -hia p -id 0 1 > run.out
 checkSuccess $?
 
 echo "Index read, 01000000"
-${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
+${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 -id 0 1 > run.out
 checkSuccess $?
 
 echo ""
@@ -552,6 +551,189 @@ echo "NV Define Space, 01000000, PIN Fail, noDA clear - should fail"
 ${PREFIX}nvdefinespace -ha 01000000 -hi p -pwdn nnn -ty f -hia p -at da > run.out
 checkFailure $?
 
+#
+# Additional test for pinCount update when NV auth is not used.  This
+# tests for a bug fix
+#
+
+#
+# policy calculation
+#
+
+echo "Create the policy digest that will be used for the NvIndex write term"
+${PREFIX}startauthsession -se t > run.out
+checkSuccess $?
+
+echo "policycommandcode TPM_CC_NV_Write"
+${PREFIX}policycommandcode -ha 03000000 -cc 137 > run.out
+checkSuccess $?
+
+echo "Get the policycommandcode write term"
+${PREFIX}policygetdigest -ha 03000000 -of tmppw.bin > run.out
+checkSuccess $?
+
+echo "Restart the trial policy session"
+${PREFIX}policyrestart -ha 03000000 > run.out
+checkSuccess $?
+
+echo "policycommandcode TPM_CC_NV_Read"
+${PREFIX}policycommandcode -ha 03000000 -cc 14e > run.out
+checkSuccess $?
+
+echo "Get the policycommandcode read term"
+${PREFIX}policygetdigest -ha 03000000 -of tmppr.bin > run.out
+checkSuccess $?
+
+echo "Restart the trial policy session"
+${PREFIX}policyrestart -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Trial Policy OR"
+${PREFIX}policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+checkSuccess $?
+
+echo "Get the policyor result"
+${PREFIX}policygetdigest -ha 03000000 -of tmpor.bin > run.out
+checkSuccess $?
+
+echo "Flush the trial policy session"
+${PREFIX}flushcontext -ha 03000000 > run.out
+checkSuccess $?
+
+#
+# Test PIN fail
+#
+
+# Write the PIN fail index
+
+echo "Creating the NvIndex as PIN Fail, remove authwrite, authread, add ownerread"
+${PREFIX}nvdefinespace -hi o -ha 01000000 -ty f -pwdn pass -pol tmpor.bin -at aw -at ar +at or > run.out
+checkSuccess $?
+
+echo "Start policy sesion"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo "policycommandcode TPM_CC_NV_Write"
+${PREFIX}policycommandcode -ha 03000000 -cc 137 > run.out
+checkSuccess $?
+
+echo "Policy OR"
+${PREFIX}policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+checkSuccess $?
+
+echo "Writing count 0, limit 2"
+${PREFIX}nvwrite -ha 01000000 -id 0 2 -se0 03000000 01 > run.out
+checkSuccess $?
+
+# test the PIN fail index
+
+echo "Using with PolicySecret, first failure case, increments count"
+${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde pas > run.out
+checkFailure $?
+
+echo "policycommandcode TPM_CC_NV_Read"
+${PREFIX}policycommandcode -ha 03000000 -cc 14e > run.out
+checkSuccess $?
+
+echo "Policy OR"
+${PREFIX}policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+checkSuccess $?
+
+echo "Read the index, should be 1 2"
+${PREFIX}nvread -ha 01000000 -id 1 2 -se0 03000000 01 > run.out
+checkSuccess $?
+
+echo "Using with PolicySecret, second failure case"
+${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde pas > run.out
+checkFailure $?
+
+echo "Read the index, owner auth, should be 2 2"
+${PREFIX}nvread -ha 01000000 -hia o -id 2 2 > run.out
+checkSuccess $?
+
+# cleanup
+
+echo "Undefine the PIN fail index"
+${PREFIX}nvundefinespace -ha 01000000 -hi o > run.out
+checkSuccess $?
+
+#
+# Test PIN pass
+#
+
+# Write the PIN pass index
+
+echo "Creating the NvIndex as PIN Pass, remove authwrite, authread, add ownerread"
+${PREFIX}nvdefinespace -hi o -ha 01000000 -ty p -pwdn pass -pol tmpor.bin -at aw -at ar +at or > run.out
+checkSuccess $?
+
+echo "policycommandcode TPM_CC_NV_Write"
+${PREFIX}policycommandcode -ha 03000000 -cc 137 > run.out
+checkSuccess $?
+
+echo "Policy OR"
+${PREFIX}policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+checkSuccess $?
+
+echo "Writing count 0, limit 2"
+${PREFIX}nvwrite -ha 01000000 -id 0 2 -se0 03000000 01 > run.out
+checkSuccess $?
+
+# test the PIN pass index
+
+echo "policycommandcode TPM_CC_NV_Read"
+${PREFIX}policycommandcode -ha 03000000 -cc 14e > run.out
+checkSuccess $?
+
+echo "Policy OR"
+${PREFIX}policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+checkSuccess $?
+
+echo "Read the index, should be 0 2"
+${PREFIX}nvread -ha 01000000 -id 0 2 -se0 03000000 01 > run.out
+checkSuccess $?
+
+echo "Read the index, owner auth, should be 0 2"
+${PREFIX}nvread -ha 01000000 -hia o -id 0 2 > run.out
+checkSuccess $?
+
+echo "Using with PolicySecret, success, increments count"
+${PREFIX}policysecret -ha 01000000 -hs 03000000 -pwde pass > run.out
+checkSuccess $?
+
+echo "Restart the policy session"
+${PREFIX}policyrestart -ha 03000000 > run.out
+checkSuccess $?
+
+echo "policycommandcode TPM_CC_NV_Read"
+${PREFIX}policycommandcode -ha 03000000 -cc 14e > run.out
+checkSuccess $?
+
+echo "Policy OR"
+${PREFIX}policyor -ha 03000000 -if tmppw.bin -if tmppr.bin > run.out
+checkSuccess $?
+
+echo "Read the index, should be 1 2"
+${PREFIX}nvread -ha 01000000 -id 1 2 -se0 03000000 00 > run.out
+checkSuccess $?
+
+echo "Read the index, owner auth, should be 1 2"
+${PREFIX}nvread -ha 01000000 -hia o -id 1 2 > run.out
+checkSuccess $?
+
+# cleanup
+
+echo "Undefine the PIN fail index"
+${PREFIX}nvundefinespace -ha 01000000 -hi o > run.out
+checkSuccess $?
+
+rm -r tmppw.bin
+rm -r tmppr.bin
+rm -r tmpor.bin
+
 # ${PREFIX}getcapability  -cap 1 -pr 80000000
 # ${PREFIX}getcapability  -cap 1 -pr 02000000
+# ${PREFIX}getcapability  -cap 1 -pr 03000000
 # ${PREFIX}getcapability  -cap 1 -pr 01000000
+

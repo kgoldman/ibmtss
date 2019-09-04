@@ -49,6 +49,7 @@
 #include <ibmtss/tsscryptoh.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssresponsecode.h>
+#include <ibmtss/Unmarshal_fp.h>
 #include "ekutils.h"
 
 static void printUsage(void);
@@ -72,6 +73,10 @@ int main(int argc, char *argv[])
     const char 			*datafilename = NULL;
     TPMI_RH_NV_INDEX		nvIndex = 0;
     const char			*nvPassword = NULL; 		/* default no password */
+    uint32_t 			pinCount = 0;	/* these two initialized to suppress falose gcc -O3
+						   warnings */
+    uint32_t 			pinLimit = 0;
+    int				inData = FALSE;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
     TPMI_SH_AUTH_SESSION    	sessionHandle1 = TPM_RH_NULL;
@@ -164,6 +169,25 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-ocert option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i], "-id")  == 0) {
+	    i++;
+	    if (i < argc) {
+		pinCount = atoi(argv[i]);
+		i++;
+		if (i < argc) {
+		    pinLimit = atoi(argv[i]);
+		    inData = TRUE;
+		}
+		else {
+		    printf("-id option needs two values\n");
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("-id option needs two values\n");
 		printUsage();
 	    }
 	}
@@ -315,6 +339,12 @@ int main(int argc, char *argv[])
 	    readBuffer = NULL;
 	}
     }
+    if ((rc == 0) && inData) {
+	if (readLength != 8) {
+	    printf("-id needs read length 8, is %u\n", readLength);
+	    exit(1);	
+	}
+    }
     /* data may have to be read in chunks.  Read the TPM_PT_NV_BUFFER_MAX, the chunk size */
     if (rc == 0) {
 	rc = readNvBufferMax(tssContext,
@@ -393,7 +423,26 @@ int main(int argc, char *argv[])
 	    x509FreeStructure(x509Certificate);   	/* @2 */
 	}
     }
-    else {
+    /* PIN index regression test aid, compare expected to actual */
+    if (rc == 0) {
+	if (inData) {
+	    uint32_t tmpSize = 8;		/* readLength was checked previously */
+	    uint8_t *tmpBuffer = readBuffer;
+	    uint32_t actual;		/* data comes off TPM big endian (nbo) */
+
+	    TSS_UINT32_Unmarshalu(&actual, &tmpBuffer, &tmpSize);
+	    if (pinCount != actual) {
+		printf("Error: Expected pinCount %u Actual %u\n", pinCount, actual);
+		rc = TSS_RC_BAD_READ_VALUE;
+	    }
+	    TSS_UINT32_Unmarshalu(&actual, &tmpBuffer, &tmpSize);
+	    if (pinLimit != actual) {
+		printf("Error: Expected pinLimit %u Actual %u\n", pinLimit, actual);
+		rc = TSS_RC_BAD_READ_VALUE;
+	    }
+	}
+    }
+    if (rc != 0) {
 	const char *msg;
 	const char *submsg;
 	const char *num;
@@ -424,6 +473,7 @@ static void printUsage(void)
     printf("\t[-ocert\t certificate file name, writes in PEM format\n");
     printf("\t[-off\t offset (default 0)]\n");
     printf("\t[-of\t data file (default do not save)]\n");
+    printf("\t[-id\tdata values for pinCount and pinLimit verification, (4 bytes each)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t01\tcontinue\n");
