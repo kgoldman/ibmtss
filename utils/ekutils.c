@@ -2162,7 +2162,7 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,		/* from certificate */
 	      /* compression algorithm is the extra byte at the beginning of the certificate */
 	      if (rc == 0) {
 		  if (tpmtPublic->unique.ecc.x.t.size +
-		      tpmtPublic->unique.ecc.x.t.size + 1
+		      tpmtPublic->unique.ecc.y.t.size + 1
 		      != publicKeyBytes) {
 		      printf("processValidatePrimary: "
 			     "X509 certificate key length %u does not match "
