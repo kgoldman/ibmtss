@@ -72,6 +72,10 @@ int main(int argc, char *argv[])
     const char			*encryptFilename = NULL;
     const char			*decryptFilename = NULL;
     const char			*keyPassword = NULL;
+    const char			*keyPasswordFilename = NULL;
+    uint8_t			*keyPasswordBuffer = NULL;
+    size_t 			keyPasswordBufferLength = 0;
+    const char			*keyPasswordPtr = NULL;
     TPMI_ALG_HASH 		halg = TPM_ALG_NULL;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
@@ -106,6 +110,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-pwdk option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-ipwdk") == 0) {
+	    i++;
+	    if (i < argc) {
+		keyPasswordFilename = argv[i];
+	    }
+	    else {
+		printf("-ipwdk option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -240,6 +254,27 @@ int main(int argc, char *argv[])
 	printf("Missing encrypted message -ie\n");
 	printUsage();
     }
+    if ((keyPassword != NULL) && (keyPasswordFilename != NULL)) {
+	printf("Only one of -pwdk and -ipwdk can be specified\n");
+	printUsage();
+    }
+    if (rc == 0) {
+	/* use passsword from command line */
+	if (keyPassword != NULL) {
+	    keyPasswordPtr = keyPassword;
+	}
+	/* use password from file */
+	else if (keyPasswordFilename != NULL) {
+	    rc = TSS_File_ReadBinaryFile(&keyPasswordBuffer,     /* freed @2 */
+					 &keyPasswordBufferLength,
+					 keyPasswordFilename);
+	    keyPasswordPtr = (const char *)keyPasswordBuffer;
+	}
+	/* empty password */
+	else {
+	    keyPasswordPtr = NULL;
+	}
+    }
     if (rc == 0) {
 	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 				     &length,
@@ -293,7 +328,7 @@ int main(int argc, char *argv[])
 			 (COMMAND_PARAMETERS *)&in,
 			 NULL,
 			 TPM_CC_RSA_Decrypt,
-			 sessionHandle0, keyPassword, sessionAttributes0,
+			 sessionHandle0, keyPasswordPtr, sessionAttributes0,
 			 sessionHandle1, NULL, sessionAttributes1,
 			 sessionHandle2, NULL, sessionAttributes2,
 			 TPM_RH_NULL, NULL, 0);
@@ -328,7 +363,8 @@ int main(int argc, char *argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
-    free(buffer);	/* @1 */
+    free(buffer);		/* @1 */
+    free(keyPasswordBuffer);	/* @2 */
     return rc;
 }
 
@@ -419,7 +455,8 @@ static void printUsage(void)
     printf("Runs TPM2_RSA_Decrypt\n");
     printf("\n");
     printf("\t-hk\tkey handle\n");
-    printf("\t-pwdk\tpassword for key (default empty)\n");
+    printf("\t[-pwdk\tpassword for key (default empty)[\n");
+    printf("\t[-ipwdk\tpassword file for key, nul terminated (default empty)]\n");
     printf("\t-ie\tencrypt file name\n");
     printf("\t-od\tdecrypt file name (default do not save)\n");
     printf("\t[-oid\t(sha1, sha256, sha384 sha512)]\n");

@@ -104,6 +104,71 @@ for %%B in ("" "-bi 80000001 -pwdb sig") do (
 	)
 )
 
+echo ""
+echo "Object Change Auth with password from file"
+echo ""
+
+echo "Load the decryption key under the primary key 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -ipr derpriv.bin -ipu derpub.bin -pwdp sto > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Generate a random password"
+%TPM_EXE_PATH%getrandom -by 16 -ns -nz -of tmppwd.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Object change auth, change password"
+%TPM_EXE_PATH%objectchangeauth -hp 80000000 -ho 80000001 -pwdo dec -ipwdn tmppwd.bin -opr tmppriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the decryption key with the changed auth 800000002"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipr tmppriv.bin -ipu derpub.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Encrypt the message"
+%TPM_EXE_PATH%rsaencrypt -hk 80000002 -id policies/aaa -oe tmpenc.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Decrypt the message"
+%TPM_EXE_PATH%rsadecrypt -hk 80000002 -ipwdk tmppwd.bin -ie tmpenc.bin -od tmpdec.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Compare the result"
+tail --bytes=3 tmpdec.bin > tmp.bin
+diff policies/aaa tmp.bin
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the keypair 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the keypair 80000002"
+%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+REM cleanup
+
+rm tmppwd.bin
+rm tmpenc.bin
+rm tmpdec.bin
+
 exit /B 0
 
 REM getcapability  -cap 1 -pr 80000000

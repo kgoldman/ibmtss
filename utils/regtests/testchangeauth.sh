@@ -89,6 +89,53 @@ do
     done
 done
 
+echo ""
+echo "Object Change Auth with password from file"
+echo ""
+
+echo "Load the decryption key under the primary key 80000001"
+${PREFIX}load -hp 80000000 -ipr derpriv.bin -ipu derpub.bin -pwdp sto > run.out
+checkSuccess $?
+
+echo "Generate a random password"
+RANDOM_PASSWORD=`${PREFIX}getrandom -by 16 -ns -nz -of tmppwd.bin`
+echo " INFO: Random password ${RANDOM_PASSWORD}"
+
+echo "Object change auth, change password to ${RANDOM_PASSWORD}"
+${PREFIX}objectchangeauth -hp 80000000 -ho 80000001 -pwdo dec -ipwdn tmppwd.bin -opr tmppriv.bin > run.out
+checkSuccess $?
+
+echo "Load the decryption key with the changed auth 800000002"
+${PREFIX}load -hp 80000000 -pwdp sto -ipr tmppriv.bin -ipu derpub.bin > run.out
+checkSuccess $?
+
+echo "Encrypt the message"
+${PREFIX}rsaencrypt -hk 80000002 -id policies/aaa -oe tmpenc.bin > run.out
+checkSuccess $?
+
+echo "Decrypt the message"
+${PREFIX}rsadecrypt -hk 80000002 -ipwdk tmppwd.bin -ie tmpenc.bin -od tmpdec.bin > run.out
+checkSuccess $?
+
+echo "Compare the result"
+tail -c 3 tmpdec.bin > tmp.bin
+diff policies/aaa tmp.bin
+checkSuccess $?
+
+echo "Flush the keypair 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Flush the keypair 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+# cleanup
+
+rm -f tmppwd.bin
+rm -f tmpenc.bin
+rm -f tmpdec.bin
+
 # ${PREFIX}getcapability  -cap 1 -pr 80000000
 # ${PREFIX}getcapability  -cap 1 -pr 02000000
 

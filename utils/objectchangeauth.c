@@ -65,7 +65,11 @@ int main(int argc, char *argv[])
     TPMI_DH_OBJECT		parentHandle = TPM_RH_NULL;
     TPMI_DH_OBJECT		objectHandle = TPM_RH_NULL;
     const char			*objectPassword = NULL; 
-    const char			*newPassword = NULL; 
+    const char			*newPassword = NULL;
+    const char			*newPasswordFilename = NULL;
+    uint8_t			*newPasswordBuffer = NULL;
+    size_t 			newPasswordBufferLength = 0;
+    const char			*newPasswordPtr = NULL;
     const char			*privateKeyFilename = NULL;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
@@ -115,6 +119,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-pwdn option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-ipwdn") == 0) {
+	    i++;
+	    if (i < argc) {
+		newPasswordFilename = argv[i];
+	    }
+	    else {
+		printf("-ipwdn option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -214,18 +228,39 @@ int main(int argc, char *argv[])
 	printf("Missing or bad object handle parameter -ho\n");
 	printUsage();
     }
+    if ((newPassword != NULL) && (newPasswordFilename != NULL)) {
+	printf("Only one of -pwdn and -ipwdn can be specified\n");
+	printUsage();
+    }
     if (rc == 0) {
 	in.objectHandle = objectHandle;
 	in.parentHandle = parentHandle;
     }
+    if (rc == 0) {
+	/* use passsword from command line */
+	if (newPassword != NULL) {
+	    newPasswordPtr = newPassword;
+	}
+	/* use password from file */
+	else if (newPasswordFilename != NULL) {
+	    rc = TSS_File_ReadBinaryFile(&newPasswordBuffer,     /* freed @2 */
+					 &newPasswordBufferLength,
+					 newPasswordFilename);
+	    newPasswordPtr = (const char *)newPasswordBuffer;
+	}
+	/* empty password */
+	else {
+	    newPasswordPtr = NULL;
+	}
+    }
     /* convert password string to TPM2B */
     if (rc == 0) {
-	if (newPassword == NULL) {
+	if (newPasswordPtr == NULL) {
 	    in.newAuth.t.size = 0;
 	}
 	else {
 	    rc = TSS_TPM2B_StringCopy(&in.newAuth.b,
-				      newPassword, sizeof(in.newAuth.t.buffer));
+				      newPasswordPtr, sizeof(in.newAuth.t.buffer));
 	}
     }
     /* Start a TSS context */
@@ -282,6 +317,7 @@ static void printUsage(void)
     printf("\t-ho\tobject handle\n");
     printf("\t[-pwdo\tpassword for object (default empty)]\n");
     printf("\t[-pwdn\tnew password for object (default empty)]\n");
+    printf("\t[-pwdni\tnew password file for object, nul terminated (default empty)]\n");
     printf("\t[-opr\tprivate key file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
