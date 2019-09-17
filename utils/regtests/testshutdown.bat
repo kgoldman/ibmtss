@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testshutdown.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2017					#
+REM # (c) Copyright IBM Corporation 2015 - 2019					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -37,6 +36,11 @@ REM # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE	#
 REM # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.	#
 REM #										#
 REM #############################################################################
+
+REM 01000000    WST
+REM 01000001 WD WST
+REM 01000002 GL
+REM 01000003 GL WD
 
 setlocal enableDelayedExpansion
 
@@ -75,7 +79,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -86,20 +90,50 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Define index with write stclear, read stclear"
+echo "Define index 01000000 with write stclear, read stclear"
 %TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at rst +at wst > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "NV Read Public, unwritten Name"
-%TPM_EXE_PATH%nvreadpublic -ha 01000000 > run.out
+echo "Define index 01000001 with write stclear, read stclear"
+%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000001 -pwdn nnn -sz 16 +at rst +at wst +at wd > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "NV write"
+echo "Define index 01000002 with write stclear, read stclear"
+%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000002 -pwdn nnn -sz 16 +at rst +at gl > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Define index 01000003 with write stclear, read stclear"
+%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000003 -pwdn nnn -sz 16 +at rst +at gl +at wd > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write 01000000"
 %TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write 01000001"
+%TPM_EXE_PATH%nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write 01000002"
+%TPM_EXE_PATH%nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write 01000003"
+%TPM_EXE_PATH%nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -110,10 +144,40 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Write lock"
+echo "Write lock 01000000"
 %TPM_EXE_PATH%nvwritelock -ha 01000000 -pwdn nnn > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
+)
+
+echo "Write lock 01000001"
+%TPM_EXE_PATH%nvwritelock -ha 01000001 -pwdn nnn > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV global lock (01000002 and 01000003)"
+%TPM_EXE_PATH%nvglobalwritelock -hia p > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write 01000001 - should fail"
+%TPM_EXE_PATH%nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "NV write 01000002 - should fail"
+%TPM_EXE_PATH%nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "NV write 01000003 - should fail"
+%TPM_EXE_PATH%nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
 )
 
 echo "Shutdown state"
@@ -171,7 +235,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Load the signing key - should fail, primary key missing"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! EQU 0 (
     exit /B 1
 )
@@ -189,7 +253,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Load the signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -212,8 +276,26 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "NV write - should fail, still locked"
+echo "NV write 01000000 - should fail, still locked after TPM Resume"
 %TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "NV write 01000001 - should fail, still locked after TPM Resume"
+%TPM_EXE_PATH%nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "NV write 01000002 - should fail, still locked after TPM Resume"
+%TPM_EXE_PATH%nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "NV write 01000003 - should fail, still locked after TPM Resume"
+%TPM_EXE_PATH%nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
 IF !ERRORLEVEL! EQU 0 (
     exit /B 1
 )
@@ -235,7 +317,7 @@ echo "TPM Restart (state/clear) - hibernate"
 echo ""
 
 echo "Load the signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -306,10 +388,28 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "NV write"
+echo "NV write 01000000 - unlocked after TPM Restart"
 %TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
+)
+
+echo "NV write 01000001 - should fail, still locked after TPM Restart"
+%TPM_EXE_PATH%nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "NV write 01000002 - unlocked after TPM Restart"
+%TPM_EXE_PATH%nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write 01000003 - should fail, still locked after TPM Restart"
+%TPM_EXE_PATH%nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
 )
 
 echo "NV read"
@@ -318,8 +418,14 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "NV Undefine Space"
-%TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 > run.out
+echo "Write lock 01000000"
+%TPM_EXE_PATH%nvwritelock -ha 01000000 -pwdn nnn > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV global lock (01000002 and 01000003)"
+%TPM_EXE_PATH%nvglobalwritelock -hia p > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -372,6 +478,54 @@ IF !ERRORLEVEL! EQU 0 (
 
 echo "Recreate a platform primary storage key"
 %TPM_EXE_PATH%createprimary -hi p -pwdk sto > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write 01000000 - unlocked after TPM Reset"
+%TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write 01000001 - should fail, still locked after TPM Reset"
+%TPM_EXE_PATH%nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "NV write 01000002 - unlocked after TPM Reset"
+%TPM_EXE_PATH%nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV write 01000003 - should fail, still locked after TPM Reset"
+%TPM_EXE_PATH%nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "NV Undefine Space 01000000"
+%TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV Undefine Space 01000001"
+%TPM_EXE_PATH%nvundefinespace -hi p -ha 01000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV Undefine Space 01000002"
+%TPM_EXE_PATH%nvundefinespace -hi p -ha 01000002 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "NV Undefine Space 01000003"
+%TPM_EXE_PATH%nvundefinespace -hi p -ha 01000003 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testcreateloaded.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -46,7 +45,7 @@ echo "CreateLoaded"
 echo ""
 
 echo ""
-echo "CreateLoaded Primary Key"
+echo "CreateLoaded Primary Key, Hierarchy Parent"
 echo ""
 
 for HIER in "40000001" "4000000c" "4000000b"
@@ -95,7 +94,7 @@ do
 done
 
 echo ""
-echo "CreateLoaded Child Key"
+echo "CreateLoaded Child Key, Primary Parent"
 echo ""
 
 echo "CreateLoaded child storage key at 80000001, parent 80000000"
@@ -135,7 +134,44 @@ ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
 echo ""
-echo "CreateLoaded Derived Key"
+echo "CreateLoaded Primary Derived Key, Hierarchy Parent"
+echo ""
+
+for HIER in "e" "o" "p"
+do
+
+    echo "Create a primary ${HIER} derivation parent 80000001"
+    ${PREFIX}createprimary -hi ${HIER} -dp > run.out
+    checkSuccess $?
+
+    echo "Create a derived key 80000002"
+    ${PREFIX}createloaded -hp 80000001 -der -ecc bnp256 -den -kt f -kt p -opu tmppub.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the derived key 80000002"
+    ${PREFIX}flushcontext -ha 80000002 > run.out
+    checkSuccess $?
+
+    echo "Create a derived key 80000002"
+    ${PREFIX}createloaded -hp 80000001 -der -ecc bnp256 -den -kt f -kt p -opu tmppub1.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the derived key 80000002"
+    ${PREFIX}flushcontext -ha 80000002 > run.out
+    checkSuccess $?
+
+    echo "Verify that the two derived keys are the same"
+    diff tmppub.bin tmppub1.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the derivation parent"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+echo ""
+echo "CreateLoaded Child Derived Key, Primary Parent"
 echo ""
 
 echo "Create a derivation parent under the primary key"

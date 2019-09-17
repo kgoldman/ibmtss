@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2019					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -57,7 +57,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the storage key under the primary key, 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -159,7 +159,7 @@ for %%A in (rsa ecc) do (
     )
 
     echo "Validate the %%A EK certificate against the root"
-REM     %TPM_EXE_PATH%createek -alg %%A -root certificates/rootcerts.windows.txt > run.out
+    %TPM_EXE_PATH%createek -alg %%A -root certificates/rootcerts.windows.txt > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

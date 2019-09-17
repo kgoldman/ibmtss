@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testrsa.bat 1307 2018-08-20 19:43:29Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2019					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -249,7 +248,7 @@ echo ""
 echo "Encrypt with OpenSSL OAEP, decrypt with TPM"
 echo ""
 
-echo "Create OAEP encruption key"
+echo "Create OAEP encryption key"
 %TPM_EXE_PATH%create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha1 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out	
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1

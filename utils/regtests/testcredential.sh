@@ -56,7 +56,7 @@ ${PREFIX}getrandom -by 32 -of tmpcredin.bin > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key, 80000001"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Create a restricted signing key under the primary key"
@@ -131,7 +131,7 @@ if [ ${CRYPTOLIBRARY} == "openssl" ]; then
 	checkSuccess $?
 
 	echo "Validate the ${ALG} EK certificate against the root"
-# 	${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
+	${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
 	checkSuccess $?
 
     done

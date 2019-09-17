@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testsign.bat 1324 2018-08-31 16:36:12Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2019					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -46,8 +45,8 @@ echo ""
 
 REM # loop over unrestricted hash algorithms
 
-echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+echo "Load the RSA signing key under the primary key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -64,7 +63,7 @@ for %%H in (%ITERATE_ALGS%) do (
     for %%S in (rsassa rsapss) do (
 
 	    echo "Sign a digest - %%H"
-	    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -scheme %%S -if policies/aaa -os sig.bin -pwdk sig -ipu signpub.bin  > run.out
+	    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -scheme %%S -if policies/aaa -os sig.bin -pwdk sig -ipu signrsapub.bin  > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
@@ -76,7 +75,7 @@ for %%H in (%ITERATE_ALGS%) do (
 	    )
 	
 	    echo "Verify the signature using PEM - %%H"
-	    %TPM_EXE_PATH%verifysignature -ipem signpub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
+	    %TPM_EXE_PATH%verifysignature -ipem signrsapub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
@@ -413,7 +412,6 @@ rm tmpkeypair.pem
 rm tmpkeypair.der
 rm tmpkeypairecc.pem
 rm tmpkeypairecc.der
-rm signpub.pem
 rm pssig.bin
 rm tmppub.bin
 rm tmppub.pem

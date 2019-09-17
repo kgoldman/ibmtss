@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testdup.bat 1301 2018-08-15 21:46:19Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2019					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -66,7 +65,7 @@ REM #	duplicate to K1
 REM #	import to K1
 REM # signing key        K2	80000002
 
-for %%A in ("" "ecc") do (
+for %%A in ("rsa" "ecc") do (
     
     for %%E in ("" "-salg aes -ik tmprnd.bin") do (
 
@@ -392,7 +391,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the storage key K1 80000001 public key "
-%TPM_EXE_PATH%loadexternal -hi p -ipu storepub.bin > run.out
+%TPM_EXE_PATH%loadexternal -hi p -ipu storersapub.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -457,7 +456,7 @@ IF !ERRORLEVEL! NEQ 0 (
 REM at TPM 2
 
 echo "Load storage key K1 80000001 public and private key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

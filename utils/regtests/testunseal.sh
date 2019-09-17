@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testunseal.sh 1316 2018-08-29 14:34:01Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -429,7 +428,7 @@ echo ""
 # sealed data S1 80000001 originally under 80000000
 # target storage key K1 80000002
 
-for ALG in "" "ecc"
+for ALG in "rsa" "ecc"
 do 
 
     echo "Create a sealed data object S1 under the primary key P1 80000000"

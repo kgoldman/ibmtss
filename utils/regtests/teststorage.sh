@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: teststorage.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -49,7 +48,7 @@ echo "RSA Storage key"
 echo ""
 
 echo "Load RSA the storage key 80000001 under the primary key 80000000"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an HMAC auth session"
@@ -79,7 +78,7 @@ do
 	checkSuccess $?
 
 	echo "Load external, storage key public part 80000002 ${NALG}"
-	${PREFIX}loadexternal -halg sha256 -nalg ${NALG} -ipu storepub.bin > run.out
+	${PREFIX}loadexternal -halg sha256 -nalg ${NALG} -ipu storersapub.bin > run.out
 	checkSuccess $?
 
 	echo "Flush the public key 80000002"

@@ -197,7 +197,7 @@ echo ""
 echo "Encrypt with OpenSSL OAEP, decrypt with TPM"
 echo ""
 
-echo "Create OAEP encruption key"
+echo "Create OAEP encryption key"
 ${PREFIX}create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha1 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out	
 checkSuccess $?
 

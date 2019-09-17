@@ -70,7 +70,7 @@ echo ""
 #	import to K1
 # signing key        K2 80000002
 
-for ALG in "" "ecc"
+for ALG in "rsa" "ecc"
 do
     for ENC in "" "-salg aes -ik tmprnd.bin"
     do 
@@ -334,7 +334,7 @@ ${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpk2priv.bin -opu tmpk2pub.bi
 checkSuccess $?
 
 echo "Load the storage key K1 80000001 public key "
-${PREFIX}loadexternal -hi p -ipu storepub.bin > run.out
+${PREFIX}loadexternal -hi p -ipu storersapub.bin > run.out
 checkSuccess $?
 
 echo "Create a signing key O1 with policy"
@@ -379,7 +379,7 @@ checkSuccess $?
 # at TPM 2
 
 echo "Load storage key K1 80000001 public and private key"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Load storage key K2 80000002 public key"

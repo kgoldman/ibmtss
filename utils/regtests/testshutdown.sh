@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testshutdown.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -41,6 +40,12 @@
 #										#
 #################################################################################
 
+# NV Index
+# 01000000    WST
+# 01000001 WD WST
+# 01000002 GL
+# 01000003 GL WD
+
 echo ""
 echo "TPM Resume (state/state) - suspend"
 echo ""
@@ -66,32 +71,76 @@ ${PREFIX}contextsave -ha 02000001 -of tmp.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Context save the signing key"
 ${PREFIX}contextsave -ha 80000001 -of tmpsk.bin > run.out 
 checkSuccess $?
 
-echo "Define index with write stclear, read stclear"
+echo "Define index 01000000 with write stclear, read stclear"
 ${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at rst +at wst > run.out
 checkSuccess $?
 
-echo "NV Read Public, unwritten Name"
-${PREFIX}nvreadpublic -ha 01000000 > run.out
+echo "Define index 01000001 with write stclear, read stclear"
+${PREFIX}nvdefinespace -hi o -ha 01000001 -pwdn nnn -sz 16 +at rst +at wst +at wd > run.out
 checkSuccess $?
 
-echo "NV write"
+echo "Define index 01000002 with write stclear, read stclear"
+${PREFIX}nvdefinespace -hi o -ha 01000002 -pwdn nnn -sz 16 +at rst +at gl > run.out
+checkSuccess $?
+
+echo "Define index 01000003 with write stclear, read stclear"
+${PREFIX}nvdefinespace -hi o -ha 01000003 -pwdn nnn -sz 16 +at rst +at gl +at wd > run.out
+checkSuccess $?
+
+echo "NV write 01000000"
 ${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
+checkSuccess $?
+
+echo "NV write 01000001"
+${PREFIX}nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+checkSuccess $?
+
+echo "NV write 01000002"
+${PREFIX}nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+checkSuccess $?
+
+echo "NV write 01000003"
+${PREFIX}nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
 checkSuccess $?
 
 echo "Read lock"
 ${PREFIX}nvreadlock -ha 01000000 -pwdn nnn > run.out
 checkSuccess $?
 
-echo "Write lock"
+echo "Write lock 01000000"
 ${PREFIX}nvwritelock -ha 01000000 -pwdn nnn > run.out
 checkSuccess $?
+
+echo "Write lock 01000001"
+${PREFIX}nvwritelock -ha 01000001 -pwdn nnn > run.out
+checkSuccess $?
+
+echo "NV global lock (01000002 and 01000003)"
+${PREFIX}nvglobalwritelock -hia p > run.out
+checkSuccess $?
+
+echo "NV write 01000000 - should fail"
+${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
+
+echo "NV write 01000001 - should fail"
+${PREFIX}nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
+
+echo "NV write 01000002 - should fail"
+${PREFIX}nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
+
+echo "NV write 01000003 - should fail"
+${PREFIX}nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
 
 echo "Shutdown state"
 ${PREFIX}shutdown -s > run.out
@@ -130,7 +179,7 @@ ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -se0 02000000 1 >
 checkFailure $?
 
 echo "Load the signing key - should fail, primary key missing"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 checkFailure $?
 
 echo "Create a platform primary storage key"
@@ -142,7 +191,7 @@ ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -se0 02000000 1 >
 checkFailure $?
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Signing Key Self Certify - should fail, session missing"
@@ -157,8 +206,20 @@ echo "Signing Key Self Certify"
 ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -se0 02000001 0 > run.out
 checkSuccess $?
 
-echo "NV write - should fail, still locked"
+echo "NV write 01000000 - should fail, still locked after TPM Resume"
 ${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
+
+echo "NV write 01000001 - should fail, still locked after TPM Resume"
+${PREFIX}nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
+
+echo "NV write 01000002 - should fail, still locked after TPM Resume"
+${PREFIX}nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
+
+echo "NV write 01000003 - should fail, still locked after TPM Resume"
+${PREFIX}nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
 checkFailure $?
 
 echo "NV read - should fail, still locked"
@@ -174,7 +235,7 @@ echo "TPM Restart (state/clear) - hibernate"
 echo ""
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Context save the signing key"
@@ -221,16 +282,32 @@ echo "Verify that PCR 0 is reset"
 diff policies/policypcr0.bin tmp2.bin > run.out
 checkSuccess $?
 
-echo "NV write"
+echo "NV write 01000000 - unlocked after TPM Restart"
 ${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
 checkSuccess $?
+
+echo "NV write 01000001 - should fail, still locked after TPM Restart"
+${PREFIX}nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
+
+echo "NV write 01000002 - unlocked after TPM Restart"
+${PREFIX}nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+checkSuccess $?
+
+echo "NV write 01000003 - should fail, still locked after TPM Restart"
+${PREFIX}nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
 
 echo "NV read"
 ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 16 > run.out
 checkSuccess $?
 
-echo "NV Undefine Space"
-${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
+echo "Write lock 01000000"
+${PREFIX}nvwritelock -ha 01000000 -pwdn nnn > run.out
+checkSuccess $?
+
+echo "NV global lock (01000002 and 01000003)"
+${PREFIX}nvglobalwritelock -hia p > run.out
 checkSuccess $?
 
 echo "Recreate a platform primary storage key"
@@ -269,7 +346,43 @@ echo "Recreate a platform primary storage key"
 ${PREFIX}createprimary -hi p -pwdk sto > run.out
 checkSuccess $?
 
+echo "NV write - unlocked after TPM Reset"
+${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
+checkSuccess $?
+
+echo "NV write 01000000 - unlocked after TPM Reset"
+${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa > run.out
+checkSuccess $?
+
+echo "NV write 01000001 - should fail, still locked after TPM Reset"
+${PREFIX}nvwrite -ha 01000001 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
+
+echo "NV write 01000002 - unlocked after TPM Reset"
+${PREFIX}nvwrite -ha 01000002 -pwdn nnn -if policies/aaa > run.out
+checkSuccess $?
+
+echo "NV write 01000003 - should fail, still locked after TPM Reset"
+${PREFIX}nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
+checkFailure $?
+
 # cleanup 
+
+echo "NV Undefine Space 01000000"
+${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
+checkSuccess $?
+
+echo "NV Undefine Space 01000001"
+${PREFIX}nvundefinespace -hi p -ha 01000001 > run.out
+checkSuccess $?
+
+echo "NV Undefine Space 01000002"
+${PREFIX}nvundefinespace -hi p -ha 01000002 > run.out
+checkSuccess $?
+
+echo "NV Undefine Space 01000003"
+${PREFIX}nvundefinespace -hi p -ha 01000003 > run.out
+checkSuccess $?
 
 # shutdown removes the session
 rm h02000000.bin

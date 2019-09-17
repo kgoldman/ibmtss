@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testsign.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -48,7 +47,7 @@ echo ""
 # loop over unrestricted hash algorithms
 
 echo "Load the RSA signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Create an RSA key pair in PEM format using openssl"
@@ -66,7 +65,7 @@ do
     do
 
 	echo "Sign a digest - $HALG $SCHEME"
-	${PREFIX}sign -hk 80000001 -halg $HALG -scheme $SCHEME -if policies/aaa -os sig.bin -pwdk sig -ipu signpub.bin > run.out
+	${PREFIX}sign -hk 80000001 -halg $HALG -scheme $SCHEME -if policies/aaa -os sig.bin -pwdk sig -ipu signrsapub.bin > run.out
 	checkSuccess $?
 
 	echo "Verify the signature using the TPM - $HALG"
@@ -74,7 +73,7 @@ do
 	checkSuccess $?
 
 	echo "Verify the signature using PEM - $HALG"
-	${PREFIX}verifysignature -ipem signpub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	${PREFIX}verifysignature -ipem signrsapub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
 	checkSuccess $?
 
 	echo "Read the public part"
@@ -328,7 +327,6 @@ rm -f tmpkeypair.pem
 rm -f tmpkeypair.der
 rm -f tmpkeypairecc.pem
 rm -f tmpkeypairecc.der
-rm -f signpub.pem
 rm -r pssig.bin
 rm -r tmppub.bin
 rm -r tmppub.pem

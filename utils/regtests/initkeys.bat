@@ -3,9 +3,8 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: initkeys.bat 1306 2018-08-20 19:33:17Z kgoldman $		#
 REM										#
-REM (c) Copyright IBM Corporation 2015, 2018					#
+REM (c) Copyright IBM Corporation 2015 - 2019					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -48,6 +47,8 @@ REM try to undefine any NV index left over from a previous test.  Do not check f
 %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 -pwdp ppp > run.out
 %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000001 > run.out
 %TPM_EXE_PATH%nvundefinespace -hi o -ha 01000002 > run.out
+%TPM_EXE_PATH%nvundefinespace -hi o -ha 01000003 > run.out
+
 REM same for persistent objects
 %TPM_EXE_PATH%evictcontrol -ho 81800000 -hp 81800000 -hi p > run.out
 
@@ -62,7 +63,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create an RSA storage key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr storepriv.bin -opu storepub.bin -tk stotk.bin -ch stoch.bin -pwdp sto -pwdk sto > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr storersapriv.bin -opu storersapub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
@@ -74,7 +75,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create an unrestricted RSA signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr signpriv.bin -opu signpub.bin -opem signpub.pem -pwdp sto -pwdk sig > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr signrsapriv.bin -opu signrsapub.bin -opem signrsapub.pem -pwdp sto -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
@@ -86,7 +87,25 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a restricted RSA signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -sir -kt f -kt p -opr signrpriv.bin -opu signrpub.bin -opem signrpub.pem -pwdp sto -pwdk sig > run.out
+%TPM_EXE_PATH%create -hp 80000000 -sir -kt f -kt p -opr signrsarpriv.bin -opu signrsarpub.bin -opem signrsarpub.pem -pwdp sto -pwdk sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Create a restricted ECC signing key under the primary key"
+%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -sir -kt f -kt p -opr signeccrpriv.bin -opu signeccrpub.bin -opem signeccrpub.pem -pwdp sto -pwdk sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Create a not fixedTPM RSA signing key under the primary key"
+%TPM_EXE_PATH%create -hp 80000000 -sir -opr signrsanfpriv.bin -opu signrsanfpub.bin -opem signrsanfpub.pem -pwdp sto -pwdk sig > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Create a not fixedTPM ECC signing key under the primary key"
+%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -sir -opr signeccnfpriv.bin -opu signeccnfpub.bin -opem signeccnfpub.pem -pwdp sto -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )

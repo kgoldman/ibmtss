@@ -64,7 +64,7 @@ do
 	# used here because the hash algorithm doesn't have to match
 	# that of the parent.
 
-	echo "Create a ${ASY} ${HALG} storage key under the primary key "
+	echo "Create a ${ASY} ${HALG} decryption key under the primary key "
 	${PREFIX}create -hp 80000000 -nalg ${HALG} -halg ${HALG} ${ASY} -deo -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 222 > run.out
 	checkSuccess $?
 
@@ -204,7 +204,7 @@ echo "Salt Session - EvictControl"
 echo ""
 
 echo "Load the storage key"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Make the storage key persistent"
@@ -232,7 +232,7 @@ echo "Salt Session - ContextSave and ContextLoad"
 echo ""
 
 echo "Load the storage key at 80000001"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Save context for the key at 80000001"
@@ -264,7 +264,7 @@ echo "Salt Audit Session - PCR Read, Read Public, NV Read Public"
 echo ""
 
 echo "Load the storage key at 80000001"
-${PREFIX}load -hp 80000000 -ipr storepriv.bin -ipu storepub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a salted HMAC auth session"

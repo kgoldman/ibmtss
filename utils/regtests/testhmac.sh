@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testhmac.sh 1301 2018-08-15 21:46:19Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -184,7 +183,7 @@ echo "Sign with ticket"
 echo ""
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signrpriv.bin -ipu signrpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsarpriv.bin -ipu signrsarpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Hash and create ticket"

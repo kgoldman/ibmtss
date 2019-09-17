@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testunseal.bat 1317 2018-08-29 18:14:51Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2019					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -523,7 +522,7 @@ REM # primary key P1 80000000
 REM # sealed data S1 80000001 originally under 80000000
 REM # target storage key K1 80000002
 
-for %%A in ("" "ecc") do (
+for %%A in ("rsa" "ecc") do (
 
     echo "Create a sealed data object S1 under the primary key P1 80000000"
     %TPM_EXE_PATH%create -hp 80000000 -bl -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policyccduplicate.bin > run.out
