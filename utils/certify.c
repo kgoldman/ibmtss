@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     const char			*signatureFilename = NULL;
     const char			*attestInfoFilename = NULL;
     const char			*qualifyingDataFilename = NULL;
-    int				useRsa = 1;
+    TPM_ALG_ID			sigAlg = TPM_ALG_RSA;
     TPMS_ATTEST 		tpmsAttest;
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
@@ -155,10 +155,13 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		if (strcmp(argv[i],"rsa") == 0) {
-		    useRsa = 1;
+		    sigAlg = TPM_ALG_RSA;
 		}
 		else if (strcmp(argv[i],"ecc") == 0) {
-		    useRsa = 0;
+		    sigAlg = TPM_ALG_ECDSA;
+		}
+		else if (strcmp(argv[i],"hmac") == 0) {
+		    sigAlg = TPM_ALG_HMAC;
 		}
 		else {
 		    printf("Bad parameter %s for -salg\n", argv[i]);
@@ -290,7 +293,7 @@ int main(int argc, char *argv[])
 	/* Handle of key that will perform certifying */
 	in.objectHandle = objectHandle;
 	in.signHandle = signHandle;
-	if (useRsa) {
+	if (sigAlg == TPM_ALG_RSA) {
 	    /* Table 145 - Definition of TPMT_SIG_SCHEME Structure */
 	    in.inScheme.scheme = TPM_ALG_RSASSA;	
 	    /* Table 144 - Definition of TPMU_SIG_SCHEME Union <IN/OUT, S> */
@@ -298,9 +301,13 @@ int main(int argc, char *argv[])
 	    /* Table 135 - Definition of TPMS_SCHEME_HASH Structure */
 	    in.inScheme.details.rsassa.hashAlg = halg;
 	}
-	else {	/* ecc */
+	else if (sigAlg == TPM_ALG_ECDSA) {
 	    in.inScheme.scheme = TPM_ALG_ECDSA;	
 	    in.inScheme.details.ecdsa.hashAlg = halg;
+	}
+	else {	/* HMAC */
+	    in.inScheme.scheme = TPM_ALG_HMAC;	
+	    in.inScheme.details.hmac.hashAlg = halg;
 	}
     }
     /* data supplied by the caller */
@@ -397,7 +404,7 @@ static void printUsage(void)
     printf("\t-hk\tcertifying key handle\n");
     printf("\t[-pwdk\tpassword for key (default empty)]\n");
     printf("\t[-halg\t(sha1, sha256, sha384 sha512) (default sha256)]\n");
-    printf("\t[-salg\tsignature algorithm (rsa, ecc) (default rsa)]\n");
+    printf("\t[-salg\tsignature algorithm (rsa, ecc, hmac) (default rsa)]\n");
     printf("\t[-qd\tqualifying data file name]\n");
     printf("\t[-os\tsignature file name (default do not save)]\n");
     printf("\t[-oa\tattestation output file name (default do not save)]\n");

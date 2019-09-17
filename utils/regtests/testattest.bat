@@ -167,12 +167,6 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "NV Undefine Space"
-%TPM_EXE_PATH%nvundefinespace -hi o -ha 01000000 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
 echo "Flush the auth session"
 %TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
@@ -191,7 +185,7 @@ IF !ERRORLEVEL! NEQ 0 (
 
 for %%H in (%ITERATE_ALGS%) do (
 
-    echo "Create a %%H HMAC key ${HMACKEY}"
+    echo "Create a %%H HMAC key"
     %TPM_EXE_PATH%create -hp 80000000 -pwdp sto -kh -halg %%H -if tmphkey.bin -opu tmppub.bin -opr tmppriv.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
@@ -203,8 +197,80 @@ for %%H in (%ITERATE_ALGS%) do (
        exit /B 1
     )
 
-    echo "Gettime signed with an HMAC key"
+    echo "Signing Key Self Certify with an HMAC key %%H"
+    %TPM_EXE_PATH%certify -hk 80000001 -ho 80000001 -halg %%H -salg hmac -os sig.bin -oa tmp.bin -qd policies/aaa > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using TPM"
+    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if tmp.bin -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using OpenSSL"
+    %TPM_EXE_PATH%verifysignature -halg %%H -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Quote with an HMAC key %%H"
+    %TPM_EXE_PATH%quote -hp 0 -hk 80000001 -halg %%H -salg hmac -os sig.bin -oa tmp.bin -qd policies/aaa > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using TPM"
+    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if tmp.bin -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using OpenSSL"
+    %TPM_EXE_PATH%verifysignature -halg %%H -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Gettime signed with an HMAC key %%H"
     %TPM_EXE_PATH%gettime -hk 80000001 -halg %%H -salg hmac -os sig.bin -oa tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using TPM"
+    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if tmp.bin -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using OpenSSL"
+    %TPM_EXE_PATH%verifysignature -halg %%H -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "NV Certify with an HMAC key %%H"
+    %TPM_EXE_PATH%nvcertify -ha 01000000 -pwdn nnn -hk 80000001 -halg %%H -salg hmac -sz 16 -os sig.bin -oa tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using TPM"
+    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if tmp.bin -is sig.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Verify the signature %%H using OpenSSL"
+    %TPM_EXE_PATH%verifysignature -halg %%H -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Get command audit digest with an HMAC key %%H"
+    %TPM_EXE_PATH%getcommandauditdigest -hk 80000001 -halg %%H -salg hmac -os sig.bin -oa tmp.bin -qd policies/aaa > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -227,6 +293,12 @@ for %%H in (%ITERATE_ALGS%) do (
        exit /B 1
     )
 
+)
+
+echo "NV Undefine Space"
+%TPM_EXE_PATH%nvundefinespace -hi o -ha 01000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
 )
 
 echo ""

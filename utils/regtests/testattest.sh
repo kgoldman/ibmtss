@@ -138,10 +138,6 @@ echo "Flush the ECC attestation key"
 ${PREFIX}flushcontext -ha 80000002 > run.out
 checkSuccess $?
 
-echo "NV Undefine Space"
-${PREFIX}nvundefinespace -hi o -ha 01000000 > run.out
-checkSuccess $?
-
 echo "Flush the auth session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
@@ -165,8 +161,56 @@ do
     ${PREFIX}load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
     checkSuccess $?
 
-    echo "Gettime signed with an HMAC key"
-    ${PREFIX}gettime -hk 80000001 -halg ${HALG} -salg hmac -os sig.bin -oa tmp.bin > run.out
+    echo "Signing Key Self Certify with an HMAC key ${HALG}"
+    ${PREFIX}certify -hk 80000001 -ho 80000001 -halg ${HALG} -salg hmac -os sig.bin -oa tmp.bin -qd policies/aaa > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using TPM"
+    ${PREFIX}verifysignature -hk 80000001 -halg ${HALG} -if tmp.bin -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using OpenSSL"
+    ${PREFIX}verifysignature -halg ${HALG} -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    checkSuccess $?
+
+    echo "Quote with an HMAC key ${HALG}"
+    ${PREFIX}quote -hp 0 -hk 80000001 -halg ${HALG} -salg hmac -os sig.bin -oa tmp.bin -qd policies/aaa > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using TPM"
+    ${PREFIX}verifysignature -hk 80000001 -halg ${HALG} -if tmp.bin -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using OpenSSL"
+    ${PREFIX}verifysignature -halg ${HALG} -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    checkSuccess $?
+
+    echo "Gettime signed with an HMAC key ${HALG}"
+    ${PREFIX}gettime -hk 80000001 -halg ${HALG} -salg hmac -os sig.bin -oa tmp.bin -qd policies/aaa > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using TPM"
+    ${PREFIX}verifysignature -hk 80000001 -halg ${HALG} -if tmp.bin -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using OpenSSL"
+    ${PREFIX}verifysignature -halg ${HALG} -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    checkSuccess $?
+
+    echo "NV Certify with an HMAC key ${HALG}"
+    ${PREFIX}nvcertify -ha 01000000 -pwdn nnn -hk 80000001 -halg ${HALG} -salg hmac -sz 16 -os sig.bin -oa tmp.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using TPM"
+    ${PREFIX}verifysignature -hk 80000001 -halg ${HALG} -if tmp.bin -is sig.bin > run.out
+    checkSuccess $?
+
+    echo "Verify the signature ${HALG} using OpenSSL"
+    ${PREFIX}verifysignature -halg ${HALG} -if tmp.bin -is sig.bin -ihmac tmphkey.bin > run.out
+    checkSuccess $?
+
+    echo "Get command audit digest with an HMAC key ${HALG}"
+    ${PREFIX}getcommandauditdigest -hk 80000001 -halg ${HALG} -salg hmac -os sig.bin -oa tmp.bin -qd policies/aaa > run.out
     checkSuccess $?
 
     echo "Verify the signature ${HALG} using TPM"
@@ -182,6 +226,10 @@ do
     checkSuccess $?
 
 done
+
+echo "NV Undefine Space"
+${PREFIX}nvundefinespace -hi o -ha 01000000 > run.out
+checkSuccess $?
 
 echo ""
 echo "Audit"
