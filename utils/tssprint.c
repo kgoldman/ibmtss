@@ -2188,7 +2188,9 @@ void TSS_TPMT_SENSITIVE_Print(TPMT_SENSITIVE *source, unsigned int indent)
 void TSS_TPM2B_SENSITIVE_Print(TPM2B_SENSITIVE *source, unsigned int indent)
 {
     printf("%*s" "TPM2B_SENSITIVE size %u\n", indent+2, "", source->t.size);
-    TSS_TPMT_SENSITIVE_Print(&source->t.sensitiveArea, indent+2);
+    if (source->t.size != 0) {
+	TSS_TPMT_SENSITIVE_Print(&source->t.sensitiveArea, indent+2);
+    }
     return;
 }
 
