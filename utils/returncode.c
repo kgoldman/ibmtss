@@ -46,8 +46,6 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
-
 int main(int argc, char *argv[])
 {
     TPM_RC rc;

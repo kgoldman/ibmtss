@@ -3,9 +3,8 @@
 /*			    Quote						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: quote.c 1294 2018-08-09 19:08:34Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -55,7 +54,7 @@
 static void printUsage(void);
 static void printSignature(Quote_Out *out);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -83,7 +82,8 @@ int main(int argc, char *argv[])
   
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     in.PCRselect.pcrSelections[0].sizeofSelect = 3;
     in.PCRselect.pcrSelections[0].pcrSelect[0] = 0;
     in.PCRselect.pcrSelections[0].pcrSelect[1] = 0;
@@ -297,7 +297,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -370,7 +370,7 @@ int main(int argc, char *argv[])
 	uint8_t *tmpBuffer = out.quoted.t.attestationData;
 	uint32_t tmpSize = out.quoted.t.size;
 	rc = TSS_TPMS_ATTEST_Unmarshalu(&tpmsAttest, &tmpBuffer, &tmpSize);
-	if (verbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
+	if (tssUtilsVerbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
     }
     if (rc == 0) {
 	int match;
@@ -391,8 +391,8 @@ int main(int argc, char *argv[])
 				      attestInfoFilename);
     }
     if (rc == 0) {
-	if (verbose) printSignature(&out);
-	if (verbose) printf("quote: success\n");
+	if (tssUtilsVerbose) printSignature(&out);
+	if (tssUtilsVerbose) printf("quote: success\n");
     }
     else {
 	const char *msg;

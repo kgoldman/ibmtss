@@ -3,9 +3,8 @@
 /*			   EncryptDecrypt					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: encryptdecrypt.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -55,7 +54,7 @@
 static void printDecrypt(EncryptDecrypt_Out *out);
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -85,7 +84,8 @@ int main(int argc, char *argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* command line argument defaults */
     
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -321,8 +321,8 @@ int main(int argc, char *argv[])
     }    
     free(buffer);	/* @2 */
     if (rc == 0) {
-	if (verbose) printDecrypt(&out);
-	if (verbose) printf("encryptdecrypt: success\n");
+	if (tssUtilsVerbose) printDecrypt(&out);
+	if (tssUtilsVerbose) printf("encryptdecrypt: success\n");
     }
     else {
 	const char *msg;

@@ -90,7 +90,7 @@ static TPM_RC undefineSpace(TSS_CONTEXT *tssContext,
 			   
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -104,7 +104,8 @@ int main(int argc, char *argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-pwsess") == 0) {
 	    pwSession = TRUE;
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -129,7 +130,7 @@ int main(int argc, char *argv[])
 #endif
     /* Start a TSS context */
     if (rc == 0) {
-	if (verbose) printf("INFO: Create a TSS context\n");
+	if (tssUtilsVerbose) printf("INFO: Create a TSS context\n");
 	rc = TSS_Create(&tssContext);
     }
 #ifndef TPM_TSS_NOCRYPTO
@@ -137,18 +138,18 @@ int main(int argc, char *argv[])
        it against the primary key.   It doesn't walk the certificate chain.  */
     if (rc == 0) {
 	if (!pwSession) {
-	    if (verbose) printf("INFO: Create a primary EK for the salt\n");
+	    if (tssUtilsVerbose) printf("INFO: Create a primary EK for the salt\n");
 	    rc = processPrimary(tssContext,
 				&ekKeyHandle,
 				EK_CERT_RSA_INDEX, EK_NONCE_RSA_INDEX, EK_TEMPLATE_RSA_INDEX,
-				TRUE, verbose);		/* do not flush */
+				TRUE, tssUtilsVerbose);		/* do not flush */
 	}
     }
 #endif	/* TPM_TSS_NOCRYPTO */
     /* start a session, salt with EK, unbound */
     if (rc == 0) {
 	if (!pwSession) {
-	    if (verbose) printf("INFO: Start a salt session\n");
+	    if (tssUtilsVerbose) printf("INFO: Start a salt session\n");
 	    rc = startSession(tssContext,
 			      &sessionHandle,
 			      ekKeyHandle, TPM_RH_NULL);	/* salt, no bind */
@@ -160,23 +161,23 @@ int main(int argc, char *argv[])
     /* Probe to see if the index already exists.  NOTE: A real application would test that the
        NV metadata or Name was correct for the application. */
     if (rc == 0) {
-	if (verbose) printf("INFO: Read the NV index at %08x\n", NVINDEX);
+	if (tssUtilsVerbose) printf("INFO: Read the NV index at %08x\n", NVINDEX);
 	rc = nvReadPublic(tssContext);
 	/* on failure, define the index */
 	if (rc != 0) {
-	    if (verbose) printf("INFO: Create the NV index at %08x\n", NVINDEX);
+	    if (tssUtilsVerbose) printf("INFO: Create the NV index at %08x\n", NVINDEX);
 	    rc = defineSpace(tssContext, sessionHandle);
 	}
     }
     /* flush the salt session */
     if (!pwSession) {
-	if (verbose) printf("INFO: Flush the salt session\n");
+	if (tssUtilsVerbose) printf("INFO: Flush the salt session\n");
 	flush(tssContext, sessionHandle);
     }
     /* start a session, salt with EK, bind with unwritten NV index */
     if (rc == 0) {
 	if (!pwSession) {
-	    if (verbose) printf("INFO: Start a salt and bind session\n");
+	    if (tssUtilsVerbose) printf("INFO: Start a salt and bind session\n");
 	    rc = startSession(tssContext,
 			      &sessionHandle,
 			      ekKeyHandle, NVINDEX);	/* salt, bind */
@@ -187,7 +188,7 @@ int main(int argc, char *argv[])
     }
     /* first write, changes the Name (flushes the session)*/
     if (rc == 0) {
-	if (verbose) printf("INFO: Write the index and written bit\n");
+	if (tssUtilsVerbose) printf("INFO: Write the index and written bit\n");
 	rc = nvWrite(tssContext, sessionHandle);
     }
     /* start a session, salt, bind.  The previous session can't be used (with no password) since the
@@ -195,7 +196,7 @@ int main(int argc, char *argv[])
        could specify a password, but the point is to test bind. */
     if (rc == 0) {
 	if (!pwSession) {
-	    if (verbose) printf("INFO: Start a salt and bind session\n");
+	    if (tssUtilsVerbose) printf("INFO: Start a salt and bind session\n");
 	    rc = startSession(tssContext,
 			      &sessionHandle,
 			      ekKeyHandle, NVINDEX);	/* salt, bind */
@@ -206,23 +207,23 @@ int main(int argc, char *argv[])
     }
     /* second write, note that the Name change is tracked */
     if (rc == 0) {
-	if (verbose) printf("INFO: Write the index\n");
+	if (tssUtilsVerbose) printf("INFO: Write the index\n");
 	rc = nvWrite(tssContext, sessionHandle);
     }
     /* undefine NV index */
-    if (verbose) printf("INFO: Undefine the index\n");
+    if (tssUtilsVerbose) printf("INFO: Undefine the index\n");
     undefineSpace(tssContext, TPM_RS_PW);
     /* flush the session */
     if (!pwSession) {
-	if (verbose) printf("INFO: Flush the session\n");
+	if (tssUtilsVerbose) printf("INFO: Flush the session\n");
 	flush(tssContext, sessionHandle);
 	/* flush the primary key */
-	if (verbose) printf("INFO: Flush the primary key\n");
+	if (tssUtilsVerbose) printf("INFO: Flush the primary key\n");
 	flush(tssContext, ekKeyHandle);
     }
     {
 	TPM_RC rc1;
-	if (verbose) printf("INFO: Delete the TSS context\n");
+	if (tssUtilsVerbose) printf("INFO: Delete the TSS context\n");
 	rc1 = TSS_Delete(tssContext);
 	if (rc == 0) {
 	    rc = rc1;

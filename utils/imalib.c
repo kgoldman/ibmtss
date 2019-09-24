@@ -109,7 +109,7 @@ static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
 			     size_t 		*length,
 			     int 		littleEndian);
 
-extern int verbose;
+extern int tssUtilsVerbose;
 
 /* IMA_Event_Init() initializes the ImaEvent structure so that IMA_Event_Free() is safe.
 
@@ -1266,14 +1266,14 @@ uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match 
     }
     /* compare the calculated hash to the event digest received from the client */
     if (rc == 0) {
-	if (verbose) TSS_PrintAll("IMA_VerifyImaDigest: Received IMA digest",
+	if (tssUtilsVerbose) TSS_PrintAll("IMA_VerifyImaDigest: Received IMA digest",
 				   imaEvent->digest, SHA1_DIGEST_SIZE);
-	if (verbose) TSS_PrintAll("IMA_VerifyImaDigest: Calculated IMA digest",
+	if (tssUtilsVerbose) TSS_PrintAll("IMA_VerifyImaDigest: Calculated IMA digest",
 				   (uint8_t *)&calculatedImaDigest.digest, SHA1_DIGEST_SIZE);
 
 	irc = memcmp(imaEvent->digest, &calculatedImaDigest.digest, SHA1_DIGEST_SIZE);
 	if (irc == 0) {
-	    if (verbose) printf("IMA_VerifyImaDigest: IMA digest verified, event %u\n", eventNum);
+	    if (tssUtilsVerbose) printf("IMA_VerifyImaDigest: IMA digest verified, event %u\n", eventNum);
 	    *badEvent = FALSE;
 	}
 	else {

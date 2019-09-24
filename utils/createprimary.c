@@ -3,9 +3,8 @@
 /*			    Create Primary	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: createprimary.c 1346 2018-10-09 17:40:01Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -57,7 +56,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -99,7 +98,8 @@ int main(int argc, char *argv[])
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* command line argument defaults */
     addObjectAttributes.val = 0;
     addObjectAttributes.val |= TPMA_OBJECT_NODA;
@@ -453,7 +453,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -736,19 +736,19 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	printf("Handle %08x\n", out.objectHandle);
 	if (algPublic == TPM_ALG_RSA) {
-	    if (verbose) TSS_PrintAll("createprimary: public modulus",
+	    if (tssUtilsVerbose) TSS_PrintAll("createprimary: public modulus",
 				      out.outPublic.publicArea.unique.rsa.t.buffer,
 				      out.outPublic.publicArea.unique.rsa.t.size);
 	}
 	else if (algPublic == TPM_ALG_ECC) {
-	    if (verbose) TSS_PrintAll("createprimary: public point X",
+	    if (tssUtilsVerbose) TSS_PrintAll("createprimary: public point X",
 				      out.outPublic.publicArea.unique.ecc.x.t.buffer,
 				      out.outPublic.publicArea.unique.ecc.x.t.size);
-	    if (verbose) TSS_PrintAll("createprimary: public point Y",
+	    if (tssUtilsVerbose) TSS_PrintAll("createprimary: public point Y",
 				      out.outPublic.publicArea.unique.ecc.y.t.buffer,
 				      out.outPublic.publicArea.unique.ecc.y.t.size);
 	}
-	if (verbose) printf("createprimary: success\n");
+	if (tssUtilsVerbose) printf("createprimary: success\n");
     }
     else {
 	const char *msg;

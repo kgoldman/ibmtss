@@ -3,9 +3,8 @@
 /*		    TPM public key TPM2B_PUBLIC to TPM2B_ECC_POINT 		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tpmpublic2eccpoint.c 1324 2018-08-31 16:36:12Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017 - 2018					*/
+/* (c) Copyright IBM Corporation 2017 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -50,7 +49,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -60,7 +59,8 @@ int main(int argc, char *argv[])
     const char			*pointFilename = NULL;
     TPM2B_PUBLIC		public;
     TPM2B_ECC_POINT 		eccPoint2b;
-    
+
+    tssUtilsVerbose = FALSE;
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-ipu") == 0) {
 	    i++;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	}
 	else {
 	    printf("\n%s is not a valid option\n", argv[i]);
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
 	
     }
     if (rc == 0) {
-	if (verbose) printf("tpmpublic2eccpoint: success\n");
+	if (tssUtilsVerbose) printf("tpmpublic2eccpoint: success\n");
     }
     else {
 	const char *msg;

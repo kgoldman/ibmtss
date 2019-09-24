@@ -67,7 +67,7 @@ static TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
 			const char *signingKeyFilename,
 			const char *signingKeyPassword);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -94,7 +94,8 @@ int main(int argc, char *argv[])
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* command line argument defaults */
 
     in.nonceTPM.b.size = 0;	/* three of the components to aHash are optional */
@@ -241,7 +242,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -364,7 +365,7 @@ int main(int argc, char *argv[])
 				      timeoutFilename); 
     }
     if (rc == 0) {
-	if (verbose) printf("policysigned: success\n");
+	if (tssUtilsVerbose) printf("policysigned: success\n");
     }
     else {
 	const char *msg;
@@ -399,7 +400,7 @@ TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
     if (rc == 0) {
 	sizeInBytes = TSS_GetDigestSize(aHash->hashAlg);
 #if 0
-	if (verbose) {
+	if (tssUtilsVerbose) {
 	    TSS_PrintAll("signAHash: aHash",
 			 (uint8_t *)(&aHash->digest), sizeInBytes);
 	}
@@ -421,7 +422,7 @@ TPM_RC signAHash(TPM2B_PUBLIC_KEY_RSA *signature,
     if (rc == 0) {
 	signature->t.size = (uint16_t)signatureLength;	/* length of RSA key checked above */
 #if 0
-	if (verbose) TSS_PrintAll("signAHash: signature",
+	if (tssUtilsVerbose) TSS_PrintAll("signAHash: signature",
 				  signature->t.buffer, signature->t.size);
 #endif
     }

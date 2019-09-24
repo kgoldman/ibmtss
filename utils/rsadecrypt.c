@@ -3,9 +3,8 @@
 /*			   RSA_Decrypt						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: rsadecrypt.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -59,7 +58,7 @@ static TPM_RC padData(uint8_t 		**buffer,
 		      TPMI_RSA_KEY_BITS	keyBits);
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -86,7 +85,8 @@ int main(int argc, char *argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-hk") == 0) {
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -316,8 +316,8 @@ int main(int argc, char *argv[])
 				      decryptFilename); 
     }    
     if (rc == 0) {
-	if (verbose) printRsaDecrypt(&out);
-	if (verbose) printf("rsadecrypt: success\n");
+	if (tssUtilsVerbose) printRsaDecrypt(&out);
+	if (tssUtilsVerbose) printf("rsadecrypt: success\n");
     }
     else {
 	const char *msg;
@@ -401,7 +401,7 @@ static TPM_RC padData(uint8_t 			**buffer,
 	(*buffer)[1] = 0x01;
 	memset(&(*buffer)[2], 0xff, *padLength - 3 - oidSize - digestSize);
 	(*buffer)[*padLength - oidSize - digestSize - 1] = 0x00;
-	if (verbose) TSS_PrintAll("padData: padded data", *buffer, *padLength);
+	if (tssUtilsVerbose) TSS_PrintAll("padData: padded data", *buffer, *padLength);
     }
     return rc;
 }

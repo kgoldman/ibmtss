@@ -68,7 +68,7 @@ static TPM_RC pcrread(TSS_CONTEXT *tssContext,
 		      TPMI_DH_PCR pcrHandle);
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 int vverbose = FALSE;
 
 int main(int argc, char * argv[])
@@ -93,7 +93,8 @@ int main(int argc, char * argv[])
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-	
+    tssUtilsVerbose = FALSE;
+    
     for (i=1 ; i<argc ; i++) {
 	if (strcmp(argv[i],"-if") == 0) {
 	    i++;
@@ -146,7 +147,7 @@ int main(int argc, char * argv[])
 	    printUsage();
 	}
 	else if (!strcmp(argv[i], "-v")) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    vverbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
@@ -174,7 +175,7 @@ int main(int argc, char * argv[])
 		memset((uint8_t *)&in.digests.digests[algs].digest, 0, sizeof(TPMU_HA));
 	    }
 	}
-	if ((rc == 0) && verbose) {
+	if ((rc == 0) && tssUtilsVerbose) {
 	    printf("Initial PCR 10 value\n");
 	    rc = pcrread(tssContext, 10);
 	}
@@ -218,9 +219,9 @@ int main(int argc, char * argv[])
 		/* debug tracing */
 		if (rc == 0) {
 		    ImaTemplateData imaTemplateData;
-		    if (verbose) printf("\n");
+		    if (tssUtilsVerbose) printf("\n");
 		    printf("imaextend: line %u\n", lineNum);
-		    if (verbose) {
+		    if (tssUtilsVerbose) {
 			IMA_Event_Trace(&imaEvent, FALSE);
 			/* unmarshal the template data */
 			if (rc == 0) {
@@ -255,7 +256,7 @@ int main(int argc, char * argv[])
 					 TPM_RS_PW, NULL, 0,
 					 TPM_RH_NULL, NULL, 0);
 		    }
-		    if (rc == 0 && verbose) {
+		    if (rc == 0 && tssUtilsVerbose) {
 			rc = pcrread(tssContext, imaEvent.pcrIndex);
 		    }
 		}
@@ -272,7 +273,7 @@ int main(int argc, char * argv[])
 		    if (rc == 0) {
 			rc = IMA_Event_PcrExtend(simPcrs, &imaEvent);
 		    }
-		    if (rc == 0 && verbose) {
+		    if (rc == 0 && tssUtilsVerbose) {
 			TSS_PrintAll("PCR digest SHA-1",
 				     simPcrs[0][imaEvent.pcrIndex].digest.tssmax,
 				     SHA1_DIGEST_SIZE);
@@ -286,7 +287,7 @@ int main(int argc, char * argv[])
 	    }	/* for each IMA event in range */
 	    IMA_Event_Free(&imaEvent);
 	}	/* for each IMA event line */
-	if (verbose && (loopTime != 0)) printf("set beginEvent to %u\n", lineNum-1);
+	if (tssUtilsVerbose && (loopTime != 0)) printf("set beginEvent to %u\n", lineNum-1);
 	beginEvent = lineNum-1;		/* remove the last increment at EOF */
 	if (infile != NULL) {
 	    fclose(infile);
@@ -322,7 +323,7 @@ int main(int argc, char * argv[])
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("imaextend: success\n");
+	if (tssUtilsVerbose) printf("imaextend: success\n");
     }
     else {
 	const char *msg;

@@ -53,7 +53,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -85,7 +85,8 @@ int main(int argc, char *argv[])
    
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-pwdn") == 0) {
 	    i++;
@@ -237,7 +238,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -338,7 +339,7 @@ int main(int argc, char *argv[])
 	    }
 	}
 	if (rc == 0) {
-	    if (verbose) printf("nvread: reading %u bytes\n", in.size);
+	    if (tssUtilsVerbose) printf("nvread: reading %u bytes\n", in.size);
 	    rc = TSS_Execute(tssContext,
 			     (RESPONSE_PARAMETERS *)&out,
 			     (COMMAND_PARAMETERS *)&in,
@@ -372,7 +373,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	/* if not tracing the certificate, trace the result */
 	if (!cert) {
-	    if (verbose) printf("nvread: success\n");
+	    if (tssUtilsVerbose) printf("nvread: success\n");
 	    TSS_PrintAll("nvread: data", readBuffer, readLength);
 	}
 	if (cert || (certificateFilename != NULL)) {

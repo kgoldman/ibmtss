@@ -3,9 +3,8 @@
 /*			   Nuvoton Preconfig 	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ntc2preconfig.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -66,7 +65,7 @@ static void mergeConfig(NTC2_CFG_STRUCT *preConfigOut,
 			const NTC2_CFG_STRUCT *preConfigIn,
 			const NTC2_CFG_STRUCT *preConfigSet);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -83,6 +82,8 @@ int main(int argc, char *argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+    tssUtilsVerbose = FALSE;
+
     memset(&preConfigSet, 0, sizeof(NTC2_CFG_STRUCT));	/* default nothing to change */
     memset(&preConfigIn, 0, sizeof(NTC2_CFG_STRUCT));   /* initialized to suppress false gcc -O3
 							   warning */
@@ -306,7 +307,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -423,7 +424,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("ntc2preconfig: success\n");
+	if (tssUtilsVerbose) printf("ntc2preconfig: success\n");
     }
     else {
 	const char *msg;
