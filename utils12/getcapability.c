@@ -3,9 +3,8 @@
 /*			    TPM 1.2 GetCapability				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: getcapability.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -122,7 +121,7 @@ static const CAPABILITY_TABLE capabilityTable [] = {
     {0xffffffff		      , 0, NULL, 		NULL}
 };
 
-int verbose = FALSE;
+int tssUtilsVerbose;
 
 int main(int argc, char * argv[])
 {
@@ -139,6 +138,7 @@ int main(int argc, char * argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+    tssUtilsVerbose = FALSE;
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-cap") == 0) {
@@ -167,7 +167,7 @@ int main(int argc, char * argv[])
 	    printUsage(cap);
 	}
 	else if (!strcmp(argv[i], "-v")) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -238,7 +238,7 @@ int main(int argc, char * argv[])
 	rc = printResponse(idx, &in, &out);
     }
     if (rc == 0) {
-	if (verbose) printf("getcapability: success\n");
+	if (tssUtilsVerbose) printf("getcapability: success\n");
     }
     else {
 	const char *msg;

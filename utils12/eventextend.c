@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -54,7 +54,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+int tssUtilsVerbose;
 
 int main(int argc, char * argv[])
 {
@@ -76,6 +76,7 @@ int main(int argc, char * argv[])
 	
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+    tssUtilsVerbose = FALSE;
 
     for (i=1 ; i<argc ; i++) {
 	if (strcmp(argv[i],"-if") == 0) {
@@ -112,7 +113,7 @@ int main(int argc, char * argv[])
 	    printUsage();
 	}
 	else if (!strcmp(argv[i], "-v")) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -157,7 +158,7 @@ int main(int argc, char * argv[])
 	    rc = TSS_EVENT_Line_Read(&event, &endOfFile, infile);
 	}
 	/* debug tracing */
-	if ((rc == 0) && !endOfFile && verbose) {
+	if ((rc == 0) && !endOfFile && tssUtilsVerbose) {
 	    printf("\neventextend: line %u\n", lineNum);
 	    TSS_EVENT_Line_Trace(&event);
 	}
@@ -181,14 +182,14 @@ int main(int argc, char * argv[])
 				 TPM_ORD_Extend,
 				 TPM_RH_NULL, NULL, 0);
 	    }
-	    if ((rc == 0) && verbose) {
+	    if ((rc == 0) && tssUtilsVerbose) {
 		TSS_PrintAll("PCR digest", out.outDigest, SHA1_DIGEST_SIZE);
 	    }
 	}
 	if ((rc == 0) && !endOfFile && sim) {	/* extend simulated PCRs */
 	    rc = TSS_EVENT_PCR_Extend(simPcrs, &event);
 	}
-	if ((rc == 0) && verbose && !endOfFile && sim) {
+	if ((rc == 0) && tssUtilsVerbose && !endOfFile && sim) {
 	    TSS_PrintAll("eventextend: new PCR value",
 			 (uint8_t *)&simPcrs[event.pcrIndex].digest, SHA1_DIGEST_SIZE);
 	}
@@ -281,7 +282,7 @@ int main(int argc, char * argv[])
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("eventextend: success\n");
+	if (tssUtilsVerbose) printf("eventextend: success\n");
     }
     else {
 	const char *msg;

@@ -3,9 +3,8 @@
 /*		      Extend an IMA measurement list into PCR 10		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: imaextend.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -70,8 +69,7 @@ static TPM_RC pcrread(TSS_CONTEXT *tssContext,
 		      TPMI_DH_PCR pcrHandle);
 static void printUsage(void);
 
-int verbose = FALSE;
-int vverbose = FALSE;
+int tssUtilsVerbose = FALSE;
 
 int main(int argc, char * argv[])
 {
@@ -89,6 +87,7 @@ int main(int argc, char * argv[])
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+    tssUtilsVerbose = FALSE;
 	
     for (i=1 ; i<argc ; i++) {
 	if (strcmp(argv[i],"-if") == 0) {
@@ -139,8 +138,7 @@ int main(int argc, char * argv[])
 	    printUsage();
 	}
 	else if (!strcmp(argv[i], "-v")) {
-	    verbose = TRUE;
-	    vverbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -156,7 +154,7 @@ int main(int argc, char * argv[])
     if (rc == 0) {
 	rc = TSS_Create(&tssContext);
     }
-    if ((rc == 0) && verbose) {
+    if ((rc == 0) && tssUtilsVerbose) {
 	printf("Initial PCR 10 value\n");
 	rc = pcrread(tssContext, 10);
     }
@@ -188,9 +186,9 @@ int main(int argc, char * argv[])
 	    if ((rc == 0) && (lineNum >= beginEvent) && (lineNum <= endEvent) && !endOfFile) {
 		if (rc == 0) {
 		    /* debug tracing */
-		    if (verbose) printf("\n");
+		    if (tssUtilsVerbose) printf("\n");
 		    printf("imaextend: line %u\n", lineNum);
-		    if (verbose) IMA_Event_Trace(&imaEvent, FALSE);
+		    if (tssUtilsVerbose) IMA_Event_Trace(&imaEvent, FALSE);
 		    in.pcrNum = imaEvent.pcrIndex;		/* normally PCR 10 */
 		}
 		/* copy the SHA-1 digest to be extended */
@@ -205,13 +203,13 @@ int main(int argc, char * argv[])
 				     TPM_ORD_Extend,
 				     TPM_RH_NULL, NULL, 0);
 		}
-		if (rc == 0 && verbose) {
+		if (rc == 0 && tssUtilsVerbose) {
 		    TSS_PrintAll("PCR", out.outDigest, SHA1_DIGEST_SIZE);
 		}
 	    }	/* for each IMA event in range */
 	    IMA_Event_Free(&imaEvent);
 	}	/* for each IMA event line */
-	if (verbose && (loopTime != 0)) printf("set beginEvent to %u\n", lineNum-1);
+	if (tssUtilsVerbose && (loopTime != 0)) printf("set beginEvent to %u\n", lineNum-1);
 	beginEvent = lineNum-1;		/* remove the last increment at EOF */
 	if (infile != NULL) {
 	    fclose(infile);
@@ -225,7 +223,7 @@ int main(int argc, char * argv[])
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("imaextend: success\n");
+	if (tssUtilsVerbose) printf("imaextend: success\n");
     }
     else {
 	const char *msg;
