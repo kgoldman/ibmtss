@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\utils\applink.c" />
     <ClCompile Include="..\..\utils\certifycreation.c" />
+    <ClCompile Include="..\..\utils\cryptoutils.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\tss\tss.vcxproj">
