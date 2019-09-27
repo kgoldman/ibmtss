@@ -218,11 +218,11 @@ createloaded.exe:	createloaded.o objecttemplates.o cryptoutils.o $(LIBTSS)
 createprimary.exe:	createprimary.o objecttemplates.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o objecttemplates.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
 
-eventextend.exe:	eventextend.o eventlib.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o eventlib.o $(LNLIBS) $(LIBTSS) 
+eventextend.exe:	eventextend.o eventlib.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o eventlib.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
 
-imaextend.exe:	imaextend.o imalib.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o imalib.o $(LNLIBS) $(LIBTSS) 
+imaextend.exe:	imaextend.o imalib.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o imalib.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
 
 createek.exe:	createek.o ekutils.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
@@ -242,43 +242,14 @@ nvread.exe:	nvread.o ekutils.o cryptoutils.o $(LIBTSS)
 nvwrite.exe:	nvwrite.o ekutils.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
-readpublic.exe:	readpublic.o cryptoutils.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -libmtss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
-
-policysigned.exe:	policysigned.o cryptoutils.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
-
-sign.exe:	sign.o cryptoutils.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -libmtss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
-
-verifysignature.exe:	verifysignature.o cryptoutils.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -libmtss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
-
-zgen2phase.exe:	zgen2phase.o cryptoutils.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -libmtss  $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
-
 signapp.exe:	signapp.o ekutils.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
 writeapp.exe:	writeapp.o ekutils.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
-tpm2pem.exe:	tpm2pem.o cryptoutils.o $(LIBTSS)
+%.exe:		%.o applink.o cryptoutils.o $(LIBTSS)
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
-
-tpmpublic2eccpoint.exe:	tpmpublic2eccpoint.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)
-
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
-
-publicname.exe:	publicname.o cryptoutils.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS)
-
-getcryptolibrary.exe:	getcryptolibrary.o cryptoutils.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
-
-%.exe:		%.o applink.o $(LIBTSS)
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o $(LNLIBS) $(LIBTSS)
 
 %.o:		%.c
 		$(CC) $(CCFLAGS) $(CCAFLAGS) $< -o $@
