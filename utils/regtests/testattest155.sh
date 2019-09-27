@@ -48,7 +48,7 @@ echo ""
 # 80000002 ECC signing key
 
 echo "Load the RSA signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signpriv.bin -ipu signpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Load the ECC signing key under the primary key"
