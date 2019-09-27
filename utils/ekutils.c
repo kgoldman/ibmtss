@@ -83,12 +83,12 @@
 
 /* The print flag is set by the caller, depending on whether it wants information displayed.
 
-   verbose is a global, used for verbose debug print
+   tssUtilsVerbose is a global, used for verbose debug print
 
    Errors are always printed.
 */
 
-extern int verbose;
+extern int tssUtilsVerbose;
 
 #ifdef TPM_TPM20
 
@@ -123,19 +123,19 @@ TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
 	    *nvBufferMax = out.capabilityData.data.tpmProperties.tpmProperty[0].value;
 	}
 	else {
-	    if (verbose) printf("readNvBufferMax: wrong property returned: %08x\n",
+	    if (tssUtilsVerbose) printf("readNvBufferMax: wrong property returned: %08x\n",
 		   out.capabilityData.data.tpmProperties.tpmProperty[0].property);
 	    /* hard code a value for a back level HW TPM that does not implement
 	       TPM_PT_NV_BUFFER_MAX yet */
 	    *nvBufferMax = 512;
 	}
-	if (verbose) printf("readNvBufferMax: TPM max read/write: %u\n", *nvBufferMax);
+	if (tssUtilsVerbose) printf("readNvBufferMax: TPM max read/write: %u\n", *nvBufferMax);
 	/* in addition, the maximum TSS side structure MAX_NV_BUFFER_SIZE is accounted for.  The TSS
 	   value is typically larger than the TPM value. */
 	if (*nvBufferMax > MAX_NV_BUFFER_SIZE) {
 	    *nvBufferMax = MAX_NV_BUFFER_SIZE;
 	}
-	if (verbose) printf("readNvBufferMax: combined max read/write: %u\n", *nvBufferMax);
+	if (tssUtilsVerbose) printf("readNvBufferMax: combined max read/write: %u\n", *nvBufferMax);
     }
     else {
 	const char *msg;
@@ -160,7 +160,7 @@ TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
     NV_ReadPublic_Out		out;
     
     if (rc == 0) {
-	/* if (verbose) printf("getIndexSize: index %08x\n", nvIndex); */
+	/* if (tssUtilsVerbose) printf("getIndexSize: index %08x\n", nvIndex); */
 	in.nvIndex = nvIndex;
     }
     /* call TSS to execute the command */
@@ -172,7 +172,7 @@ TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
 			 TPM_CC_NV_ReadPublic,
 			 TPM_RH_NULL, NULL, 0);
 	/* only print if verbose, since EK nonce and template index may not exist */
-	if ((rc != 0) && verbose) {
+	if ((rc != 0) && tssUtilsVerbose) {
 	    const char *msg;
 	    const char *submsg;
 	    const char *num;
@@ -182,7 +182,7 @@ TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
 	}
     }
     if (rc == 0) {
-	/* if (verbose) printf("getIndexSize: size %u\n", out.nvPublic.t.nvPublic.dataSize); */
+	/* if (tssUtilsVerbose) printf("getIndexSize: size %u\n", out.nvPublic.t.nvPublic.dataSize); */
 	*dataSize = out.nvPublic.nvPublic.dataSize;
     }
     return rc;
@@ -211,7 +211,7 @@ TPM_RC getIndexData(TSS_CONTEXT *tssContext,
 			     &nvBufferMax);
     }    
     if (rc == 0) {
-	if (verbose) printf("getIndexData: index %08x\n", nvIndex);
+	if (tssUtilsVerbose) printf("getIndexData: index %08x\n", nvIndex);
 	in.authHandle = nvIndex;	/* index authorization */
 	in.nvIndex = nvIndex;
 	in.offset = 0;			/* start at beginning */
@@ -424,7 +424,7 @@ uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
     }
     /* for debug, print the X509 certificate */
     if (rc == 0) {
-	if (verbose) X509_print_fp(stdout, *x509);
+	if (tssUtilsVerbose) X509_print_fp(stdout, *x509);
     }
     if (fp != NULL) {
 	fclose(fp);
@@ -580,7 +580,7 @@ TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
 		rc = TSS_RC_FILE_READ;
 	    } 
 	}
-	if ((rc == 0) && verbose) {
+	if ((rc == 0) && tssUtilsVerbose) {
 	    X509_NAME *x509Name;
 	    char *subject = NULL;
 	    x509Name = X509_get_subject_name(caCert[i]);
@@ -878,7 +878,7 @@ TPM_RC convertX509ToDer(uint32_t *certLength,
     /* convert the X509 structure to binary (internal to DER format) */
     if (rc == 0) {
 	unsigned char *tmpptr = *certificate;
-	if (verbose) printf("convertX509ToDer: Serializing certificate\n");
+	if (tssUtilsVerbose) printf("convertX509ToDer: Serializing certificate\n");
 	irc = i2d_X509(x509Certificate, &tmpptr);
 	if (irc < 0) {
 	    printf("ERROR: convertX509ToDer: Error in certificate serialization i2d_X509()\n");
@@ -900,7 +900,7 @@ TPM_RC convertX509ToEc(EC_KEY **ecKey,	/* freed by caller */
     TPM_RC rc = 0;
     EVP_PKEY *evpPkey = NULL;
 
-    if (verbose) printf("convertX509ToEc: Entry\n\n");
+    if (tssUtilsVerbose) printf("convertX509ToEc: Entry\n\n");
     if (rc == 0) {
 	evpPkey = X509_get_pubkey(x509);	/* freed @1 */
 	if (evpPkey == NULL) {
@@ -955,7 +955,7 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	pkey = X509_get_pubkey(ekCertificate);		/* freed @2 */
 	if (pkey == NULL) {
 #ifndef TPM_TSS_NORSA
-	    if (verbose) printf("convertCertificatePubKey: "
+	    if (tssUtilsVerbose) printf("convertCertificatePubKey: "
 				"Could not extract public key from X509 certificate, "
 				"may be TPM 1.2\n");
 	    /* if the conversion failed, this may be a TPM 1.2 certificate with a non-standard TCG
@@ -1151,7 +1151,7 @@ uint32_t convertPemToX509(X509 **x509,				/* freed by caller */
     int		irc;
     FILE 	*pemCertificateFile = NULL;
 
-    if (verbose) printf("convertPemToX509: Reading PEM certificate file %s\n",
+    if (tssUtilsVerbose) printf("convertPemToX509: Reading PEM certificate file %s\n",
 			pemCertificateFilename);
     if (rc == 0) {
 	pemCertificateFile = fopen(pemCertificateFilename, "r");
@@ -1170,7 +1170,7 @@ uint32_t convertPemToX509(X509 **x509,				/* freed by caller */
 	}
     }
     /* for debug */
-    if ((rc == 0) && verbose) {
+    if ((rc == 0) && tssUtilsVerbose) {
 	irc = X509_print_fp(stdout, *x509);
 	if (irc != 1) {
 	    printf("ERROR: convertPemToX509: Error in certificate print X509_print_fp()\n");
@@ -1244,7 +1244,7 @@ uint32_t convertPemMemToX509(X509 **x509,		/* freed by caller */
     int pemLength;
     int writeLen = 0;
 
-    if (verbose) printf("convertPemMemToX509: pemCertificate\n%s\n", pemCertificate);  
+    if (tssUtilsVerbose) printf("convertPemMemToX509: pemCertificate\n%s\n", pemCertificate);  
     /* create a BIO that uses an in-memory buffer */
     if (rc == 0) {
 	bio = BIO_new(BIO_s_mem());		/* freed @1 */
@@ -1273,7 +1273,7 @@ uint32_t convertPemMemToX509(X509 **x509,		/* freed by caller */
     /* for debug */
 #ifndef TPM_TSS_NOFILE		/* stdout is a file descriptor */
     if (rc == 0) {
-	if (verbose) X509_print_fp(stdout, *x509);
+	if (tssUtilsVerbose) X509_print_fp(stdout, *x509);
     }
 #endif
     if (bio != NULL) {
@@ -1299,7 +1299,7 @@ TPM_RC convertX509ToPem(const char *pemFilename,
     int		irc;
     FILE 	*pemFile = NULL;
 
-    if (verbose) printf("convertX509ToPem: Writing PEM certificate file %s\n",
+    if (tssUtilsVerbose) printf("convertX509ToPem: Writing PEM certificate file %s\n",
 			pemFilename);
     if (rc == 0) {
 	pemFile = fopen(pemFilename, "w");	/* close @1 */
@@ -1611,7 +1611,7 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
       add certificate serial number
     */
     if (rc == 0) {
-	if (verbose) printf("startCertificate: Adding certificate serial number\n");
+	if (tssUtilsVerbose) printf("startCertificate: Adding certificate serial number\n");
 	/* to create a unique serial number, hash the key to be certified */
 	SHA1(keyBuffer, keyLength, x509Serialbin);
 	/* convert the SHA1 digest to a BIGNUM */
@@ -1633,7 +1633,7 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
     }
     /* add issuer */
     if (rc == 0) {
-	if (verbose) printf("startCertificate: Adding certificate issuer\n");
+	if (tssUtilsVerbose) printf("startCertificate: Adding certificate issuer\n");
 	rc = createX509Name(&x509IssuerName,
 			    issuerEntriesSize,
 			    issuerEntries);
@@ -1647,7 +1647,7 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
     }
     /* add validity */
     if (rc == 0) {
-	if (verbose) printf("startCertificate: Adding certificate validity\n");
+	if (tssUtilsVerbose) printf("startCertificate: Adding certificate validity\n");
     }
     if (rc == 0) {
 	/* can't fail, just returns a structure member */
@@ -1669,7 +1669,7 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
     }
     /* add subject */
     if (rc == 0) {
-	if (verbose) printf("startCertificate: Adding certificate subject\n");
+	if (tssUtilsVerbose) printf("startCertificate: Adding certificate subject\n");
 	rc = createX509Name(&x509SubjectName,
 			    subjectEntriesSize,
 			    subjectEntries);
@@ -1794,7 +1794,7 @@ TPM_RC addCertKeyRsa(X509 *x509Certificate,
     int			irc;		/* integer return code */
     EVP_PKEY 		*evpPubkey = NULL;	/* EVP format public key to be certified */
 
-    if (verbose) printf("addCertKeyRsa: add public key to certificate\n");
+    if (tssUtilsVerbose) printf("addCertKeyRsa: add public key to certificate\n");
     /* convert from TPM key data format to openSSL RSA type */
     if (rc == 0) {
 	rc = convertRsaPublicToEvpPubKey(&evpPubkey,	/* freed @1 */
@@ -1898,7 +1898,7 @@ TPM_RC addCertSignatureRoot(X509 *x509Certificate,	/* certificate to be signed *
     }
     /* sign the certificate with the root CA signing key */
     if (rc == 0) {
-	if (verbose) printf("addCertSignatureRoot: Signing the certificate\n");
+	if (tssUtilsVerbose) printf("addCertSignatureRoot: Signing the certificate\n");
 	irc = X509_sign(x509Certificate, evpSignkey, digest);
 	if (irc == 0) {	/* returns signature size, 0 on error */
 	    printf("addCertSignature: Error signing certificate\n");
@@ -1907,7 +1907,7 @@ TPM_RC addCertSignatureRoot(X509 *x509Certificate,	/* certificate to be signed *
     }
     /* verify the signature */
     if (rc == 0) {
-	if (verbose) printf("addCertSignatureRoot: Verifying the certificate\n");
+	if (tssUtilsVerbose) printf("addCertSignatureRoot: Verifying the certificate\n");
 	irc = X509_verify(x509Certificate, evpSignkey);
 	if (irc != 1) {
 	    printf("addCertSignatureRoot: Error verifying certificate\n");

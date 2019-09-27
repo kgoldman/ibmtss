@@ -3,9 +3,8 @@
 /*			    DictionaryAttackLockReset 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*      $Id: dictionaryattacklockreset.c 1290 2018-08-01 14:45:24Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,7 +51,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -70,7 +69,8 @@ int main(int argc, char *argv[])
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-pwd") == 0) {
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -187,7 +187,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("dictionaryattacklockreset: success\n");
+	if (tssUtilsVerbose) printf("dictionaryattacklockreset: success\n");
     }
     else {
 	const char *msg;

@@ -159,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\utils\applink.c" />
+    <ClCompile Include="..\..\utils\cryptoutils.c" />
     <ClCompile Include="..\..\utils\timepacket.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -43,7 +43,7 @@
 
 #include "cryptoutils.h"
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {

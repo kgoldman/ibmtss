@@ -3,9 +3,8 @@
 /*		TPM 2.0 Attestation - Client EK and EK certificate  		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: createekcert.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -90,8 +89,7 @@ static TPM_RC startOIAP(TSS_CONTEXT *tssContext,
 static TPM_RC flushSpecific(TSS_CONTEXT *tssContext,
 			    TPM_AUTHHANDLE sessionHandle);
 
-int vverbose = 0;
-int verbose = 0;
+int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -186,12 +184,11 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = 1;
+	    tssUtilsVerbose = TRUE;
 	}
 	else if (strcmp(argv[i],"-vv") == 0) {
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");	/* trace entire TSS */
-	    verbose = 1;
-	    vverbose = 1;
+	    tssUtilsVerbose = TRUE;
 	}
 	else {
  	    printf("\n%s is not a valid option\n", argv[i]);
@@ -260,7 +257,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	rc = startOIAP(tssContext,
 		       &sessionHandle);
-	if (verbose) printf("createekcert: startOIAP %08x\n", sessionHandle);
+	if (tssUtilsVerbose) printf("createekcert: startOIAP %08x\n", sessionHandle);
     }
     /* store the EK certificate in NV */
     if (rc == 0) {
@@ -272,7 +269,7 @@ int main(int argc, char *argv[])
     }
     /* flush the OIAP session */
     if (rc == 0) {
-	if (verbose) printf("createekcert: flushSpecific %08x\n", sessionHandle);
+	if (tssUtilsVerbose) printf("createekcert: flushSpecific %08x\n", sessionHandle);
 	rc = flushSpecific(tssContext,
 			   sessionHandle);
     }
@@ -313,7 +310,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 			       &nvBufferMax);
     }    
     if (rc == 0) {
-	if (verbose) printf("storeEkCertificate: certificate %u bytes to %08x\n",
+	if (tssUtilsVerbose) printf("storeEkCertificate: certificate %u bytes to %08x\n",
 			    certLength, nvIndex);
 	nvWriteIn.nvIndex = nvIndex;
 	nvWriteIn.offset = 0;		/* offset is bytes written so far */
@@ -330,8 +327,9 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 	nvWriteIn.data[6] = 0x02;
 	TSS_UINT16_Marshalu(&certLength16, &written, &buffer, NULL);
 	nvWriteIn.dataSize = 7;
-	if (verbose) printf("storeEkCertificate: writing header %u bytes at offset %u to %08x\n",
-			    nvWriteIn.dataSize, nvWriteIn.offset, nvIndex);
+	if (tssUtilsVerbose)
+	    printf("storeEkCertificate: writing header %u bytes at offset %u to %08x\n",
+		   nvWriteIn.dataSize, nvWriteIn.offset, nvIndex);
 	rc = TSS_Execute(tssContext,
 			 NULL,
 			 (COMMAND_PARAMETERS *)&nvWriteIn,
@@ -353,7 +351,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 	    memcpy(nvWriteIn.data, certificate + certWritten, nvWriteIn.dataSize);
 	}
 	if (rc == 0) {
-	    if (verbose) printf("storeEkCertificate: "
+	    if (tssUtilsVerbose) printf("storeEkCertificate: "
 				"writing certificate %u bytes at offset %u to %08x\n",
 				nvWriteIn.dataSize, nvWriteIn.offset, nvIndex);
 	    rc = TSS_Execute(tssContext,
@@ -373,7 +371,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("storeEkCertificate: success\n");
+	if (tssUtilsVerbose) printf("storeEkCertificate: success\n");
     }
     else {
 	const char *msg;
@@ -401,7 +399,7 @@ TPM_RC startOIAP(TSS_CONTEXT *tssContext,
 			 TPM_RH_NULL, NULL, 0);
     }
     if (rc == 0) {
-	if (verbose) printf("startOIAP: Handle %08x\n", out.authHandle);
+	if (tssUtilsVerbose) printf("startOIAP: Handle %08x\n", out.authHandle);
 	*sessionHandle = out.authHandle;
     }
     else {
@@ -432,8 +430,8 @@ static TPM_RC flushSpecific(TSS_CONTEXT *tssContext,
 			 TPM_RH_NULL, NULL, 0);
     }
     if (rc == 0) {
-	if (verbose) printf("flushspecific: handle %08x success\n",
-			    sessionHandle);
+	if (tssUtilsVerbose) printf("flushspecific: handle %08x success\n",
+				    sessionHandle);
     }
     else {
 	const char *msg;

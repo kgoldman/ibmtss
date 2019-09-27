@@ -61,7 +61,7 @@ TPM_RC rawUnmarshal(TPMT_SIGNATURE *target,
 		    TPMI_ALG_HASH halg,
 		    uint8_t *buffer, size_t length);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -96,6 +96,7 @@ int main(int argc, char *argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1"); 
+    tssUtilsVerbose = FALSE;
 
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
@@ -274,7 +275,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -303,7 +304,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (doHash) {
 	    if (rc == 0) {
-		if (verbose) printf("verifysignature: Hashing message file %s with halg %04x\n",
+		if (tssUtilsVerbose) printf("verifysignature: Hashing message file %s with halg %04x\n",
 				    messageFilename, halg);
 		digest.hashAlg = halg;
 		sizeInBytes = TSS_GetDigestSize(digest.hashAlg);
@@ -312,19 +313,19 @@ int main(int argc, char *argv[])
 				       0, NULL);
 	    }
 	    if (rc == 0) {
-		if (verbose) printf("verifysignature: Copying hash\n");
+		if (tssUtilsVerbose) printf("verifysignature: Copying hash\n");
 		/* digest to be verified */
 		in.digest.t.size = sizeInBytes;
 		memcpy(&in.digest.t.buffer, (uint8_t *)&digest.digest, sizeInBytes);
 	    }
 	}
 	else {
-	    if (verbose) printf("verifysignature: Using hash input file %s\n", messageFilename);
+	    if (tssUtilsVerbose) printf("verifysignature: Using hash input file %s\n", messageFilename);
 	    in.digest.t.size = (uint16_t)dataLength;
 	    memcpy(&in.digest.t.buffer, (uint8_t *)data, dataLength);
 	}
 	if (rc == 0) {
-	    if (verbose) TSS_PrintAll("verifysignature: hash",
+	    if (tssUtilsVerbose) TSS_PrintAll("verifysignature: hash",
 				      (uint8_t *)&in.digest.t.buffer, in.digest.t.size);
 	}
     }
@@ -386,7 +387,7 @@ int main(int argc, char *argv[])
 					halg,
 					pemFilename);
 	}
-	if (verbose) printf("verifysignature: verifySignatureFromPem rc %08x\n", rc);
+	if (tssUtilsVerbose) printf("verifysignature: verifySignatureFromPem rc %08x\n", rc);
     }
     if (hmacKeyFilename != NULL) {
 	if (rc == 0) {
@@ -396,10 +397,10 @@ int main(int argc, char *argv[])
 					    halg,
 					    hmacKeyFilename); 
 	}
-	if (verbose) printf("verifysignature: verifySignatureFromHmacKey rc %08x\n", rc);
+	if (tssUtilsVerbose) printf("verifysignature: verifySignatureFromHmacKey rc %08x\n", rc);
     }
     if (rc == 0) {
-	if (verbose) printf("verifysignature: success\n");
+	if (tssUtilsVerbose) printf("verifysignature: success\n");
     }
     else {
 	const char *msg;

@@ -78,7 +78,9 @@
 #include "objecttemplates.h"
 #include "cryptoutils.h"
 
-extern int verbose;
+/* verbose tracing flag shared by command line utilities */
+
+int tssUtilsVerbose;
 
 #ifndef TPM_TSS_NOFILE
 
@@ -283,7 +285,7 @@ TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
 	   import */
 	memset(*privateKeyBin, 0, *privateKeyBytes - bnBytes);
 	BN_bn2bin(privateKeyBn, (*privateKeyBin) + (*privateKeyBytes - bnBytes));
-	if (verbose) TSS_PrintAll("convertEcKeyToPrivateKeyBin:", *privateKeyBin, *privateKeyBytes);
+	if (tssUtilsVerbose) TSS_PrintAll("convertEcKeyToPrivateKeyBin:", *privateKeyBin, *privateKeyBytes);
     }
     return rc;
 }
@@ -357,7 +359,7 @@ TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
 	EC_POINT_point2oct(ecGroup, ecPoint,
 			   POINT_CONVERSION_UNCOMPRESSED,
 			   *modulusBin, *modulusBytes, NULL);
-	if (verbose) TSS_PrintAll("convertEcKeyToPublicKeyBin:", *modulusBin, *modulusBytes);
+	if (tssUtilsVerbose) TSS_PrintAll("convertEcKeyToPublicKeyBin:", *modulusBin, *modulusBytes);
     }
     return rc;
 }
@@ -1935,7 +1937,7 @@ TPM_RC convertEcBinToTSignature(TPMT_SIGNATURE *tSignature,
 
 	BN_bn2bin(pr, (unsigned char *)&tSignature->signature.ecdsa.signatureR.t.buffer);
 	BN_bn2bin(ps, (unsigned char *)&tSignature->signature.ecdsa.signatureS.t.buffer);
-	if (verbose) {
+	if (tssUtilsVerbose) {
 	    TSS_PrintAll("convertEcBinToTSignature: signature R",
 			 tSignature->signature.ecdsa.signatureR.t.buffer,
 			 tSignature->signature.ecdsa.signatureR.t.size);		

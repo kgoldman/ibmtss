@@ -3,9 +3,8 @@
 /*			    Sign Application					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: signapp.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -137,7 +136,7 @@ static TPM_RC flush(TSS_CONTEXT *tssContext,
 		    TPMI_DH_CONTEXT flushHandle);
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -158,7 +157,8 @@ int main(int argc, char *argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-pwsess") == 0) {
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -201,23 +201,23 @@ int main(int argc, char *argv[])
     }
     /* Start a TSS context */
     if (rc == 0) {
-	if (verbose) printf("INFO: Create a TSS context\n");
+	if (tssUtilsVerbose) printf("INFO: Create a TSS context\n");
 	rc = TSS_Create(&tssContext);
     }
     /* createprimary first for salt.  processPrimary() also reads the EK certificate and validates
        it against the primary key.  It doesn't walk the certificate chain.  */
     if (rc == 0) {
-	if (verbose) printf("INFO: Create a primary EK for the salt\n");
+	if (tssUtilsVerbose) printf("INFO: Create a primary EK for the salt\n");
 	rc = processPrimary(tssContext,
 			    &ekKeyHandle,
 			    EK_CERT_RSA_INDEX, EK_NONCE_RSA_INDEX, EK_TEMPLATE_RSA_INDEX,
-			    TRUE, verbose);		/* do not flush */
-	if (verbose) printf("INFO: Primary EK handle %08x\n", ekKeyHandle);
+			    TRUE, tssUtilsVerbose);		/* do not flush */
+	if (tssUtilsVerbose) printf("INFO: Primary EK handle %08x\n", ekKeyHandle);
     }
     /* start a policy session */
     if (rc == 0) {
 	TPM_HANDLE	saltHandle;
-	if (verbose) printf("INFO: Start a policy session\n");
+	if (tssUtilsVerbose) printf("INFO: Start a policy session\n");
 	if (!pwSession) {
 	    saltHandle = ekKeyHandle;
 	}
@@ -229,23 +229,23 @@ int main(int argc, char *argv[])
 			  TPM_SE_POLICY,
 			  saltHandle, TPM_RH_NULL,	/* salt, no bind */
 			  NULL);			/* no bind password */
-	if (verbose) printf("INFO: Policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Policy session %08x\n", policySessionHandle);
     }
     /* EK needs policy secret with endorsement auth */
     if (rc == 0) {
-	if (verbose) printf("INFO: Satisfy the policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Satisfy the policy session %08x\n", policySessionHandle);
 	rc = policySecret(tssContext,
 			  TPM_RH_ENDORSEMENT,
 			  policySessionHandle);
     }
     if (rc == 0) {
-	if (verbose) printf("INFO: Dump the policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Dump the policy session %08x\n", policySessionHandle);
 	rc = policyGetDigest(tssContext,
 			     policySessionHandle);
     }
     /* Create the signing key */
     if (rc == 0) {
-	if (verbose) printf("INFO: Create a signing key under the EK %08x\n", ekKeyHandle);
+	if (tssUtilsVerbose) printf("INFO: Create a signing key under the EK %08x\n", ekKeyHandle);
 	rc = createKey(tssContext,
 		       &outPrivate,
 		       &outPublic,
@@ -256,20 +256,20 @@ int main(int argc, char *argv[])
     }
     /* reuse the policy session to load the signing key under the EK storage key */
     if (rc == 0) {
-	if (verbose) printf("INFO: Restart the policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Restart the policy session %08x\n", policySessionHandle);
 	rc = policyRestart(tssContext,
 			   policySessionHandle);
     }
     /* EK needs policy secret with endorsement auth */
     if (rc == 0) {
-	if (verbose) printf("INFO: Satisfy the policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Satisfy the policy session %08x\n", policySessionHandle);
 	rc = policySecret(tssContext,
 			  TPM_RH_ENDORSEMENT,
 			  policySessionHandle);
     }
     /* Load the signing key.  flush the policy session. */
     if (rc == 0) {
-	if (verbose) printf("INFO: Load a signing key under the EK %08x\n", ekKeyHandle);
+	if (tssUtilsVerbose) printf("INFO: Load a signing key under the EK %08x\n", ekKeyHandle);
 	rc = loadKey(tssContext,
 		     &keyHandle,		/* signing key */
 		     ekKeyHandle,		/* parent */
@@ -277,12 +277,12 @@ int main(int argc, char *argv[])
 		     &outPrivate,
 		     &outPublic,
 		     pwSession);
-	if (verbose) printf("INFO: Loaded key handle %08x\n", keyHandle);
+	if (tssUtilsVerbose) printf("INFO: Loaded key handle %08x\n", keyHandle);
     }
     /* start an HMAC session, salt with EK, bind with signing key */
     if (rc == 0) {
 	if (!pwSession) {
-	    if (verbose) printf("INFO: Start a salt and bind session\n");
+	    if (tssUtilsVerbose) printf("INFO: Start a salt and bind session\n");
 	    rc = startSession(tssContext,
 			      &sessionHandle,	/* salt, bind */
 			      TPM_SE_HMAC,
@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
 			      keyHandle,	/* bind */
 			      KEYPWD);		/* bind with signing key password */
 
-	    if (verbose) printf("INFO: Salt and bind session %08x\n", sessionHandle);
+	    if (tssUtilsVerbose) printf("INFO: Salt and bind session %08x\n", sessionHandle);
 	}
 	else {
 	    sessionHandle = TPM_RS_PW;
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
     */
     /* Sign the message digest */
     if (rc == 0) {
-	if (verbose) printf("INFO: Sign with the signing key %08x\n", keyHandle);
+	if (tssUtilsVerbose) printf("INFO: Sign with the signing key %08x\n", keyHandle);
 	rc = sign(tssContext,
 		  &signature,
 		  keyHandle,		/* signing key */
@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
     }
     /* Verify the signature */
     if (rc == 0) {
-	if (verbose) printf("INFO: Verify the signature %08x\n", keyHandle);
+	if (tssUtilsVerbose) printf("INFO: Verify the signature %08x\n", keyHandle);
 	rc = verify(tssContext,
 		    keyHandle,		/* verification public key */
 		    sizeInBytes,	/* hash algorithm mapped to size */
@@ -322,20 +322,20 @@ int main(int argc, char *argv[])
       sign and verify using a policy session, policy authvalue or policy password
     */
     if (rc == 0) {
-	if (verbose) printf("INFO: Restart the policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Restart the policy session %08x\n", policySessionHandle);
 	rc = policyRestart(tssContext,
 			   policySessionHandle);
     }
     /* policy command code */
     if (rc == 0) {
-	if (verbose) printf("INFO: Satisfy the policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Satisfy the policy session %08x\n", policySessionHandle);
 	rc = policyCommandCode(tssContext,
 			       TPM_CC_Sign,
 			       policySessionHandle);
     }
     /* policy authvalue or policypassword */
     if (rc == 0) {
-	if (verbose) printf("INFO: Satisfy the policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Satisfy the policy session %08x\n", policySessionHandle);
 	if (!pwSession) {
 	    rc = policyAuthValue(tssContext,
 				 policySessionHandle);
@@ -346,13 +346,13 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("INFO: Dump the policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Dump the policy session %08x\n", policySessionHandle);
 	rc = policyGetDigest(tssContext,
 			     policySessionHandle);
     }
     /* Sign the message digest */
     if (rc == 0) {
-	if (verbose) printf("INFO: Sign with the signing key %08x\n", keyHandle);
+	if (tssUtilsVerbose) printf("INFO: Sign with the signing key %08x\n", keyHandle);
 	rc = sign(tssContext,
 		  &signature,
 		  keyHandle,		/* signing key */
@@ -362,7 +362,7 @@ int main(int argc, char *argv[])
     }
     /* Verify the signature */
     if (rc == 0) {
-	if (verbose) printf("INFO: Verify the signature %08x\n", keyHandle);
+	if (tssUtilsVerbose) printf("INFO: Verify the signature %08x\n", keyHandle);
 	rc = verify(tssContext,
 		    keyHandle,		/* verification public key */
 		    sizeInBytes,	/* hash algorithm mapped to size */
@@ -371,24 +371,24 @@ int main(int argc, char *argv[])
     }
     /* flush the policy session, normally fails */
     if (policySessionHandle != TPM_RH_NULL) {
-	if (verbose) printf("INFO: Flush the policy session %08x\n", policySessionHandle);
+	if (tssUtilsVerbose) printf("INFO: Flush the policy session %08x\n", policySessionHandle);
 	flush(tssContext, policySessionHandle);
     }
     /* flush the salt and bind session */
     if (!pwSession) {
 	if (sessionHandle != TPM_RH_NULL) {
-	    if (verbose) printf("INFO: Flush the salt session %08x\n", sessionHandle);
+	    if (tssUtilsVerbose) printf("INFO: Flush the salt session %08x\n", sessionHandle);
 	    flush(tssContext, sessionHandle);
 	}
     }
     /* flush the primary key */
     if (ekKeyHandle != TPM_RH_NULL) {
-	if (verbose) printf("INFO: Flush the primary key %08x\n", ekKeyHandle);
+	if (tssUtilsVerbose) printf("INFO: Flush the primary key %08x\n", ekKeyHandle);
 	flush(tssContext, ekKeyHandle);
     }
     /* flush the signing key */
     if (keyHandle != TPM_RH_NULL) {
-	if (verbose) printf("INFO: Flush the signing key %08x\n", keyHandle);
+	if (tssUtilsVerbose) printf("INFO: Flush the signing key %08x\n", keyHandle);
 	flush(tssContext, keyHandle);
     }
     {  
@@ -581,7 +581,7 @@ static TPM_RC policyGetDigest(TSS_CONTEXT *tssContext,
 			 TPM_CC_PolicyGetDigest,
 			 TPM_RH_NULL, NULL, 0);
     }
-    if (verbose) TSS_PrintAll("policyGetDigest",
+    if (tssUtilsVerbose) TSS_PrintAll("policyGetDigest",
 			      policyGetDigestOut.policyDigest.t.buffer,
 			      policyGetDigestOut.policyDigest.t.size);
     return rc;

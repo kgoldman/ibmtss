@@ -3,9 +3,8 @@
 /*			    TPM 1.2 NV_DefineSpace				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 1258 2018-06-28 16:46:10Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,7 +51,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+int tssUtilsVerbose;
 
 int main(int argc, char * argv[])
 {
@@ -72,6 +71,7 @@ int main(int argc, char * argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+    tssUtilsVerbose = FALSE;
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-ha") == 0) {
@@ -150,7 +150,7 @@ int main(int argc, char * argv[])
 	    printUsage();
 	}
 	else if (!strcmp(argv[i], "-v")) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -167,7 +167,7 @@ int main(int argc, char * argv[])
 	printUsage();
     }
     if (rc == 0) {
-	if (verbose) printf("nvdefinespace: index password %s\n", nvPassword);
+	if (tssUtilsVerbose) printf("nvdefinespace: index password %s\n", nvPassword);
 	if (nvPassword == NULL) {
 	    memset(nvAuth, 0, SHA1_DIGEST_SIZE);
 	}
@@ -178,7 +178,7 @@ int main(int argc, char * argv[])
 				   0, NULL);
 	    memcpy(nvAuth, (uint8_t *)&nvAuthHash.digest, SHA1_DIGEST_SIZE);
 	}
- 	if (verbose) TSS_PrintAll("Plaintext pwd", nvAuth, SHA1_DIGEST_SIZE);
+ 	if (tssUtilsVerbose) TSS_PrintAll("Plaintext pwd", nvAuth, SHA1_DIGEST_SIZE);
    }
     if (rc == 0) {
 	memcpy(in.encAuth, nvAuth, SHA1_DIGEST_SIZE);
@@ -229,7 +229,7 @@ int main(int argc, char * argv[])
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("nvdefinespace: success\n");
+	if (tssUtilsVerbose) printf("nvdefinespace: success\n");
     }
     else {
 	const char *msg;

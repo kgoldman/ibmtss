@@ -3,9 +3,8 @@
 /*			    NV Define Space	 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: nvdefinespace.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,7 +51,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 #define TPMA_NVA_CLEAR_STCLEAR	0x08000000
 
@@ -86,7 +85,8 @@ int main(int argc, char *argv[])
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* nvAttributes first accumumates attributes that are default side effects of other arguments.
        E.g., specifying a policy sets POLICYWRITE and POLICYREAD.  After all arguments are
        processed, setAttributes and clearAttributes may optional fine tune the attributes. E.g.,
@@ -373,7 +373,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {

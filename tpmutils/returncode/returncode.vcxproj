@@ -83,8 +83,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\utils\applink.c" />
+    <ClCompile Include="..\..\utils\cryptoutils.c" />
     <ClCompile Include="..\..\utils\returncode.c" />
-    <ClCompile Include="..\..\utils\tssresponsecode.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\tss\tss.vcxproj">
+      <Project>{5c11af70-45a6-4888-a66a-c0a70302bd89}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

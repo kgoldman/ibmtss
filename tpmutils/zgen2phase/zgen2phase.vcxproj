@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\utils\applink.c" />
+    <ClCompile Include="..\..\utils\cryptoutils.c" />
     <ClCompile Include="..\..\utils\zgen2phase.c" />
   </ItemGroup>
   <ItemGroup>

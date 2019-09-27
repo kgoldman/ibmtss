@@ -3,9 +3,8 @@
 /*			TPM 1.2 EK Index Parsing Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: ekutils12.c 1287 2018-07-30 13:34:27Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -57,7 +56,7 @@
 #include "cryptoutils.h"
 #include "ekutils12.h"
 
-extern int verbose;
+int tssUtilsVerbose;
 
 /* readNvBufferMax() determines the maximum NV read/write block size.  The limit is typically set by
    the TPM property TPM_CAP_PROP_INPUT_BUFFER, munus the header and other read overhead. */
@@ -97,7 +96,8 @@ TPM_RC readNvBufferMax12(TSS_CONTEXT *tssContext,
     }
     if (rc == 0) {
 	tpmBufferSize = ntohl(*(uint32_t *)(out.resp));
-	if (verbose) printf("readNvBufferMax12: TPM_CAP_PROP_INPUT_BUFFER: %u\n", tpmBufferSize);
+	if (tssUtilsVerbose)
+	    printf("readNvBufferMax12: TPM_CAP_PROP_INPUT_BUFFER: %u\n", tpmBufferSize);
 	*nvBufferMax = tpmBufferSize -
 		       (sizeof(TPM_TAG) + sizeof(uint32_t) + sizeof(TPM_RESULT) +
 			sizeof(uint32_t) +
@@ -106,7 +106,7 @@ TPM_RC readNvBufferMax12(TSS_CONTEXT *tssContext,
 	if (*nvBufferMax > 512) {
 	    *nvBufferMax = 512;
 	}
-	if (verbose) printf("readNvBufferMax12: nvBufferMax: %u\n", *nvBufferMax);
+	if (tssUtilsVerbose) printf("readNvBufferMax12: nvBufferMax: %u\n", *nvBufferMax);
     }
     return rc;
 }
@@ -139,7 +139,7 @@ TPM_RC getIndexSize12(TSS_CONTEXT *tssContext,
 			 NULL,
 			 TPM_ORD_GetCapability,
 			 TPM_RH_NULL, NULL, 0);
-	if ((rc != 0) && verbose) {
+	if ((rc != 0) && tssUtilsVerbose) {
 	    const char *msg;
 	    const char *submsg;
 	    const char *num;
@@ -188,7 +188,7 @@ TPM_RC getIndexContents12(TSS_CONTEXT *tssContext,
 			       &nvBufferMax);
     }    
     if (rc == 0) {
-	if (verbose) printf("getIndexContents12: index %08x\n", nvIndex);
+	if (tssUtilsVerbose) printf("getIndexContents12: index %08x\n", nvIndex);
 	in.nvIndex = nvIndex;
     }    
     /* first read the header */
@@ -202,7 +202,7 @@ TPM_RC getIndexContents12(TSS_CONTEXT *tssContext,
 			 TPM_ORD_NV_ReadValue,
 			 sessionHandle, ownerPassword, 1,
 			 TPM_RH_NULL, NULL, 0);
-	if ((rc != 0) && verbose) {
+	if ((rc != 0) && tssUtilsVerbose) {
 	    const char *msg;
 	    const char *submsg;
 	    const char *num;
@@ -213,13 +213,14 @@ TPM_RC getIndexContents12(TSS_CONTEXT *tssContext,
     }
     /* validate the header and get the certificate length */
     if (rc == 0) {
-	if (verbose) TSS_PrintAll("getIndexContents12: header data", out.data, out.dataSize);
+	if (tssUtilsVerbose)
+	    TSS_PrintAll("getIndexContents12: header data", out.data, out.dataSize);
 	if ((out.data[0] != 0x10) ||	/* stored certificate, full certificate */
 	    (out.data[1] != 0x01) ||
 	    (out.data[2] != 0x00) ||	/* full certificate */
 	    (out.data[5] != 0x10) ||
 	    (out.data[6] != 0x02)) {
-	    if (verbose) printf("getIndexContents12: certificate header error\n");
+	    if (tssUtilsVerbose) printf("getIndexContents12: certificate header error\n");
 	    rc = TSS_RC_X509_ERROR;
 	}
 	*ekCertLength = (out.data[3] << 8) +	/* msb */
@@ -227,7 +228,7 @@ TPM_RC getIndexContents12(TSS_CONTEXT *tssContext,
 			-2;		/* -2 for tag in bytes 5 and 6 */
     }	
     if (rc == 0) {
-	if (verbose) printf("getIndexContents12: certificate length %u\n", *ekCertLength);
+	if (tssUtilsVerbose) printf("getIndexContents12: certificate length %u\n", *ekCertLength);
 	rc = TSS_Malloc(ekCertificate, *ekCertLength);
 	bytesRead = 0;			/* certificate bytes read so far */
     }
@@ -245,8 +246,9 @@ TPM_RC getIndexContents12(TSS_CONTEXT *tssContext,
 		sessionAttr = 1;			/* continue TRUE */
 	    }
 #if 0
-	    if (verbose) printf("getIndexContents12: read %u reading %u bytes at offset %u\n",
-				bytesRead, in.dataSize, in.offset);
+	    if (tssUtilsVerbose)
+		printf("getIndexContents12: read %u reading %u bytes at offset %u\n",
+		       bytesRead, in.dataSize, in.offset);
 #endif
 	    rc = TSS_Execute(tssContext,
 			     (RESPONSE_PARAMETERS *)&out,
@@ -255,7 +257,7 @@ TPM_RC getIndexContents12(TSS_CONTEXT *tssContext,
 			     TPM_ORD_NV_ReadValue,
 			     sessionHandle, ownerPassword, sessionAttr,
 			     TPM_RH_NULL, NULL, 0);
-	    if ((rc != 0) && verbose) {
+	    if ((rc != 0) && tssUtilsVerbose) {
 		const char *msg;
 		const char *submsg;
 		const char *num;
@@ -274,8 +276,8 @@ TPM_RC getIndexContents12(TSS_CONTEXT *tssContext,
 	}
     }	
     if (rc == 0) {
-	if (verbose) TSS_PrintAll("getIndexContents12: certificate",
-				  *ekCertificate, *ekCertLength);
+	if (tssUtilsVerbose) TSS_PrintAll("getIndexContents12: certificate",
+					  *ekCertificate, *ekCertLength);
     }
     return rc;
 }

@@ -86,6 +86,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\utils\applink.c" />
+    <ClCompile Include="..\..\utils\cryptoutils.c" />
     <ClCompile Include="..\..\utils\nvcertify.c" />
   </ItemGroup>
   <ItemGroup>

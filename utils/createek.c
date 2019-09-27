@@ -91,7 +91,7 @@ static void printUsage(void);
 #define AlgRSA			1
 #define AlgEC			2
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -120,7 +120,8 @@ int main(int argc, char *argv[])
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* for free */
     for (i = 0 ; i < MAX_ROOTS ; i++) {
 	rootFilename[i] = NULL;
@@ -185,7 +186,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -242,7 +243,7 @@ int main(int argc, char *argv[])
 	    rc = getRootCertificateFilenames(rootFilename,	/* freed @4 */
 					     &rootFileCount,
 					     listFilename,
-					     verbose);
+					     tssUtilsVerbose);
 	}
 	if (rc == 0) {
 	    rc = processRoot(tssContext,

@@ -72,7 +72,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -105,7 +105,8 @@ int main(int argc, char *argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-hi") == 0) {
@@ -333,7 +334,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -455,7 +456,7 @@ int main(int argc, char *argv[])
 	in.hierarchy = hierarchy;
     }
     if (rc == 0) {
-	if (verbose) TSS_TPMT_PUBLIC_Print(&in.inPublic.publicArea, 0);
+	if (tssUtilsVerbose) TSS_TPMT_PUBLIC_Print(&in.inPublic.publicArea, 0);
     }
     /* Start a TSS context */
     if (rc == 0) {
@@ -488,7 +489,7 @@ int main(int argc, char *argv[])
 	    }
 	    printf("\n");
 	}
-	if (verbose) printf("loadexternal: success\n");
+	if (tssUtilsVerbose) printf("loadexternal: success\n");
     }
     else {
 	const char *msg;

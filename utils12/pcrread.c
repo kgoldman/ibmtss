@@ -3,9 +3,8 @@
 /*			    PcrRead		 				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrread.c 1286 2018-07-27 19:20:16Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018.						*/
+/* (c) Copyright IBM Corporation 2018 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,7 +51,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -66,6 +65,7 @@ int main(int argc, char *argv[])
     
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+    tssUtilsVerbose = FALSE;
 
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 	/* human readable format */
 	else {
 	    TSS_PrintAll("PCR", out.outDigest, SHA1_DIGEST_SIZE);
-	    if (verbose) printf("pcrread: success\n");
+	    if (tssUtilsVerbose) printf("pcrread: success\n");
 	}
     }
     else {

@@ -86,7 +86,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 				 const char *platformPassword);
 
 int vverbose = 0;
-int verbose = 0;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -140,6 +140,9 @@ int main(int argc, char *argv[])
     size_t		issuerEntriesSize = sizeof(rootIssuerEntriesRsa)/sizeof(char *);
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
+    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
+    tssUtilsVerbose = FALSE;
+
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-noflush") == 0) {
@@ -229,11 +232,11 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = 1;
+	    tssUtilsVerbose = 1;
 	}
 	else if (strcmp(argv[i],"-vv") == 0) {
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");	/* trace entire TSS */
-	    verbose = 1;
+	    tssUtilsVerbose = 1;
 	    vverbose = 1;
 	}
 	else {
@@ -259,7 +262,7 @@ int main(int argc, char *argv[])
 				  NULL,			/* template */
 				  &tpmtPublicOut,	/* primary key */
 				  noFlush,
-				  verbose);		/* print errors */
+				  tssUtilsVerbose);		/* print errors */
     }
     /* create the EK certificate from the EK public key, using the above issuer and subject */
     if (rc == 0) {
@@ -318,7 +321,7 @@ static TPM_RC defineEKCertIndex(TSS_CONTEXT *tssContext,
     NV_DefineSpace_In 	nvDefineSpaceIn;
     
     /* read metadata to make sure the index is there, the size is sufficient, and get the Name */
-    if (verbose) printf("defineEKCertIndex: certificate length %u\n", certLength);
+    if (tssUtilsVerbose) printf("defineEKCertIndex: certificate length %u\n", certLength);
     if (rc == 0) {
 	nvReadPublicIn.nvIndex = nvIndex;
 	rc = TSS_Execute(tssContext,
@@ -330,7 +333,7 @@ static TPM_RC defineEKCertIndex(TSS_CONTEXT *tssContext,
     }
     /* if already defined, check the size */
     if (rc == 0) {
-	if (verbose) printf("defineEKCertIndex: defined data size %u\n",
+	if (tssUtilsVerbose) printf("defineEKCertIndex: defined data size %u\n",
 			    nvReadPublicOut.nvPublic.nvPublic.dataSize);
 	if (nvReadPublicOut.nvPublic.nvPublic.dataSize < certLength) {
 	    printf("defineEKCertIndex: data size %u insufficient for certificate %u\n",
@@ -405,7 +408,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 			     &nvBufferMax);
     }    
     if (rc == 0) {
-	if (verbose) printf("storeEkCertificate: writing %u bytes to %08x\n",
+	if (tssUtilsVerbose) printf("storeEkCertificate: writing %u bytes to %08x\n",
 			    certLength, nvIndex);
 	nvWriteIn.authHandle = TPM_RH_PLATFORM;  
 	nvWriteIn.nvIndex = nvIndex;
@@ -442,7 +445,7 @@ static TPM_RC storeEkCertificate(TSS_CONTEXT *tssContext,
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("storeEkCertificate: success\n");
+	if (tssUtilsVerbose) printf("storeEkCertificate: success\n");
     }
     else {
 	const char *msg;

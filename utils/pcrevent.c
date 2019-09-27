@@ -3,9 +3,8 @@
 /*			   PCR_Event 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: pcrevent.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,7 +51,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -75,7 +74,8 @@ int main(int argc, char *argv[])
    
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-ha") == 0) {
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	if (data != NULL) {
-	    if (verbose) printf("Event data %u bytes\n", (unsigned int)strlen(data));
+	    if (tssUtilsVerbose) printf("Event data %u bytes\n", (unsigned int)strlen(data));
 	    rc = TSS_TPM2B_StringCopy(&in.eventData.b, data, sizeof(in.eventData.t.buffer));
 	}
     }
@@ -216,8 +216,8 @@ int main(int argc, char *argv[])
 	for (c = 0 ;  c < out.digests.count ;c++) {
 	    switch (out.digests.digests[c].hashAlg) {
 	      case TPM_ALG_SHA1:
-		if (verbose) printf("Hash algorithm SHA-1\n");
-		if (verbose) TSS_PrintAll("Digest",
+		if (tssUtilsVerbose) printf("Hash algorithm SHA-1\n");
+		if (tssUtilsVerbose) TSS_PrintAll("Digest",
 					  (uint8_t *)&out.digests.digests[c].digest.sha1,
 					  SHA1_DIGEST_SIZE);
 		if (outFilename1 != NULL) {
@@ -228,8 +228,8 @@ int main(int argc, char *argv[])
 		}
 		break;
 	      case TPM_ALG_SHA256:
-		if (verbose) printf("Hash algorithm SHA-256\n");
-		if (verbose) TSS_PrintAll("Digest",
+		if (tssUtilsVerbose) printf("Hash algorithm SHA-256\n");
+		if (tssUtilsVerbose) TSS_PrintAll("Digest",
 					  (uint8_t *)&out.digests.digests[c].digest.sha256,
 					  SHA256_DIGEST_SIZE);
 		if (outFilename2 != NULL) {
@@ -240,8 +240,8 @@ int main(int argc, char *argv[])
 		}
 		break;
 	      case TPM_ALG_SHA384:
-		if (verbose) printf("Hash algorithm SHA-384\n");
-		if (verbose) TSS_PrintAll("Digest",
+		if (tssUtilsVerbose) printf("Hash algorithm SHA-384\n");
+		if (tssUtilsVerbose) TSS_PrintAll("Digest",
 					  (uint8_t *)&out.digests.digests[c].digest.sha384,
 					  SHA384_DIGEST_SIZE);
 		if (outFilename3 != NULL) {
@@ -252,8 +252,8 @@ int main(int argc, char *argv[])
 		}
 		break;
 	      case TPM_ALG_SHA512:
-		if (verbose) printf("Hash algorithm SHA-512\n");
-		if (verbose) TSS_PrintAll("Digest",
+		if (tssUtilsVerbose) printf("Hash algorithm SHA-512\n");
+		if (tssUtilsVerbose) TSS_PrintAll("Digest",
 					  (uint8_t *)&out.digests.digests[c].digest.sha512,
 					  SHA512_DIGEST_SIZE);
 		if (outFilename5 != NULL) {

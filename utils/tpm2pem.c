@@ -60,7 +60,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     const char			*pemFilename = NULL;
     TPM2B_PUBLIC 		public;
 
+    tssUtilsVerbose = FALSE;
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-ipu") == 0) {
 	    i++;
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	}
 	else {
 	    printf("\n%s is not a valid option\n", argv[i]);
@@ -122,7 +123,7 @@ int main(int argc, char *argv[])
 	rc = convertPublicToPEM(&public, pemFilename);
     }
     if (rc == 0) {
-	if (verbose) printf("tpm2pem: success\n");
+	if (tssUtilsVerbose) printf("tpm2pem: success\n");
     }
     else {
 	const char *msg;

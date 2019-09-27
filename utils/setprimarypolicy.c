@@ -3,9 +3,9 @@
 /*			    SetPrimaryPolicy 					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: setprimarypolicy.c 1294 2018-08-09 19:08:34Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2018
+   9.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,7 +52,7 @@
 
 static void printUsage(void);
 
-int verbose = FALSE;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
@@ -72,7 +72,8 @@ int main(int argc, char *argv[])
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
-
+    tssUtilsVerbose = FALSE;
+    
     in.hashAlg = TPM_ALG_NULL;	/* default */
 
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
@@ -195,7 +196,7 @@ int main(int argc, char *argv[])
 	    printUsage();
 	}
 	else if (strcmp(argv[i],"-v") == 0) {
-	    verbose = TRUE;
+	    tssUtilsVerbose = TRUE;
 	    TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "2");
 	}
 	else {
@@ -266,7 +267,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (rc == 0) {
-	if (verbose) printf("setprimarypolicy: success\n");
+	if (tssUtilsVerbose) printf("setprimarypolicy: success\n");
     }
     else {
 	const char *msg;

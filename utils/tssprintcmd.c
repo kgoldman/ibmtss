@@ -366,8 +366,9 @@ void IncrementalSelfTest_In_Print(IncrementalSelfTest_In *in, unsigned int inden
 void LoadExternal_In_Print(LoadExternal_In *in, unsigned int indent)
 {
     printf("%*s" "TPM2_LoadExternal\n", indent, "");
-    printf("%*s" "inPrivate\n", indent, "");
-    TSS_TPM2B_SENSITIVE_Print(&in->inPrivate, indent);
+    if (in->inPrivate.t.size != 0) {	/* if there is a private area */
+	TSS_TPMT_SENSITIVE_Print(&in->inPrivate.t.sensitiveArea, indent);
+    }
     TSS_TPM2B_PUBLIC_Print("inPublic", &in->inPublic, indent);
     TSS_TPM_HANDLE_Print("hierarchy", in->hierarchy, indent);
     return;
