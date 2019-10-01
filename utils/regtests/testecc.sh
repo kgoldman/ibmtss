@@ -128,7 +128,7 @@ do
         checkSuccess $?
         
         echo "Sign the hash of the points made from commit"
-        ${PREFIX}sign -hk 80000001 -pwdk siga -ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin > run.out
+        ${PREFIX}sign -hk 80000001 -pwdk siga -salg ecc -scheme ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin > run.out
         checkSuccess $?
         
 	echo "Flush the signing key"
@@ -190,7 +190,7 @@ do
         checkFailure $?
 
         echo "Sign the hash of the points made from commit"
-        ${PREFIX}sign -hk 80000001 -pwdk siga -ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin  > run.out
+        ${PREFIX}sign -hk 80000001 -pwdk siga -salg ecc -scheme ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin  > run.out
         checkSuccess $?
 
         echo "Flush the signing key"

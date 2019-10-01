@@ -187,7 +187,7 @@ ${PREFIX}createloaded -hp 80000001 -der -si -kt f -kt p -opr tmppriv.bin -opu tm
 checkSuccess $?
 
 echo "Sign a digest"
-${PREFIX}sign -hk 80000002 -halg sha256 -ecc -if policies/aaa -os sig.bin > run.out
+${PREFIX}sign -hk 80000002 -halg sha256 -salg ecc -if policies/aaa -os sig.bin > run.out
 checkSuccess $?
 
 echo "Verify the ECC signature using the TPM"

@@ -324,7 +324,7 @@ do
     checkSuccess $?
 
     echo "Sign a digest - policy A"
-    ${PREFIX}sign -hk 80000001 -rsa -if msg.bin -os sig.bin -se0 03000000 1 > run.out
+    ${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
     checkSuccess $?
 
     echo "Policy restart ${HALG[i]} 03000000"
@@ -356,7 +356,7 @@ do
     checkSuccess $?
 
     echo "Sign a digest - policy A"
-    ${PREFIX}sign -hk 80000001 -rsa -if msg.bin -os sig.bin -se0 03000000 1 > run.out
+    ${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
     checkSuccess $?
 
     echo "Flush the policy session ${HALG[i]} 03000000"

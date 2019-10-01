@@ -128,7 +128,7 @@ for HALG in ${ITERATE_ALGS}
 do
 
     echo "Sign a digest - $HALG"
-    ${PREFIX}sign -hk 80000001 -halg $HALG -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
+    ${PREFIX}sign -hk 80000001 -halg $HALG -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
     checkSuccess $?
 
     echo "Verify the ECC signature using the TPM - $HALG"
@@ -152,7 +152,7 @@ do
     checkSuccess $?
 
     echo "Use the TPM as a crypto coprocessor to sign - $HALG" 
-    ${PREFIX}sign -hk 80000002 -halg $HALG -ecc -if policies/aaa -os sig.bin > run.out
+    ${PREFIX}sign -hk 80000002 -halg $HALG -salg ecc -if policies/aaa -os sig.bin > run.out
     checkSuccess $?
 
     echo "Verify the signature - $HALG"
@@ -226,7 +226,7 @@ for HALG in ${ITERATE_ALGS}
 do
     
     echo "Sign a digest - $HALG"
-    ${PREFIX}sign -hk 80000001 -halg $HALG -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
+    ${PREFIX}sign -hk 80000001 -halg $HALG -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
     checkSuccess $?
 
     echo "Verify the signature - $HALG"
@@ -322,6 +322,71 @@ checkSuccess $?
 echo "Flush the signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
+
+echo ""
+echo "Sign with restricted HMAC key"
+echo ""
+
+for HALG in ${ITERATE_ALGS}
+
+do
+
+    echo "Create a ${HALG} restricted keyed hash key under the primary key"
+    ${PREFIX}create -hp 80000000 -khr -kt f -kt p -opr khrpriv${HALG}.bin -opu khrpub${HALG}.bin -pwdp sto -pwdk khk -halg ${HALG} > run.out
+    checkSuccess $?
+
+    echo "Load the signing key under the primary key 80000001"
+    ${PREFIX}load -hp 80000000 -ipr  khrpriv${HALG}.bin -ipu khrpub${HALG}.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    echo "Hash and create ticket"
+    ${PREFIX}hash -hi p -halg ${HALG} -if msg.bin -tk tkt.bin > run.out
+    checkSuccess $?
+
+    echo "Sign a digest with a restricted signing key and ticket"
+    ${PREFIX}sign -hk 80000001 -halg ${HALG} -salg hmac -if msg.bin -tk tkt.bin -os sig.bin -pwdk khk > run.out
+    checkSuccess $?
+
+    echo "Sign a digest with a restricted signing key and no ticket - should fail"
+    ${PREFIX}sign -hk 80000001 -halg ${HALG} -salg hmac -if msg.bin -os sig.bin -pwdk khk > run.out
+    checkFailure $?
+    
+    echo "Flush the signing key 80000001 "
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+echo ""
+echo "Sign with unrestricted HMAC key"
+echo ""
+
+for HALG in ${ITERATE_ALGS}
+
+do
+
+    echo "Create a ${HALG} unrestricted keyed hash key under the primary key"
+    ${PREFIX}create -hp 80000000 -kh -kt f -kt p -opr khpriv${HALG}.bin -opu khpub${HALG}.bin -pwdp sto -pwdk khk -halg ${HALG} > run.out
+    checkSuccess $?
+
+    echo "Load the signing key under the primary key 80000001"
+    ${PREFIX}load -hp 80000000 -ipr  khpriv${HALG}.bin -ipu khpub${HALG}.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    echo "Hash"
+    ${PREFIX}hash -hi p -halg ${HALG} -if msg.bin > run.out
+    checkSuccess $?
+
+    echo "Sign a digest with an unrestricted signing key"
+    ${PREFIX}sign -hk 80000001 -halg ${HALG} -salg hmac -if msg.bin -os sig.bin -pwdk khk > run.out
+    checkSuccess $?
+    
+    echo "Flush the signing key 80000001 "
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
 
 rm -f tmpkeypair.pem
 rm -f tmpkeypair.der

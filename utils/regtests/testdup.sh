@@ -294,7 +294,7 @@ do
 	    checkSuccess $?
 
 	    echo "Sign the message ${HALG} ${SESS}"
-	    ${PREFIX}sign -hk 80000002 -ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
+	    ${PREFIX}sign -hk 80000002 -salg ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
 	    checkSuccess $?
 
 	    echo "Verify the signature ${HALG}"

@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
     Sign_In 			in;
     Sign_Out 			out;
     TPMI_DH_OBJECT		keyHandle = 0;
+    TPM_ALG_ID			sigAlg = TPM_ALG_RSA;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_SIG_SCHEME		scheme = TPM_ALG_RSASSA;
     const char			*messageFilename = NULL;
@@ -145,15 +146,31 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
-	else if (strcmp(argv[i], "-rsa") == 0) {
-	    scheme = TPM_ALG_RSASSA;
+	else if (strcmp(argv[i],"-salg") == 0) {
+	    i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"rsa") == 0) {
+		    sigAlg = TPM_ALG_RSA;
+		    scheme = TPM_ALG_RSASSA;
+		}
+		else if (strcmp(argv[i],"ecc") == 0) {
+		    sigAlg = TPM_ALG_ECDSA;
+		    scheme = TPM_ALG_ECDSA;
+		}
+		else if (strcmp(argv[i],"hmac") == 0) {
+		    sigAlg = TPM_ALG_HMAC;
+		    scheme = TPM_ALG_HMAC;
+		}
+		else {
+		    printf("Bad parameter %s for -salg\n", argv[i]);
+		    printUsage();
+		}
+	    }
+	    else {
+		printf("-salg option needs a value\n");
+		printUsage();
+	    }
 	}
-	else if (strcmp(argv[i], "-ecc") == 0) {
-	    scheme = TPM_ALG_ECDSA;
-	}
-	else if (strcmp(argv[i], "-ecdaa") == 0) {
-	    scheme = TPM_ALG_ECDAA;
-        }	
 	else if (strcmp(argv[i],"-scheme") == 0) {
             i++;
 	    if (i < argc) {
@@ -162,6 +179,15 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"rsapss") == 0) {
 		    scheme = TPM_ALG_RSAPSS;
+		}
+		else if (strcmp(argv[i],"ecdsa") == 0) {
+		    scheme = TPM_ALG_ECDSA;
+		}
+		else if (strcmp(argv[i],"ecdaa") == 0) {
+		    scheme = TPM_ALG_ECDAA;
+		}
+		else if (strcmp(argv[i],"hmac") == 0) {
+		    scheme = TPM_ALG_HMAC;
 		}
 		else {
 		    printf("Bad parameter %s for -scheme\n", argv[i]);
@@ -451,10 +477,9 @@ static void printUsage(void)
     printf("\t-if\tinput message to hash and sign\n");
     printf("\t[-pwdk\tpassword for key (default empty)]\n");
     printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\t[-rsa\t(default)]\n");
-    printf("\t[-scheme  RSA signing scheme (rsassa rsapss) (default rsassa)]\n");
-    printf("\t[-ecc\t ECDSA signing scheme]\n");
-    printf("\t[-ecdaa\t ECDAA signing scheme]\n");
+    printf("\t[-salg\tsignature algorithm (rsa, ecc, hmac) (default rsa)]\n");
+    printf("\t[-scheme signing scheme (rsassa, rsapss, ecdsa, ecdaa, hmac)]\n");
+    printf("\t\t(default rsassa, ecdsa, hmac)]\n");
     printf("\t[-cf\tinput counter file (commit count required for ECDAA scheme]\n");
     printf("\t[-ipu\tpublic key file name to verify signature (default no verify)]\n");
     printf("\t\tVerify only supported for RSA now\n");

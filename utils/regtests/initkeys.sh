@@ -111,9 +111,15 @@ for HALG in ${ITERATE_ALGS}
 
 do
 
-    echo "Create a ${HALG} keyed hash key under the primary key"
+    echo "Create a ${HALG} unrestricted keyed hash key under the primary key"
     ${PREFIX}create -hp 80000000 -kh -kt f -kt p -opr khpriv${HALG}.bin -opu khpub${HALG}.bin -pwdp sto -pwdk khk -halg ${HALG} > run.out
     checkSuccess $?
+
+    echo "Create a ${HALG} restricted keyed hash key under the primary key"
+    ${PREFIX}create -hp 80000000 -khr -kt f -kt p -opr khrpriv${HALG}.bin -opu khrpub${HALG}.bin -pwdp sto -pwdk khk -halg ${HALG} > run.out
+    checkSuccess $?
+
+
 
 done
 
