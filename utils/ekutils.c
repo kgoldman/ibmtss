@@ -1757,8 +1757,14 @@ TPM_RC addCertExtension(X509 *x509Certificate, int nid, const char *value)
     X509_EXTENSION 	*extension = NULL;	/* freed @1 */
 
     if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+	/* the cast is required for the older openssl 1.0 API */
+	extension = X509V3_EXT_conf_nid(NULL, NULL,	/* freed @1 */
+					nid, (char *)value);
+#else
 	extension = X509V3_EXT_conf_nid(NULL, NULL,	/* freed @1 */
 					nid, value);
+#endif
 	if (extension == NULL) {
 	    printf("addCertExtension: Error creating nid %i extension %s\n",
 		   nid, value);

@@ -229,7 +229,7 @@ extern "C" {
     TPM_RC createX509Name(X509_NAME **x509Name,
 			  size_t entriesSize,
 			  char **entries);
-    TPM_RC addCertExtension(X509 *x509Certificate, int nid, char *value);
+    TPM_RC addCertExtension(X509 *x509Certificate, int nid, const char *value);
     TPM_RC addCertKeyRsa(X509 *x509Certificate,
 			 const TPM2B_PUBLIC_KEY_RSA *tpm2bRsa);
 #ifndef TPM_TSS_NOECC
