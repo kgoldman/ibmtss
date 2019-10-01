@@ -1484,7 +1484,7 @@ TPM_RC createCertificate(char **x509CertString,		/* freed by caller */
     TPM_RC 		rc = 0;
     X509 		*x509Certificate = NULL;
     uint16_t 		publicKeyLength;
-    const unsigned char *publicKey;
+    const unsigned char *publicKey = NULL;
     
     /* allocate memory for the X509 structure */
     if (rc == 0) {
@@ -1751,7 +1751,7 @@ TPM_RC createX509Name(X509_NAME **x509Name,
 
  */ 
 
-TPM_RC addCertExtension(X509 *x509Certificate, int nid, char *value)
+TPM_RC addCertExtension(X509 *x509Certificate, int nid, const char *value)
 {
     TPM_RC 		rc = 0;
     X509_EXTENSION 	*extension = NULL;	/* freed @1 */
@@ -1866,7 +1866,7 @@ TPM_RC addCertSignatureRoot(X509 *x509Certificate,	/* certificate to be signed *
     int			irc;		/* integer return code */
     FILE 		*fp = NULL;
     /* signing key */
-    const EVP_MD	*digest;		/* signature digest algorithm */
+    const EVP_MD	*digest = NULL;		/* signature digest algorithm */
     EVP_PKEY 		*evpSignkey;		/* EVP format */
 
     evpSignkey = NULL;		/* freed @1 */
