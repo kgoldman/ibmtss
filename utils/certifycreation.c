@@ -52,7 +52,6 @@
 #include <ibmtss/Unmarshal_fp.h>
 
 static void printUsage(void);
-static void printSignature(CertifyCreation_Out *out);
 
 extern int tssUtilsVerbose;
 
@@ -412,7 +411,7 @@ int main(int argc, char *argv[])
 				      attestInfoFilename);
     }
     if (rc == 0) {
-	if (tssUtilsVerbose) printSignature(&out);
+	if (tssUtilsVerbose) TSS_TPMT_SIGNATURE_Print(&out.signature, 0);
 	if (tssUtilsVerbose) printf("certifycreation: success\n");
     }
     else {
@@ -426,13 +425,6 @@ int main(int argc, char *argv[])
     }
     free(buffer);	/* @1 */
     return rc;
-}
-
-static void printSignature(CertifyCreation_Out *out)
-{
-    TSS_PrintAll("Signature",
-		 out->signature.signature.rsassa.sig.t.buffer,
-		 out->signature.signature.rsassa.sig.t.size);
 }
 
 static void printUsage(void)
