@@ -145,7 +145,7 @@ IF !ERRORLEVEL! NEQ 0 (
 for %%H in (%ITERATE_ALGS%) do (
 
     echo "Sign a digest - %%H"
-    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -181,7 +181,7 @@ for %%H in (%ITERATE_ALGS%) do (
     )
 
     echo "Use the TPM as a crypto coprocessor to sign - %%H" 
-    %TPM_EXE_PATH%sign -hk 80000002 -halg %%H -ecc -if policies/aaa -os sig.bin > run.out
+    %TPM_EXE_PATH%sign -hk 80000002 -halg %%H -salg ecc -if policies/aaa -os sig.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -280,7 +280,7 @@ IF !ERRORLEVEL! NEQ 0 (
 for %%H in (%ITERATE_ALGS%) do (
     
     echo "Sign a digest - %%H"
-    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -406,6 +406,87 @@ echo "Flush the signing key"
 %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
+)
+
+echo ""
+echo "Sign with restricted HMAC key"
+echo ""
+
+for %%H in (%ITERATE_ALGS%) do (
+
+    echo "Create a %%H restricted keyed hash key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -khr -kt f -kt p -opr khrpriv%%H.bin -opu khrpub%%H.bin -pwdp sto -pwdk khk -halg %%H > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Load the signing key under the primary key 80000001"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr  khrpriv%%H.bin -ipu khrpub%%H.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Hash and create ticket"
+    %TPM_EXE_PATH%hash -hi p -halg %%H -if msg.bin -tk tkt.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Sign a digest with a restricted signing key and ticket"
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg hmac -if msg.bin -tk tkt.bin -os sig.bin -pwdk khk > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Sign a digest with a restricted signing key and no ticket - should fail"
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg hmac -if msg.bin -os sig.bin -pwdk khk > run.out
+    IF !ERRORLEVEL! EQU 0 (
+        exit /B 1
+    )
+    
+    echo "Flush the signing key 80000001 "
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+)
+
+echo ""
+echo "Sign with unrestricted HMAC key"
+echo ""
+
+for %%H in (%ITERATE_ALGS%) do (
+
+    echo "Create a %%H unrestricted keyed hash key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -kh -kt f -kt p -opr khpriv%%H.bin -opu khpub%%H.bin -pwdp sto -pwdk khk -halg %%H > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Load the signing key under the primary key 80000001"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr  khpriv%%H.bin -ipu khpub%%H.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Hash"
+    %TPM_EXE_PATH%hash -hi p -halg %%H -if msg.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Sign a digest with an unrestricted signing key"
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg hmac -if msg.bin -os sig.bin -pwdk khk > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+    
+    echo "Flush the signing key 80000001 "
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
 )
 
 rm tmpkeypair.pem

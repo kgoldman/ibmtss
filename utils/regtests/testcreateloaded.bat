@@ -242,7 +242,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Sign a digest"
-%TPM_EXE_PATH%sign -hk 80000002 -halg sha256 -ecc -if policies/aaa -os sig.bin > run.out
+%TPM_EXE_PATH%sign -hk 80000002 -halg sha256 -salg ecc -if policies/aaa -os sig.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

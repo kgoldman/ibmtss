@@ -123,11 +123,21 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 for %%H in (%ITERATE_ALGS%) do (
-echo "Create a %%H keyed hash key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -kh -kt f -kt p -opr khpriv%%H.bin -opu khpub%%H.bin -pwdp sto -pwdk khk -halg %%H > run.out
+
+    echo "Create a %%H unrestricted keyed hash key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -kh -kt f -kt p -opr khpriv%%H.bin -opu khpub%%H.bin -pwdp sto -pwdk khk -halg %%H > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
-       )
+    )
+
+    echo "Create a %%H restricted keyed hash key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -khr -kt f -kt p -opr khrpriv%%H.bin -opu khrpub%%H.bin -pwdp sto -pwdk khk -halg %%H > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
 )
 
 exit /B 0
+
+

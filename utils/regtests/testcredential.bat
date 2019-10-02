@@ -39,7 +39,7 @@ REM ############################################################################
 REM 
 REM # primary key 80000000
 REM # storage key 80000001
-REM # signing key 80000002
+REM # signing key 80000002test
 REM # policy session 03000000
 REM # e5 87 c1 1a b5 0f 9d 87 30 f7 21 e3 fe a4 2b 46 
 REM # c0 45 5b 24 6f 96 ae e8 5d 18 eb 3b e6 4d 66 6a 
@@ -389,7 +389,7 @@ for /L %%j in (1,1,!L!) do (
     )
 
     echo "Sign a digest - policy A"
-    %TPM_EXE_PATH%sign -hk 80000001 -rsa -if msg.bin -os sig.bin -se0 03000000 1 > run.out
+    %TPM_EXE_PATH%sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -437,7 +437,7 @@ for /L %%j in (1,1,!L!) do (
     )
 
     echo "Sign a digest - policy A"
-    %TPM_EXE_PATH%sign -hk 80000001 -rsa -if msg.bin -os sig.bin -se0 03000000 1 > run.out
+    %TPM_EXE_PATH%sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

@@ -339,9 +339,9 @@ for %%S in ("" "-se0 02000000 1") do (
 	    )
 
 	    echo "Sign the message %%H %%~S"
-	    %TPM_EXE_PATH%sign -hk 80000002 -ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H %%~S > run.out
+	    %TPM_EXE_PATH%sign -hk 80000002 -salg ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H %%~S > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
-	        exit /B 1
+	        exit /B 1test
 	    )
 
 	    echo "Verify the signature %%H"

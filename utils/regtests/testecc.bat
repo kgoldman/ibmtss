@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testecc.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015, 2017					#
+REM # (c) Copyright IBM Corporation 2015 - 2019.				#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -139,7 +138,7 @@ for %%K in ("-dau" "-dar") do (
     	)
         
         echo "Sign the hash of the points made from commit"
-        %TPM_EXE_PATH%sign -hk 80000001 -pwdk siga -ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin > run.out
+        %TPM_EXE_PATH%sign -hk 80000001 -pwdk siga -salg ecc -scheme ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin > run.out
     	IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
     	)
@@ -205,13 +204,13 @@ for %%K in ("-dau" "-dar") do (
     	)
 
         echo "Check error case bad counter"
-        %TPM_EXE_PATH%sign -hk 80000001 -pwdk siga -ecdaa -cf counterfileold.bin -if hashinput.bin -os sig.bin -tk tfile.bin  > run.out
+        %TPM_EXE_PATH%sign -hk 80000001 -pwdk siga -salg ecc -scheme ecdaa -cf counterfileold.bin -if hashinput.bin -os sig.bin -tk tfile.bin  > run.out
     	IF !ERRORLEVEL! EQU 0 (
            exit /B 1
     	)
 
         echo "Sign the hash of the points made from commit"
-        %TPM_EXE_PATH%sign -hk 80000001 -pwdk siga -ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin  > run.out
+        %TPM_EXE_PATH%sign -hk 80000001 -pwdk siga -salg ecc -scheme ecdaa -cf counterfile.bin -if hashinput.bin -os sig.bin -tk tfile.bin  > run.out
     	IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
     	)
