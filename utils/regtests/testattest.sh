@@ -118,6 +118,10 @@ do
 	    ${PREFIX}verifysignature -hk ${HANDLE} -halg ${HALG} -if tmp.bin -is sig.bin > run.out
 	    checkSuccess $?
 
+	    echo "Set command audit digest ${HALG}"
+	    ${PREFIX}setcommandcodeauditstatus -hi p -halg null -clr 00000144 > run.out
+	    checkSuccess $?
+
 	    echo "Get command audit digest ${HALG} ${SALG} ${SESS}"
 	    ${PREFIX}getcommandauditdigest -hk ${HANDLE} -halg ${HALG} ${SESS} -pwdk sig -os sig.bin -oa tmp.bin -qd policies/aaa -salg ${SALG} > run.out
 	    checkSuccess $?

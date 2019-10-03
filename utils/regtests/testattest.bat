@@ -140,6 +140,12 @@ for %%S in ("" "-se0 02000000 1") do (
 		exit /B 1
 		)
 	
+		echo "Set command audit digest ${HALG}"
+		%TPM_EXE_PATH%setcommandcodeauditstatus -hi p -halg null -clr 00000144 > run.out
+		IF !ERRORLEVEL! NEQ 0 (
+		exit /B 1
+		)
+
 		echo "Get command audit digest %%H %%A %%~S"
 		%TPM_EXE_PATH%getcommandauditdigest -hk !K! -halg %%H %%~S -pwdk sig -os sig.bin -oa tmp.bin -qd policies/aaa -salg %%A > run.out
 		IF !ERRORLEVEL! NEQ 0 (
