@@ -400,6 +400,8 @@ sequencecomplete:	ibmtss/tss.h sequencecomplete.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) sequencecomplete.o $(LNALIBS) -o sequencecomplete
 setprimarypolicy:	ibmtss/tss.h setprimarypolicy.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) setprimarypolicy.o $(LNALIBS) -o setprimarypolicy
+setcommandcodeauditstatus:	ibmtss/tss.h setcommandcodeauditstatus.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) setcommandcodeauditstatus.o $(LNALIBS) -o setcommandcodeauditstatus
 shutdown:		ibmtss/tss.h shutdown.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) shutdown.o $(LNALIBS) -o shutdown
 sign:			ibmtss/tss.h sign.o cryptoutils.o $(LIBTSS)

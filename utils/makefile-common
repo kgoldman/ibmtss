@@ -44,8 +44,8 @@
 CCFLAGS += 				\
 	-Wall -W -Wmissing-declarations -Wmissing-prototypes -Wnested-externs \
 	-Wformat=2 -Wold-style-definition -Wno-self-assign \
-	-Werror=declaration-after-statement \
-	-ggdb -O0 -c
+	-Werror=declaration-after-statement -Wvla \
+	-ggdb -O0 -c 
 
 # to compile with optimizations on (warning will result)
 #	-O3 -c

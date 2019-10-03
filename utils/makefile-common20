@@ -136,6 +136,7 @@ ALL += 	activatecredential$(EXE)		\
 	rsaencrypt$(EXE)			\
 	sequencecomplete$(EXE)			\
 	sequenceupdate$(EXE)			\
+	setcommandcodeauditstatus$(EXE)		\
 	setprimarypolicy$(EXE) 			\
 	shutdown$(EXE) 				\
 	sign$(EXE)				\
