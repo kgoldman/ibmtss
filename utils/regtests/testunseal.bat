@@ -223,7 +223,7 @@ REM sealed blob    80000001
 REM policy session 03000000
 
 echo ""
-echo "Seal and Unseal to PCRs"
+echo "Seal and Unseal to PCR 16"
 echo ""
 
 for %%H in (%ITERATE_ALGS%) do (
@@ -313,6 +313,143 @@ for %%H in (%ITERATE_ALGS%) do (
     )
 
 )
+
+rem # This test uses the same values for PCR 16 and PCR 23 for simplicity.
+rem # For different values, calculate the PCR white list value and change
+rem # the cat line to use two different values.
+
+rem # extend of aaa + 0 pad to digest length
+rem # pcrreset -ha 16
+rem # pcrextend -ha 16 -halg sha1 -halg sha256 -halg sha384 -halg sha512 -ic aaa
+rem # pcrread   -ha 16 -halg sha1 -halg sha256 -halg sha384 -halg sha512 -ns
+rem #
+rem # 1d47f68aced515f7797371b554e32d47981aa0a0
+rem # c2119764d11613bf07b7e204c35f93732b4ae336b4354ebc16e8d0c3963ebebb
+rem # 292963e31c34c272bdea27154094af9250ad97d9e7446b836d3a737c90ca47df2c399021cedd00853ef08497c5a42384
+rem # 7fe1e4cf015293136bf130183039b6a646ea008b75afd0f8466a9bfe531af8ada867a65828cfce486077529e54f1830aa49ab780562baea49c67a87334ffe778
+rem #
+rem # paste that with no white space to file policypcr16aaasha1.txt, etc.
+rem #
+rem # create AND term for policy PCR, PCR 16 and 23
+rem # and then convert to binary policy
+
+rem # > cat policies/policypcr16aaasha1.txt policies/policypcr16aaasha1.txt >! policypcra.txt
+rem # > policymakerpcr -halg sha1   -bm 810000 -if policypcra.txt -v -pr -of policypcr.txt
+rem #0000017f0000000100040300008173820c1f0f279933a5a58629fe44d081e740d4ae
+rem # > policymaker -halg sha1   -if policypcr.txt -of policies/policypcr1623aaasha1.bin -pr -v
+rem  # policy digest length 20
+rem  # b4 ed de a3 35 87 d7 43 29 f6 a8 d1 e7 89 92 64 
+rem  # 46 f0 4c 85 
+
+rem # > cat policies/policypcr16aaasha256.txt policies/policypcr16aaasha256.txt >! policypcra.txt
+rem # > policymakerpcr -halg sha256   -bm 810000 -if policypcra.txt -v -pr -of policypcr.txt
+rem # 0000017f00000001000b030000815a9f104273886b7ec8919a449d440d107d0da5df367e28c6ac145c9023cb5e76
+rem # > policymaker -halg sha256   -if policypcr.txt -of policies/policypcr1623aaasha256.bin -pr -v
+rem  # policy digest length 32
+rem  # 84 ff 2f f1 2d 37 cb 23 fb 3d 14 d9 66 77 ca ec 
+rem  # 48 94 5c 0b 83 e5 ea a2 be 98 e9 75 aa 21 e3 d6 
+
+rem # > cat policies/policypcr16aaasha384.txt policies/policypcr16aaasha384.txt >! policypcra.txt
+rem # > policymakerpcr -halg sha384   -bm 810000 -if policypcra.txt -v -pr -of policypcr.txt
+rem # 0000017f00000001000c0300008105f7f12c86c3b0ed988d369a96d401bb4a58b74f982eb03e8474cb66076114ba2b933dd95cde1c7ea69d0a797abc99d4
+rem # > policymaker -halg sha384   -if policypcr.txt -of policies/policypcr1623aaasha384.bin -pr -v
+rem  # policy digest length 48
+rem  # 4b 03 cd b3 eb 07 15 14 7c 49 93 43 a5 65 ee dc 
+rem  # 86 22 7c 86 36 20 97 a2 5e 0f 34 2e d2 4f 7e ad 
+rem  # a0 61 8b 5e d7 ba bb e3 5e f0 ab ea 99 55 df 84 
+
+rem # > cat policies/policypcr16aaasha512.txt policies/policypcr16aaasha512.txt >! policypcra.txt
+rem # > policymakerpcr -halg sha512   -bm 810000 -if policypcra.txt -v -pr -of policypcr.txt
+rem # 0000017f00000001000d03000081266ae24c92f63b30322e9c22e44e9540313a2223ae79b27eafe798168bef373ac55de22a0ca78ec8b2e9402aa1f8b47b6ef40e9e53aebaa694af58f240efa0fd
+rem # > policymaker -halg sha512   -if policypcr.txt -of policies/policypcr1623aaasha512.bin -pr -v
+rem  # policy digest length 64
+rem  # 13 84 59 76 b8 d4 d8 a9 a4 7d 75 0e 3e 81 cd c2 
+rem  # 78 08 ec 95 d7 13 e8 ef 0c 0b 85 c7 38 2e ad 46 
+rem  # e4 72 31 1d 11 a3 38 17 54 e5 cf 2e 6d 23 67 6d 
+rem  # 39 5a 93 51 9d f3 f0 90 56 4d 66 f8 7b 90 fc 61 
+
+rem # sealed blob    80000001
+rem # policy session 03000000
+
+echo ""
+echo "Seal and Unseal to PCR 16 and 23"
+echo ""
+
+for %%H in (%ITERATE_ALGS%) do (
+
+    echo "Create a sealed data object %%H"
+    %TPM_EXE_PATH%create -hp 80000000 -nalg %%H -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr1623aaa%%H.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Load the sealed data object"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Start a policy session %%H"
+    %TPM_EXE_PATH%startauthsession -se p -halg %%H > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "PCR 16 Reset"
+    %TPM_EXE_PATH%pcrreset -ha 16 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "PCR 23 Reset"
+    %TPM_EXE_PATH%pcrreset -ha 23 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Extend PCR 16 to correct value"
+    %TPM_EXE_PATH%pcrextend -halg %%H -ha 16 -if policies/aaa > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Extend PCR 23 to correct value"
+    %TPM_EXE_PATH%pcrextend -halg %%H -ha 23 -if policies/aaa > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Policy PCR, update with the correct PCR 16 and 23 values"
+    %TPM_EXE_PATH%policypcr -halg %%H -ha 03000000 -bm 810000 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Unseal the data blob"
+    %TPM_EXE_PATH%unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Verify the unsealed result"
+    diff msg.bin tmp.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the sealed object"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Flush the policy session"
+    %TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+)
+
 
 REM #
 REM # Sample application to demonstrate the policy authorize solution to
