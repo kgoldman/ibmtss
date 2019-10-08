@@ -1009,6 +1009,7 @@ void TSS_TPM_TPMA_ALGORITHM_Print(TPMA_ALGORITHM source, unsigned int indent)
 
 void TSS_TPMA_OBJECT_Print(const char *string, TPMA_OBJECT source, unsigned int indent)
 {
+    printf("%*s%s: %08x\n", indent, "", string, source.val);
     if (source.val & TPMA_OBJECT_FIXEDTPM) printf("%*s%s: fixedTpm\n", indent, "", string);
     if (source.val & TPMA_OBJECT_STCLEAR) printf("%*s%s: stClear\n", indent, "", string);
     if (source.val & TPMA_OBJECT_FIXEDPARENT) printf("%*s%s: fixedParent\n", indent, "", string);
