@@ -3,7 +3,6 @@
 /*			  Command and Response Marshal and Unmarshal		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: Commands_fp.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
 /*  Licenses and Notices							*/
 /*										*/
@@ -55,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2017				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2019				*/
 /*										*/
 /********************************************************************************/
 
@@ -68,6 +67,7 @@
 
 #include <ibmtss/ActivateCredential_fp.h>
 #include <ibmtss/CertifyCreation_fp.h>
+#include <ibmtss/CertifyX509_fp.h>
 #include <ibmtss/Certify_fp.h>
 #include <ibmtss/ChangeEPS_fp.h>
 #include <ibmtss/ChangePPS_fp.h>
@@ -308,9 +308,15 @@ Certify_In_Unmarshal(Certify_In *target, BYTE **buffer, uint32_t *size, TPM_HAND
 UINT16
 Certify_Out_Marshal(Certify_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
+CertifyX509_In_Unmarshal(CertifyX509_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
+TPM_RC
 CertifyCreation_In_Unmarshal(CertifyCreation_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
 CertifyCreation_Out_Marshal(CertifyCreation_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
+TPM_RC
+CertifyX509_In_Unmarshal(CertifyX509_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
+UINT16
+CertifyX509_Out_Marshal(CertifyX509_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
 TPM_RC
 Quote_In_Unmarshal(Quote_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16

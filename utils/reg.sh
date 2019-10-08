@@ -110,6 +110,7 @@ printUsage ()
     echo "-28 ECC"
     echo "-29 Credential"
     echo "-30 Attestation - rev 155" 
+    echo "-31 X509 - rev 155" 
     echo "-35 Shutdown (only run for simulator)"
     echo "-40 Tests under development (not part of all)"
     echo ""
@@ -156,19 +157,6 @@ cleanup()
 # stdout
     rm -f run.out
 # general purpose keys
-    rm -f storepriv.bin
-    rm -f storepub.bin
-    rm -f storeeccpub.bin
-    rm -f storeeccpriv.bin
-    rm -f signpriv.bin
-    rm -f signpub.bin
-    rm -f signpub.pem
-    rm -f signeccpriv.bin
-    rm -f signeccpub.bin
-    rm -f signeccpub.pem
-    rm -f signrpriv.bin
-    rm -f signrpub.bin
-    rm -f signrpub.pem
     rm -f derpriv.bin
     rm -f derpub.bin
     rm -f despriv.bin
@@ -181,10 +169,43 @@ cleanup()
     rm -f khpubsha256.bin
     rm -f khpubsha384.bin
     rm -f khpubsha512.bin
-    rm -f pritk.bin
-    rm -f stotk.bin
+    rm -f khrprivsha1.bin
+    rm -f khrprivsha256.bin
+    rm -f khrprivsha384.bin
+    rm -f khrprivsha512.bin
+    rm -f khrpubsha1.bin
+    rm -f khrpubsha256.bin
+    rm -f khrpubsha384.bin
+    rm -f khrpubsha512.bin
     rm -f prich.bin
+    rm -f pritk.bin
+    rm -f signeccnfpriv.bin
+    rm -f signeccnfpub.bin
+    rm -f signeccnfpub.pem
+    rm -f signeccpriv.bin
+    rm -f signeccpub.bin
+    rm -f signeccpub.pem
+    rm -f signeccrpriv.bin
+    rm -f signeccrpub.bin
+    rm -f signeccrpub.pem
+    rm -f signrsanfpriv.bin
+    rm -f signrsanfpub.bin
+    rm -f signrsanfpub.pem
+    rm -f signrsapriv.bin
+    rm -f signrsapub.bin
+    rm -f signrsapub.pem
+    rm -f signrsarpriv.bin
+    rm -f signrsarpub.bin
+    rm -f signrsarpub.pem
     rm -f stoch.bin
+    rm -f storeeccpriv.bin
+    rm -f storeeccpub.bin
+    rm -f storsach.bin
+    rm -f storsatk.bin
+    rm -f stotk.bin
+    rm -r storersapriv.bin
+    rm -r storersapub.bin
+
 # misc
     rm -f dec.bin
     rm -f enc.bin
@@ -497,6 +518,14 @@ main ()
     fi
     if [ "$1" == "-a" ] || [ "$1" == "-30" ]; then
     	./regtests/testattest155.sh
+    	RC=$?
+	if [ $RC -ne 0 ]; then
+	    exit 255
+	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-31" ]; then
+    	./regtests/testx509.sh
     	RC=$?
 	if [ $RC -ne 0 ]; then
 	    exit 255

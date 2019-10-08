@@ -858,6 +858,35 @@ Certify_In_Unmarshal(Certify_In *target, BYTE **buffer, uint32_t *size, TPM_HAND
     return rc;
 }
 TPM_RC
+CertifyX509_In_Unmarshal(CertifyX509_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    if (rc == TPM_RC_SUCCESS) {
+	target->objectHandle = handles[0];
+	target->signHandle = handles[1];
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_DATA_Unmarshalu(&target->qualifyingData, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_CertifyX509_qualifyingData;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPMT_SIG_SCHEME_Unmarshalu(&target->inScheme, buffer, size, YES);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_CertifyX509_inScheme;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshalu(&target->partialCertificate, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_CertifyX509_partialCertificate;
+	}
+    }
+    return rc;
+}
+TPM_RC
 CertifyCreation_In_Unmarshal(CertifyCreation_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
 {
     TPM_RC rc = TPM_RC_SUCCESS;

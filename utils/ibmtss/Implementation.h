@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2019				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2019				*/
 /*										*/
 /********************************************************************************/
 
@@ -232,6 +232,7 @@
 #define  CC_ActivateCredential            CC_YES
 #define  CC_Certify                       CC_YES
 #define  CC_CertifyCreation               CC_YES
+#define  CC_CertifyX509		          CC_YES
 #define  CC_ChangeEPS                     CC_YES
 #define  CC_ChangePPS                     CC_YES
 #define  CC_Clear                         CC_YES
@@ -1250,13 +1251,18 @@ typedef  UINT32             TPM_CC;
 #if CC_EncryptDecrypt2 == YES
 #define  TPM_CC_EncryptDecrypt2               (TPM_CC)(0x00000193)
 #endif
-
-#define  TPM_CC_AC_GetCapability		(TPM_CC)(0x00000194)
-#define  TPM_CC_AC_Send				(TPM_CC)(0x00000195)
-#define  TPM_CC_Policy_AC_SendSelect		(TPM_CC)(0x00000196)
+#define  TPM_CC_AC_GetCapability	      (TPM_CC)(0x00000194)
+#define  TPM_CC_AC_Send			      (TPM_CC)(0x00000195)
+#define  TPM_CC_Policy_AC_SendSelect	      (TPM_CC)(0x00000196)
+#ifndef CC_CertifyX509
+#   define CC_CertifyX509 NO
+#endif
+#if CC_CertifyX509 == YES
+#define  TPM_CC_CertifyX509 		      (TPM_CC)(0x00000197)
+#endif
 
 /* Compile variable. May increase based on implementation. */
-#define  TPM_CC_LAST				(TPM_CC)(0x00000196)
+#define  TPM_CC_LAST			      (TPM_CC)(0x00000197)
 
 #ifndef CC_Vendor_TCG_Test
 #   define CC_Vendor_TCG_Test NO
@@ -1411,8 +1417,8 @@ typedef  UINT32             TPM_CC;
 					  + (ADD_FILL || CC_PolicyAuthorizeNV)          /* 0x00000192 */ \
 					  + (ADD_FILL || CC_EncryptDecrypt2)            /* 0x00000193 */ \
 					  + (ADD_FILL || CC_PolicyNvWritten)            /* 0x0000018f */ \
+					  + (ADD_FILL || CC_CertifyX509)                /* 0x00000197 */ \
 					  )
-
 #define VENDOR_COMMAND_ARRAY_SIZE   ( 0				\
 				      + CC_Vendor_TCG_Test	\
 				      + CC_NTC2_PreConfig	\

@@ -291,6 +291,13 @@ IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
+call regtests\testx509.bat
+IF !ERRORLEVEL! NEQ 0 (
+      echo ""
+      echo "Failed testx509.bat"
+  exit /B 1
+)
+
 call regtests\testshutdown.bat
 IF !ERRORLEVEL! NEQ 0 (
       echo ""
@@ -324,30 +331,30 @@ rm -f khpubsha1.bin
 rm -f khpubsha256.bin
 rm -f khpubsha384.bin
 rm -f khpubsha512.bin
-rm -f pritk.bin
-rm -f stotk.bin
-rm -f prich.bin
-rm -f stoch.bin
 rm -f msg.bin
 rm -f noncetpm.bin
 rm -f policyapproved.bin
+rm -f prich.bin
+rm -f pritk.bin
 rm -f pssig.bin
 rm -f run.out
 rm -f sig.bin
-rm -f signpriv.bin
-rm -f signpub.bin
-rm -f signpub.pem
 rm -f signeccpriv.bin
 rm -f signeccpub.bin
 rm -f signeccpub.pem
+rm -f signpriv.bin
+rm -f signpub.bin
+rm -f signpub.pem
 rm -f signpub.pem
 rm -f signrpriv.bin
 rm -f signrpub.bin
 rm -f signrpub.pem
+rm -f stoch.bin
+rm -f storeeccpriv.bin
+rm -f storeeccpub.bin
 rm -f storepriv.bin
 rm -f storepub.bin
-rm -f storeeccpub.bin
-rm -f storeeccpriv.bin
+rm -f stotk.bin
 rm -f tkt.bin
 rm -f tmp.bin
 rm -f tmp1.bin

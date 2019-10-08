@@ -263,6 +263,11 @@ static const MARSHAL_TABLE marshalTable [] = {
      (UnmarshalOutFunction_t)TSS_Certify_Out_Unmarshalu,
      (UnmarshalInFunction_t)Certify_In_Unmarshal},
 
+    {TPM_CC_CertifyX509, "TPM2_CertifyX509",
+     (MarshalInFunction_t)TSS_CertifyX509_In_Marshalu,
+     (UnmarshalOutFunction_t)TSS_CertifyX509_Out_Unmarshalu,
+     (UnmarshalInFunction_t)CertifyX509_In_Unmarshal},
+
     {TPM_CC_CertifyCreation, "TPM2_CertifyCreation",
      (MarshalInFunction_t)TSS_CertifyCreation_In_Marshalu,
      (UnmarshalOutFunction_t)TSS_CertifyCreation_Out_Unmarshalu,

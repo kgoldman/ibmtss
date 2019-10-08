@@ -56,6 +56,7 @@ extern "C" {
 
     void ActivateCredential_In_Print(ActivateCredential_In *in, unsigned int indent);
     void CertifyCreation_In_Print(CertifyCreation_In *in, unsigned int indent);
+    void CertifyX509_In_Print(CertifyX509_In *in, unsigned int indent);
     void Certify_In_Print(Certify_In *in, unsigned int indent);
     void ChangeEPS_In_Print(ChangeEPS_In *in, unsigned int indent);
     void ChangePPS_In_Print(ChangePPS_In *in, unsigned int indent);

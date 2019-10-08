@@ -68,6 +68,7 @@
 #include "ActivateCredential_fp.h"
 #include "CertifyCreation_fp.h"
 #include "Certify_fp.h"
+#include "CertifyX509_fp.h"
 #include "ChangeEPS_fp.h"
 #include "ChangePPS_fp.h"
 #include "ClearControl_fp.h"

@@ -74,6 +74,17 @@ void Certify_In_Print(Certify_In *in, unsigned int indent)
     TSS_TPMT_SIG_SCHEME_Print(&in->inScheme, indent);
     return;
 }
+void CertifyX509_In_Print(CertifyX509_In *in, unsigned int indent)
+{
+    printf("%*s" "TPM2_CertifyX509\n", indent, "");
+    TSS_TPM_HANDLE_Print("objectHandle", in->objectHandle, indent);
+    TSS_TPM_HANDLE_Print("signHandle", in->signHandle, indent);
+    TSS_TPM2B_Print("qualifyingData", indent, &in->qualifyingData.b);
+    printf("%*s" "inScheme\n", indent, "");
+    TSS_TPMT_SIG_SCHEME_Print(&in->inScheme, indent);
+    TSS_TPM2B_Print("partialCertificate", indent, &in->partialCertificate.b);
+    return;
+}
 void ChangeEPS_In_Print(ChangeEPS_In *in, unsigned int indent)
 {
     printf("%*s" "TPM2_ChangeEPS\n", indent, "");

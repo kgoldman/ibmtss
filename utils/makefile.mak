@@ -227,6 +227,9 @@ imaextend.exe:	imaextend.o imalib.o cryptoutils.o $(LIBTSS)
 createek.exe:	createek.o ekutils.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
+certifyx509.exe:	certifyx509.o ekutils.o cryptoutils.o $(LIBTSS) 
+		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
+
 createekcert.exe:	createekcert.o ekutils.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o ekutils.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 

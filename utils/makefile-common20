@@ -47,6 +47,7 @@ ALL += 	activatecredential$(EXE)		\
 	imaextend$(EXE)				\
 	certify$(EXE)				\
 	certifycreation$(EXE)			\
+	certifyx509$(EXE)			\
 	changeeps$(EXE)				\
 	changepps$(EXE)				\
 	clear$(EXE)				\

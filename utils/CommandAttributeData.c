@@ -226,6 +226,9 @@ const TPMA_CC_TSS    s_ccAttr [] = {
 #if (PAD_LIST || CC_CertifyCreation)
     {{0x014a, 0, 0, 0, 0, 2, 0, 0, 0}},     // TPM_CC_CertifyCreation
 #endif
+#if (PAD_LIST || CC_CertifyX509)
+    {{0x0197, 0, 0, 0, 0, 2, 0, 0, 0}},     // TPM_CC_CertifyX509
+#endif
 #if (PAD_LIST || CC_Duplicate)
     {{0x014b, 0, 0, 0, 0, 2, 0, 0, 0}},     // TPM_CC_Duplicate
 #endif
@@ -642,6 +645,10 @@ const COMMAND_ATTRIBUTES    s_commandAttributes [] = {
 #if (PAD_LIST || CC_CertifyCreation)
     (COMMAND_ATTRIBUTES)(CC_CertifyCreation            *  // 0x014a
 			 (IS_IMPLEMENTED+DECRYPT_2+HANDLE_1_USER+ENCRYPT_2)),
+#endif
+#if (PAD_LIST || CC_CertifyX509)
+    (COMMAND_ATTRIBUTES)(CC_CertifyX509                *  // 0x0197
+			 (IS_IMPLEMENTED+DECRYPT_2+HANDLE_1_ADMIN+HANDLE_2_USER+ENCRYPT_2)),
 #endif
 #if (PAD_LIST || CC_Duplicate)
     (COMMAND_ATTRIBUTES)(CC_Duplicate                  *  // 0x014b

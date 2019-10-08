@@ -50,6 +50,7 @@
 
 #include "ActivateCredential_fp.h"
 #include "CertifyCreation_fp.h"
+#include "CertifyX509_fp.h"
 #include "Certify_fp.h"
 #include "ChangeEPS_fp.h"
 #include "ChangePPS_fp.h"
@@ -240,6 +241,8 @@ extern "C" {
     TSS_Certify_In_Marshalu(const Certify_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     TPM_RC
     TSS_CertifyCreation_In_Marshalu(const CertifyCreation_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
+    TPM_RC
+    TSS_CertifyX509_In_Marshalu(const CertifyX509_In *source, uint16_t *written, BYTE **buffer, uint32_t *size);
     TPM_RC
     TSS_Quote_In_Marshalu(const Quote_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     TPM_RC
@@ -458,6 +461,8 @@ extern "C" {
     TPM_RC
     TSS_CertifyCreation_In_Marshal(const CertifyCreation_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
     TPM_RC
+    TSS_CertifyX509_In_Marshal(const CertifyX509_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
+    TPM_RC
     TSS_Quote_In_Marshal(const Quote_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
     TPM_RC
     TSS_GetSessionAuditDigest_In_Marshal(const GetSessionAuditDigest_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
@@ -664,6 +669,8 @@ extern "C" {
     TSS_Certify_Out_Unmarshalu(Certify_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
     TPM_RC
     TSS_CertifyCreation_Out_Unmarshalu(CertifyCreation_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
+    TPM_RC
+    TSS_CertifyX509_Out_Unmarshalu(CertifyX509_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
     TPM_RC
     TSS_Quote_Out_Unmarshalu(Quote_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
     TPM_RC

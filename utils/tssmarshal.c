@@ -802,6 +802,27 @@ TSS_CertifyCreation_In_Marshalu(const CertifyCreation_In *source, uint16_t *writ
     return rc;
 }
 TPM_RC
+TSS_CertifyX509_In_Marshalu(const CertifyX509_In *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMI_DH_OBJECT_Marshalu(&source->objectHandle, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMI_DH_OBJECT_Marshalu(&source->signHandle, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_DATA_Marshalu(&source->qualifyingData, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMT_SIG_SCHEME_Marshalu(&source->inScheme, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_MAX_BUFFER_Marshalu(&source->partialCertificate, written, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
 TSS_Quote_In_Marshalu(const Quote_In *source, uint16_t *written, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
@@ -2338,6 +2359,27 @@ TSS_CertifyCreation_Out_Unmarshalu(CertifyCreation_Out *target, TPM_ST tag, BYTE
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM2B_ATTEST_Unmarshalu(&target->certifyInfo, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, YES);
+    }
+    return rc;
+}
+TPM_RC
+TSS_CertifyX509_Out_Unmarshalu(CertifyX509_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    uint32_t parameterSize = 0;
+    if (rc == TPM_RC_SUCCESS) {
+	if (tag == TPM_ST_SESSIONS) {
+	    rc = TSS_UINT32_Unmarshalu(&parameterSize, buffer, size);
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshalu(&target->addedToCertificate, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_DIGEST_Unmarshalu(&target->tbsDigest, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPMT_SIGNATURE_Unmarshalu(&target->signature, buffer, size, YES);

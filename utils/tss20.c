@@ -287,6 +287,7 @@ static const TSS_TABLE tssTable [] = {
     {TPM_CC_SequenceComplete, NULL,NULL, (TSS_PostProcessFunction_t)TSS_PO_SequenceComplete},
     {TPM_CC_EventSequenceComplete, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_EventSequenceComplete},
     {TPM_CC_Certify, NULL, NULL, NULL},
+    {TPM_CC_CertifyX509, NULL, NULL, NULL},
     {TPM_CC_CertifyCreation, NULL, NULL, NULL},
     {TPM_CC_Quote, NULL, NULL, NULL},
     {TPM_CC_GetSessionAuditDigest, NULL, NULL, NULL},
@@ -412,6 +413,7 @@ static const TSS_PRINT_TABLE tssPrintTable [] = {
     {TPM_CC_SequenceComplete, (TSS_InPrintFunction_t)SequenceComplete_In_Print},
     {TPM_CC_EventSequenceComplete, (TSS_InPrintFunction_t)EventSequenceComplete_In_Print},
     {TPM_CC_Certify, (TSS_InPrintFunction_t)Certify_In_Print},
+    {TPM_CC_CertifyX509, (TSS_InPrintFunction_t)CertifyX509_In_Print},
     {TPM_CC_CertifyCreation, (TSS_InPrintFunction_t)CertifyCreation_In_Print},
     {TPM_CC_Quote, (TSS_InPrintFunction_t)Quote_In_Print},
     {TPM_CC_GetSessionAuditDigest, (TSS_InPrintFunction_t)GetSessionAuditDigest_In_Print},
@@ -598,10 +600,10 @@ static TPM_RC TSS_ObjectPublic_DeleteData(TSS_CONTEXT *tssContext, TPM_HANDLE ha
 #endif
 static TPM_RC TSS_DeleteHandle(TSS_CONTEXT *tssContext,
 			       TPM_HANDLE handle);
+#ifndef TPM_TSS_NOCRYPTO
 static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 				       TPMT_PUBLIC *tpmtPublic);
 
-#ifndef TPM_TSS_NOCRYPTO
 static TPM_RC TSS_NVPublic_Store(TSS_CONTEXT *tssContext,
 				 TPMS_NV_PUBLIC *nvPublic,
 				 TPMI_RH_NV_INDEX handle);
@@ -1550,7 +1552,8 @@ static TPM_RC TSS_Name_GetAllNames(TSS_CONTEXT *tssContext,
     /* get the number of handles in the command stream */
     if (rc == 0) {
 	rc = TSS_GetCommandHandleCount(tssContext->tssAuthContext, &commandHandleCount);
-	if (tssVverbose) printf("TSS_Name_GetAllNames: commandHandleCount %u\n", (unsigned int)commandHandleCount);
+	if (tssVverbose) printf("TSS_Name_GetAllNames: commandHandleCount %u\n",
+				(unsigned int)commandHandleCount);
     }
     for (i = 0 ; (rc == 0) && (i < commandHandleCount) ; i++) {
 	/* get a handle from the command stream */
@@ -2183,6 +2186,8 @@ static TPM_RC TSS_DeleteHandle(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+#ifndef TPM_TSS_NOCRYPTO
+
 /* TSS_ObjectPublic_GetName() calculates the Name from the TPMT_PUBLIC.  The Name provides security,
    because the Name returned from the TPM2_ReadPublic cannot be trusted.
 */
@@ -2192,7 +2197,6 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 {
     TPM_RC 	rc = 0;
     
-#ifndef TPM_TSS_NOCRYPTO
     uint16_t 	written = 0;
     TPMT_HA	digest;
     uint32_t 	sizeInBytes = 0;
@@ -2227,12 +2231,11 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 	name->t.size = sizeInBytes + sizeof(TPMI_ALG_HASH);
     }
     free(buffer);	/* @1 */
-#else
-    tpmtPublic = tpmtPublic;
-    name->t.size = 0;
-#endif
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCRYPTO */
+
 
 /* TSS_NVPublic_Store() stores the NV public data in a file.
 
@@ -4377,6 +4380,10 @@ static TPM_RC TSS_PO_ReadPublic(TSS_CONTEXT *tssContext,
     in = in;
     extra = extra;
     if (tssVverbose) printf("TSS_PO_ReadPublic: handle %08x\n", in->objectHandle);
+    /* if the TSS is compiled without crypto support, it cannot recalculate the Name from the public
+       area. It has to trust the response from the TPM.  This should be OK since a 'no crypto' TSS
+       is used when there is a tructed path to the TPM. */
+#ifndef TPM_TSS_NOCRYPTO
     /* validate the Name against the public area */
     /* Name = nameAlg || HnameAlg (handle->publicArea)
        where
@@ -4406,6 +4413,7 @@ static TPM_RC TSS_PO_ReadPublic(TSS_CONTEXT *tssContext,
 	    }
 	}
     }
+#endif
     /* use handle as file name */
     if (rc == 0) {
 	rc = TSS_Name_Store(tssContext, &out->name, in->objectHandle, NULL);
