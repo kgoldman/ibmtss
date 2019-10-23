@@ -7,7 +7,7 @@ libibmtssutils12_la_SOURCES = ekutils12.c
 libibmtssutils12_la_CFLAGS = -I$(top_srcdir)/utils
 # current[:revision[:age]]
 # result: [current-age].age.revision
-libibmtssutils12_la_LDFLAGS = -version-info @TSSLIB_VERSION_INFO@
+libibmtssutils12_la_LDFLAGS = -version-info @TSSLIB_VERSION_INFO@ -libmtss
 
 noinst_HEADERS = ekutils12.h
 
