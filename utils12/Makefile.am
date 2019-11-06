@@ -9,6 +9,7 @@ libibmtssutils12_la_CFLAGS = -I$(top_srcdir)/utils
 # result: [current-age].age.revision
 libibmtssutils12_la_LDFLAGS = -version-info @TSSLIB_VERSION_INFO@ -libmtss
 
+notrans_man_MANS = man/man1/*.1
 noinst_HEADERS = ekutils12.h
 
 bin_PROGRAMS = activateidentity createendorsementkeypair createwrapkey extend flushspecific getcapability loadkey2 makeidentity nvdefinespace nvreadvalueauth nvreadvalue nvwritevalueauth nvwritevalue oiap osap ownerreadinternalpub ownersetdisable pcrread quote2 sign startup takeownership tpminit createekcert makeekblob eventextend imaextend
