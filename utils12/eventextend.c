@@ -305,12 +305,12 @@ static void printUsage(void)
     printf("\n");
     printf("Extends a measurement file (binary) into a TPM or simulated PCRs\n");
     printf("\n");
-    printf("\t-if <input file> is the file containing the data to be extended\n");
-    printf("\t[-tpm extend TPM PCRs]\n");
-    printf("\t[-sim calculate simulated PCRs and boot aggregate]\n");
-    printf("\t[-pcrmax, with -sim, sets the highest PCR number to be used to calculate the\n"
+    printf("\t-if\t <input file> is the file containing the data to be extended\n");
+    printf("\t[-tpm\textend TPM PCRs]\n");
+    printf("\t[-sim\tcalculate simulated PCRs and boot aggregate]\n");
+    printf("\t[-pcrmax\twith -sim, sets the highest PCR number to be used to calculate the\n"
 	   "\t\tboot aggregate (default 7)]\n");
-    printf("\t[-ns no space, no text, no newlines]\n");
+    printf("\t[-ns\tno space, no text, no newlines]\n");
     printf("\n");
     exit(-1);
 }

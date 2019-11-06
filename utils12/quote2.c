@@ -313,11 +313,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_Quote2\n");
     printf("\n");
-    printf("\t-hk quoting key handle\n");
-    printf("\t[-pwdk password for quoting key (default zeros)]\n");
-    printf("\t[-ed external data file name (default zeros)]\n");
-    printf("\t[-os quote signature file name (default do not save)]\n");
-    printf("\t[-ik key file name for verify (default do not verify)]\n");
+    printf("\t-hk\tquoting key handle\n");
+    printf("\t[-pwdk\tpassword for quoting key (default zeros)]\n");
+    printf("\t[-ed\texternal data file name (default zeros)]\n");
+    printf("\t[-os\tquote signature file name (default do not save)]\n");
+    printf("\t[-ik\tkey file name for verify (default do not verify)]\n");
     printf("\n");
     printf("\t-se0 session handle / attributes\n");
     printf("\t\t01 continue\n");

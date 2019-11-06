@@ -188,9 +188,9 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_OwnerSetDisable\n");
     printf("\n");
-    printf("\t[-pwdo owner password]\n");
-    printf("\t[-pwdof owner authorization file name\n");
-    printf("\t-en enable the TPM (default disable)\n");
+    printf("\t[-pwdo\t owner password]\n");
+    printf("\t[-pwdof\t owner authorization file name\n");
+    printf("\t-en\tenable the TPM (default disable)\n");
     printf("\n");
     printf("\t-se0 session handle / attributes\n");
     printf("\t\t01 continue\n");

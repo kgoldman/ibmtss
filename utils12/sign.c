@@ -268,11 +268,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_Sign\n");
     printf("\n");
-    printf("\t-hk signing key handle\n");
-    printf("\t[-pwdk password for signing key (default zeros)]\n");
-    printf("\t-if input area to hash and sign\n");
-    printf("\t[-os sign signature file name (default do not save)]\n");
-    printf("\t[-ik key file name to verify signature (default no verify)]\n");
+    printf("\t-hk\tsigning key handle\n");
+    printf("\t[-pwdk\tpassword for signing key (default zeros)]\n");
+    printf("\t-if\tinput area to hash and sign\n");
+    printf("\t[-os\tsign signature file name (default do not save)]\n");
+    printf("\t[-ik\tkey file name to verify signature (default no verify)]\n");
     printf("\n");
     printf("\t-se0 session handle / attributes\n");
     printf("\t\t01 continue\n");

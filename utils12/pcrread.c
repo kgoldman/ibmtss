@@ -154,7 +154,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_PcrRead\n");
     printf("\n");
-    printf("\t-ha PCR index\n");
-    printf("\t[-ns no space, no text, no newlines\n");
+    printf("\t-ha\tPCR index\n");
+    printf("\t[-ns\tno space, no text, no newlines\n");
     exit(1);	
 }

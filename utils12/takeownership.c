@@ -339,8 +339,8 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_TakeOwnership\n");
     printf("\n");
-    printf("\t[-pwdo owner password (default zeros)]\n");
-    printf("\t[-pwds SRK password (default zeros)]\n");
+    printf("\t[-pwdo\towner password (default zeros)]\n");
+    printf("\t[-pwds\tSRK password (default zeros)]\n");
     printf("\n");
     printf("\t-se0 session handle / attributes\n");
     exit(1);

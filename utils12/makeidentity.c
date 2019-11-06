@@ -274,11 +274,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_MakeIdentity\n");
     printf("\n");
-    printf("\t[-pwdo owner password (default zeros)]\n");
-    printf("\t[-pwds SRK password (default zeros)]\n");
-    printf("\t[-pwdk password for key (default zeros)]\n");
-    printf("\t[-ok TPM_KEY12 key file name (default do not save)]\n");
-    printf("\t[-op TPM_PUBKEY key file name (default do not save)]\n");
+    printf("\t[-pwdo\towner password (default zeros)]\n");
+    printf("\t[-pwds\tSRK password (default zeros)]\n");
+    printf("\t[-pwdk\tpassword for key (default zeros)]\n");
+    printf("\t[-ok\tTPM_KEY12 key file name (default do not save)]\n");
+    printf("\t[-op\tTPM_PUBKEY key file name (default do not save)]\n");
     printf("\n");
     printf("\t-se0 srk session handle / attributes\n");
     printf("\t-se1 owner session handle / attributes\n");

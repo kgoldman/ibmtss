@@ -273,12 +273,12 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_NV_ReadValue\n");
     printf("\n");
-    printf("\t-ha NV index handle\n");
-    printf("\t[-pwdo owner password (default zeros)]\n");
-    printf("\t-sz data size\n");
-    printf("\t-cert dumps the certificate, the number of bytes is embedded in the prefix\n");
-    printf("\t[-off offset (default 0)]\n");
-    printf("\t[-of data file (default do not save)]\n");
+    printf("\t-ha\tNV index handle\n");
+    printf("\t[-pwdo\towner password (default zeros)]\n");
+    printf("\t-sz\tdata size\n");
+    printf("\t-cert\tdumps the certificate, the number of bytes is embedded in the prefix\n");
+    printf("\t[-off\toffset (default 0)]\n");
+    printf("\t[-of\tdata file (default do not save)]\n");
     printf("\n");
     printf("\t-se0 session handle / attributes\n");
     printf("\t\t01 continue\n");
