@@ -1187,6 +1187,8 @@ TPM_RC TSS_AES_GetDecKeySize(size_t *tssSessionDecKeySize)
 
 #define TSS_AES_KEY_BITS 128
 
+#ifndef TPM_TSS_NOFILE
+
 TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
 			   void *tssSessionDecKey)
 {
@@ -1258,6 +1260,8 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
     free(envKeyBin);	/* @1 */
     return rc;
 }
+
+#endif
 
 /* TSS_AES_Encrypt() is AES non-portable code to encrypt 'decrypt_data' to 'encrypt_data' using CBC.
    This function uses the session encryption key for encrypting session state.

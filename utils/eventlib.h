@@ -145,10 +145,12 @@ typedef struct tdTCG_EfiSpecIdEvent {
 extern "C" {
 #endif
 
+#ifndef TPM_TSS_NOFILE
     int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
 			    int *endOfFile,
 			    FILE *inFile);
 
+#endif /* TPM_TSS_NOFILE */
     TPM_RC TSS_EVENT_Line_Marshal(TCG_PCR_EVENT *source,
 				  uint16_t *written, uint8_t **buffer, uint32_t *size);
     
@@ -161,10 +163,12 @@ extern "C" {
     
     void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event);
 
+#ifndef TPM_TSS_NOFILE
     int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event2,
 			     int *endOfFile,
 			     FILE *inFile);
 
+#endif /* TPM_TSS_NOFILE */
     TPM_RC TSS_EVENT2_Line_Marshal(TCG_PCR_EVENT2 *source, uint16_t *written,
 				   uint8_t **buffer, uint32_t *size);
 

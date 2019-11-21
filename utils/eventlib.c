@@ -49,10 +49,12 @@
 
 #include "eventlib.h"
 
+#ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
 static uint16_t Uint16_Convert(uint16_t in);
 #endif
 static uint32_t Uint32_Convert(uint32_t in);
+#endif /* TPM_TSS_NOFILE */
 static TPM_RC UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size);
 static TPM_RC UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size);
 
@@ -81,6 +83,7 @@ static TPM_RC TSS_TPML_DIGEST_VALUES_LE_Marshalu(const TPML_DIGEST_VALUES *sourc
 
  */
 
+#ifndef TPM_TSS_NOFILE
 int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
 			int *endOfFile,
 			FILE *inFile)
@@ -167,6 +170,8 @@ int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,
     }
     return rc;
 }
+
+#endif /* TPM_TSS_NOFILE */
 
 /* TSS_EVENT_Line_Marshal() marshals a TCG_PCR_EVENT structure */
 
@@ -425,6 +430,7 @@ static void TSS_SpecIdEventAlgorithmSize_Trace(TCG_EfiSpecIdEventAlgorithmSize *
 }
 
 #ifdef TPM_TPM20
+#ifndef TPM_TSS_NOFILE
 
 /* TSS_EVENT2_Line_Read() reads a TPM2 event line from a binary file inFile.
 
@@ -574,6 +580,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
     }
     return rc;
 }
+#endif /* TPM_TSS_NOFILE */
 
 /* TSS_EVENT2_Line_Marshal() marshals a TCG_PCR_EVENT2 structure */
 
@@ -746,6 +753,7 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
 
 #endif	/* TPM_TPM20 */
 
+#ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
 
 /* Uint16_Convert() converts a little endian uint16_t (from an input stream) to host byte order
@@ -779,6 +787,7 @@ static uint32_t Uint32_Convert(uint32_t in)
 	  (inb[3] << 24);
     return out;
 }
+#endif /* TPM_TSS_NOFILE */
 
 /* UINT16LE_Unmarshal() unmarshals a little endian 2-byte array from buffer into a HBO uint16_t */
 
