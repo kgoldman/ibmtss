@@ -173,6 +173,10 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 #ifdef TPM_WINDOWS_TBSI
 #endif
 #endif
+#ifdef TPM_SKIBOOT
+	tssContext->tpm_driver = NULL;
+	tssContext->tpm_device = NULL;
+#endif /* TPM_SKIBOOT */
 #ifndef TPM_TSS_NOCRYPTO
 #ifndef TPM_TSS_NOFILE
 	tssContext->tssSessionEncKey = NULL;

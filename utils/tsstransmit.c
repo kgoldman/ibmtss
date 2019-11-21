@@ -152,8 +152,8 @@ TPM_RC TSS_Transmit(TSS_CONTEXT *tssContext,
     }
     else
 #endif
-	
-    if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
+
+    if (strcmp(tssContext->tssInterfaceType, "dev") == 0) {
 #ifdef TPM_POSIX	/* transmit through Linux device driver */
 	rc = TSS_Dev_Transmit(tssContext,
 			      responseBuffer, read,
@@ -196,8 +196,8 @@ TPM_RC TSS_Close(TSS_CONTEXT *tssContext)
 	}
 	else
 #endif
-        if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
 #ifdef TPM_POSIX	/* transmit through Linux device driver */
+        if (strcmp(tssContext->tssInterfaceType, "dev") == 0) {
 	    rc = TSS_Dev_Close(tssContext);
 #endif
 

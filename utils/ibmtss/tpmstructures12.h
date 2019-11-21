@@ -45,8 +45,8 @@
 
 /* Sanity check on build macros are centralized here, since any TPM will use this header */
 
-#if !defined (TPM_POSIX) && !defined (TPM_WINDOWS)
-#error "Must define either TPM_POSIX or TPM_WINDOWS"
+#if !defined (TPM_POSIX) && !defined (TPM_WINDOWS) && !defined(TPM_SKIBOOT)
+#error "Must define either TPM_POSIX TPM_SKIBOOT or TPM_WINDOWS"
 #endif
 
 #define TPM_REVISION_MAX 9999
