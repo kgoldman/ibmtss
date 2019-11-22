@@ -285,11 +285,11 @@ static void printUsage(void)
     printf("Runs TPM_ActivateIdentity\n");
     printf("\n");
     printf("\t-ha ID key handle\n");
-    printf("\t[-pwdo owner password (default zeros)]\n");
-    printf("\t[-pwdof owner authorization file name\n");
-    printf("\t[-pwdk password for key (default zeros)]\n");
+    printf("\t[-pwdo\t owner password (default zeros)]\n");
+    printf("\t[-pwdof\t owner authorization file name\n");
+    printf("\t[-pwdk\t password for key (default zeros)]\n");
     printf("\t-ib encrypted blob file name\n");
-    printf("\t[-ok symmetric key file name (default do not save)]\n");
+    printf("\t[-ok\t symmetric key file name (default do not save)]\n");
     printf("\n");
     printf("\t-se0 srk session handle / attributes\n");
     printf("\t-se1 owner session handle / attributes\n");

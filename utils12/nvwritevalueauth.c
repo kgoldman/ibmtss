@@ -247,11 +247,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_NV_WriteValueAuth\n");
     printf("\n");
-    printf("\t-ha NV index handle\n");
-    printf("\t[-pwdn password for NV index (default zeros)]\n");
-    printf("\t[-ic data string]\n");
-    printf("\t[-if data file]\n");
-    printf("\t[-off offset (default 0)]\n");
+    printf("\t-ha\tNV index handle\n");
+    printf("\t[-pwdn\tpassword for NV index (default zeros)]\n");
+    printf("\t[-ic\tdata string]\n");
+    printf("\t[-if\tdata file]\n");
+    printf("\t[-off\toffset (default 0)]\n");
     printf("\n");
     printf("\t-se0 session handle / attributes\n");
     printf("\t\t01 continue\n");

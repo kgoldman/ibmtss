@@ -199,9 +199,9 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_OwnerReadInternalPub\n");
     printf("\n");
-    printf("\t-ha key handle type [ek, srk]\n");
-    printf("\t[-pwdo owner password (default zeros)]\n");
-    printf("\t[-op TPM_PUBKEY key file name (default do not save)]\n");
+    printf("\t-ha\tkey handle type [ek, srk]\n");
+    printf("\t[-pwdo \twner password (default zeros)]\n");
+    printf("\t[-op\tTPM_PUBKEY key file name (default do not save)]\n");
     printf("\n");
     printf("\t-se0 session handle / attributes\n");
     printf("\t\t01 continue\n");

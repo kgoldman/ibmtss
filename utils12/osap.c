@@ -164,9 +164,9 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_OSAP\n");
     printf("\n");
-    printf("\t-ha entity value\n");
+    printf("\t-ha\tentity value\n");
     printf("\t\tOwner 40000001\n");
     printf("\t\tSRK 40000000\n");
-    printf("\t[-pwd entity password (default zeros)]\n");
+    printf("\t[-pwd\tentity password (default zeros)]\n");
     exit(1);	
 }

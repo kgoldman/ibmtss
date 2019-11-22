@@ -455,11 +455,11 @@ static void printUsage(void)
     printf("\n");
     printf("createekcert -cakey cakey.pem -capwd rrrr -ip ekpub.bin\n");
     printf("\n");
-    printf("\t[-pwdo owner password (default zeros)]\n");
-    printf("\t-iek TPM_PUBKEY EK file name\n");
-    printf("\t-cakey CA PEM key file name\n");
-    printf("\t[-capwd CA PEM key password (default empty)]\n");
-    printf("\t[-of - DER certificate output file name]\n");
+    printf("\t[-pwdo\t owner password (default zeros)]\n");
+    printf("\t-iek\t TPM_PUBKEY EK file name\n");
+    printf("\t-cakey\t CA PEM key file name\n");
+    printf("\t[-capwd\t CA PEM key password (default empty)]\n");
+    printf("\t[-of\t DER certificate output file name]\n");
     printf("\n");
     printf("Currently:\n");
     printf("\n");

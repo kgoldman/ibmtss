@@ -295,17 +295,17 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_CreateWrapKey\n");
     printf("\n");
-    printf("\t-st storage key\n");
-    printf("\t-si signing key\n");
-    printf("\t[-hp parent handle, can be srk (default srk)]\n");
-    printf("\t[-pwdp password for parent key (default empty)]\n");
-    printf("\t[-pwdk usage password for key (default zeros)]\n");
-    printf("\t[-pwdm migration password for key (default zeros)]\n");
-    printf("\t[-ok TPM_KEY12 key file name (default do not save)]\n");
-    printf("\t[-op TPM_PUBKEY key file name (default do not save)]\n");
+    printf("\t-st\tstorage key\n");
+    printf("\t-si\tsigning key\n");
+    printf("\t[-hp\tparent handle, can be srk (default srk)]\n");
+    printf("\t[-pwdp\tpassword for parent key (default empty)]\n");
+    printf("\t[-pwdk\tusage password for key (default zeros)]\n");
+    printf("\t[-pwdm\tmigration password for key (default zeros)]\n");
+    printf("\t[-ok\tTPM_KEY12 key file name (default do not save)]\n");
+    printf("\t[-op\tTPM_PUBKEY key file name (default do not save)]\n");
     printf("\n");
-    printf("\t-se0 OSAP session handle / attributes\n");
-    printf("\t\t01 continue\n");
+    printf("\t-se0\tOSAP session handle / attributes\n");
+    printf("\t01\tcontinue\n");
     exit(1);
 }
 

@@ -182,11 +182,11 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM_Startup\n");
     printf("\n");
-    printf("\t[-c startup clear (default)]\n");
-    printf("\t[-s startup state]\n");
-    printf("\t[-d  startup deactivated]\n");
-    printf("\t[-st run TPM_ContinueSelfTest]\n");
-    printf("\t[-sto run only TPM_ContinueSelfTest (no startup)]\n");
+    printf("\t[-c\tstartup clear (default)]\n");
+    printf("\t[-s\tstartup state]\n");
+    printf("\t[-d\tstartup deactivated]\n");
+    printf("\t[-st\trun TPM_ContinueSelfTest]\n");
+    printf("\t[-sto\trun only TPM_ContinueSelfTest (no startup)]\n");
     exit(1);	
 }
 

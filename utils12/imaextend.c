@@ -297,13 +297,13 @@ static void printUsage(void)
     printf("Runs TPM2_PCR_Extend to Extends a SHA-1 IMA measurement file (binary) into TPM PCRs\n");
     printf("It handles the case where a zero measurement extends ones into the IMA PCR\n");
     printf("\n");
-    printf("\t-if IMA event log file name\n");
-    printf("\t[-le input file is little endian (default big endian)]\n");
-    printf("\t[-b beginning entry (default 0, beginning of log)]\n");
+    printf("\t-if\tIMA event log file name\n");
+    printf("\t[-le\tinput file is little endian (default big endian)]\n");
+    printf("\t[-b\tbeginning entry (default 0, beginning of log)]\n");
     printf("\t\tA beginning entry after the end of the log becomes a noop\n");
-    printf("\t[-e ending entry (default end of log)]\n");
+    printf("\t[-e\tending entry (default end of log)]\n");
     printf("\t\tE.g., -b 0 -e 0 sends one entry\n");
-    printf("\t[-l time - run in a continuous loop, with a sleep of 'time' seconds betwteen loops]\n");
+    printf("\t[-l\ttime - run in a continuous loop, with a sleep of 'time' seconds betwteen loops]\n");
     printf("\t\tThe intent is that this be run without specifying -b and -e\n");
     printf("\t\tAfer each pass, the next beginning entry is set to the last entry +1\n");
     printf("\n");
