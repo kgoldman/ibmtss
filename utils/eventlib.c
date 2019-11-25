@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2019.					*/
+/* (c) Copyright IBM Corporation 2016 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -60,6 +60,21 @@ static TPM_RC TSS_SpecIdEventAlgorithmSize_Unmarshal(TCG_EfiSpecIdEventAlgorithm
 						     uint8_t **buffer,
 						     uint32_t *size);
 static void TSS_SpecIdEventAlgorithmSize_Trace(TCG_EfiSpecIdEventAlgorithmSize *algSize);
+static TPM_RC TSS_TPML_DIGEST_VALUES_LE_Unmarshalu(TPML_DIGEST_VALUES *target,
+						   BYTE **buffer,
+						   uint32_t *size);
+static TPM_RC TSS_TPMT_HA_LE_Unmarshalu(TPMT_HA *target, BYTE **buffer,
+					uint32_t *size, BOOL allowNull);
+static TPM_RC TSS_TPMI_ALG_HASH_LE_Unmarshalu(TPMI_ALG_HASH *target,
+					      BYTE **buffer, uint32_t *size,
+					      BOOL allowNull);
+static TPM_RC TSS_TPM_ALG_ID_LE_Unmarshalu(TPM_ALG_ID *target,
+					   BYTE **buffer, uint32_t *size);
+static TPM_RC TSS_TPMT_HA_LE_Marshalu(const TPMT_HA *source, uint16_t *written,
+				      BYTE **buffer, uint32_t *size);
+static TPM_RC TSS_TPML_DIGEST_VALUES_LE_Marshalu(const TPML_DIGEST_VALUES *source,
+						 uint16_t *written, BYTE **buffer,
+						 uint32_t *size);
 
 /* TSS_EVENT_Line_Read() reads a TPM 1.2 SHA-1 event line from a binary file inFile.
 
@@ -202,6 +217,36 @@ TPM_RC TSS_EVENT_Line_Unmarshal(TCG_PCR_EVENT *target, BYTE **buffer, uint32_t *
 	    rc = TPM_RC_SIZE;
 	}
     }    
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu((uint8_t *)target->event, target->eventDataSize, buffer, size);
+    }
+    return rc;
+}
+
+/*
+ * TSS_EVENT_Line_LE_Unmarshal() Unmarshal LE buffer into a target TCG_PCR_EVENT
+*/
+TPM_RC TSS_EVENT_Line_LE_Unmarshal(TCG_PCR_EVENT *target, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = UINT32LE_Unmarshal(&target->pcrIndex, buffer, size);
+    }
+    if (rc == 0) {
+	rc = UINT32LE_Unmarshal(&target->eventType, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu((uint8_t *)target->digest, SHA1_DIGEST_SIZE, buffer, size);
+    }
+    if (rc == 0) {
+	rc = UINT32LE_Unmarshal(&target->eventDataSize, buffer, size);
+    }
+    if (rc == 0) {
+	if (target->eventDataSize > sizeof(target->event)) {
+	    rc = TPM_RC_SIZE;
+	}
+    }
     if (rc == 0) {
 	rc = TSS_Array_Unmarshalu((uint8_t *)target->event, target->eventDataSize, buffer, size);
     }
@@ -554,6 +599,33 @@ TPM_RC TSS_EVENT2_Line_Marshal(TCG_PCR_EVENT2 *source,
     return rc;
 }
 
+/*
+ * TSS_EVENT2_Line_LE_Marshal() Marshals a TSS_EVENT2 structure from HBO into LE
+ * and saves to buffer.
+ */
+TPM_RC TSS_EVENT2_Line_LE_Marshal(TCG_PCR_EVENT2 *source, uint16_t *written,
+				  uint8_t **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Marshal(&source->pcrIndex, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Marshal(&source->eventType, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPML_DIGEST_VALUES_LE_Marshalu(&source->digests, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Marshal(&source->eventSize, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Marshalu((uint8_t *)source->event, source->eventSize, written, buffer, size);
+    }
+    return rc;
+}
+
 /* TSS_EVENT2_Line_Unmarshal() unmarshals a TCG_PCR_EVENT2 structure */
 
 
@@ -578,6 +650,37 @@ TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t
 	    rc = TPM_RC_SIZE;
 	}
     }    
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu((uint8_t *)target->event, target->eventSize, buffer, size);
+    }
+    return rc;
+}
+
+/*
+ * TSS_EVENT2_Line_LE_Unmarshal() Unmarshals an LE eventlog buffer and save to
+ * the target TCG_PCR_EVENT2
+ */
+TPM_RC TSS_EVENT2_Line_LE_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = UINT32LE_Unmarshal(&target->pcrIndex, buffer, size);
+    }
+    if (rc == 0) {
+	rc = UINT32LE_Unmarshal(&target->eventType, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPML_DIGEST_VALUES_LE_Unmarshalu(&target->digests, buffer, size);
+    }
+    if (rc == 0) {
+	rc = UINT32LE_Unmarshal(&target->eventSize, buffer, size);
+    }
+    if (rc == 0) {
+	if (target->eventSize > sizeof(target->event)) {
+	    rc = TPM_RC_SIZE;
+	}
+    }
     if (rc == 0) {
 	rc = TSS_Array_Unmarshalu((uint8_t *)target->event, target->eventSize, buffer, size);
     }
@@ -800,3 +903,177 @@ const char *TSS_EVENT_EventTypeToString(uint32_t eventType)
     return crc;
 }
 
+/*
+ * TSS_TPML_DIGEST_VALUES_LE_Unmarshalu() Unmarshals TPML_DIGEST_VALUES struct
+ * from a LE buffer into HBO data structure. This is similar to
+ * TSS_TPML_DIGEST_VALUES_Unmarshalu but it unrmarshals TPML_DIGEST_VALUES's
+ * count  and the digests array members from LE instead of HBO.
+ */
+
+static TPM_RC
+TSS_TPML_DIGEST_VALUES_LE_Unmarshalu(TPML_DIGEST_VALUES *target, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    uint32_t i;
+    if (rc == TPM_RC_SUCCESS) {
+	rc = UINT32LE_Unmarshal(&target->count, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	if (target->count > HASH_COUNT) {
+	    rc = TPM_RC_SIZE;
+	}
+    }
+    for (i = 0 ; (rc == TPM_RC_SUCCESS) && (i < target->count) ; i++) {
+	rc = TSS_TPMT_HA_LE_Unmarshalu(&target->digests[i], buffer, size, NO);
+    }
+    return rc;
+}
+
+/*
+ * TSS_TPMT_HA_LE_Unmarshalu() Unmarshals a TPMT_HA data from LE to HBO. This is
+ * similar to TSS_TPMT_HA_Unmarshalu but differs specificaly for unmarshalling
+ * hashAlg member from LE instead of from HBO.
+ */
+static TPM_RC
+TSS_TPMT_HA_LE_Unmarshalu(TPMT_HA *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPMI_ALG_HASH_LE_Unmarshalu(&target->hashAlg, buffer, size, allowNull);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPMU_HA_Unmarshalu(&target->digest, buffer, size, target->hashAlg);
+    }
+    return rc;
+}
+
+/*
+ * TSS_TPMI_ALG_HASH_LE_Unmarshalu() Unmarshals TPMI_ALG_HASH from a LE buffer
+ * into HBO data structure. This is similar to TSS_TPMI_ALG_HASH_Unmarshalu but
+ * unmarshals TPMI_ALG_HASH from LE instead of HBO.
+ */
+static TPM_RC
+TSS_TPMI_ALG_HASH_LE_Unmarshalu(TPMI_ALG_HASH *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM_ALG_ID_LE_Unmarshalu(target, buffer, size);
+    }
+    return rc;
+}
+
+/*
+ * TSS_TPM_ALG_ID_LE_Unmarshalu() Unrmarshals TPM_ALG_ID from LE buffer. This is
+ * simlar to TSS_TPM_ALG_ID_Unmarshalu but unmarshals from LE instead of HBO.
+ */
+static TPM_RC
+TSS_TPM_ALG_ID_LE_Unmarshalu(TPM_ALG_ID *target, BYTE **buffer,
+                                 uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = UINT16LE_Unmarshal(target, buffer, size);
+    }
+    return rc;
+}
+
+/* TSS_TPML_DIGEST_VALUES_LE_Marshalu() Similar to TSS_TPML_DIGEST_VALUES_Marshalu
+ * for TSS EVENT2 this marshals count to buffer in LE endianess.
+ */
+static TPM_RC
+TSS_TPML_DIGEST_VALUES_LE_Marshalu(const TPML_DIGEST_VALUES *source,
+                                       uint16_t *written, BYTE **buffer,
+                                       uint32_t *size)
+{
+    TPM_RC rc = 0;
+    uint32_t i;
+
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Marshal(&source->count, written, buffer, size);
+    }
+    for (i = 0 ; i < source->count ; i++) {
+	if (rc == 0) {
+	    rc = TSS_TPMT_HA_LE_Marshalu(&source->digests[i], written, buffer, size);
+	}
+    }
+    return rc;
+}
+
+/* TSS_TPMT_HA_LE_Marshalu() Similar to TSS_TPMT_HA_Marshalu for TSS EVENT2,
+ * this saves hashAlg attr as little endian into buffer.
+ */
+static TPM_RC
+TSS_TPMT_HA_LE_Marshalu(const TPMT_HA *source, uint16_t *written,
+			BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Marshalu(&source->hashAlg, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMU_HA_Marshalu(&source->digest, written, buffer, size,
+                                  source->hashAlg);
+    }
+    return rc;
+}
+
+/*
+ * TSS_UINT32LE_Marshal() Marshals uint32_t from HBO into LE in the given buffer.
+ */
+TPM_RC
+TSS_UINT32LE_Marshal(const UINT32 *source, uint16_t *written, BYTE **buffer,
+                 uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (buffer != NULL) {
+        if ((size == NULL) || (*size >= sizeof(uint32_t))) {
+            (*buffer)[0] = (BYTE)((*source >> 0) &  0xff);
+            (*buffer)[1] = (BYTE)((*source >> 8) & 0xff);
+            (*buffer)[2] = (BYTE)((*source >> 16) & 0xff);
+            (*buffer)[3] = (BYTE)((*source >> 24) & 0xff);
+
+            *buffer += sizeof(uint32_t);
+            if (size != NULL) {
+                *size -= sizeof(uint32_t);
+            }
+        }
+        else {
+            rc = TSS_RC_INSUFFICIENT_BUFFER;
+        }
+    }
+    *written += sizeof(uint32_t);
+    return rc;
+}
+
+/*
+ * UINT16LE_Marshal() Marshals uint16_t from HBO into LE in the given buffer.
+ */
+
+TPM_RC
+TSS_UINT16LE_Marshalu(const UINT16 *source, uint16_t *written, BYTE **buffer,
+                      uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (buffer != NULL) {
+        if ((size == NULL) || (*size >= sizeof(uint16_t))) {
+	    (*buffer)[0] = (BYTE)((*source >> 0) & 0xff);
+	    (*buffer)[1] = (BYTE)((*source >> 8) & 0xff);
+
+            *buffer += sizeof(uint16_t);
+
+            if (size != NULL) {
+                *size -= sizeof(uint16_t);
+            }
+        }
+        else {
+            rc = TSS_RC_INSUFFICIENT_BUFFER;
+        }
+    }
+    *written += sizeof(uint16_t);
+    return rc;
+}
