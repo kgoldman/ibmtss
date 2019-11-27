@@ -225,6 +225,7 @@ utils/startauthsession
 utils/startup
 utils/stirrandom
 utils/timepacket
+utils/tpmcmd
 utils/tpm2pem
 utils/tpmpublic2eccpoint
 utils/unseal

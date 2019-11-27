@@ -82,6 +82,91 @@
 
 int tssUtilsVerbose;
 
+/* openssl compatibility functions, during the transition from 1.0.1, 1.0.2, 1.1.0, 1.1.1.  Some
+   structures were made opaque, with gettters and setters.  Some parameters were made const.  Some
+   function names changed. */
+
+/* Some functions add const to parameters as of openssl 1.1.0 */
+
+/* These functions are only required for OpenSSL 1.0.  OpenSSL 1.1 has them, and the structures are
+   opaque. */
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+
+int ECDSA_SIG_set0(ECDSA_SIG *sig, BIGNUM *r, BIGNUM *s)
+{
+    if (r == NULL || s == NULL)
+	return 0;
+    BN_clear_free(sig->r);
+    BN_clear_free(sig->s);
+    sig->r = r;
+    sig->s = s;
+    return 1;
+}
+
+void ECDSA_SIG_get0(const ECDSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps)
+{
+    if (pr != NULL) {
+	*pr = sig->r;
+    }
+    if (ps != NULL) {
+	*ps = sig->s;
+    }
+    return;
+}
+
+const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
+{
+    return x->cert_info->signature;
+}
+
+void RSA_get0_key(const RSA *rsaKey,
+		  const BIGNUM **n,
+		  const BIGNUM **e,
+		  const BIGNUM **d)
+{
+    if (n != NULL) {
+	*n = rsaKey->n;
+    }
+    if (e != NULL) {
+	*e = rsaKey->e;
+    }
+    if (d != NULL) {
+	*d = rsaKey->d;
+    }
+    return;
+}
+
+void RSA_get0_factors(const RSA *rsaKey,
+		      const BIGNUM **p,
+		      const BIGNUM **q)
+{
+    if (p != NULL) {
+	*p = rsaKey->p;
+    }
+    if (q != NULL) {
+	*q = rsaKey->q;
+    }
+    return;
+}
+
+#endif	/* pre openssl 1.1 */
+
+/* These functions are only required for OpenSSL 1.0.1 OpenSSL 1.0.2 has them, and the structures
+   are opaque.   In 1.1.0, the parameters became const.  */
+
+#if OPENSSL_VERSION_NUMBER < 0x10002000
+
+void X509_get0_signature(OSSLCONST ASN1_BIT_STRING **psig,
+                         OSSLCONST X509_ALGOR **palg, const X509 *x)
+{
+    *psig = x->signature;
+    *palg = x->sig_alg;
+    return;
+}
+
+#endif	/* pre openssl 1.0.2 */
+
 #ifndef TPM_TSS_NOFILE
 
 /* getCryptoLibrary() returns a string indicating the underlying crypto library.
@@ -1263,24 +1348,12 @@ TPM_RC getRsaKeyParts(const BIGNUM **n,
 		     const RSA *rsaKey)
 {
     TPM_RC  	rc = 0;
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    if (n != NULL) {
-	*n = rsaKey->n;
-	*e = rsaKey->e;
-	*d = rsaKey->d;
-    }
-    if (p != NULL) {
-	*p = rsaKey->p;
-	*q = rsaKey->q;
-    }
-#else
     if (n != NULL) {
 	RSA_get0_key(rsaKey, n, e, d);
     }
     if (p != NULL) {
 	RSA_get0_factors(rsaKey, p, q);
     }
-#endif
     return rc;
 }
 
@@ -1291,11 +1364,7 @@ TPM_RC getRsaKeyParts(const BIGNUM **n,
 int getRsaPubkeyAlgorithm(EVP_PKEY *pkey)
 {
     int 			pkeyType;	/* RSA or EC */
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-    pkeyType = pkey->type;
-#else
     pkeyType = EVP_PKEY_base_id(pkey);
-#endif
     return pkeyType;
 }
 
@@ -1792,20 +1861,11 @@ TPM_RC verifyEcSignatureFromEvpPubKey(unsigned char *message,
 	}
     }
     if (rc == 0) {
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-	/* Note: before OpenSSL 1.1.0 ECDSA_SIG_new initialized the r and s components. */
-	BN_clear_free(ecdsaSig->r);	/* free before assignment to prevent memory leak */
-	BN_clear_free(ecdsaSig->s);
-	ecdsaSig->r = r;
-	ecdsaSig->s = s;
-#else
-	/* ECDSA_SIG_set0() does thisthe free and then assignment in 1.1 */
 	int irc = ECDSA_SIG_set0(ecdsaSig, r, s);	
 	if (irc != 1) {
             printf("verifyEcSignatureFromEvpPubKey: Error in ECDSA_SIG_set0()\n");
             rc = TSS_RC_EC_KEY_CONVERT;
 	}
-#endif
     }
     /* verify the signature */
     if (rc == 0) {
@@ -1915,12 +1975,7 @@ TPM_RC convertEcBinToTSignature(TPMT_SIGNATURE *tSignature,
     }
     /* check that the signature size agrees with the currently hard coded P256 curve */
     if (rc == 0) {
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-	pr = ecSig->r;
-	ps = ecSig->s;
-#else
 	ECDSA_SIG_get0(ecSig, &pr, &ps);
-#endif
 	rBytes = BN_num_bytes(pr);
 	sBytes = BN_num_bytes(ps);
 	if ((rBytes > 32) ||

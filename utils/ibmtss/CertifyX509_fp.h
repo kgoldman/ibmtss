@@ -1,6 +1,6 @@
 /********************************************************************************/
 /*										*/
-/*			     				*/
+/*		TPM2_CertifyX509 Command Header	     				*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
@@ -64,14 +64,14 @@
 typedef struct {
     TPMI_DH_OBJECT	objectHandle;
     TPMI_DH_OBJECT	signHandle;
-    TPM2B_DATA		qualifyingData;
+    TPM2B_DATA		reserved;
     TPMT_SIG_SCHEME	inScheme;
     TPM2B_MAX_BUFFER	partialCertificate;
 } CertifyX509_In;
 
 #define RC_CertifyX509_objectHandle		(TPM_RC_H + TPM_RC_1)
 #define RC_CertifyX509_signHandle 		(TPM_RC_H + TPM_RC_2)
-#define RC_CertifyX509_qualifyingData		(TPM_RC_P + TPM_RC_1)
+#define RC_CertifyX509_reserved			(TPM_RC_P + TPM_RC_1)
 #define RC_CertifyX509_inScheme 		(TPM_RC_P + TPM_RC_2)
 #define RC_CertifyX509_partialCertificate	(TPM_RC_P + TPM_RC_3)
 

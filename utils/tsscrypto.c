@@ -70,6 +70,13 @@
 extern int tssVverbose;
 extern int tssVerbose;
 
+/* openssl compatibility code */
+
+#if OPENSSL_VERSION_NUMBER < 0x10101000
+#define EC_POINT_set_affine_coordinates(a,b,c,d,e)  EC_POINT_set_affine_coordinates_GFp(a,b,c,d,e)
+#define EC_POINT_get_affine_coordinates(a,b,c,d,e)  EC_POINT_get_affine_coordinates_GFp(a,b,c,d,e)
+#endif
+
 /* local prototypes */
 
 static TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
@@ -581,7 +588,7 @@ static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KE
 			   "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
     }
     if (rc == 0) {
-	if (EC_POINT_set_affine_coordinates_GFp(eCurveData->G, G, x, y, eCurveData->ctx) == 0) {
+	if (EC_POINT_set_affine_coordinates(eCurveData->G, G, x, y, eCurveData->ctx) == 0) {
 	    if (tssVerbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Error, "
 				   "Cannot create TPM public point from coordinates\n");
 	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
@@ -790,7 +797,7 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     }
     /* Create the openssl form of the TPM salt public key as EC_POINT using coordinates */
     if (rc == 0) {
-	if (EC_POINT_set_affine_coordinates_GFp
+	if (EC_POINT_set_affine_coordinates
 	    (eCurveData.G, tpmPointPub, p_tpmX, bigY, eCurveData.ctx) == 0) {
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
 				   "Cannot create TPM public point from coordinates\n");
@@ -882,10 +889,10 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 	rc = TSS_BN_new(&yBn);			/* freed @8 */
     }
     if (rc == 0) {
-	if (EC_POINT_get_affine_coordinates_GFp(eCurveData.G, rPoint,
+	if (EC_POINT_get_affine_coordinates(eCurveData.G, rPoint,
 						sharedX, yBn, eCurveData.ctx) == 0) {
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
-				   "EC_POINT_get_affine_coordinates_GFp() failed\n");
+				   "EC_POINT_get_affine_coordinates() failed\n");
 	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
 	}
     }
@@ -913,11 +920,11 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     }
     /* Get the X-coordinate and Y-Coordinate */
     if (rc == 0) {
-	if (EC_POINT_get_affine_coordinates_GFp(eCurveData.G, callerPointPub,
+	if (EC_POINT_get_affine_coordinates(eCurveData.G, callerPointPub,
 						p_caller_Xbn, p_caller_Ybn,
 						eCurveData.ctx) == 0) { 
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
-				   "EC_POINT_get_affine_coordinates_GFp() failed\n");
+				   "EC_POINT_get_affine_coordinates() failed\n");
 	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
 	}
 	else {

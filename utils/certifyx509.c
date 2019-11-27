@@ -50,54 +50,9 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "cryptoutils.h"
+
 #ifndef TPM_TSS_MBEDTLS
-
-/* Windows 10 crypto API clashes with openssl */
-#ifdef TPM_WINDOWS
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#endif
-
-/* FIXME move to ekultils.h */
-#include <openssl/opensslv.h>
-#include <openssl/ecdsa.h>
-#include <openssl/x509.h>
-
-/* These functions are only required for OpenSSL 1.0.  OpenSSL 1.1 has them, and the structures are
-   opaque. */
-
-#if OPENSSL_VERSION_NUMBER < 0x10100000
-int ECDSA_SIG_set0(ECDSA_SIG *sig, BIGNUM *r, BIGNUM *s);
-void X509_get0_signature(const ASN1_BIT_STRING **psig,
-                         const X509_ALGOR **palg, const X509 *x);
-const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x);
-
-int ECDSA_SIG_set0(ECDSA_SIG *sig, BIGNUM *r, BIGNUM *s)
-{
-    if (r == NULL || s == NULL)
-	return 0;
-    BN_clear_free(sig->r);
-    BN_clear_free(sig->s);
-    sig->r = r;
-    sig->s = s;
-    return 1;
-}
-
-void X509_get0_signature(const ASN1_BIT_STRING **psig,
-                         const X509_ALGOR **palg, const X509 *x)
-{
-    *psig = x->signature;
-    *palg = x->sig_alg;
-    return;
-}
-
-const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
-{
-    return x->cert_info->signature;
-}
-
-#endif
 
 #include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
@@ -106,6 +61,7 @@ const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x)
 #include <ibmtss/Unmarshal_fp.h>
 #include <ibmtss/tssfile.h>
 
+/* NOTE: This is currently openssl only. */
 #include <ekutils.h>
 
 static void printUsage(void);
@@ -468,7 +424,7 @@ int main(int argc, char *argv[])
 	    in.inScheme.scheme = TPM_ALG_ECDSA;	
 	    in.inScheme.details.ecdsa.hashAlg = halg;
 	}
-	in.qualifyingData.t.size = 0;
+	in.reserved.t.size = 0;
     }
     /* initialize a new, empty X509 structure.  It will first be used to form the partialCertificate
        command parameter, and then be used to reform the certificate from the response
@@ -923,13 +879,13 @@ TPM_RC reformCertificate(X509 *x509Certificate,
 {
     TPM_RC 		rc = 0;
     unsigned char 	*tmpAddedToCert = NULL;
-    size_t 		tmpAddedToCertLength = 0;
+    /* size_t 		tmpAddedToCertLength = 0; FIXME better to sanity check length */
 
     /* the index increments, so this function must parse the addedToCertificate in its order */
     uint16_t 		tmpAddedToCertIndex = 0;
 
     tmpAddedToCert = addedToCertificate->t.buffer;
-    tmpAddedToCertLength = addedToCertificate->t.size;
+    /* tmpAddedToCertLength = addedToCertificate->t.size; */
 
     /* add serial number */
     if (rc == 0) {
@@ -1142,8 +1098,8 @@ TPM_RC addSignatureRsa(X509 		*x509Certificate,
     
     if (rc == 0) {
 	certSignatureAlgorithm = (X509_ALGOR *)X509_get0_tbs_sigalg(x509Certificate);
-	X509_get0_signature((const ASN1_BIT_STRING**)&asn1Signature,
-			    (const X509_ALGOR **)&signatureAlgorithm,
+	X509_get0_signature((OSSLCONST ASN1_BIT_STRING**)&asn1Signature,
+			    (OSSLCONST X509_ALGOR **)&signatureAlgorithm,
 			    x509Certificate);
     }
     /* set the algorithm in the top level structure */
@@ -1193,8 +1149,8 @@ TPM_RC addSignatureEcc(X509 		*x509Certificate,
     
     if (rc == 0) {
 	certSignatureAlgorithm = (X509_ALGOR *)X509_get0_tbs_sigalg(x509Certificate);
-	X509_get0_signature((const ASN1_BIT_STRING**)&asn1Signature,
-			    (const X509_ALGOR **)&signatureAlgorithm,
+	X509_get0_signature((OSSLCONST ASN1_BIT_STRING**)&asn1Signature,
+			    (OSSLCONST X509_ALGOR **)&signatureAlgorithm,
 			    x509Certificate);
     }
     /* set the algorithm in the top level structure */

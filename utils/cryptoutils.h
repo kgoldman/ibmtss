@@ -39,6 +39,7 @@
 #ifndef CRYPTUTILS_H
 #define CRYPTUTILS_H
 
+/* Windows 10 crypto API clashes with openssl */
 #ifdef TPM_WINDOWS
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -204,6 +205,32 @@ extern "C" {
     */
    
 #ifndef TPM_TSS_NO_OPENSSL
+
+/* Some functions add const to parameters as of openssl 1.1.0 */
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+#define OSSLCONST
+#else
+#define OSSLCONST const
+#endif
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000
+    int ECDSA_SIG_set0(ECDSA_SIG *sig, BIGNUM *r, BIGNUM *s);
+    void ECDSA_SIG_get0(const ECDSA_SIG *sig, const BIGNUM **pr, const BIGNUM **ps);
+    const X509_ALGOR *X509_get0_tbs_sigalg(const X509 *x);
+    void RSA_get0_key(const RSA *rsaKey,
+		      const BIGNUM **n,
+		      const BIGNUM **e,
+		      const BIGNUM **d);
+    void RSA_get0_factors(const RSA *rsaKey,
+			  const BIGNUM **p,
+			  const BIGNUM **q);
+#endif	/* pre openssl 1.1 */
+
+#if OPENSSL_VERSION_NUMBER < 0x10002000
+    void X509_get0_signature(OSSLCONST ASN1_BIT_STRING **psig,
+			     OSSLCONST X509_ALGOR **palg, const X509 *x);
+#endif	/* pre openssl 1.0.2 */
 
     TPM_RC convertPemToEvpPrivKey(EVP_PKEY **evpPkey,
 				  const char *pemKeyFilename,
