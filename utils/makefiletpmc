@@ -281,7 +281,7 @@ certify:		ibmtss/tss.h certify.o $(LIBTSS) $(LIBTSSUTILS)
 certifycreation:	ibmtss/tss.h certifycreation.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) certifycreation.o $(LNALIBS) -o certifycreation
 certifyx509:		ibmtss/tss.h certifyx509.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) certifyx509.o $(LNALIBS) -o certifyx509
+			$(CC) $(LNFLAGS) $(LNAFLAGS) certifyx509.o $(LNALIBS) -lcrypto -o certifyx509
 changeeps:		ibmtss/tss.h changeeps.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) changeeps.o $(LNALIBS) -o changeeps
 changepps:		ibmtss/tss.h changepps.o $(LIBTSS) $(LIBTSSUTILS)
@@ -506,6 +506,8 @@ getcryptolibrary:	getcryptolibrary.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) getcryptolibrary.o $(LNALIBS) -o getcryptolibrary
 printattr:		printattr.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) printattr.o $(LNALIBS) -o printattr
+tpmcmd:			tpmcmd.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) tpmcmd.o $(LNALIBS) -o tpmcmd
 
 # for applications, not for TSS library
 

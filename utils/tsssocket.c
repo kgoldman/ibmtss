@@ -133,6 +133,48 @@ TPM_RC TSS_Socket_TransmitPlatform(TSS_CONTEXT *tssContext,
     return rc;
 }
 
+/* TSS_Socket_TransmitCommand() transmits MS simulator in band administrative commands */
+
+TPM_RC TSS_Socket_TransmitCommand(TSS_CONTEXT *tssContext,
+				  uint32_t command, const char *message)
+{
+    TPM_RC 	rc = 0;
+    int 	mssim;	/* boolean, true for MS simulator packet format, false for raw packet
+			   format */
+    int 	rawsingle = FALSE;	/* boolean, true for raw format with an open and close per
+					   command */
+    /* open on first transmit */
+    if (tssContext->tssFirstTransmit) {	
+	/* detect errors before starting, get the server packet type, MS sim or raw */
+	if (rc == 0) {
+	    rc = TSS_Socket_GetServerType(tssContext, &mssim, &rawsingle);
+	}
+	/* the platform administrative commands can only work with the simulator */
+	if (rc == 0) {
+	    if (!mssim) {
+		if (tssVerbose) printf("TSS_Socket_TransmitCommand: server type %s unsupported\n",
+				       tssContext->tssServerType);
+		rc = TSS_RC_INSUPPORTED_INTERFACE;	
+	    }
+	}
+	if (rc == 0) {
+	    rc = TSS_Socket_Open(tssContext, tssContext->tssCommandPort);
+	}
+	if (rc == 0) {
+	    tssContext->tssFirstTransmit = FALSE;
+	}
+    }
+    if (message != NULL) {
+	if (tssVverbose) printf("TSS_Socket_TransmitCommand: %s\n", message);
+    }
+    if (rc == 0) {
+	uint32_t commandType = htonl(command);	/* command type is network byte order */
+	rc = TSS_Socket_SendBytes(tssContext->sock_fd, (uint8_t *)&commandType, sizeof(uint32_t));
+    }
+    /* FIXME The only command currently supported is TPM_STOP, which has no response */
+    return rc;
+}
+
 /* TSS_Socket_Transmit() transmits the TPM command and receives the response.
 
    It can return socket transmit and receive packet errors, but normally returns the TPM response

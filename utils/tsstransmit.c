@@ -67,7 +67,8 @@ extern int tssVerbose;
 
 /* local prototypes */
 
-/* TSS_TransmitPlatform() transmits an administrative out of band command to the TPM.
+/* TSS_TransmitPlatform() transmits an administrative out of band command to the TPM through the
+   platform port.
 
    Supported by the simulator, not the TPM device.
 */
@@ -98,7 +99,40 @@ TPM_RC TSS_TransmitPlatform(TSS_CONTEXT *tssContext, uint32_t command, const cha
     return rc;
 }
 
-/* TSS_Transmit() transmits a TPM command packet and receives a response.
+/* TSS_TransmitCommand() transmits an administrative in band command to the TPM through the
+   command port.
+
+   Supported by the simulator, not the TPM device.
+*/
+
+TPM_RC TSS_TransmitCommand(TSS_CONTEXT *tssContext, uint32_t command, const char *message)
+{
+    TPM_RC rc = 0;
+
+#ifndef TPM_NOSOCKET
+    if ((strcmp(tssContext->tssInterfaceType, "socsim") == 0)) {
+	rc = TSS_Socket_TransmitCommand(tssContext, command, message);
+    }
+    else
+#else
+    command = command;
+    message = message;
+#endif
+    if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
+	if (tssVerbose) printf("TSS_TransmitCommand: device %s unsupported\n",
+			       tssContext->tssInterfaceType);
+	rc = TSS_RC_INSUPPORTED_INTERFACE;	
+    }
+    else {
+	if (tssVerbose) printf("TSS_TransmitCommand: device %s unsupported\n",
+			       tssContext->tssInterfaceType);
+	rc = TSS_RC_INSUPPORTED_INTERFACE;	
+    }
+    return rc;
+}
+
+/* TSS_Transmit() transmits a TPM command packet and receives a response using the command port.
+   The command type is hard coded to TPM_SEND_COMMAND.
 
 */
 

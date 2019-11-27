@@ -50,9 +50,10 @@
 #define TPM_SIGNAL_NV_ON            11
 
 /* copy of TpmTcpProtocol.h.  These are only used with the SW TPM, but they may be used with a
-   respurce manager in the future. */
+   resource manager in the future. */
 #define TPM_SEND_COMMAND            8
 #define TPM_SESSION_END             20
+#define TPM_STOP                    21
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,6 +61,9 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TransmitPlatform(TSS_CONTEXT *tssContext,
 			 uint32_t command, const char *message);
+    LIB_EXPORT TPM_RC
+    TSS_TransmitCommand(TSS_CONTEXT *tssContext,
+			uint32_t command, const char *message);
     LIB_EXPORT TPM_RC
     TSS_Transmit(TSS_CONTEXT *tssContext,
 		 uint8_t *responseBuffer, uint32_t *read,

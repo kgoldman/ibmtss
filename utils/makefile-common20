@@ -157,7 +157,8 @@ ALL += 	activatecredential$(EXE)		\
 	tpmpublic2eccpoint$(EXE)		\
 	publicname$(EXE)			\
 	getcryptolibrary$(EXE)			\
-	printattr$(EXE)
+	printattr$(EXE)				\
+	tpmcmd$(EXE)
 
 ALL	+= 					\
 	ntc2getconfig$(EXE)			\

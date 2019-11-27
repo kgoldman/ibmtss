@@ -52,6 +52,8 @@ extern "C" {
 
     TPM_RC TSS_Socket_TransmitPlatform(TSS_CONTEXT *tssContext,
 				       uint32_t command, const char *message);
+    TPM_RC TSS_Socket_TransmitCommand(TSS_CONTEXT *tssContext,
+				      uint32_t command, const char *message);
     TPM_RC TSS_Socket_Transmit(TSS_CONTEXT *tssContext,
 			       uint8_t *responseBuffer, uint32_t *read,
 			       const uint8_t *commandBuffer, uint32_t written,
