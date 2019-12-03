@@ -1,6 +1,3 @@
-#!/bin/bash
-#
-
 #################################################################################
 #										#
 #			TPM2 regression test					#
@@ -40,86 +37,122 @@
 #										#
 #################################################################################
 
+setlocal enableDelayedExpansion
+
+# used for the name in policy authorize
+
 echo ""
 echo "Get Capability"
 echo ""
 
 echo "Get Capability TPM_CAP_ALGS"
-${PREFIX}getcapability -cap 0 > run.out
-checkSuccess $?
+%TPM_EXE_PATH%getcapability -cap 0 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 
 echo ""
 echo "Get Capability TPM_CAP_HANDLES"
 echo ""
 
 echo "TPM_HT_PCR"
-${PREFIX}getcapability -cap 1 -pr 00000000 > run.out
-checkSuccess $?
+%TPM_EXE_PATH%getcapability -cap 1 -pr 00000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 
 echo "TPM_HT_NV_INDEX"
-${PREFIX}getcapability -cap 1 -pr 01000000 > run.out
-checkSuccess $?
+%TPM_EXE_PATH%getcapability -cap 1 -pr 01000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 
 echo "TPM_HT_LOADED_SESSION"
-${PREFIX}getcapability -cap 1 -pr 02000000 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 1 -pr 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "TPM_HT_SAVED_SESSION"			  
-${PREFIX}getcapability -cap 1 -pr 03000000 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 1 -pr 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "TPM_HT_PERMANENT"			  
-${PREFIX}getcapability -cap 1 -pr 40000000 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 1 -pr 40000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "TPM_HT_TRANSIENT"			  
-${PREFIX}getcapability -cap 1 -pr 80000000  > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 1 -pr 80000000  > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "TPM_HT_PERSISTENT"			  
-${PREFIX}getcapability -cap 1 -pr 81000000 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 1 -pr 81000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "Get Capability TPM_CAP_COMMANDS"
-${PREFIX}getcapability -cap 2 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 2 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "Get Capability TPM_CAP_PP_COMMANDS"
-${PREFIX}getcapability -cap 3 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 3 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "Get Capability TPM_CAP_AUDIT_COMMANDS"
-${PREFIX}getcapability -cap 4 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 4 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 
 echo "Get Capability TPM_CAP_PCRS"
-${PREFIX}getcapability -cap 5 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 5 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo ""
 echo "Get Capability TPM_CAP_TPM_PROPERTIES"
 echo ""
 
 echo "Get Capability TPM_CAP_TPM_PROPERTIES 100"
-${PREFIX}getcapability -cap 6 -pr 100 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 6 -pr 100 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "Get Capability TPM_CAP_TPM_PROPERTIES 200"
-${PREFIX}getcapability -cap 6 -pr 200 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 6 -pr 200 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "Get Capability TPM_CAP_PCR_PROPERTIES "
-${PREFIX}getcapability -cap 7 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 7 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "Get Capability TPM_CAP_ECC_CURVES"
-${PREFIX}getcapability -cap 8 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 8 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
 echo "Get Capability TPM_CAP_AUTH_POLICIES"
-${PREFIX}getcapability -cap 9 -pr 40000000 > run.out
-checkSuccess $?			  
+%TPM_EXE_PATH%getcapability -cap 9 -pr 40000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 				  
-
-
-
+exit /B 0

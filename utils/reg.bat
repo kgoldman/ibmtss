@@ -298,6 +298,13 @@ IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
+call regtests\testgetcap.bat
+IF !ERRORLEVEL! NEQ 0 (
+      echo ""
+      echo "Failed testgetcap.bat"
+  exit /B 1
+)
+
 call regtests\testshutdown.bat
 IF !ERRORLEVEL! NEQ 0 (
       echo ""
