@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     TPM_RC 		rc = 0;
     int			i;				/* argc iterator */
     TSS_CONTEXT		*tssContext = NULL;
-    uint32_t 		command;
+    uint32_t 		command = 0;
     const char 		*message;
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
@@ -82,6 +82,10 @@ int main(int argc, char *argv[])
 	    printf("\n%s is not a valid option\n", argv[i]);
 	    printUsage();
 	}
+    }
+    if (command == 0) {
+	printf("Missing command specifier\n");
+	printUsage();
     }
     /*
       Start a TSS context
