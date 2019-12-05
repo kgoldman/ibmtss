@@ -79,7 +79,7 @@ void CertifyX509_In_Print(CertifyX509_In *in, unsigned int indent)
     printf("%*s" "TPM2_CertifyX509\n", indent, "");
     TSS_TPM_HANDLE_Print("objectHandle", in->objectHandle, indent);
     TSS_TPM_HANDLE_Print("signHandle", in->signHandle, indent);
-    TSS_TPM2B_Print("qualifyingData", indent, &in->qualifyingData.b);
+    TSS_TPM2B_Print("reserved", indent, &in->reserved.b);
     printf("%*s" "inScheme\n", indent, "");
     TSS_TPMT_SIG_SCHEME_Print(&in->inScheme, indent);
     TSS_TPM2B_Print("partialCertificate", indent, &in->partialCertificate.b);

@@ -912,6 +912,8 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TPMI_RH_HIERARCHY_AUTH_Marshalu(const TPMI_RH_HIERARCHY_AUTH *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
+    TSS_TPMI_RH_HIERARCHY_POLICY_Marshalu(const TPMI_RH_HIERARCHY_POLICY *source, uint16_t *written, BYTE **buffer, uint32_t *size);
+    LIB_EXPORT TPM_RC
     TSS_TPMI_RH_PLATFORM_Marshalu(const TPMI_RH_PLATFORM *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TSS_TPMI_RH_ENDORSEMENT_Marshalu(const TPMI_RH_ENDORSEMENT *source, UINT16 *written, BYTE **buffer, uint32_t *size);

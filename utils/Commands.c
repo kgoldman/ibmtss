@@ -867,9 +867,9 @@ CertifyX509_In_Unmarshal(CertifyX509_In *target, BYTE **buffer, uint32_t *size, 
 	target->signHandle = handles[1];
     }
     if (rc == TPM_RC_SUCCESS) {
-	rc = TSS_TPM2B_DATA_Unmarshalu(&target->qualifyingData, buffer, size);
+	rc = TSS_TPM2B_DATA_Unmarshalu(&target->reserved, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
-	    rc += RC_CertifyX509_qualifyingData;
+	    rc += RC_CertifyX509_reserved;
 	}
     }
     if (rc == TPM_RC_SUCCESS) {

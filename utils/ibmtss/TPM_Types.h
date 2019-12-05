@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2018				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2019				*/
 /*										*/
 /********************************************************************************/
 
@@ -1285,6 +1285,10 @@ typedef TPM_HANDLE TPMI_RH_ENABLES;
 /* Table 49 - Definition of (TPM_HANDLE) TPMI_RH_HIERARCHY_AUTH Type <IN> */
 
 typedef TPM_HANDLE TPMI_RH_HIERARCHY_AUTH;
+
+/* Table 2:55 - Definition of TPMI_RH_HIERARCHY_POLICY Type  */
+
+typedef  TPM_HANDLE         TPMI_RH_HIERARCHY_POLICY;
 
 /* Table 50 - Definition of (TPM_HANDLE) TPMI_RH_PLATFORM Type <IN> */
 

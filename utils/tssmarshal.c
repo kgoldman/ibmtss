@@ -812,7 +812,7 @@ TSS_CertifyX509_In_Marshalu(const CertifyX509_In *source, uint16_t *written, BYT
 	rc = TSS_TPMI_DH_OBJECT_Marshalu(&source->signHandle, written, buffer, size);
     }
     if (rc == 0) {
-	rc = TSS_TPM2B_DATA_Marshalu(&source->qualifyingData, written, buffer, size);
+	rc = TSS_TPM2B_DATA_Marshalu(&source->reserved, written, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_TPMT_SIG_SCHEME_Marshalu(&source->inScheme, written, buffer, size);
@@ -1406,7 +1406,7 @@ TSS_SetPrimaryPolicy_In_Marshalu(const SetPrimaryPolicy_In *source, uint16_t *wr
 {
     TPM_RC rc = 0;
     if (rc == 0) {
-	rc = TSS_TPMI_RH_HIERARCHY_AUTH_Marshalu(&source->authHandle, written, buffer, size);
+	rc = TSS_TPMI_RH_HIERARCHY_POLICY_Marshalu(&source->authHandle, written, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_TPM2B_DIGEST_Marshalu(&source->authPolicy, written, buffer, size);
@@ -3195,6 +3195,18 @@ TSS_TPMI_RH_ENABLES_Marshalu(const TPMI_RH_ENABLES *source, uint16_t *written, B
 
 TPM_RC
 TSS_TPMI_RH_HIERARCHY_AUTH_Marshalu(const TPMI_RH_HIERARCHY_AUTH *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPM_HANDLE_Marshalu(source, written, buffer, size);
+    }
+    return rc;
+}
+
+/* Table 50 - Definition of (TPM_HANDLE) TPMI_RH_HIERARCHY_POLICY Type <IN> */
+
+TPM_RC
+TSS_TPMI_RH_HIERARCHY_POLICY_Marshalu(const TPMI_RH_HIERARCHY_POLICY *source, uint16_t *written, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = 0;
     if (rc == 0) {
