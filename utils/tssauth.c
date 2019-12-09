@@ -3,9 +3,8 @@
 /*		Common TPM 1.2 and TPM 2.0 TSS Authorization 			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*            $Id: tssauth.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -98,7 +97,9 @@ void TSS_InitAuthContext(TSS_AUTH_CONTEXT *tssAuthContext)
     tssAuthContext->responseSize = 0;
     tssAuthContext->marshalInFunction = NULL;
     tssAuthContext->unmarshalOutFunction = NULL;
+#ifndef TPM_TSS_NOCMDCHECK
     tssAuthContext->unmarshalInFunction = NULL;
+#endif
 #ifdef TPM_TPM12
     tssAuthContext->sessionNumber = 0xffff;	/* no encrypt sessions */
     tssAuthContext->encAuthOffset0 = 0;

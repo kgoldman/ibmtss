@@ -5979,6 +5979,8 @@ TSS_TPM2B_CREATION_DATA_Marshalu(const TPM2B_CREATION_DATA *source, uint16_t *wr
     return rc;
 }
 
+#ifndef TPM_TSS_NODEPRECATED
+
 /* Deprecated functions that use a sized value for the size parameter.  The recommended functions
    use an unsigned value.
 
@@ -7762,5 +7764,5 @@ TSS_NV_Certify_Out_Unmarshal(NV_Certify_Out *target, TPM_ST tag, BYTE **buffer, 
     return TSS_NV_Certify_Out_Unmarshalu(target, tag, buffer, (uint32_t *)size);
 }
 
-
+#endif	/* TPM_TSS_NODEPRECATED */
 #endif /* TPM 2.0 */

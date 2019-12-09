@@ -43,6 +43,10 @@
 /* The functions with the TSS_ prefix are preferred.  They use an unsigned size.  The functions
    without the prefix are deprecated.  */
 
+/* TPM_TSS_NOCMDCHECK defined strips the unmarshal functions used for command parameter checking
+   TPM_TSS_NODEPRECATED	defines strips the deprecated functions that used a signed size
+*/
+
 /* The int and array functions are common to TPM 1.2 and TPM 2.0 */
 
 TPM_RC
@@ -57,11 +61,13 @@ TSS_UINT8_Unmarshalu(UINT8 *target, BYTE **buffer, uint32_t *size)
     return TPM_RC_SUCCESS;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
 TPM_RC
 TSS_INT8_Unmarshalu(INT8 *target, BYTE **buffer, uint32_t *size)
 {
     return TSS_UINT8_Unmarshalu((UINT8 *)target, buffer, size);
 }
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 TPM_RC
 TSS_UINT16_Unmarshalu(uint16_t *target, BYTE **buffer, uint32_t *size)
@@ -91,12 +97,13 @@ TSS_UINT32_Unmarshalu(UINT32 *target, BYTE **buffer, uint32_t *size)
     return TPM_RC_SUCCESS;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK    
 TPM_RC
 TSS_INT32_Unmarshalu(INT32 *target, BYTE **buffer, uint32_t *size)
 {
     return TSS_UINT32_Unmarshalu((UINT32 *)target, buffer, size);
 }
-
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 TPM_RC
 TSS_UINT64_Unmarshalu(UINT64 *target, BYTE **buffer, uint32_t *size)
@@ -133,6 +140,8 @@ TSS_Array_Unmarshalu(BYTE *targetBuffer, uint16_t targetSize, BYTE **buffer, uin
     return rc;
 }
 
+#ifndef TPM_TSS_NODEPRECATED
+#ifndef TPM_TSS_NOCMDCHECK
 TPM_RC UINT8_Unmarshal(UINT8 *target, BYTE **buffer, INT32 *size)
 {
     return TSS_UINT8_Unmarshalu(target, buffer, (uint32_t *)size);
@@ -168,6 +177,8 @@ TPM_RC Array_Unmarshal(BYTE *targetBuffer, UINT16 targetSize, BYTE **buffer, INT
     return TSS_Array_Unmarshalu(targetBuffer, targetSize, buffer, (uint32_t *)size);
 }
 
+#endif /* TPM_TSS_NOCMDCHECK */
+#endif /* TPM_TSS_NODEPRECATED */
 #ifdef TPM_TPM20
 
 TPM_RC
@@ -204,6 +215,7 @@ TSS_TPM_KEY_BITS_Unmarshalu(TPM_KEY_BITS *target, BYTE **buffer, uint32_t *size)
 
 /* Table 7 - Definition of (UINT32) TPM_GENERATED Constants <O> */
 
+#ifndef TPM_TSS_NOCMDCHECK
 TPM_RC
 TSS_TPM_GENERATED_Unmarshalu(TPM_GENERATED *target, BYTE **buffer, uint32_t *size)
 {
@@ -219,6 +231,7 @@ TSS_TPM_GENERATED_Unmarshalu(TPM_GENERATED *target, BYTE **buffer, uint32_t *siz
     }
     return rc;
 }
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 9 - Definition of (UINT16) TPM_ALG_ID Constants <IN/OUT, S> */
 
@@ -262,7 +275,7 @@ TSS_TPM_ECC_CURVE_Unmarshalu(TPM_ECC_CURVE *target, BYTE **buffer, uint32_t *siz
     }
     return rc;
 }
-#endif
+#endif	/*  TPM_ALG_ECC */
 
 /* Table 13 - Definition of (UINT32) TPM_CC Constants (Numeric Order) <IN/OUT, S> */
 
@@ -289,6 +302,8 @@ TSS_TPM_RC_Unmarshalu(TPM_RC *target, BYTE **buffer, uint32_t *size)
     }
     return rc;
 }
+
+#ifndef TPM_TSS_NOCMDCHECK
 
 /* Table 18 - Definition of (INT8) TPM_CLOCK_ADJUST Constants <IN> */
 
@@ -349,6 +364,8 @@ TSS_TPM_EO_Unmarshalu(TPM_EO *target, BYTE **buffer, uint32_t *size)
     return rc;
 }
 
+#endif	/* TPM_TSS_NOCMDCHECK */
+
 /* Table 20 - Definition of (UINT16) TPM_ST Constants <IN/OUT, S> */
 
 TPM_RC
@@ -386,6 +403,7 @@ TSS_TPM_ST_Unmarshalu(TPM_ST *target, BYTE **buffer, uint32_t *size)
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
 /* Table 21 - Definition of (UINT16) TPM_SU Constants <IN> */
 
 TPM_RC
@@ -407,6 +425,8 @@ TSS_TPM_SU_Unmarshalu(TPM_SU *target, BYTE **buffer, uint32_t *size)
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 22 - Definition of (UINT8) TPM_SE Constants <IN> */
 
@@ -630,9 +650,9 @@ TSS_TPMI_DH_OBJECT_Unmarshalu(TPMI_DH_OBJECT *target, BYTE **buffer, uint32_t *s
     }
     return rc;
 }
-
 /* Table 41 - Definition of (TPM_HANDLE) TPMI_DH_PERSISTENT Type */
 
+#ifndef TPM_TSS_NOCMDCHECK
 TPM_RC
 TSS_TPMI_DH_PERSISTENT_Unmarshalu(TPMI_DH_PERSISTENT *target, BYTE **buffer, uint32_t *size)
 {
@@ -649,6 +669,7 @@ TSS_TPMI_DH_PERSISTENT_Unmarshalu(TPMI_DH_PERSISTENT *target, BYTE **buffer, uin
     }
     return rc;
 }
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 42 - Definition of (TPM_HANDLE) TPMI_DH_ENTITY Type <IN> */
 
@@ -689,6 +710,7 @@ TSS_TPMI_DH_ENTITY_Unmarshalu(TPMI_DH_ENTITY *target, BYTE **buffer, uint32_t *s
 
 /* Table 43 - Definition of (TPM_HANDLE) TPMI_DH_PCR Type <IN> */
 
+#ifndef TPM_TSS_NOCMDCHECK
 TPM_RC
 TSS_TPMI_DH_PCR_Unmarshalu(TPMI_DH_PCR *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
@@ -707,6 +729,7 @@ TSS_TPMI_DH_PCR_Unmarshalu(TPMI_DH_PCR *target, BYTE **buffer, uint32_t *size, B
     }
     return rc;
 }
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 44 - Definition of (TPM_HANDLE) TPMI_SH_AUTH_SESSION Type <IN/OUT> */
 
@@ -733,6 +756,7 @@ TSS_TPMI_SH_AUTH_SESSION_Unmarshalu(TPMI_SH_AUTH_SESSION *target, BYTE **buffer,
 
 /* Table 45 - Definition of (TPM_HANDLE) TPMI_SH_HMAC Type <IN/OUT> */
 
+#ifndef TPM_TSS_NOCMDCHECK
 TPM_RC
 TSS_TPMI_SH_HMAC_Unmarshalu(TPMI_SH_HMAC *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
@@ -770,6 +794,7 @@ TSS_TPMI_SH_POLICY_Unmarshalu(TPMI_SH_POLICY *target, BYTE **buffer, uint32_t *s
     }
     return rc;
 }
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 47 - Definition of (TPM_HANDLE) TPMI_DH_CONTEXT Type  */
 
@@ -851,9 +876,9 @@ TSS_TPMI_RH_HIERARCHY_Unmarshalu(TPMI_RH_HIERARCHY *target, BYTE **buffer, uint3
     }
     return rc;
 }
-
 /* Table 49 - Definition of (TPM_HANDLE) TPMI_RH_ENABLES Type */
 
+#ifndef TPM_TSS_NOCMDCHECK
 TPM_RC
 TSS_TPMI_RH_ENABLES_Unmarshalu(TPMI_RH_ENABLES *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
@@ -1049,6 +1074,7 @@ TSS_TPMI_RH_LOCKOUT_Unmarshalu(TPMI_RH_LOCKOUT *target, BYTE **buffer, uint32_t 
     }
     return rc;
 }
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 58 - Definition of (TPM_HANDLE) TPMI_RH_NV_INDEX Type <IN/OUT> */
 
@@ -1257,7 +1283,7 @@ TSS_TPMI_ALG_KDF_Unmarshalu(TPMI_ALG_KDF *target, BYTE **buffer, uint32_t *size,
     }
     return rc;
 }
-    
+
 /* Table 65 - Definition of (TPM_ALG_ID) TPMI_ALG_SIG_SCHEME Type */
 
 TPM_RC
@@ -1304,6 +1330,8 @@ TSS_TPMI_ALG_SIG_SCHEME_Unmarshalu(TPMI_ALG_SIG_SCHEME *target, BYTE **buffer, u
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 66 - Definition of (TPM_ALG_ID) TPMI_ECC_KEY_EXCHANGE Type */
 
 TPM_RC
@@ -1337,7 +1365,6 @@ TSS_TPMI_ECC_KEY_EXCHANGE_Unmarshalu(TPMI_ECC_KEY_EXCHANGE *target, BYTE **buffe
     }
     return rc;
 }
-
 
 /* Table 67 - Definition of (TPM_ST) TPMI_ST_COMMAND_TAG Type */
 
@@ -1443,6 +1470,8 @@ TSS_TPMI_ALG_CIPHER_MODE_Unmarshalu(TPMI_ALG_CIPHER_MODE*target, BYTE **buffer, 
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 68 - Definition of TPMS_EMPTY Structure <IN/OUT> */
 
@@ -1567,6 +1596,8 @@ TSS_TPM2B_AUTH_Unmarshalu(TPM2B_AUTH *target, BYTE **buffer, uint32_t *size)
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 76 - Definition of Types for TPM2B_OPERAND */
 
 TPM_RC
@@ -1593,6 +1624,8 @@ TSS_TPM2B_EVENT_Unmarshalu(TPM2B_EVENT *target, BYTE **buffer, uint32_t *size)
     return rc;
 }
  
+#endif	/* TPM_TSS_NOCMDCHECK */
+
 /* Table 78 - Definition of TPM2B_MAX_BUFFER Structure */
 
 TPM_RC
@@ -1681,7 +1714,7 @@ TSS_TPMS_PCR_SELECTION_Unmarshalu(TPMS_PCR_SELECTION *target, BYTE **buffer, uin
     }
     return rc;
 }
- 
+
 /* Table 88 - Definition of TPMT_TK_CREATION Structure */
 
 TPM_RC
@@ -1810,7 +1843,7 @@ TSS_TPMS_TAGGED_PROPERTY_Unmarshalu(TPMS_TAGGED_PROPERTY *target, BYTE **buffer,
     }
     return rc;
 }
- 
+
 /* Table 94 - Definition of TPMS_TAGGED_PCR_SELECT Structure <OUT> */
 
 TPM_RC
@@ -1889,7 +1922,7 @@ TSS_TPML_CCA_Unmarshalu(TPML_CCA *target, BYTE **buffer, uint32_t *size)
     }
     return rc;
 }
- 
+
 /* Table 97 - Definition of TPML_ALG Structure */
 
 TPM_RC
@@ -2217,6 +2250,8 @@ TSS_TPMS_TIME_INFO_Unmarshalu(TPMS_TIME_INFO *target, BYTE **buffer, uint32_t *s
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 111 - Definition of TPMS_TIME_ATTEST_INFO Structure <OUT> */
 
 TPM_RC
@@ -2451,6 +2486,8 @@ TSS_TPMS_ATTEST_Unmarshalu(TPMS_ATTEST *target, BYTE **buffer, uint32_t *size)
     return rc;
 }
 
+#endif	/* TPM_TSS_NOCMDCHECK */
+
 /* Table 121 - Definition of TPM2B_ATTEST Structure <OUT> */
 
 TPM_RC
@@ -2486,6 +2523,7 @@ TSS_TPMS_AUTH_RESPONSE_Unmarshalu(TPMS_AUTH_RESPONSE *target, BYTE **buffer, uin
 /* Table 124 - Definition of {!ALG.S} (TPM_KEY_BITS) TPMI_!ALG.S_KEY_BITS Type */
 
 #ifdef TPM_ALG_AES
+
 TPM_RC
 TSS_TPMI_AES_KEY_BITS_Unmarshalu(TPMI_AES_KEY_BITS *target, BYTE **buffer, uint32_t *size)
 {
@@ -2505,8 +2543,10 @@ TSS_TPMI_AES_KEY_BITS_Unmarshalu(TPMI_AES_KEY_BITS *target, BYTE **buffer, uint3
     }
     return rc;
 }
-#endif
- 
+#endif	/* TPM_ALG_AES */
+
+#ifndef TPM_TSS_NOCMDCHECK
+
 #ifdef TPM_ALG_CAMELLIA
 TPM_RC
 TSS_TPMI_CAMELLIA_KEY_BITS_Unmarshalu(TPMI_CAMELLIA_KEY_BITS *target, BYTE **buffer, uint32_t *size)
@@ -2526,7 +2566,7 @@ TSS_TPMI_CAMELLIA_KEY_BITS_Unmarshalu(TPMI_CAMELLIA_KEY_BITS *target, BYTE **buf
     }
     return rc;
 }
-#endif
+#endif	/*  TPM_ALG_CAMELLIA */
 
 #ifdef TPM_ALG_SM4
 TPM_RC
@@ -2547,7 +2587,8 @@ TSS_TPMI_SM4_KEY_BITS_Unmarshalu(TPMI_SM4_KEY_BITS *target, BYTE **buffer, uint3
     }
     return rc;
 }
-#endif
+#endif	/* TPM_ALG_SM4 */
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 125 - Definition of TPMU_SYM_KEY_BITS Union */
 
@@ -2655,6 +2696,8 @@ TSS_TPMT_SYM_DEF_OBJECT_Unmarshalu(TPMT_SYM_DEF_OBJECT *target, BYTE **buffer, u
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 130 - Definition of TPM2B_SYM_KEY Structure */
 
 TPM_RC
@@ -2667,6 +2710,8 @@ TSS_TPM2B_SYM_KEY_Unmarshalu(TPM2B_SYM_KEY *target, BYTE **buffer, uint32_t *siz
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 131 - Definition of TPMS_SYMCIPHER_PARMS Structure */
 
@@ -2693,6 +2738,8 @@ TSS_TPM2B_SENSITIVE_DATA_Unmarshalu(TPM2B_SENSITIVE_DATA *target, BYTE **buffer,
     }
     return rc;
 }
+
+#ifndef TPM_TSS_NOCMDCHECK
 
 /* Table 133 - Definition of TPMS_SENSITIVE_CREATE Structure <IN> */
 
@@ -2739,6 +2786,8 @@ TSS_TPM2B_SENSITIVE_CREATE_Unmarshalu(TPM2B_SENSITIVE_CREATE *target, BYTE **buf
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 135 - Definition of TPMS_SCHEME_HASH Structure */
 
@@ -2828,7 +2877,7 @@ TSS_TPMS_SCHEME_XOR_Unmarshalu(TPMS_SCHEME_XOR *target, BYTE **buffer, uint32_t 
     }
     return rc;
 }
-    
+
 /* Table 140 - Definition of TPMU_SCHEME_KEYEDHASH Union <IN/OUT, S> */
 
 TPM_RC
@@ -2949,6 +2998,8 @@ TSS_TPMS_SIG_SCHEME_SM2_Unmarshalu(TPMS_SIG_SCHEME_SM2 *target, BYTE **buffer, u
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 144 - Definition of TPMU_SIG_SCHEME Union <IN/OUT, S> */
 
 TPM_RC
@@ -3016,6 +3067,8 @@ TSS_TPMT_SIG_SCHEME_Unmarshalu(TPMT_SIG_SCHEME *target, BYTE **buffer, uint32_t 
     return rc;
 }
 
+#endif	/* TPM_TSS_NOCMDCHECK */
+
 /* Table 146 - Definition of Types for {RSA} Encryption Schemes */
 
 TPM_RC
@@ -3057,6 +3110,8 @@ TSS_TPMS_KEY_SCHEME_ECDH_Unmarshalu(TPMS_KEY_SCHEME_ECDH *target, BYTE **buffer,
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 147 - Definition of Types for {ECC} ECC Key Exchange */
 
 TPM_RC
@@ -3069,6 +3124,8 @@ TSS_TPMS_KEY_SCHEME_ECMQV_Unmarshalu(TPMS_KEY_SCHEME_ECMQV *target, BYTE **buffe
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 148 - Definition of Types for KDF Schemes, hash-based key- or mask-generation functions */
 
@@ -3096,6 +3153,8 @@ TSS_TPMS_SCHEME_KDF1_SP800_56A_Unmarshalu(TPMS_SCHEME_KDF1_SP800_56A *target, BY
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 148 - Definition of Types for KDF Schemes, hash-based key- or mask-generation functions */
 
 TPM_RC
@@ -3108,6 +3167,8 @@ TSS_TPMS_SCHEME_KDF2_Unmarshalu(TPMS_SCHEME_KDF2 *target, BYTE **buffer, uint32_
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 148 - Definition of Types for KDF Schemes, hash-based key- or mask-generation functions */
 
@@ -3229,7 +3290,7 @@ TSS_TPMI_ALG_ASYM_SCHEME_Unmarshalu(TPMI_ALG_ASYM_SCHEME *target, BYTE **buffer,
     }
     return rc;
 }
-#endif
+#endif	/* 0 */
 
 /* Table 152 - Definition of TPMU_ASYM_SCHEME Union */
 
@@ -3313,7 +3374,7 @@ TSS_TPMT_ASYM_SCHEME_Unmarshalu(TPMT_ASYM_SCHEME *target, BYTE **buffer, uint32_
     }
     return rc;
 }
-#endif
+#endif	/* 0 */
 
 /* Table 154 - Definition of (TPM_ALG_ID) {RSA} TPMI_ALG_RSA_SCHEME Type */
 
@@ -3368,6 +3429,8 @@ TSS_TPMT_RSA_SCHEME_Unmarshalu(TPMT_RSA_SCHEME *target, BYTE **buffer, uint32_t 
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 156 - Definition of (TPM_ALG_ID) {RSA} TPMI_ALG_RSA_DECRYPT Type */
 
 TPM_RC
@@ -3415,8 +3478,9 @@ TSS_TPMT_RSA_DECRYPT_Unmarshalu(TPMT_RSA_DECRYPT *target, BYTE **buffer, uint32_
     return rc;
 }
 
-/* Table 158 - Definition of {RSA} TPM2B_PUBLIC_KEY_RSA Structure */
+#endif /* TPM_TSS_NOCMDCHECK */
 
+/* Table 158 - Definition of {RSA} TPM2B_PUBLIC_KEY_RSA Structure */
 TPM_RC
 TSS_TPM2B_PUBLIC_KEY_RSA_Unmarshalu(TPM2B_PUBLIC_KEY_RSA *target, BYTE **buffer, uint32_t *size)
 {
@@ -3427,7 +3491,7 @@ TSS_TPM2B_PUBLIC_KEY_RSA_Unmarshalu(TPM2B_PUBLIC_KEY_RSA *target, BYTE **buffer,
     }
     return rc;
 }
-    
+
 /* Table 159 - Definition of {RSA} (TPM_KEY_BITS) TPMI_RSA_KEY_BITS Type */
 
 TPM_RC
@@ -3450,6 +3514,8 @@ TSS_TPMI_RSA_KEY_BITS_Unmarshalu(TPMI_RSA_KEY_BITS *target, BYTE **buffer, uint3
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 160 - Definition of {RSA} TPM2B_PRIVATE_KEY_RSA Structure */
 
 TPM_RC
@@ -3463,6 +3529,8 @@ TSS_TPM2B_PRIVATE_KEY_RSA_Unmarshalu(TPM2B_PRIVATE_KEY_RSA *target, BYTE **buffe
     return rc;
 }
  
+#endif	/* TPM_TSS_NOCMDCHECK */
+
 /* Table 161 - Definition of {ECC} TPM2B_ECC_PARAMETER Structure */
 
 TPM_RC
@@ -3475,7 +3543,7 @@ TSS_TPM2B_ECC_PARAMETER_Unmarshalu(TPM2B_ECC_PARAMETER *target, BYTE **buffer, u
     }
     return rc;
 }
-    
+
 /* Table 162 - Definition of {ECC} TPMS_ECC_POINT Structure */
 
 TPM_RC
@@ -3720,7 +3788,7 @@ TSS_TPMS_SIGNATURE_ECDSA_Unmarshalu(TPMS_SIGNATURE_ECDSA *target, BYTE **buffer,
     }
     return rc;
 }
-    
+
 TPM_RC
 TSS_TPMS_SIGNATURE_ECDAA_Unmarshalu(TPMS_SIGNATURE_ECDAA *target, BYTE **buffer, uint32_t *size)
 {
@@ -3865,7 +3933,7 @@ TSS_TPMI_ALG_PUBLIC_Unmarshalu(TPMI_ALG_PUBLIC *target, BYTE **buffer, uint32_t 
     }
     return rc;
 }
-    
+
 /* Table 177 - Definition of TPMU_PUBLIC_ID Union <IN/OUT, S> */
 
 TPM_RC
@@ -4009,6 +4077,8 @@ TSS_TPMU_PUBLIC_PARMS_Unmarshalu(TPMU_PUBLIC_PARMS *target, BYTE **buffer, uint3
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 183 - Definition of TPMT_PUBLIC_PARMS Structure */
 
 TPM_RC
@@ -4024,6 +4094,8 @@ TSS_TPMT_PUBLIC_PARMS_Unmarshalu(TPMT_PUBLIC_PARMS *target, BYTE **buffer, uint3
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 184 - Definition of TPMT_PUBLIC Structure */
 
@@ -4082,6 +4154,7 @@ TSS_TPM2B_PUBLIC_Unmarshalu(TPM2B_PUBLIC *target, BYTE **buffer, uint32_t *size,
     }
     return rc;
 }
+#ifndef TPM_TSS_NOCMDCHECK
 
 /* Table 192 - Definition of TPM2B_TEMPLATE Structure */
 
@@ -4179,6 +4252,8 @@ TSS_TPM2B_SENSITIVE_Unmarshalu(TPM2B_SENSITIVE *target, BYTE **buffer, uint32_t 
     return rc;
 }
 
+#endif	/* TPM_TSS_NOCMDCHECK */
+
 /* Table 191 - Definition of TPM2B_PRIVATE Structure <IN/OUT, S> */
 
 TPM_RC
@@ -4191,7 +4266,7 @@ TSS_TPM2B_PRIVATE_Unmarshalu(TPM2B_PRIVATE *target, BYTE **buffer, uint32_t *siz
     }
     return rc;
 }
-    
+
 /* Table 193 - Definition of TPM2B_ID_OBJECT Structure <IN/OUT> */
 
 TPM_RC
@@ -4278,6 +4353,8 @@ TSS_TPM2B_NV_PUBLIC_Unmarshalu(TPM2B_NV_PUBLIC *target, BYTE **buffer, uint32_t 
     return rc;
 }
 
+#ifndef TPM_TSS_NOCMDCHECK
+
 /* Table 199 - Definition of TPM2B_CONTEXT_SENSITIVE Structure <IN/OUT> */
 
 TPM_RC
@@ -4306,6 +4383,8 @@ TSS_TPMS_CONTEXT_DATA_Unmarshalu(TPMS_CONTEXT_DATA *target, BYTE **buffer, uint3
     }
     return rc;
 }
+
+#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 201 - Definition of TPM2B_CONTEXT_DATA Structure <IN/OUT> */
 
@@ -4402,6 +4481,7 @@ TSS_TPM2B_CREATION_DATA_Unmarshalu(TPM2B_CREATION_DATA *target, BYTE **buffer, u
     }
     return rc;
 }
+#ifndef TPM_TSS_NOCMDCHECK
 
 /* Deprecated functions that use a sized value for the size parameter.  The recommended functions
    use an unsigned value.
@@ -5374,11 +5454,6 @@ TPM_RC TPM2B_CREATION_DATA_Unmarshal(TPM2B_CREATION_DATA *target, BYTE **buffer,
     return TSS_TPM2B_CREATION_DATA_Unmarshalu(target, buffer, (uint32_t *)size);
 }
 
+#endif 	/* TPM_TSS_NOCMDCHECK */
 
-#ifdef __cplusplus
-}
-#endif
-
-
-
-#endif /* TPM 2.0 */
+#endif /* TPM_TPM20 */

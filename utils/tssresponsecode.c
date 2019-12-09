@@ -36,6 +36,8 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
+#ifndef TPM_TSS_NO_PRINT
+
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -582,3 +584,4 @@ static const char *TSS_ResponseCode_NumberToText(unsigned int num)
     }
 }
 
+#endif 	/* TPM_TSS_NO_PRINT */

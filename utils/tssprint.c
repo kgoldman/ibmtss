@@ -62,6 +62,8 @@ int TSS_SwallowPrintf(const char *format, ...)
 
 #endif
 
+#ifndef TPM_TSS_NO_PRINT
+
 /* TSS_Array_Scan() converts a string to a binary array */
 
 uint32_t TSS_Array_Scan(unsigned char **data,	/* output binary, freed by caller */
@@ -97,6 +99,7 @@ uint32_t TSS_Array_Scan(unsigned char **data,	/* output binary, freed by caller 
     }
     return rc;
 }
+#endif	/* TPM_TSS_NO_PRINT */
 
 /* TSS_PrintAll() prints 'string', the length, and then the entire byte array
  */
@@ -149,6 +152,7 @@ void TSS_PrintAllLogLevel(uint32_t loglevel, const char *string, unsigned int in
     return;
 }
 
+#ifndef TPM_TSS_NO_PRINT
 #ifdef TPM_TPM20
 
 void TSS_TPM2B_Print(const char *string, unsigned int indent, TPM2B *source)
@@ -2340,3 +2344,5 @@ void TSS_TPM2B_CREATION_DATA_Print(TPM2B_CREATION_DATA *source, unsigned int ind
 }
 
 #endif	/* TPM_TPM20 */
+
+#endif /* TPM_TSS_NO_PRINT */

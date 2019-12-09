@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*            $Id: tssauth.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2017.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -73,7 +73,9 @@ typedef struct TSS_AUTH_CONTEXT {
     uint32_t 		responseSize;
     MarshalInFunction_t    marshalInFunction;
     UnmarshalOutFunction_t unmarshalOutFunction;
+#ifndef TPM_TSS_NOCMDCHECK	/* disable command parameter checking */
     UnmarshalInFunction_t  unmarshalInFunction;
+#endif
 #ifdef TPM_TPM12
     uint16_t		sessionNumber;		/* session used for ADIP, zero based */
     int16_t		encAuthOffset0;		/* offset to first TPM_ENCAUTH parameter */

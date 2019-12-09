@@ -76,8 +76,10 @@ typedef struct MARSHAL_TABLE {
     const char 			*commandText;
     MarshalInFunction_t 	marshalInFunction;	/* marshal input command */
     UnmarshalOutFunction_t 	unmarshalOutFunction;	/* unmarshal output response */
+#ifndef TPM_TSS_NOCMDCHECK
     UnmarshalInFunction_t	unmarshalInFunction;	/* unmarshal input command for parameter
 							   checking */
+#endif
 } MARSHAL_TABLE;
 
 static const MARSHAL_TABLE marshalTable12 [] = {
@@ -241,7 +243,9 @@ static TPM_RC TSS_MarshalTable12_Process(TSS_AUTH_CONTEXT *tssAuthContext,
 	tssAuthContext->commandText = marshalTable12[index].commandText;
 	tssAuthContext->marshalInFunction = marshalTable12[index].marshalInFunction;
 	tssAuthContext->unmarshalOutFunction = marshalTable12[index].unmarshalOutFunction;
+#ifndef TPM_TSS_NOCMDCHECK
 	tssAuthContext->unmarshalInFunction = marshalTable12[index].unmarshalInFunction;
+#endif
     }
     else {
 	if (tssVerbose) printf("TSS_MarshalTable12_Process: "
@@ -332,6 +336,7 @@ TPM_RC TSS_Marshal12(TSS_AUTH_CONTEXT *tssAuthContext,
 	    /* no marshal function and no command parameter structure is OK */
 	}
     }
+#ifndef TPM_TSS_NOCMDCHECK
     /* unmarshal to validate the input parameters */
     if ((rc == 0) && (tssAuthContext->unmarshalInFunction != NULL)) {
 	COMMAND_PARAMETERS target;
@@ -342,6 +347,7 @@ TPM_RC TSS_Marshal12(TSS_AUTH_CONTEXT *tssAuthContext,
 	    printf("TSS_Marshal12: Invalid command parameter\n");
 	}
     }
+#endif
     /* back fill the correct commandSize */
     if (rc == 0) {
 	uint16_t written = 0;		/* dummy */
