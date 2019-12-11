@@ -516,7 +516,7 @@ int TSS_EVENT2_Line_Read(TCG_PCR_EVENT2 *event,
 	}
     }
     /* read the event */
-    if (!*endOfFile && (rc == 0)) {
+    if (!*endOfFile && (event->eventSize > 0) && (rc == 0)) {
 	memset(event->event , 0, sizeof(((TCG_PCR_EVENT2 *)NULL)->event));
 	readSize = fread(&(event->event),
 			 event->eventSize, 1, inFile);
