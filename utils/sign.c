@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
     Sign_In 			in;
     Sign_Out 			out;
     TPMI_DH_OBJECT		keyHandle = 0;
-    TPM_ALG_ID			sigAlg = TPM_ALG_RSA;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_SIG_SCHEME		scheme = TPM_ALG_RSASSA;
     const char			*messageFilename = NULL;
@@ -150,15 +149,12 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		if (strcmp(argv[i],"rsa") == 0) {
-		    sigAlg = TPM_ALG_RSA;
 		    scheme = TPM_ALG_RSASSA;
 		}
 		else if (strcmp(argv[i],"ecc") == 0) {
-		    sigAlg = TPM_ALG_ECDSA;
 		    scheme = TPM_ALG_ECDSA;
 		}
 		else if (strcmp(argv[i],"hmac") == 0) {
-		    sigAlg = TPM_ALG_HMAC;
 		    scheme = TPM_ALG_HMAC;
 		}
 		else {

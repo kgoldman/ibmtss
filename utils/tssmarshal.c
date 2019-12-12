@@ -2773,7 +2773,7 @@ TPM_RC
 TSS_NV_Certify_Out_Unmarshalu(NV_Certify_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
-    uint32_t parameterSize           = 0;
+    uint32_t parameterSize = 0;
     if (rc == TPM_RC_SUCCESS) {
 	if (tag == TPM_ST_SESSIONS) {
 	    rc = TSS_UINT32_Unmarshalu(&parameterSize, buffer, size);

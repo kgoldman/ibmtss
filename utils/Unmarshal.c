@@ -257,22 +257,6 @@ TSS_TPM_ECC_CURVE_Unmarshalu(TPM_ECC_CURVE *target, BYTE **buffer, uint32_t *siz
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(target, buffer, size);
     }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case TPM_ECC_NONE:
-	  case TPM_ECC_NIST_P192:
-	  case TPM_ECC_NIST_P224:
-	  case TPM_ECC_NIST_P256:
-	  case TPM_ECC_NIST_P384:
-	  case TPM_ECC_NIST_P521:
-	  case TPM_ECC_BN_P256:
-	  case TPM_ECC_BN_P638:
-	  case TPM_ECC_SM2_P256:
-	    break;
-	  default:
-	    rc = TPM_RC_CURVE;
-	}
-    }
     return rc;
 }
 #endif	/*  TPM_ALG_ECC */
@@ -376,30 +360,6 @@ TSS_TPM_ST_Unmarshalu(TPM_ST *target, BYTE **buffer, uint32_t *size)
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT16_Unmarshalu(target, buffer, size);  
     }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case TPM_ST_RSP_COMMAND:
-	  case TPM_ST_NULL:
-	  case TPM_ST_NO_SESSIONS:
-	  case TPM_ST_SESSIONS:
-	  case TPM_ST_ATTEST_NV:
-	  case TPM_ST_ATTEST_COMMAND_AUDIT:
-	  case TPM_ST_ATTEST_SESSION_AUDIT:
-	  case TPM_ST_ATTEST_CERTIFY:
-	  case TPM_ST_ATTEST_QUOTE:
-	  case TPM_ST_ATTEST_TIME:
-	  case TPM_ST_ATTEST_CREATION:
-	  case TPM_ST_ATTEST_NV_DIGEST:
-	  case TPM_ST_CREATION:
-	  case TPM_ST_VERIFIED:
-	  case TPM_ST_AUTH_SECRET:
-	  case TPM_ST_HASHCHECK:
-	  case TPM_ST_AUTH_SIGNED:
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
-    }
     return rc;
 }
 
@@ -460,24 +420,6 @@ TSS_TPM_CAP_Unmarshalu(TPM_CAP *target, BYTE **buffer, uint32_t *size)
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT32_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case TPM_CAP_ALGS:
-	  case TPM_CAP_HANDLES:
-	  case TPM_CAP_COMMANDS:
-	  case TPM_CAP_PP_COMMANDS:
-	  case TPM_CAP_AUDIT_COMMANDS:
-	  case TPM_CAP_PCRS:
-	  case TPM_CAP_TPM_PROPERTIES:
-	  case TPM_CAP_PCR_PROPERTIES:
-	  case TPM_CAP_ECC_CURVES:
-	  case TPM_CAP_AUTH_POLICIES:
-	  case TPM_CAP_VENDOR_PROPERTY:
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
     }
     return rc;
 }
@@ -615,15 +557,6 @@ TSS_TPMI_YES_NO_Unmarshalu(TPMI_YES_NO *target, BYTE **buffer, uint32_t *size)
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_UINT8_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case NO:
-	  case YES:
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
     }
     return rc;
 }
@@ -1102,36 +1035,10 @@ TPM_RC
 TSS_TPMI_ALG_HASH_Unmarshalu(TPMI_ALG_HASH *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_SHA1
-	  case TPM_ALG_SHA1:
-#endif
-#ifdef TPM_ALG_SHA256	
-	  case TPM_ALG_SHA256:
-#endif
-#ifdef TPM_ALG_SHA384
-	  case 	TPM_ALG_SHA384:
-#endif
-#ifdef TPM_ALG_SHA512
-	  case 	TPM_ALG_SHA512:
-#endif
-#ifdef TPM_ALG_SM3_256
-	  case TPM_ALG_SM3_256:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_HASH;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_HASH;
-	}
     }
     return rc;
 }
@@ -1142,33 +1049,10 @@ TPM_RC
 TSS_TPMI_ALG_SYM_Unmarshalu(TPMI_ALG_SYM *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_AES
-	  case TPM_ALG_AES:
-#endif
-#ifdef TPM_ALG_SM4
-	  case TPM_ALG_SM4:		
-#endif
-#ifdef TPM_ALG_CAMELLIA
-	  case TPM_ALG_CAMELLIA:	
-#endif
-#ifdef TPM_ALG_XOR
-	  case TPM_ALG_XOR:		
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_SYMMETRIC;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_SYMMETRIC;
-	}
     }
     return rc;
 }
@@ -1179,30 +1063,10 @@ TPM_RC
 TSS_TPMI_ALG_SYM_OBJECT_Unmarshalu(TPMI_ALG_SYM_OBJECT *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_AES
-	  case TPM_ALG_AES:
-#endif
-#ifdef TPM_ALG_SM4
-	  case TPM_ALG_SM4:		
-#endif
-#ifdef TPM_ALG_CAMELLIA
-	  case TPM_ALG_CAMELLIA:	
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_SYMMETRIC;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_SYMMETRIC;
-	}
     }
     return rc;
 }
@@ -1213,36 +1077,10 @@ TPM_RC
 TSS_TPMI_ALG_SYM_MODE_Unmarshalu(TPMI_ALG_SYM_MODE *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_CTR	
-	  case TPM_ALG_CTR:
-#endif
-#ifdef TPM_ALG_OFB	
-	  case TPM_ALG_OFB:
-#endif
-#ifdef TPM_ALG_CBC
-	  case TPM_ALG_CBC:
-#endif
-#ifdef TPM_ALG_CFB	
-	  case TPM_ALG_CFB:
-#endif
-#ifdef TPM_ALG_ECB	
-	  case TPM_ALG_ECB:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_MODE;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_MODE;
-	}
     }
     return rc;
 }
@@ -1253,33 +1091,10 @@ TPM_RC
 TSS_TPMI_ALG_KDF_Unmarshalu(TPMI_ALG_KDF *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
-
+    allowNull = allowNull;
+   
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_MGF1
-	  case TPM_ALG_MGF1:
-#endif
-#ifdef TPM_ALG_KDF1_SP800_56A
-	  case TPM_ALG_KDF1_SP800_56A:	
-#endif
-#ifdef TPM_ALG_KDF2
-	  case TPM_ALG_KDF2:			
-#endif
-#ifdef TPM_ALG_KDF1_SP800_108
-	  case TPM_ALG_KDF1_SP800_108:	
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_KDF;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_KDF;
-	}
     }
     return rc;
 }
@@ -1290,42 +1105,10 @@ TPM_RC
 TSS_TPMI_ALG_SIG_SCHEME_Unmarshalu(TPMI_ALG_SIG_SCHEME *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_HMAC		
-	  case TPM_ALG_HMAC:
-#endif
-#ifdef TPM_ALG_RSASSA	
-	  case TPM_ALG_RSASSA:
-#endif
-#ifdef TPM_ALG_RSAPSS	
-	  case TPM_ALG_RSAPSS:
-#endif
-#ifdef TPM_ALG_ECDSA		
-	  case TPM_ALG_ECDSA:
-#endif
-#ifdef TPM_ALG_ECDAA		
-	  case TPM_ALG_ECDAA:
-#endif
-#ifdef TPM_ALG_SM2		
-	  case TPM_ALG_SM2:
-#endif
-#ifdef TPM_ALG_ECSCHNORR	
-	  case TPM_ALG_ECSCHNORR:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_SCHEME;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_SCHEME;
-	}
     }
     return rc;
 }
@@ -1338,30 +1121,10 @@ TPM_RC
 TSS_TPMI_ECC_KEY_EXCHANGE_Unmarshalu(TPMI_ECC_KEY_EXCHANGE *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_ECDH
-	  case TPM_ALG_ECDH:
-#endif
-#ifdef TPM_ALG_ECMQV
-	  case TPM_ALG_ECMQV:
-#endif
-#ifdef TPM_ALG_SM2
-	  case TPM_ALG_SM2:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_SCHEME;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_SCHEME;
-	}
     }
     return rc;
 }
@@ -1394,39 +1157,10 @@ TPM_RC
 TSS_TPMI_ALG_MAC_SCHEME_Unmarshalu(TPMI_ALG_MAC_SCHEME *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_SHA1
-	  case TPM_ALG_SHA1:
-#endif
-#ifdef TPM_ALG_SHA256	
-	  case TPM_ALG_SHA256:
-#endif
-#ifdef TPM_ALG_SHA384
-	  case 	TPM_ALG_SHA384:
-#endif
-#ifdef TPM_ALG_SHA512
-	  case 	TPM_ALG_SHA512:
-#endif
-#ifdef TPM_ALG_SM3_256
-	  case TPM_ALG_SM3_256:
-#endif
-#ifdef TPM_ALG_CMAC
-	  case TPM_ALG_CMAC:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_SYMMETRIC;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_SYMMETRIC;
-	}
     }
     return rc;
 }
@@ -1437,36 +1171,10 @@ TPM_RC
 TSS_TPMI_ALG_CIPHER_MODE_Unmarshalu(TPMI_ALG_CIPHER_MODE*target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_CTR	
-	  case TPM_ALG_CTR:
-#endif
-#ifdef TPM_ALG_OFB	
-	  case TPM_ALG_OFB:
-#endif
-#ifdef TPM_ALG_CBC
-	  case TPM_ALG_CBC:
-#endif
-#ifdef TPM_ALG_CFB	
-	  case TPM_ALG_CFB:
-#endif
-#ifdef TPM_ALG_ECB	
-	  case TPM_ALG_ECB:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_MODE;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_MODE;
-	}
     }
     return rc;
 }
@@ -2398,21 +2106,6 @@ TSS_TPMI_ST_ATTEST_Unmarshalu(TPMI_ST_ATTEST *target, BYTE **buffer, uint32_t *s
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ST_Unmarshalu(target, buffer, size);
     }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case TPM_ST_ATTEST_CERTIFY:
-	  case TPM_ST_ATTEST_CREATION:
-	  case TPM_ST_ATTEST_QUOTE:
-	  case TPM_ST_ATTEST_COMMAND_AUDIT:
-	  case TPM_ST_ATTEST_SESSION_AUDIT:
-	  case TPM_ST_ATTEST_TIME:
-	  case TPM_ST_ATTEST_NV:
-	  case TPM_ST_ATTEST_NV_DIGEST:
-	    break;
-	  default:
-	    rc = TPM_RC_SELECTOR;
-	}
-    }
     return rc;
 }
 
@@ -2532,15 +2225,6 @@ TSS_TPMI_AES_KEY_BITS_Unmarshalu(TPMI_AES_KEY_BITS *target, BYTE **buffer, uint3
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);  
     }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case 128:
-	  case 256:
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
-    }
     return rc;
 }
 #endif	/* TPM_ALG_AES */
@@ -2556,14 +2240,6 @@ TSS_TPMI_CAMELLIA_KEY_BITS_Unmarshalu(TPMI_CAMELLIA_KEY_BITS *target, BYTE **buf
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);  
     }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case 128:
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
-    }
     return rc;
 }
 #endif	/*  TPM_ALG_CAMELLIA */
@@ -2576,14 +2252,6 @@ TSS_TPMI_SM4_KEY_BITS_Unmarshalu(TPMI_SM4_KEY_BITS *target, BYTE **buffer, uint3
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case 128:
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
     }
     return rc;
 }
@@ -2824,27 +2492,10 @@ TPM_RC
 TSS_TPMI_ALG_KEYEDHASH_SCHEME_Unmarshalu(TPMI_ALG_KEYEDHASH_SCHEME *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_HMAC
-	  case TPM_ALG_HMAC:	
-#endif
-#ifdef TPM_ALG_XOR
-	  case TPM_ALG_XOR:	
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_VALUE;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
     }
     return rc;
 }
@@ -3246,48 +2897,6 @@ TSS_TPMI_ALG_ASYM_SCHEME_Unmarshalu(TPMI_ALG_ASYM_SCHEME *target, BYTE **buffer,
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
     }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_ECDH
-	  case TPM_ALG_ECDH:
-#endif
-#ifdef TPM_ALG_ECMQV
-	  case TPM_ALG_ECMQV:
-#endif
-#ifdef TPM_ALG_RSASSA
-	  case TPM_ALG_RSASSA:
-#endif
-#ifdef TPM_ALG_RSAPSS
-	  case TPM_ALG_RSAPSS:
-#endif
-#ifdef TPM_ALG_ECDSA
-	  case TPM_ALG_ECDSA:
-#endif
-#ifdef TPM_ALG_ECDAA
-	  case TPM_ALG_ECDAA:
-#endif
-#ifdef TPM_ALG_SM2
-	  case TPM_ALG_SM2:
-#endif
-#ifdef TPM_ALG_ECSCHNORR
-	  case TPM_ALG_ECSCHNORR:
-#endif
-#ifdef TPM_ALG_RSAES
-	  case TPM_ALG_RSAES:
-#endif
-#ifdef TPM_ALG_OAEP
-	  case TPM_ALG_OAEP:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_VALUE;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
-    }
     return rc;
 }
 #endif	/* 0 */
@@ -3382,33 +2991,10 @@ TPM_RC
 TSS_TPMI_ALG_RSA_SCHEME_Unmarshalu(TPMI_ALG_RSA_SCHEME *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_RSASSA
-	  case TPM_ALG_RSASSA:
-#endif
-#ifdef TPM_ALG_RSAPSS
-	  case TPM_ALG_RSAPSS:
-#endif
-#ifdef TPM_ALG_RSAES
-	  case TPM_ALG_RSAES:
-#endif
-#ifdef TPM_ALG_OAEP
-	  case TPM_ALG_OAEP:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_VALUE;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
     }
     return rc;
 }
@@ -3437,27 +3023,10 @@ TPM_RC
 TSS_TPMI_ALG_RSA_DECRYPT_Unmarshalu(TPMI_ALG_RSA_DECRYPT *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_RSAES
-	  case TPM_ALG_RSAES:
-#endif
-#ifdef TPM_ALG_OAEP
-	  case TPM_ALG_OAEP:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_VALUE;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
     }
     return rc;
 }
@@ -3501,15 +3070,6 @@ TSS_TPMI_RSA_KEY_BITS_Unmarshalu(TPMI_RSA_KEY_BITS *target, BYTE **buffer, uint3
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_KEY_BITS_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case 1024:
-	  case 2048:
-	    break;
-	  default:
-	    rc = TPM_RC_VALUE;
-	}
     }
     return rc;
 }
@@ -3596,39 +3156,10 @@ TPM_RC
 TSS_TPMI_ALG_ECC_SCHEME_Unmarshalu(TPMI_ALG_ECC_SCHEME *target, BYTE **buffer, uint32_t *size, BOOL allowNull)
 {
     TPM_RC rc = TPM_RC_SUCCESS;
+    allowNull = allowNull;
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_ECDSA
-	  case TPM_ALG_ECDSA:
-#endif
-#ifdef TPM_ALG_SM2
-	  case TPM_ALG_SM2:
-#endif
-#ifdef TPM_ALG_ECDAA
-	  case TPM_ALG_ECDAA:
-#endif
-#ifdef TPM_ALG_ECSCHNORR
-	  case TPM_ALG_ECSCHNORR:
-#endif
-#ifdef TPM_ALG_ECDH
-	  case TPM_ALG_ECDH:
-#endif
-#ifdef TPM_ALG_ECMQV
-	  case TPM_ALG_ECMQV:
-#endif
-	    break;
-	  case TPM_ALG_NULL:
-	    if (!allowNull) {
-		rc = TPM_RC_SCHEME;
-	    }
-	    break;
-	  default:
-	    rc = TPM_RC_SCHEME;
-	}
     }
     return rc;
 }
@@ -3642,16 +3173,6 @@ TSS_TPMI_ECC_CURVE_Unmarshalu(TPMI_ECC_CURVE *target, BYTE **buffer, uint32_t *s
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ECC_CURVE_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-	  case TPM_ECC_BN_P256:
-	  case TPM_ECC_NIST_P256:
-	  case TPM_ECC_NIST_P384:
-	    break;
-	  default:
-	    rc = TPM_RC_CURVE;
-	}
     }
     return rc;
 }
@@ -3911,25 +3432,6 @@ TSS_TPMI_ALG_PUBLIC_Unmarshalu(TPMI_ALG_PUBLIC *target, BYTE **buffer, uint32_t 
 
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPM_ALG_ID_Unmarshalu(target, buffer, size);  
-    }
-    if (rc == TPM_RC_SUCCESS) {
-	switch (*target) {
-#ifdef TPM_ALG_KEYEDHASH
-	  case TPM_ALG_KEYEDHASH:
-#endif
-#ifdef TPM_ALG_RSA
-	  case TPM_ALG_RSA:
-#endif
-#ifdef TPM_ALG_ECC
-	  case TPM_ALG_ECC:
-#endif
-#ifdef TPM_ALG_SYMCIPHER
-	  case TPM_ALG_SYMCIPHER:
-#endif
-	    break;
-	  default:
-	    rc = TPM_RC_TYPE;
-	}
     }
     return rc;
 }
