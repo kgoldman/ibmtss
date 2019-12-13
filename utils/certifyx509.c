@@ -1471,7 +1471,7 @@ static void printUsage(void)
     printf("\t[-oa\taddedToCertificate file name (default do not save)]\n");
     printf("\t[-otbs\tsigned tbsDigest file name (default do not save)]\n");
     printf("\t[-os\tsignature file name (default do not save)]\n");
-    printf("\t[-ocert\treconstructed certificate file name (default do not save)]\n");
+    printf("\t[-ocert\t reconstructed certificate file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t01\tcontinue\n");
