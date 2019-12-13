@@ -96,7 +96,7 @@ endif
 if CONFIG_TPM20
 bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation changeeps changepps clear clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters ecephemeral encryptdecrypt eventsequencecomplete evictcontrol flushcontext getcommandauditdigest getcapability getcryptolibrary getrandom gettestresult getsessionauditdigest gettime hashsequencestart hash hierarchycontrol hierarchychangeauth hmac hmacstart \
 import importpem load loadexternal makecredential nvcertify nvchangeauth nvdefinespace nvextend nvglobalwritelock nvincrement nvread nvreadlock nvreadpublic nvsetbits nvundefinespace nvundefinespacespecial nvwrite nvwritelock objectchangeauth pcrallocate pcrevent pcrextend pcrread pcrreset policyauthorize policyauthvalue policycommandcode policycphash policynamehash policycountertimer policyduplicationselect policygetdigest policymaker policymakerpcr policyauthorizenv policynv policynvwritten \
-policyor policypassword policypcr policyrestart policysigned policysecret policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt sequenceupdate sequencecomplete setprimarypolicy shutdown sign startauthsession startup stirrandom unseal verifysignature zgen2phase signapp writeapp timepacket createek createekcert tpm2pem tpmpublic2eccpoint ntc2getconfig ntc2preconfig ntc2lockconfig publicname
+policyor policypassword policypcr policyrestart policysigned policysecret policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt sequenceupdate sequencecomplete setprimarypolicy shutdown sign startauthsession startup stirrandom unseal verifysignature zgen2phase signapp writeapp timepacket createek createekcert tpm2pem tpmpublic2eccpoint ntc2getconfig ntc2preconfig ntc2lockconfig publicname tpmcmd
 
 if CONFIG_TSS_NOECC
 UTILS_CFLAGS = -DTPM_TSS_NOECC
@@ -561,5 +561,9 @@ ntc2lockconfig_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 publicname_SOURCES = publicname.c
 publicname_CFLAGS = $(OPENSSL_CFLAGS)
 publicname_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
+
+tpmcmd_SOURCES = tpmcmd.c
+tpmcmd_CFLAGS = $(OPENSSL_CFLAGS)
+tpmcmd_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 endif
