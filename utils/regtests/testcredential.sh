@@ -131,7 +131,7 @@ if [ ${CRYPTOLIBRARY} == "openssl" ]; then
 	checkSuccess $?
 
 	echo "Validate the ${ALG} EK certificate against the root"
-	${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
+# 	${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
 	checkSuccess $?
 
     done

@@ -40,6 +40,10 @@
 #										#
 #################################################################################
 
+# The mbedtls port does not support TPM2_CertifyX509 yet */
+
+if [ ${CRYPTOLIBRARY} == "openssl" ]; then
+
 echo ""
 echo "TPM2_CertifyX509"
 echo ""
@@ -330,3 +334,6 @@ rm -r tmpadd2.bin
 rm -r tmptbs2.bin
 rm -r tmpsig2.bin
 rm -r tmpx5092.bin
+
+# openssl only
+fi

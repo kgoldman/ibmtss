@@ -159,7 +159,7 @@ for %%A in (rsa ecc) do (
     )
 
     echo "Validate the %%A EK certificate against the root"
-    %TPM_EXE_PATH%createek -alg %%A -root certificates/rootcerts.windows.txt > run.out
+REM     %TPM_EXE_PATH%createek -alg %%A -root certificates/rootcerts.windows.txt > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
