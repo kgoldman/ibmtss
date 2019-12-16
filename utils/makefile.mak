@@ -1,6 +1,6 @@
 #################################################################################
 #										#
-#			Windows MinGW TPM2 Makefile OpenSSL 1.1	32-bit		#
+#			Windows MinGW TPM2 Makefile OpenSSL 1.1.1 32-bit	#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
@@ -37,12 +37,14 @@
 #										#
 #################################################################################
 
-# Windows OpenSSL 1.1 32-bit with mingw
-
-# Comments for OpenSSL 1.0 are included
+# Windows OpenSSL 1.1.1 32-bit with mingw
 
 # Please contribute a solution for OpenSSL 64-bit (Shining Light),
 # which does not include the mingw .a files.
+
+# For this to work, copy the file .../openssl/bin/libcrypto-1.1.dll to
+# libcrypto.dll.  Please contribute a solution that does not require
+# this step.
 
 # C compiler
 
@@ -81,13 +83,8 @@ LNLFLAGS +=
 
 LNAFLAGS += 
 
-LNLIBS = 	"c:/program files/openssl/lib/mingw/libcrypto-1_1.a" \
+LNLIBS = 	"c:/program files/openssl/lib/mingw/libcrypto.a" \
 		"c:/program files/MinGW/lib/libws2_32.a"
-
-# OpenSSL 1.0 Shining Light library names
-# LNLIBS = 	"c:/program files/openssl/lib/mingw/libeay32.a" \
-#		"c:/program files/openssl/lib/mingw/ssleay32.a" \
-#		"c:/program files/MinGW/lib/libws2_32.a"
 
 # shared library
 
