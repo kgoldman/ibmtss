@@ -31,6 +31,7 @@ tpmutils/evictcontrol/Debug/
 tpmutils/flushcontext/Debug/
 tpmutils/getcapability/Debug/
 tpmutils/getcommandauditdigest/Debug/
+tpmutils/getcryptolibrary/Debug/
 tpmutils/getrandom/Debug/
 tpmutils/getsessionauditdigest/Debug/
 tpmutils/gettestresult/Debug/
@@ -88,6 +89,7 @@ tpmutils/policysigned/Debug/
 tpmutils/policytemplate/Debug/
 tpmutils/policyticket/Debug/
 tpmutils/powerup/Debug/
+tpmutils/publicname/Debug/
 tpmutils/quote/Debug/
 tpmutils/readclock/Debug/
 tpmutils/readpublic/Debug/
@@ -104,6 +106,7 @@ tpmutils/signapp/Debug/
 tpmutils/startauthsession/Debug/
 tpmutils/startup/Debug/
 tpmutils/stirrandom/Debug/
+tpmutils/timepacket/Debug/
 tpmutils/tpm2pem/Debug/
 tpmutils/tpmpublic2eccpoint/Debug/
 tpmutils/tss/Debug/
@@ -112,11 +115,15 @@ tpmutils/verifysignature/Debug/
 tpmutils/writeapp/Debug/
 tpmutils/zgen2phase/Debug/
 .gitignore
+tpmutils/.vs/
+.vs
 utils/*.o
 utils/h*.bin
+utils/nvp*.bin
 utils/activatecredential
 utils/certify
 utils/certifycreation
+utils/certifyx509
 utils/changeeps
 utils/changepps
 utils/clear
@@ -207,6 +214,7 @@ utils/policysigned
 utils/policytemplate
 utils/policyticket
 utils/powerup
+utils/printattr
 utils/publicname
 utils/quote
 utils/readclock
@@ -217,6 +225,7 @@ utils/rsadecrypt
 utils/rsaencrypt
 utils/sequencecomplete
 utils/sequenceupdate
+utils/setcommandcodeauditstatus
 utils/setprimarypolicy
 utils/shutdown
 utils/sign
@@ -260,6 +269,7 @@ config.status
 configure
 libtool
 stamp-h1
+utils/.dirstamp
 utils/.deps/
 utils/Makefile
 utils/Makefile.in
