@@ -94,9 +94,22 @@ noinst_HEADERS += tss12.h Commands12_fp.h tssauth12.h tssccattributes12.h ibmtss
 endif
 
 if CONFIG_TPM20
-bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation changeeps changepps clear clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters ecephemeral encryptdecrypt eventsequencecomplete evictcontrol flushcontext getcommandauditdigest getcapability getcryptolibrary getrandom gettestresult getsessionauditdigest gettime hashsequencestart hash hierarchycontrol hierarchychangeauth hmac hmacstart \
-import importpem load loadexternal makecredential nvcertify nvchangeauth nvdefinespace nvextend nvglobalwritelock nvincrement nvread nvreadlock nvreadpublic nvsetbits nvundefinespace nvundefinespacespecial nvwrite nvwritelock objectchangeauth pcrallocate pcrevent pcrextend pcrread pcrreset policyauthorize policyauthvalue policycommandcode policycphash policynamehash policycountertimer policyduplicationselect policygetdigest policymaker policymakerpcr policyauthorizenv policynv policynvwritten \
-policyor policypassword policypcr policyrestart policysigned policysecret policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt sequenceupdate sequencecomplete setprimarypolicy shutdown sign startauthsession startup stirrandom unseal verifysignature zgen2phase signapp writeapp timepacket createek createekcert tpm2pem tpmpublic2eccpoint ntc2getconfig ntc2preconfig ntc2lockconfig publicname tpmcmd
+bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation certifyx509 changeeps changepps clear \
+	clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary \
+	dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters ecephemeral encryptdecrypt \
+	eventsequencecomplete evictcontrol flushcontext getcommandauditdigest getcapability getcryptolibrary \
+	getrandom gettestresult getsessionauditdigest gettime hashsequencestart hash hierarchycontrol \
+	hierarchychangeauth hmac hmacstart import importpem load loadexternal makecredential nvcertify nvchangeauth \
+	nvdefinespace nvextend nvglobalwritelock nvincrement nvread nvreadlock nvreadpublic nvsetbits \
+	nvundefinespace nvundefinespacespecial nvwrite nvwritelock objectchangeauth pcrallocate pcrevent pcrextend \
+	pcrread pcrreset policyauthorize policyauthvalue policycommandcode policycphash policynamehash \
+	policycountertimer policyduplicationselect policygetdigest policymaker policymakerpcr policyauthorizenv \
+	policynv policynvwritten policyor policypassword policypcr policyrestart policysigned policysecret \
+	policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt \
+	sequenceupdate sequencecomplete setcommandcodeauditstatus setprimarypolicy shutdown sign startauthsession \
+	startup stirrandom unseal \
+	verifysignature zgen2phase signapp writeapp timepacket createek createekcert tpm2pem tpmpublic2eccpoint \
+	ntc2getconfig ntc2preconfig ntc2lockconfig publicname tpmcmd printattr
 
 if CONFIG_TSS_NOECC
 UTILS_CFLAGS = -DTPM_TSS_NOECC
@@ -121,6 +134,10 @@ certify_LDADD = libibmtssutils.la libibmtss.la
 certifycreation_SOURCES = certifycreation.c
 certifycreation_CFLAGS = $(UTILS_CFLAGS)
 certifycreation_LDADD = libibmtssutils.la libibmtss.la
+
+certifyx509_SOURCES = certifyx509.c
+certifyx509_CFLAGS = $(UTILS_CFLAGS)
+certifyx509_LDADD = libibmtssutils.la libibmtss.la
 
 changeeps_SOURCES = changeeps.c
 changeeps_CFLAGS = $(UTILS_CFLAGS)
@@ -482,6 +499,10 @@ sequencecomplete_SOURCES = sequencecomplete.c
 sequencecomplete_CFLAGS = $(UTILS_CFLAGS)
 sequencecomplete_LDADD = libibmtssutils.la libibmtss.la
 
+setcommandcodeauditstatus_SOURCES = setcommandcodeauditstatus.c
+setcommandcodeauditstatus_CFLAGS = $(UTILS_CFLAGS)
+setcommandcodeauditstatus_LDADD = libibmtssutils.la libibmtss.la
+
 setprimarypolicy_SOURCES = setprimarypolicy.c
 setprimarypolicy_CFLAGS = $(UTILS_CFLAGS)
 setprimarypolicy_LDADD = libibmtssutils.la libibmtss.la
@@ -565,5 +586,9 @@ publicname_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 tpmcmd_SOURCES = tpmcmd.c
 tpmcmd_CFLAGS = $(OPENSSL_CFLAGS)
 tpmcmd_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
+
+printattr_SOURCES = printattr.c
+printattr_CFLAGS = $(OPENSSL_CFLAGS)
+printattr_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 endif
