@@ -164,9 +164,9 @@ clean:
 
 # applications
 
-writeapp:		ibmtss/tss.h writeapp.o $(LIBTSS) 
+writeapp:		ibmtss/tss.h writeapp.o tssutilsverbose.o $(LIBTSS) 
 
-			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o \
+			$(CC) $(LNFLAGS) $(LNAFLAGS) writeapp.o tssutilsverbose.o \
 			$(LNALIBS) -o writeapp
 
 # for applications, not for TSS library
