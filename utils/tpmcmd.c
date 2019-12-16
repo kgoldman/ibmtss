@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     int			i;				/* argc iterator */
     TSS_CONTEXT		*tssContext = NULL;
     uint32_t 		command = 0;
-    const char 		*message;
+    const char 		*message = "";
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
