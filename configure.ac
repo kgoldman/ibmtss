@@ -1,9 +1,9 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-# Set package release version here to "1.2.0"
+# Set package release version"
 # After committing set git tag version.
-AC_INIT(ibmtss, 1.2.0, kgold@linux.ibm.com)
+AC_INIT(ibmtss, 1.2.1, kgold@linux.ibm.com)
 AC_PREREQ([2.63])
 
 # Convert major.minor.micro to libtool versioning (current-revision-age)
