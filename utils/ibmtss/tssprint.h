@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
