@@ -828,12 +828,6 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 	    }
 	    /* if HMAC or encrypt/decrypt session  */
 	    else {
-		/* if there is at least one HMAC session, get the names corresponding to the
-		   handles */
-		if ((rc == 0) && !haveNames) {
-		    rc = TSS_Name_GetAllNames(tssContext, names);
-		    haveNames = TRUE;	/* get only once, minor optimization */
-		}
 		/* initialize a TSS HMAC session */
 		if (rc == 0) {
 		    rc = TSS_HmacSession_GetContext(&session[i]);
@@ -841,6 +835,15 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 		/* load the session created by startauthsession */
 		if (rc == 0) {
 		    rc = TSS_HmacSession_LoadSession(tssContext, session[i], sessionHandle[i]);
+		}
+		/* if there is at least one HMAC session, get the names corresponding to the
+		   handles */
+		if ((session[i]->sessionType == TPM_SE_HMAC) ||
+		    ((session[i]->sessionType == TPM_SE_POLICY) && (session[i]->isAuthValueNeeded))) {
+		    if ((rc == 0) && !haveNames) {
+			rc = TSS_Name_GetAllNames(tssContext, names);
+			haveNames = TRUE;	/* get only once, minor optimization */
+		    }
 		}
 	    }
 	}
