@@ -57,13 +57,13 @@ echo "Initialize Regression Test Keys"
 echo ""
 
 echo "Create a platform primary storage key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk sto -tk pritk.bin -ch prich.bin > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto -pol policies/zerosha256.bin -tk pritk.bin -ch prich.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
 echo "Create an RSA storage key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -opr storersapriv.bin -opu storersapub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersapriv.bin -opu storersapub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )

@@ -233,8 +233,8 @@ cleanup()
 
 initprimary()
 {
-    echo "Create a platform primary storage key"
-    ${PREFIX}createprimary -hi p -pwdk sto -tk pritk.bin -ch prich.bin > run.out
+    echo "Create a platform primary RSA storage key"
+    ${PREFIX}createprimary -hi p -pwdk sto -pol policies/zerosha256.bin -tk pritk.bin -ch prich.bin > run.out
     checkSuccess $?
 }
 

@@ -726,7 +726,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Recreate the primary key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk sto > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto -pol policies/zerosha256.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

@@ -56,12 +56,11 @@ echo ""
 echo "Initialize Regression Test Keys"
 echo ""
 
-echo "Create a platform primary RSA storage key"
-${PREFIX}createprimary -hi p -pwdk sto -tk pritk.bin -ch prich.bin > run.out
-checkSuccess $?
+# Create a platform primary RSA storage key
+initprimary
 
 echo "Create an RSA storage key under the primary key"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -opr storersapriv.bin -opu storersapub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
+${PREFIX}create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersapriv.bin -opu storersapub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
 checkSuccess $?
 
 echo "Create an ECC storage key under the primary key"

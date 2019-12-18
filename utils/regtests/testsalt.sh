@@ -299,6 +299,46 @@ echo "NV undefine space"
 ${PREFIX}nvundefinespace -ha 01000000 -hi p > run.out
 checkSuccess $?
 
+echo ""
+echo "Salt Policy Session with policyauthvalue"
+echo ""
+
+echo "Load RSA the storage key 80000001 under the primary key 80000000"
+${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+checkSuccess $?
+
+echo "Start a salted policy session"
+${PREFIX}startauthsession -se p -hs 80000001 > run.out
+checkSuccess $?
+
+echo "Policy command code - create"
+${PREFIX}policycommandcode -ha 03000000 -cc 153 > run.out
+checkSuccess $?
+
+echo "Policy authvalue"
+${PREFIX}policyauthvalue -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Create a signing key using the salt"
+${PREFIX}create -hp 80000001 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -se0 03000000 0 > run.out
+checkSuccess $?
+
+echo "Flush the storage key 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo ""
+echo "Salt Policy Session with no policyauthvalue"
+echo ""
+
+echo "Start a salted policy session"
+${PREFIX}startauthsession -se p -hs 80000000 > run.out
+checkSuccess $?
+
+echo "Create a signing key using the salt"
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -se0 03000000 0 > run.out
+checkSuccess $?
+
 rm -f tmpkeypairrsa.pem
 rm -f tmpkeypairecc.pem
 rm -f tmpkeypairrsa.der

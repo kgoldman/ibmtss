@@ -523,8 +523,8 @@ echo "Flush the session"
 ${PREFIX}flushcontext -ha 03000000 > run.out > run.out
 checkSuccess $?
 
-echo "Recreate the primary key"
-${PREFIX}createprimary -hi p -pwdk sto > run.out
+# Recreate the primary key
+initprimary
 checkSuccess $?
 
 echo ""

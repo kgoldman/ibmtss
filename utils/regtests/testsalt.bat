@@ -365,6 +365,63 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+
+echo ""
+echo "Salt Policy Session with policyauthvalue"
+echo ""
+
+echo "Load RSA the storage key 80000001 under the primary key 80000000"
+%TPM_EXE_PATH%load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Start a salted policy session"
+%TPM_EXE_PATH%startauthsession -se p -hs 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy command code - create"
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 153 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Policy authvalue"
+%TPM_EXE_PATH%policyauthvalue -ha 03000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Create a signing key using the salt"
+%TPM_EXE_PATH%create -hp 80000001 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -se0 03000000 0 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the storage key 80000001"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Salt Policy Session with no policyauthvalue"
+echo ""
+
+echo "Start a salted policy session"
+%TPM_EXE_PATH%startauthsession -se p -hs 80000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Create a signing key using the salt"
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -se0 03000000 0 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
 rm -f tmpkeypairrsa.pem
 rm -f tmpkeypairecc.pem
 rm -f tmpkeypairrsa.der

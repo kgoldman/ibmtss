@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testpcr.sh 1301 2018-08-15 21:46:19Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2019					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -296,6 +295,6 @@ echo "PCR Reset"
 ${PREFIX}pcrreset -ha 16 > run.out
 checkSuccess $?
 
-# recreate the primaty key that was fluched on the powerup
+# recreate the primary key that was flushed on the powerup
 
 initprimary

@@ -182,8 +182,8 @@ echo "Load the signing key - should fail, primary key missing"
 ${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
 checkFailure $?
 
-echo "Create a platform primary storage key"
-${PREFIX}createprimary -hi p -pwdk sto > run.out
+# Create a platform primary storage key
+initprimary
 checkSuccess $?
 
 echo "Signing Key Self Certify - should fail, signing key missing"

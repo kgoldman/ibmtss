@@ -3,9 +3,8 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: testpcr.bat 1301 2018-08-15 21:46:19Z kgoldman $		#
 REM										#
-REM (c) Copyright IBM Corporation 2015, 2018					#
+REM (c) Copyright IBM Corporation 2015 - 2019					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -338,10 +337,10 @@ IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
-REM # recreate the primaty key that was fluched on the powerup
+REM # recreate the primary key that was flushed on the powerup
 
 echo "Create a platform primary storage key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk sto -tk pritk.bin -ch prich.bin > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto -pol policies/zerosha256.bin -tk pritk.bin -ch prich.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )

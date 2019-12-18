@@ -135,3 +135,4 @@ sha512extaaa0.bin	sha512 extend of aaa zero padded
 
 zero4.bin		4 bytes of zero (e.g., just expiration data for policysigned)
 zero8.bin		8 bytes of zero
+zerosha256.bin		32 bytes of zero

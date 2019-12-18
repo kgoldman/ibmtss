@@ -838,8 +838,16 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 		}
 		/* if there is at least one HMAC session, get the names corresponding to the
 		   handles */
-		if ((session[i]->sessionType == TPM_SE_HMAC) ||
-		    ((session[i]->sessionType == TPM_SE_POLICY) && (session[i]->isAuthValueNeeded))) {
+		if ((session[i]->sessionType == TPM_SE_HMAC) ||		/* HMAC session. OR */
+		    ((session[i]->sessionType == TPM_SE_POLICY) &&	/* Policy session AND */
+
+#ifndef TPM_TSS_NOCRYPTO
+		     ((session[i]->isAuthValueNeeded) || 		/* PolicyAuthValue ran, OR */
+		      (session[i]->sessionKey.b.size != 0)))		/* Already session key (bind or salt) */
+#else
+		    (session[i]->isAuthValueNeeded))		/* PolicyAuthValue ran, OR */
+#endif	/* TPM_TSS_NOCRYPTO */
+		    ) {	
 		    if ((rc == 0) && !haveNames) {
 			rc = TSS_Name_GetAllNames(tssContext, names);
 			haveNames = TRUE;	/* get only once, minor optimization */
