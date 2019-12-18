@@ -60,8 +60,7 @@ CCFLAGS  += \
 
 CCLFLAGS += 	-I.			\
 		-fPIC			\
-		-DTPM_TPM20		\
-		-DTPM_TSS_NO_PRINT
+		-DTPM_TPM20
 
 # compile - for applications
 
@@ -93,7 +92,8 @@ ALL = $(LIBTSS)
 
 # default TSS library
 
-TSS_OBJS = 
+TSS_OBJS =	tssprintcmd.o
+
 
 # common to all builds
 
@@ -132,6 +132,8 @@ tssccattributes.o: 	$(TSS_HEADERS) tssccattributes.c
 			$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssccattributes.c
 tssprint.o: 		$(TSS_HEADERS) tssprint.c
 			$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssprint.c
+tssprintcmd.o: 		$(TSS_HEADERS) tssprintcmd.c
+			$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC tssprintcmd.c
 Unmarshal.o: 		$(TSS_HEADERS) Unmarshal.c
 			$(CC) $(CCFLAGS) $(CCLFLAGS) -fPIC Unmarshal.c
 Commands.o: 		$(TSS_HEADERS) Commands.c
