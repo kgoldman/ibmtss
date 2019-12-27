@@ -123,6 +123,10 @@ int main(int argc, char *argv[])
 	    keyType = TYPE_DEO;
 	    keyTypeSpecified++;
 	}
+	else if (strcmp(argv[i], "-dee") == 0) {
+	    keyType = TYPE_DEE;
+	    keyTypeSpecified++;
+	}
 	else if (strcmp(argv[i], "-des") == 0) {
 	    keyType = TYPE_DES;
 	    keyTypeSpecified++;
@@ -474,6 +478,7 @@ int main(int argc, char *argv[])
       case TYPE_ST:
       case TYPE_DEN:
       case TYPE_DEO:
+      case TYPE_DEE:
       case TYPE_SI:
       case TYPE_SIR:
       case TYPE_GP:
@@ -530,6 +535,7 @@ int main(int argc, char *argv[])
 	  case TYPE_DAAR:
 	  case TYPE_DEN:
 	  case TYPE_DEO:
+	  case TYPE_DEE:
 	  case TYPE_SI:
 	  case TYPE_SIR:
 	  case TYPE_GP:

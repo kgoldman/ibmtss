@@ -61,6 +61,7 @@
    TYPE_ST:   storage key (decrypt, restricted, RSA NULL scheme, EC NULL scheme)
    TYPE_DEN:  decryption key (not storage key, RSA NULL scheme, EC NULL scheme)
    TYPE_DEO:  decryption key (not storage key, RSA OAEP scheme, EC NULL scheme)
+   TYPE_DEE:  decryption key (not storage key, RSA ES scheme, EC NULL scheme)
    TYPE_SI:   signing key (unrestricted, RSA NULL schemem EC NULL scheme)
    TYPE_SIR:  signing key (restricted, RSA RSASSA scheme, EC ECDSA scheme)
    TYPE_GP:   general purpose key
@@ -96,6 +97,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	switch (keyType) {
 	  case TYPE_DEN:
 	  case TYPE_DEO:
+	  case TYPE_DEE:
 	    publicArea->objectAttributes.val &= ~TPMA_OBJECT_SIGN;
 	    publicArea->objectAttributes.val |= TPMA_OBJECT_DECRYPT;
 	    publicArea->objectAttributes.val &= ~TPMA_OBJECT_RESTRICTED;
@@ -136,6 +138,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	    switch (keyType) {
 	      case TYPE_DEN:
 	      case TYPE_DEO:
+	      case TYPE_DEE:
 	      case TYPE_SI:
 	      case TYPE_SIR:
 	      case TYPE_GP:
@@ -167,6 +170,14 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 		/* Table 135 - Definition of TPMS_SCHEME_HASH hashAlg */
 		publicArea->parameters.rsaDetail.scheme.details.oaep.hashAlg = halg;
 		break;
+	      case TYPE_DEE:
+		publicArea->parameters.rsaDetail.scheme.scheme = TPM_ALG_RSAES;
+		/* Table 152 - Definition of TPMU_ASYM_SCHEME details */
+		/* Table 152 - Definition of TPMU_ASYM_SCHEME rsassa */
+		/* Table 142 - Definition of {RSA} Types for RSA Signature Schemes */
+		/* Table 135 - Definition of TPMS_SCHEME_HASH hashAlg */
+		publicArea->parameters.rsaDetail.scheme.details.oaep.hashAlg = halg;
+		break;
 	      case TYPE_SIR:
 		publicArea->parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
 		/* Table 152 - Definition of TPMU_ASYM_SCHEME details */
@@ -190,6 +201,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	    switch (keyType) {
 	      case TYPE_DEN:
 	      case TYPE_DEO:
+	      case TYPE_DEE:
 	      case TYPE_SI:
 	      case TYPE_SIR:
 	      case TYPE_DAA:
@@ -213,6 +225,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	      case TYPE_SI:
 	      case TYPE_DEN:
 	      case TYPE_DEO:
+	      case TYPE_DEE:
 		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
 		/* Table 165 - Definition of {ECC} (TPM_ECC_CURVE) TPMI_ECC_CURVE Type */
 		/* Table 10 - Definition of (UINT16) {ECC} TPM_ECC_CURVE Constants curveID */
@@ -537,6 +550,7 @@ void printUsageTemplate(void)
     printf("\t\t\trequires -if\n");
     printf("\t\t-den\tdecryption, (unrestricted, RSA and EC NULL scheme)\n");
     printf("\t\t-deo\tdecryption, (unrestricted, RSA OAEP, EC NULL scheme)\n");
+    printf("\t\t-dee\tdecryption, (unrestricted, RSA ES, EC NULL scheme)\n");
     printf("\t\t-des\tencryption/decryption, AES symmetric\n");
     printf("\t\t\t[-116 for TPM rev 116 compatibility]\n");
     printf("\t\t-st\tstorage (restricted)\n");

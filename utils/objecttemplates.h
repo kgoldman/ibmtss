@@ -55,6 +55,7 @@
 #define TYPE_DAA        11
 #define TYPE_DAAR       12
 #define TYPE_KHR	13
+#define TYPE_DEE	14
 
 #ifdef __cplusplus
 extern "C" {

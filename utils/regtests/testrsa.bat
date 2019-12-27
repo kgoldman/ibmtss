@@ -284,6 +284,123 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+echo ""
+echo "Child RSA decryption key RSAES"
+echo ""
+
+echo "Create RSAES encryption key"
+%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -dee -opr deepriv.bin -opu deepub.bin > run.out	
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load encryption key at 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipr deepriv.bin -ipu deepub.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "RSA encrypt with the encryption key"
+%TPM_EXE_PATH%rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "RSA decrypt with the decryption key"
+%TPM_EXE_PATH%rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the decrypt result"
+tail --bytes=3 dec.bin > tmp.bin
+diff policies/aaa tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the encryption key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Primary RSA decryption key RSAES"
+echo ""
+
+echo "Create Primary RSAES encryption key"
+%TPM_EXE_PATH%createprimary -hi p -dee -halg sha256 -opem tmppubkey.pem > run.out	
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "RSA encrypt with the encryption key"
+%TPM_EXE_PATH%rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "RSA decrypt with the decryption key"
+%TPM_EXE_PATH%rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Verify the decrypt result"
+tail --bytes=3 dec.bin > tmp.bin
+diff policies/aaa tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the encryption key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
+echo "Primary Create Loaded RSA decryption key RSAES"
+echo ""
+
+echo "CreateLoaded primary key, storage parent 80000001"
+%TPM_EXE_PATH%createloaded -hp 40000001 -dee > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "RSA encrypt with the encryption key"
+%TPM_EXE_PATH%rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "RSA decrypt with the decryption key"
+%TPM_EXE_PATH%rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+echo "Verify the decrypt result"
+tail --bytes=3 dec.bin > tmp.bin
+diff policies/aaa tmp.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the encryption key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+REM cleanup
+
+rm -f tmp.bin
+rm -f enc.bin
+rm -f dec.bin
+rm -f deepub.bin
+rm -f deepriv.bin
 rm -f tmpmsg.bin
 rm -f tmpdig.bin
 rm -f tmpsig.bin
@@ -300,3 +417,4 @@ REM  getcapability -cap 1 -pr 80000000
 REM  getcapability -cap 1 -pr 02000000
 REM 
 REM  flushcontext -ha 80000001
+ 
