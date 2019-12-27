@@ -137,7 +137,7 @@ certifycreation_LDADD = libibmtssutils.la libibmtss.la
 
 certifyx509_SOURCES = certifyx509.c
 certifyx509_CFLAGS = $(UTILS_CFLAGS)
-certifyx509_LDADD = libibmtssutils.la libibmtss.la
+certifyx509_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
 
 changeeps_SOURCES = changeeps.c
 changeeps_CFLAGS = $(UTILS_CFLAGS)
