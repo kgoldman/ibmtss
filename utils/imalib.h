@@ -48,6 +48,7 @@
 
 #include <ibmtss/TPM_Types.h>
 
+/* FIXME meed OS independent value */
 /* Debian/Hurd does not define MAXPATHLEN */
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 4096
@@ -60,14 +61,7 @@
 /* FIXME need verification */
 #define TCG_EVENT_NAME_LEN_MAX	255
 
-#define TCG_TEMPLATE_DATA_LEN_MAX				\
-sizeof(uint32_t) +		/* hash length */		\
-65 +				/* hash algorithm as text */	\
-32 +				/* file data hash */		\
-sizeof(uint32_t) +	 	/* file name length */		\
-MAXPATHLEN+1 +			/* file name */			\
-sizeof(uint32_t) +		/* signature length */		\
-32 + 256			/* signature */
+#define TCG_TEMPLATE_DATA_LEN_MAX (sizeof(ImaTemplateData))
 
 /* from security/integrity/integrity.h: */
 
@@ -102,10 +96,14 @@ enum hash_algo {
     HASH_ALGO__LAST
 };
 
+/* IMA template names */
+
 #define IMA_UNSUPPORTED	0
 #define IMA_FORMAT_IMA_NG	1
 #define IMA_FORMAT_IMA_SIG	2
 #define IMA_FORMAT_IMA		3
+#define IMA_FORMAT_MODSIG	4
+#define IMA_FORMAT_BUF		5
 
 //typedef TPM_DIGEST TPM_PCRVALUE;        	/* The value inside of the PCR */
 
@@ -120,19 +118,60 @@ typedef struct ImaEvent {
     uint8_t *template_data;			/* template related data */
 } ImaEvent;
 
-typedef struct ImaTemplateData {
+typedef struct ImaTemplateDNG {
     uint32_t hashLength;
     char hashAlg[64+1];		/* FIXME need verification */
     TPMI_ALG_HASH hashAlgId;
     uint32_t fileDataHashLength;
     uint8_t fileDataHash[SHA256_DIGEST_SIZE];
+} ImaTemplateDNG;
+
+typedef struct ImaTemplateNNG {
     uint32_t fileNameLength;
     uint8_t fileName[MAXPATHLEN+1];
+} ImaTemplateNNG;
+
+typedef struct ImaTemplateSIG {
     uint32_t sigLength;
     uint32_t sigHeaderLength;
     uint8_t sigHeader[9];	/* FIXME need verification, length and contents */
     uint16_t signatureSize;
     uint8_t signature[256];	/* FIXME need verification */
+} ImaTemplateSIG;
+
+typedef struct ImaTemplateDMODSIG {
+    uint32_t dModSigHashLength;
+    char dModSigHashAlg[64+1];		/* FIXME need verification */
+    TPMI_ALG_HASH dModSigHashAlgId;
+    uint32_t dModSigFileDataHashLength;
+    uint8_t dModSigFileDataHash[SHA256_DIGEST_SIZE];
+} ImaTemplateDMODSIG;
+
+typedef struct ImaTemplateMODSIG {
+    uint32_t modSigLength;
+    uint8_t modSigData[4096];	/* FIXME guess */
+
+} ImaTemplateMODSIG;
+
+typedef struct ImaTemplateBUF {
+    uint32_t bufLength;
+    uint8_t bufData[4096];	/* FIXME guess */
+} ImaTemplateBUF;
+
+typedef struct ImaTemplateData {
+    /* d-ng */
+    ImaTemplateDNG imaTemplateDNG;
+    /* n-ng */
+    ImaTemplateNNG imaTemplateNNG;
+    /* sig */
+    ImaTemplateSIG imaTemplateSIG;
+    /* d-modsig */
+    ImaTemplateDMODSIG imaTemplateDMODSIG;
+    /* modsig */
+    ImaTemplateMODSIG imaTemplateMODSIG;
+    /* buf */
+    ImaTemplateBUF imaTemplateBUF;
+
 } ImaTemplateData;
 
 #ifdef __cplusplus
@@ -142,6 +181,7 @@ extern "C" {
     void IMA_Event_Init(ImaEvent *imaEvent);
     void IMA_Event_Free(ImaEvent *imaEvent);
     void IMA_Event_Trace(ImaEvent *imaEvent, int traceTemplate);
+    void IMA_TemplateData_Init(ImaTemplateData *imaTemplateData);
     void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 				unsigned int nameInt);
     uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,

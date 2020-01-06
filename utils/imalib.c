@@ -54,6 +54,9 @@
 #include <winsock2.h>
 #endif
 
+#include <openssl/x509.h>
+#include <openssl/bio.h>
+
 #include <ibmtss/TPM_Types.h>
 #include <ibmtss/tsscryptoh.h>
 #include <ibmtss/tssmarshal.h>
@@ -105,6 +108,18 @@ static uint32_t IMA_ParseNNG(ImaTemplateData	*imaTemplateData,
 			     size_t 		*length,
 			     int 		littleEndian);
 static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
+			     uint8_t 		**buffer,
+			     size_t 		*length,
+			     int 		littleEndian);
+static uint32_t IMA_ParseDMODSIG(ImaTemplateData	*imaTemplateData,
+				 uint8_t 		**buffer,
+				 size_t 		*length,
+				 int 			littleEndian);
+static uint32_t IMA_ParseMODSIG(ImaTemplateData	*imaTemplateData,
+				uint8_t 	**buffer,
+				size_t 		*length,
+				int 		littleEndian);
+static uint32_t IMA_ParseBUF(ImaTemplateData	*imaTemplateData,
 			     uint8_t 		**buffer,
 			     size_t 		*length,
 			     int 		littleEndian);
@@ -176,10 +191,32 @@ static void IMA_Event_ParseName(ImaEvent *imaEvent)
     else if (strcmp(imaEvent->name, "ima") == 0) {
 	imaEvent->nameInt = IMA_FORMAT_IMA;
     }
+    else if (strcmp(imaEvent->name, "ima-modsig") == 0) {
+	imaEvent->nameInt = IMA_FORMAT_MODSIG;
+    }
+    else if (strcmp(imaEvent->name, "ima-buf") == 0) {
+	imaEvent->nameInt = IMA_FORMAT_BUF;
+    }
     /* the template data parser currently supports only these formats. */
     else {
 	imaEvent->nameInt = IMA_UNSUPPORTED;
     }
+    return;
+}
+
+void IMA_TemplateData_Init(ImaTemplateData *imaTemplateData)
+{
+    imaTemplateData->imaTemplateDNG.hashLength = 0;
+    imaTemplateData->imaTemplateDNG.fileDataHashLength = 0;
+    imaTemplateData->imaTemplateNNG.fileNameLength = 0;
+    imaTemplateData->imaTemplateNNG.fileName[0] = '\0';
+    imaTemplateData->imaTemplateSIG.sigLength = 0;
+    imaTemplateData->imaTemplateSIG.sigHeaderLength = 0;
+    imaTemplateData->imaTemplateSIG.signatureSize = 0;
+    imaTemplateData->imaTemplateDMODSIG.dModSigHashLength = 0;
+    imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength = 0;
+    imaTemplateData->imaTemplateMODSIG.modSigLength = 0;
+    imaTemplateData->imaTemplateBUF.bufLength = 0;
     return;
 }
 
@@ -193,22 +230,97 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 			    unsigned int nameInt)
 {
     nameInt = nameInt;	/* obsolete now that custom templates are supported */
-    
-    printf("IMA_TemplateData_Trace: hashLength %u\n", imaTemplateData->hashLength); 
-    printf("IMA_TemplateData_Trace: hashAlg %s\n", imaTemplateData->hashAlg);
-    TSS_PrintAll("IMA_Template_Trace: file data hash",
-		 imaTemplateData->fileDataHash, imaTemplateData->fileDataHashLength);
-    printf("IMA_TemplateData_Trace: fileNameLength %u\n", imaTemplateData->fileNameLength);
-    if (imaTemplateData->fileNameLength > 0) {
-	printf("IMA_TemplateData_Trace: fileName %s\n", imaTemplateData->fileName);
+    /* d-ng */
+    printf("IMA_TemplateData_Trace: DNG hashLength %u\n", imaTemplateData->imaTemplateDNG.hashLength); 
+    printf("IMA_TemplateData_Trace: DNG hashAlg %s\n", imaTemplateData->imaTemplateDNG.hashAlg);
+    TSS_PrintAll("IMA_Template_Trace: DNG file data hash",
+		 imaTemplateData->imaTemplateDNG.fileDataHash,
+		 imaTemplateData->imaTemplateDNG.fileDataHashLength);
+    /* n-ng */
+    printf("IMA_TemplateData_Trace: NNG fileNameLength %u\n",
+	   imaTemplateData->imaTemplateNNG.fileNameLength);
+    if (imaTemplateData->imaTemplateNNG.fileNameLength > 0) {
+	printf("IMA_TemplateData_Trace: NNG fileName %s\n", imaTemplateData->imaTemplateNNG.fileName);
     }
-    printf("IMA_TemplateData_Trace: sigLength %u\n", imaTemplateData->sigLength);
-    if (imaTemplateData->sigLength != 0) {
+    /* sig */
+    printf("IMA_TemplateData_Trace: SIG sigLength %u\n", imaTemplateData->imaTemplateSIG.sigLength);
+    if (imaTemplateData->imaTemplateSIG.sigLength != 0) {
 	TSS_PrintAll("IMA_TemplateData_Trace: sigHeader",
-		     imaTemplateData->sigHeader, imaTemplateData->sigHeaderLength);
-	printf("IMA_TemplateData_Trace: signatureSize %u\n", imaTemplateData->signatureSize);
-	TSS_PrintAll("IMA_TemplateData_Trace: signature",
-		     imaTemplateData->signature, imaTemplateData->signatureSize);
+		     imaTemplateData->imaTemplateSIG.sigHeader,
+		     imaTemplateData->imaTemplateSIG.sigHeaderLength);
+	printf("IMA_TemplateData_Trace: SIG signatureSize %u\n",
+	       imaTemplateData->imaTemplateSIG.signatureSize);
+	TSS_PrintAll("IMA_TemplateData_Trace: SIG signature",
+		     imaTemplateData->imaTemplateSIG.signature,
+		     imaTemplateData->imaTemplateSIG.signatureSize);
+    }
+    /* d-modsig */
+    printf("IMA_TemplateData_Trace: DMODSIG dModSigHashLength %u\n",
+	   imaTemplateData->imaTemplateDMODSIG.dModSigHashLength);
+    if (imaTemplateData->imaTemplateDMODSIG.dModSigHashLength != 0) {
+	printf("IMA_TemplateData_Trace: DMODSIG dModSigHashAlg %s\n",
+	       imaTemplateData->imaTemplateDMODSIG.dModSigHashAlg);
+	TSS_PrintAll("IMA_Template_Trace: DMODSIG file data hash",
+		     imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHash,
+		     imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength);
+    }
+    /* modsig */
+    printf("IMA_TemplateData_Trace: MODSIG modSigLength %u\n",
+	   imaTemplateData->imaTemplateMODSIG.modSigLength);
+    if (imaTemplateData->imaTemplateMODSIG.modSigLength != 0) {
+	TSS_PrintAll("IMA_TemplateData_Trace: MODSIG modSigData",
+		     imaTemplateData->imaTemplateMODSIG.modSigData,
+		     imaTemplateData->imaTemplateMODSIG.modSigLength);
+	{
+	    PKCS7 		*pkcs7 = NULL;
+	    unsigned char 	*tmpData = NULL; 
+	    /* tmp pointer because d2i moves the pointer */
+	    tmpData = imaTemplateData->imaTemplateMODSIG.modSigData;
+	    pkcs7 = d2i_PKCS7(NULL,				/* freed @1 */
+			    (const unsigned char **)&tmpData,
+			      imaTemplateData->imaTemplateMODSIG.modSigLength);
+	    if (pkcs7 != NULL) {
+		BIO *bio = NULL;
+		bio = BIO_new_fd(fileno(stdout), BIO_NOCLOSE);	/* freed @2 */
+		if (bio != NULL) {
+		    PKCS7_print_ctx(bio, pkcs7, 4, NULL);
+		    BIO_free(bio);	/* @2 */
+		}
+		else {
+		    printf("IMA_TemplateData_Trace: MODSIG Could not create BIO for PKCS7\n");
+		}
+		PKCS7_free(pkcs7);	/* @1 */
+	    }
+	    else {
+		printf("IMA_TemplateData_Trace: MODSIG Could not trace modSigData as PKCS7\n");
+	    }
+	}
+    }
+    /* buf */
+    printf("IMA_TemplateData_Trace: BUF bufLength %u\n", imaTemplateData->imaTemplateBUF.bufLength);
+    if (imaTemplateData->imaTemplateBUF.bufLength != 0) {
+	TSS_PrintAll("IMA_TemplateData_Trace: BUF bufData",
+		     imaTemplateData->imaTemplateBUF.bufData, imaTemplateData->imaTemplateBUF.bufLength);
+	if ((strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName, ".builtin_trusted_keys") == 0) ||
+	    (strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName, ".ima") == 0)) {
+	    {
+		X509 		*x509 = NULL;
+		unsigned char 	*tmpData = NULL; 
+		/* tmp pointer because d2i moves the pointer */
+		tmpData = imaTemplateData->imaTemplateBUF.bufData;
+		x509 = d2i_X509(NULL,				/* freed @1 */
+				  (const unsigned char **)&tmpData,
+				imaTemplateData->imaTemplateBUF.bufLength);
+		if (x509 != NULL) {
+		    X509_print_fp(stdout, x509);
+		    X509_free(x509);	/* @1 */
+		}
+		else {
+		    printf("IMA_TemplateData_Trace: BUF Could not trace bufData as X509\n");
+		}
+	    }
+	    
+	}
     }
     return;    
 }
@@ -616,7 +728,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 		/* bounds check the template data length */
 		if (imaEvent->template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
 		    printf("ERROR: IMA_Event_ReadBuffer: template data length too big: %u\n",
-			   imaEvent->template_data_len );
+			   imaEvent->template_data_len);
 		    rc = TSS_RC_INSUFFICIENT_BUFFER;
 		}
 		else if (*length < imaEvent->template_data_len) {
@@ -680,6 +792,20 @@ static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataP
 	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseD;
 	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
 	    break;
+	  case IMA_FORMAT_MODSIG:
+	    /* d-ng | n-ng | sig | d-modsig | modsig */
+	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNG;
+	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
+	    templateDataParseFunctions[2] = (TemplateDataParseFunction_t)IMA_ParseSIG;
+	    templateDataParseFunctions[3] = (TemplateDataParseFunction_t)IMA_ParseDMODSIG;
+	    templateDataParseFunctions[4] = (TemplateDataParseFunction_t)IMA_ParseMODSIG;
+	    break;
+	  case IMA_FORMAT_BUF:
+	    /* d-ng | n-ng | buf */
+	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNG;
+	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
+	    templateDataParseFunctions[2] = (TemplateDataParseFunction_t)IMA_ParseBUF;
+	    break;
 	    /* these are potentially the custom templates */
 	  default:
 	    rc = IMA_TemplateName_ParseCustom(templateDataParseFunctions,
@@ -702,7 +828,10 @@ static ImaFormatMap imaFormatMap[] = {
     {"n", (TemplateDataParseFunction_t)IMA_ParseNNG},
     {"d-ng", (TemplateDataParseFunction_t)IMA_ParseDNG},
     {"n-ng", (TemplateDataParseFunction_t)IMA_ParseNNG},
-    {"sig", (TemplateDataParseFunction_t)IMA_ParseSIG}
+    {"sig", (TemplateDataParseFunction_t)IMA_ParseSIG},
+    {"d-modsig", (TemplateDataParseFunction_t)IMA_ParseDMODSIG},
+    {"modsig", (TemplateDataParseFunction_t)IMA_ParseMODSIG},
+    {"buf", (TemplateDataParseFunction_t)IMA_ParseBUF}
 };
 	 
 static uint32_t
@@ -773,8 +902,8 @@ static uint32_t IMA_ParseD(ImaTemplateData	*imaTemplateData,
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
-	    imaTemplateData->fileDataHashLength = SHA1_DIGEST_SIZE;
-	    memcpy(&(imaTemplateData->fileDataHash), *buffer, SHA1_DIGEST_SIZE);
+	    imaTemplateData->imaTemplateDNG.fileDataHashLength = SHA1_DIGEST_SIZE;
+	    memcpy(&(imaTemplateData->imaTemplateDNG.fileDataHash), *buffer, SHA1_DIGEST_SIZE);
 	    *buffer += SHA1_DIGEST_SIZE;
 	    *length -= SHA1_DIGEST_SIZE;
 	}
@@ -782,7 +911,10 @@ static uint32_t IMA_ParseD(ImaTemplateData	*imaTemplateData,
     return rc;
 }
 
-/* IMA_ParseDNG parses a d-ng : hash length + hash algorithm string + digest */
+/* IMA_ParseDNG parses a d-ng : hash length + hash algorithm string + digest
+
+   The digest is a file data hash.
+ */
 
 static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
 			     uint8_t 		**buffer,
@@ -799,7 +931,7 @@ static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
-	    imaTemplateData->hashLength = IMA_Uint32_Convert(*buffer, littleEndian);
+	    imaTemplateData->imaTemplateDNG.hashLength = IMA_Uint32_Convert(*buffer, littleEndian);
 	    *buffer += sizeof(uint32_t);
 	    *length -= sizeof(uint32_t);
 	}
@@ -807,64 +939,71 @@ static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
     /* read the hash algorithm, nul terminated string */
     if (rc == 0) {
     	/* NUL terminate first */
-	memset(imaTemplateData->hashAlg, 0, sizeof(((ImaTemplateData *)NULL)->hashAlg));
-	rc = IMA_Strn2cpy(imaTemplateData->hashAlg, *buffer,
-			  sizeof(((ImaTemplateData *)NULL)->hashAlg),	/* destLength */
-			  imaTemplateData->hashLength);			/* srcLength */
+	memset(imaTemplateData->imaTemplateDNG.hashAlg, 0,
+	       sizeof(((ImaTemplateData *)NULL)->imaTemplateDNG.hashAlg));
+	rc = IMA_Strn2cpy(imaTemplateData->imaTemplateDNG.hashAlg, *buffer,
+			  sizeof(((ImaTemplateData *)NULL)->imaTemplateDNG.hashAlg),	/* destLength */
+			  imaTemplateData->imaTemplateDNG.hashLength);			/* srcLength */
 	if (rc != 0) {
 	    printf("ERROR: IMA_ParseDNG: buffer too small for hash algorithm\n"
 		   "\tor hash algorithm exceeds maximum size\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
-	    hashAlgSize = strlen(imaTemplateData->hashAlg) + 1;
+	    hashAlgSize = strlen(imaTemplateData->imaTemplateDNG.hashAlg) + 1;
 	    *buffer += hashAlgSize;
 	    *length -= hashAlgSize;
 	}
     }
     /* fileDataHashLength */
     if (rc == 0) {
-	if (strcmp(imaTemplateData->hashAlg, "sha1:") == 0) {
-	    imaTemplateData->fileDataHashLength = SHA1_DIGEST_SIZE;
-	    imaTemplateData->hashAlgId = TPM_ALG_SHA1;
+	if (strcmp(imaTemplateData->imaTemplateDNG.hashAlg, "sha1:") == 0) {
+	    imaTemplateData->imaTemplateDNG.fileDataHashLength = SHA1_DIGEST_SIZE;
+	    imaTemplateData->imaTemplateDNG.hashAlgId = TPM_ALG_SHA1;
 	}
-	else if (strcmp(imaTemplateData->hashAlg, "sha256:") == 0) {
-	    imaTemplateData->fileDataHashLength = SHA256_DIGEST_SIZE;
-	    imaTemplateData->hashAlgId = TPM_ALG_SHA256;
+	else if (strcmp(imaTemplateData->imaTemplateDNG.hashAlg, "sha256:") == 0) {
+	    imaTemplateData->imaTemplateDNG.fileDataHashLength = SHA256_DIGEST_SIZE;
+	    imaTemplateData->imaTemplateDNG.hashAlgId = TPM_ALG_SHA256;
 	}
 	else {
 	    printf("ERROR: IMA_ParseDNG: Unknown file data hash algorithm: %s\n",
-		   imaTemplateData->hashAlg);
+		   imaTemplateData->imaTemplateDNG.hashAlg);
 	    rc = TSS_RC_BAD_HASH_ALGORITHM;
 	}
     }
     /* consistency check hashLength vs contents */
     if (rc == 0) {
-	if ((hashAlgSize + imaTemplateData->fileDataHashLength) != imaTemplateData->hashLength) {
+	if ((hashAlgSize + imaTemplateData->imaTemplateDNG.fileDataHashLength) !=
+	    imaTemplateData->imaTemplateDNG.hashLength) {
 	    printf("ERROR: IMA_ParseDNG: "
 		   "hashLength %u inconsistent with hashAlgSize %lu and fileDataHashLength %u\n",
-		   imaTemplateData->hashLength, (unsigned long)hashAlgSize,
-		   imaTemplateData->fileDataHashLength);
+		   imaTemplateData->imaTemplateDNG.hashLength, (unsigned long)hashAlgSize,
+		   imaTemplateData->imaTemplateDNG.fileDataHashLength);
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* fileDataHash */
     if (rc == 0) {
 	/* bounds check the length */
-	if (*length < imaTemplateData->fileDataHashLength) {
+	if (*length < imaTemplateData->imaTemplateDNG.fileDataHashLength) {
 	    printf("ERROR: IMA_ParseDNG: buffer too small for file data hash\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
-	else if (imaTemplateData->fileDataHashLength >
-		 sizeof(((ImaTemplateData *)NULL)->fileDataHash)) {
+	else if (imaTemplateData->imaTemplateDNG.fileDataHashLength >
+		 sizeof(((ImaTemplateData *)NULL)->imaTemplateDNG.fileDataHash)) {
 	    printf("ERROR: IMA_ParseDNG: "
 		   "file data hash length exceeds maximum size\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	} 
 	else {
-	    memcpy(&(imaTemplateData->fileDataHash), *buffer, imaTemplateData->fileDataHashLength);
-	    *buffer += imaTemplateData->fileDataHashLength;
-	    *length -= imaTemplateData->fileDataHashLength;
+	    memcpy(&(imaTemplateData->imaTemplateDNG.fileDataHash), *buffer,
+		   imaTemplateData->imaTemplateDNG.fileDataHashLength);
+	    *buffer += imaTemplateData->imaTemplateDNG.fileDataHashLength;
+	    *length -= imaTemplateData->imaTemplateDNG.fileDataHashLength;
+	    /* FIXME remove */
+	    TSS_PrintAll("IMA_ParseDNG: file data hash",
+			 imaTemplateData->imaTemplateDNG.fileDataHash,
+			 imaTemplateData->imaTemplateDNG.fileDataHashLength);
 	}
     }
     return rc;
@@ -886,7 +1025,7 @@ static uint32_t IMA_ParseNNG(ImaTemplateData	*imaTemplateData,
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
-	    imaTemplateData->fileNameLength = IMA_Uint32_Convert(*buffer, littleEndian);
+	    imaTemplateData->imaTemplateNNG.fileNameLength = IMA_Uint32_Convert(*buffer, littleEndian);
 	    *buffer += sizeof(uint32_t);
 	    *length -= sizeof(uint32_t);
 	}
@@ -894,23 +1033,26 @@ static uint32_t IMA_ParseNNG(ImaTemplateData	*imaTemplateData,
     /* fileName */
     if (rc == 0) {
 	/* bounds check the length */
-	if (*length < imaTemplateData->fileNameLength) {
+	if (*length < imaTemplateData->imaTemplateNNG.fileNameLength) {
 	    printf("ERROR: IMA_ParseNNG: buffer too small for file name\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	/* leave one byte for the nul terminator */
-	else if (imaTemplateData->fileNameLength > (sizeof(imaTemplateData->fileName)-1)) {
+	else if (imaTemplateData->imaTemplateNNG.fileNameLength >
+		 (sizeof(imaTemplateData->imaTemplateNNG.fileName)-1)) {
 	    printf("ERROR: IMA_ParseNNG: file name length exceeds maximum size\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
-	    memcpy(&(imaTemplateData->fileName), *buffer, imaTemplateData->fileNameLength);
+	    memcpy(&(imaTemplateData->imaTemplateNNG.fileName), *buffer,
+		   imaTemplateData->imaTemplateNNG.fileNameLength);
 	    /* ima template does not nul terminate the file name */
-	    imaTemplateData->fileName[imaTemplateData->fileNameLength] = '\0';
-	    *buffer += imaTemplateData->fileNameLength;
-	    *length -= imaTemplateData->fileNameLength;
+	    imaTemplateData->imaTemplateNNG.fileName[imaTemplateData->imaTemplateNNG.fileNameLength] = '\0';
+	    *buffer += imaTemplateData->imaTemplateNNG.fileNameLength;
+	    *length -= imaTemplateData->imaTemplateNNG.fileNameLength;
 	}
-    }    return rc;
+    }
+    return rc;
 }
 
 /* IMA_ParseSIG() parses a sig : signature header + signature */
@@ -930,46 +1072,49 @@ static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
 	else {
-	    imaTemplateData->sigLength = IMA_Uint32_Convert(*buffer, littleEndian);
+	    imaTemplateData->imaTemplateSIG.sigLength = IMA_Uint32_Convert(*buffer, littleEndian);
 	    *buffer += sizeof(uint32_t);
 	    *length -= sizeof(uint32_t);
+	    /* FIXME remove */
+	    printf("IMA_ParseSIG: sigLength %u\n", imaTemplateData->imaTemplateSIG.sigLength);
 	}
     }
     /* sigHeader - only parsed if its length is not zero */
-    if (imaTemplateData->sigLength != 0) {
+    if (imaTemplateData->imaTemplateSIG.sigLength != 0) {
 	if (rc == 0) {
-	    imaTemplateData->sigHeaderLength = sizeof((ImaTemplateData *)NULL)->sigHeader;
+	    imaTemplateData->imaTemplateSIG.sigHeaderLength =
+		sizeof((ImaTemplateData *)NULL)->imaTemplateSIG.sigHeader;
 	    /* bounds check the length */
-	    if (*length < imaTemplateData->sigHeaderLength) {
+	    if (*length < imaTemplateData->imaTemplateSIG.sigHeaderLength) {
 		printf("ERROR: IMA_ParseSIG: "
 		       "buffer too small for signature header\n");
 		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    else {
-		memcpy(&(imaTemplateData->sigHeader), *buffer,
-		       imaTemplateData->sigHeaderLength);
-		*buffer += imaTemplateData->sigHeaderLength;
-		*length -= imaTemplateData->sigHeaderLength;
+		memcpy(&(imaTemplateData->imaTemplateSIG.sigHeader), *buffer,
+		       imaTemplateData->imaTemplateSIG.sigHeaderLength);
+		*buffer += imaTemplateData->imaTemplateSIG.sigHeaderLength;
+		*length -= imaTemplateData->imaTemplateSIG.sigHeaderLength;
 	    }
 	}
 	/* get signature length from last two bytes */
 	if (rc == 0) {
 	    /* magic number for offset: type(1) version(1) hash alg (1) pubkey id (4) */
-	    imaTemplateData->signatureSize =
-		ntohs(*(uint16_t *)(imaTemplateData->sigHeader + 7));
+	    imaTemplateData->imaTemplateSIG.signatureSize =
+		ntohs(*(uint16_t *)(imaTemplateData->imaTemplateSIG.sigHeader + 7));
 	}
 	/* consistency check signature header contents */
 	if (rc == 0) {
-	    int goodHashAlgo = (((imaTemplateData->sigHeader[2] == HASH_ALGO_SHA1) &&
-				 (imaTemplateData->hashAlgId == TPM_ALG_SHA1)) ||
-				((imaTemplateData->sigHeader[2] == HASH_ALGO_SHA256) &&
-				 (imaTemplateData->hashAlgId == TPM_ALG_SHA256)));
-	    int goodSigSize = ((imaTemplateData->signatureSize == 128) ||
-			       (imaTemplateData->signatureSize == 256));
+	    int goodHashAlgo = (((imaTemplateData->imaTemplateSIG.sigHeader[2] == HASH_ALGO_SHA1) &&
+				 (imaTemplateData->imaTemplateDNG.hashAlgId == TPM_ALG_SHA1)) ||
+				((imaTemplateData->imaTemplateSIG.sigHeader[2] == HASH_ALGO_SHA256) &&
+				 (imaTemplateData->imaTemplateDNG.hashAlgId == TPM_ALG_SHA256)));
+	    int goodSigSize = ((imaTemplateData->imaTemplateSIG.signatureSize == 128) ||
+			       (imaTemplateData->imaTemplateSIG.signatureSize == 256));
 	    /* xattr type */
 	    if (
-		(imaTemplateData->sigHeader[0] != EVM_IMA_XATTR_DIGSIG) || /* [0] type */
-		(imaTemplateData->sigHeader[1] != 2) ||		/* [1] version */
+		(imaTemplateData->imaTemplateSIG.sigHeader[0] != EVM_IMA_XATTR_DIGSIG) || /* [0] type */
+		(imaTemplateData->imaTemplateSIG.sigHeader[1] != 2) ||		/* [1] version */
 		!goodHashAlgo ||				/* [2] hash algorithm */
 		/* [3]-[6] are the public key fingerprint.  Any value is legal. */
 		!goodSigSize 					/* [7][8] sig size */
@@ -981,25 +1126,227 @@ static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
 	/* signature */
 	if (rc == 0) {
 	    /* bounds check the length */
-	    if (*length < imaTemplateData->signatureSize) {
+	    if (*length < imaTemplateData->imaTemplateSIG.signatureSize) {
 		printf("ERROR: IMA_ParseSIG: "
 		       "buffer too small for signature \n");
 		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    /* sanity check the signatureSize against the sigLength */
-	    else if (imaTemplateData->sigLength !=
-		     (sizeof((ImaTemplateData *)NULL)->sigHeader +
-		      imaTemplateData->signatureSize)) {
+	    else if (imaTemplateData->imaTemplateSIG.sigLength !=
+		     (sizeof((ImaTemplateData *)NULL)->imaTemplateSIG.sigHeader +
+		      imaTemplateData->imaTemplateSIG.signatureSize)) {
 		printf("ERROR: IMA_ParseSIG: "
 		       "sigLength inconsistent with signatureSize\n");
 		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
 	    else {
-		memcpy(&(imaTemplateData->signature), *buffer,
-		       imaTemplateData->signatureSize);
-		*buffer += imaTemplateData->signatureSize;
-		*length -= imaTemplateData->signatureSize;
+		memcpy(&(imaTemplateData->imaTemplateSIG.signature), *buffer,
+		       imaTemplateData->imaTemplateSIG.signatureSize);
+		*buffer += imaTemplateData->imaTemplateSIG.signatureSize;
+		*length -= imaTemplateData->imaTemplateSIG.signatureSize;
+		/* FIXME remove */
+		TSS_PrintAll("IMA_ParseSIG: file data hash",
+			     imaTemplateData->imaTemplateSIG.signature,
+			     imaTemplateData->imaTemplateSIG.signatureSize);
+
 	    }
+	}
+    }
+    return rc;
+}
+
+/* IMA_ParseDMODSIG parses a d-ng : hash length + hash algorithm string + digest
+
+   The digest is a file data hash omitting the appended modsig signature.
+
+   NOTE: This is currently thre same as IMA_ParseDNG but may have different processing in the
+   future.
+*/
+
+static uint32_t IMA_ParseDMODSIG(ImaTemplateData	*imaTemplateData,
+				 uint8_t 		**buffer,
+				 size_t 		*length,
+				 int 			littleEndian)
+{
+    uint32_t 	rc = 0;
+    size_t 	hashAlgSize;
+    
+    /* read the hash length, algorithm + hash */
+    if (rc == 0) {
+	/* bounds check the length */
+	if (*length < sizeof(uint32_t)) {
+	    printf("ERROR: IMA_ParseDMODSIG: buffer too small for hash length\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else {
+	    imaTemplateData->imaTemplateDMODSIG.dModSigHashLength = IMA_Uint32_Convert(*buffer, littleEndian);
+	    *buffer += sizeof(uint32_t);
+	    *length -= sizeof(uint32_t);
+	}
+    }
+    /* FIXME is zero length an error? */
+    if (imaTemplateData->imaTemplateDMODSIG.dModSigHashLength != 0) {
+
+	/* read the hash algorithm, nul terminated string */
+	if (rc == 0) {
+	    /* NUL terminate first */
+	    memset(imaTemplateData->imaTemplateDMODSIG.dModSigHashAlg, 0,
+		   sizeof(((ImaTemplateData *)NULL)->imaTemplateDMODSIG.dModSigHashAlgId));
+	    rc = IMA_Strn2cpy(imaTemplateData->imaTemplateDMODSIG.dModSigHashAlg, *buffer,
+			      /* destLength */
+			      sizeof(((ImaTemplateData *)NULL)->imaTemplateDMODSIG.dModSigHashAlg),
+			      /* srcLength */
+			      imaTemplateData->imaTemplateDMODSIG.dModSigHashLength);
+	    if (rc != 0) {
+		printf("ERROR: IMA_ParseDMODSIG: buffer too small for hash algorithm\n"
+		       "\tor hash algorithm exceeds maximum size\n");
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	    else {
+		hashAlgSize = strlen(imaTemplateData->imaTemplateDMODSIG.dModSigHashAlg) + 1;
+		*buffer += hashAlgSize;
+		*length -= hashAlgSize;
+	    }
+	}
+	/* dModSigFileDataHashLength */
+	if (rc == 0) {
+	    if (strcmp(imaTemplateData->imaTemplateDMODSIG.dModSigHashAlg, "sha1:") == 0) {
+		imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength = SHA1_DIGEST_SIZE;
+		imaTemplateData->imaTemplateDMODSIG.dModSigHashAlgId = TPM_ALG_SHA1;
+	    }
+	    else if (strcmp(imaTemplateData->imaTemplateDMODSIG.dModSigHashAlg, "sha256:") == 0) {
+		imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength = SHA256_DIGEST_SIZE;
+		imaTemplateData->imaTemplateDMODSIG.dModSigHashAlgId = TPM_ALG_SHA256;
+	    }
+	    else {
+		printf("ERROR: IMA_ParseDMODSIG: Unknown file data hash algorithm: %s\n",
+		       imaTemplateData->imaTemplateDMODSIG.dModSigHashAlg);
+		rc = TSS_RC_BAD_HASH_ALGORITHM;
+	    }
+	}
+	/* consistency check dModSigFileDataHashLength vs contents */
+	if (rc == 0) {
+	    if ((hashAlgSize + imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength) !=
+		imaTemplateData->imaTemplateDMODSIG.dModSigHashLength) {
+		printf("ERROR: IMA_ParseDMODSIG: "
+		       "dModSigFileDataHashLength %u inconsistent with hashAlgSize %lu "
+		       "and dModSigFileDataHashLength %u\n",
+		       imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength,
+		       (unsigned long)hashAlgSize,
+		       imaTemplateData->imaTemplateDMODSIG.dModSigHashLength);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+	/* dModSigFileDataHashLength */
+	if (rc == 0) {
+	    /* bounds check the length */
+	    if (*length < imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength ) {
+		printf("ERROR: IMA_ParseDMODSIG: buffer too small for file data hash\n");
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	    else if (imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength >
+		     sizeof(((ImaTemplateData *)NULL)->imaTemplateDMODSIG.dModSigFileDataHash)) {
+		printf("ERROR: IMA_ParseDMODSIG: "
+		       "file data hash length exceeds maximum size\n");
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    } 
+	    else {
+		memcpy(&(imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHash),
+		       *buffer, imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength);
+		*buffer += imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength ;
+		*length -= imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength ;
+	    }
+	}
+    }
+    return rc;
+}
+
+/* IMA_ParseMODSIG parses a modsig : 4 byte length + DER encoded CMS document, RFC 5652 */
+
+static uint32_t IMA_ParseMODSIG(ImaTemplateData	*imaTemplateData,
+				uint8_t 	**buffer,
+				size_t 		*length,
+				int 		littleEndian)
+{
+    uint32_t 	rc = 0;
+
+    /* read the length */
+    if (rc == 0) {
+	/* bounds check the length */
+	if (*length < sizeof(uint32_t)) {
+	    printf("ERROR: IMA_ParseMODSIG: buffer too small for length\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else {
+	    imaTemplateData->imaTemplateMODSIG.modSigLength = IMA_Uint32_Convert(*buffer, littleEndian);
+	    *buffer += sizeof(uint32_t);
+	    *length -= sizeof(uint32_t);
+	}
+    }
+    /* read the DER */
+    if (rc == 0) {
+	/* bounds check the length */
+	if (*length  < imaTemplateData->imaTemplateMODSIG.modSigLength) {
+	    printf("ERROR: IMA_ParseMODSIG: buffer too small for modSig data\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else if (imaTemplateData->imaTemplateMODSIG.modSigLength >
+		 sizeof(((ImaTemplateData *)NULL)->imaTemplateMODSIG.modSigData)) {
+	    printf("ERROR: IMA_ParseMODSIG: "
+		   "modSigData length exceeds maximum size\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	} 
+	else {
+	    memcpy(&(imaTemplateData->imaTemplateMODSIG.modSigData), *buffer,
+		   imaTemplateData->imaTemplateMODSIG.modSigLength);
+	    *buffer += imaTemplateData->imaTemplateMODSIG.modSigLength;
+	    *length -= imaTemplateData->imaTemplateMODSIG.modSigLength;
+	}
+    }
+    return rc;
+}
+
+/* IMA_ParseBUF parses a modsig : 4 byte length + DER encoded CMS document, RFC 5652 */
+
+static uint32_t IMA_ParseBUF(ImaTemplateData	*imaTemplateData,
+			     uint8_t 		**buffer,
+			     size_t 		*length,
+			     int 		littleEndian)
+{
+    uint32_t 	rc = 0;
+
+    /* FIXME factor reading a 4 byte length plus data stream */
+    /* read the length */
+    if (rc == 0) {
+	/* bounds check the length */
+	if (*length < sizeof(uint32_t)) {
+	    printf("ERROR: IMA_ParseBUF: buffer too small for length\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else {
+	    imaTemplateData->imaTemplateBUF.bufLength = IMA_Uint32_Convert(*buffer, littleEndian);
+	    *buffer += sizeof(uint32_t);
+	    *length -= sizeof(uint32_t);
+	}
+    }
+    /* read the DER */
+    if (rc == 0) {
+	/* bounds check the length */
+	if (*length  < imaTemplateData->imaTemplateBUF.bufLength) {
+	    printf("ERROR: IMA_ParseBUF: buffer too small for buf data\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else if (imaTemplateData->imaTemplateBUF.bufLength >
+		 sizeof(((ImaTemplateData *)NULL)->imaTemplateBUF.bufData)) {
+	    printf("ERROR: IMA_ParseBUF: "
+		   "bufData length exceeds maximum size\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	} 
+	else {
+	    memcpy(&(imaTemplateData->imaTemplateBUF.bufData), *buffer,
+		   imaTemplateData->imaTemplateBUF.bufLength);
+	    *buffer += imaTemplateData->imaTemplateBUF.bufLength;
+	    *length -= imaTemplateData->imaTemplateBUF.bufLength;
 	}
     }
     return rc;
@@ -1022,13 +1369,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 
     /* initialize all fields, since not all fields are included in all templates */
     if (rc == 0) {
-	imaTemplateData->hashLength = 0;
-	imaTemplateData->fileDataHashLength = 0;
-	imaTemplateData->fileNameLength = 0;
-	imaTemplateData->fileName[0] = '\0';
-	imaTemplateData->sigLength = 0;
-	imaTemplateData->sigHeaderLength = 0;
-	imaTemplateData->signatureSize = 0;
+	IMA_TemplateData_Init(imaTemplateData);
     }
     if (rc == 0) {
 	rc = IMA_TemplateName_Parse(templateDataParseFunctions, IMA_PARSE_FUNCTIONS_MAX,
@@ -1243,9 +1584,9 @@ uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match 
 						 TRUE);	/* FIXME littleEndian */
 	    }
 	    if (rc == 0) {
-		if (imaTemplateData.fileNameLength > sizeof(zeroPad)) {
+		if (imaTemplateData.imaTemplateNNG.fileNameLength > sizeof(zeroPad)) {
 		    printf("ERROR: IMA_VerifyImaDigest: ima template file name length %lu > %lu\n",
-			   (unsigned long)imaTemplateData.fileNameLength,
+			   (unsigned long)imaTemplateData.imaTemplateNNG.fileNameLength,
 			   (unsigned long)sizeof(zeroPad));
 		    rc = TSS_RC_INSUFFICIENT_BUFFER;
 		}
@@ -1253,12 +1594,13 @@ uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match 
 	    if (rc == 0) {
 		memset(zeroPad, 0, sizeof(zeroPad));
 		/* subtract safe after above length check */
-		zeroPadLength = sizeof(zeroPad) - imaTemplateData.fileNameLength;
+		zeroPadLength = sizeof(zeroPad) - imaTemplateData.imaTemplateNNG.fileNameLength;
 	    }		
 	    if (rc == 0) {
 		rc = TSS_Hash_Generate(&calculatedImaDigest,
-				       SHA1_DIGEST_SIZE, &imaTemplateData.fileDataHash,
-				       imaTemplateData.fileNameLength, &imaTemplateData.fileName,
+				       SHA1_DIGEST_SIZE, &imaTemplateData.imaTemplateDNG.fileDataHash,
+				       imaTemplateData.imaTemplateNNG.fileNameLength,
+				       &imaTemplateData.imaTemplateNNG.fileName,
 				       zeroPadLength, zeroPad,
 				       0, NULL);
 	    }
