@@ -2700,14 +2700,14 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
 {
     TPM_RC		rc = 0;
     unsigned int	i = 0;
-    TPMT_HA 		cpHash;
 #ifndef TPM_TSS_NOCRYPTO
+    TPMT_HA 		cpHash;
     TPMT_HA 		hmac;
     TPM2B_NONCE	nonceTPMDecrypt;
     TPM2B_NONCE	nonceTPMEncrypt;
+    cpHash.hashAlg = TPM_ALG_NULL;	/* for cpHash calculation optimization */
 #endif	/* TPM_TSS_NOCRYPTO */
 
-    cpHash.hashAlg = TPM_ALG_NULL;	/* for cpHash calculation optimization */
 
     for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) && (sessionHandle[i] != TPM_RH_NULL) ; i++) {
 	uint8_t sessionAttr8;
