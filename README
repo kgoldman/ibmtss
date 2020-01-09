@@ -28,9 +28,16 @@ Refer to the "Advanced options", below, for additional compiler options.
 Autotools
 ---------
 
-On Linux (and probably other Unix systems), open source projects expect
+On Linux (and probably other Unix systems), open source projects expect that
 the normal shell command 'autoreconf -i && ./configure && make && make install'
 should configure and build the package.
+
+If --prefix is omitted, the default /usr/local is used.  
+
+The LD_LIBRARY_PATH environment variable must be set to the path
+(either the default or a user specified path).  E.g.,
+
+export LD_LIBRARY_PATH=/usr/local/lib
 
 Example 1: To configure the TSS library to use the software TPM, build and
 install the package in ${HOME}/local/bin and ${HOME}/local/lib directories
