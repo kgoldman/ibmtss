@@ -245,8 +245,8 @@ static void printUsage(void)
     printf("Runs TPM2_NV_SetBits\n");
     printf("\n");
     printf("\t-ha\tNV index handle\n");
-    printf("\t-pwdn\tpassword for NV index (default empty)\n");
-    printf("\t-bit\tbit to set, can be specified multiple times\n");
+    printf("\t[-pwdn\tpassword for NV index (default empty)]\n");
+    printf("\t[-bit\tbit to set, can be specified multiple times]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t01\tcontinue\n");
