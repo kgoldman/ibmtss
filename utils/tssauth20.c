@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -923,7 +923,9 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     TPM_RC 		rc = 0;
     TPMI_ST_COMMAND_TAG tag = TPM_ST_NO_SESSIONS;	/* default until sessions are added */
     uint8_t 		*buffer;			/* for marshaling */
+#ifndef TPM_TSS_NOCMDCHECK
     uint8_t 		*bufferu;			/* for test unmarshaling */
+#endif
     uint32_t 		size;
     
     /* index from command code to table and save items for this command */
@@ -961,9 +963,11 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
 	rc = TSS_TPM_CC_Marshalu(&commandCode, &tssAuthContext->commandSize, &buffer, &size);
     }    
     if (rc == 0) {
+#ifndef TPM_TSS_NOCMDCHECK
 	/* save pointer to marshaled data for test unmarshal */
 	bufferu = buffer +
 		  tssAuthContext->commandHandleCount * sizeof(TPM_HANDLE);
+#endif
 	/* if there is a marshal function */
 	if (tssAuthContext->marshalInFunction != NULL) {
 	    /* if there is a structure to marshal */
