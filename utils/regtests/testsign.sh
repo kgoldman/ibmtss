@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -44,69 +44,70 @@ echo ""
 echo "RSA Signing key"
 echo ""
 
-# loop over unrestricted hash algorithms
-
-echo "Load the RSA signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
-checkSuccess $?
-
-echo "Create an RSA key pair in PEM format using openssl"
-  
-openssl genrsa -out tmpkeypair.pem -aes256 -passout pass:rrrr 2048 > run.out
-
-echo "Convert key pair to plaintext DER format"
-
-openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
-
-for HALG in ${ITERATE_ALGS}
+for BITS in 2048 3072
 do
 
-    for SCHEME in rsassa rsapss
+    echo "Create an RSA $BITS key pair in PEM format using openssl"
+    openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr 2048 > run.out
+
+    echo "Convert RSA $BITS key pair to plaintext DER format"
+    openssl rsa -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out
+
+    echo "Load the RSA $BITS signing key under the primary key"
+    ${PREFIX}load -hp 80000000 -ipr signrsa${BITS}priv.bin -ipu signrsa${BITS}pub.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    for HALG in ${ITERATE_ALGS}
     do
 
-	echo "Sign a digest - $HALG $SCHEME"
-	${PREFIX}sign -hk 80000001 -halg $HALG -scheme $SCHEME -if policies/aaa -os sig.bin -pwdk sig -ipu signrsapub.bin > run.out
-	checkSuccess $?
+	for SCHEME in rsassa rsapss
+	do
 
-	echo "Verify the signature using the TPM - $HALG"
-	${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
-	checkSuccess $?
+	    echo "Sign a digest - $HALG $SCHEME $BITS"
+	    ${PREFIX}sign -hk 80000001 -halg $HALG -scheme $SCHEME -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa${BITS}pub.bin > run.out
+	    checkSuccess $?
 
-	echo "Verify the signature using PEM - $HALG"
-	${PREFIX}verifysignature -ipem signrsapub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
-	checkSuccess $?
+	    echo "Verify the signature using the TPM - $HALG"
+	    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
+	    checkSuccess $?
 
-	echo "Read the public part"
-	${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
-	checkSuccess $?
+	    echo "Verify the signature using PEM - $HALG"
+	    ${PREFIX}verifysignature -ipem signrsa${BITS}pub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	    checkSuccess $?
 
-	echo "Verify the signature using readpublic PEM - $HALG"
-	${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
-	checkSuccess $?
+	    echo "Read the public part"
+	    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+	    checkSuccess $?
 
-	echo "Load the openssl key pair in the NULL hierarchy 80000002 - $HALG $SCHEME"
-	${PREFIX}loadexternal -halg $HALG -scheme $SCHEME -ider tmpkeypair.der > run.out
-	checkSuccess $?
+	    echo "Verify the signature using readpublic PEM - $HALG"
+	    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	    checkSuccess $?
 
-	echo "Use the TPM as a crypto coprocessor to sign - $HALG $SCHEME" 
-	${PREFIX}sign -hk 80000002 -halg $HALG -scheme $SCHEME -if policies/aaa -os sig.bin > run.out
-	checkSuccess $?
+	    echo "Load the openssl key pair in the NULL hierarchy 80000002 - $HALG $SCHEME $BITS"
+	    ${PREFIX}loadexternal -halg $HALG -scheme $SCHEME -ider tmpkeypairrsa${BITS}.der > run.out
+	    checkSuccess $?
 
-	echo "Verify the signature - $HALG"
-	${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is sig.bin > run.out
-	checkSuccess $?
+	    echo "Use the TPM as a crypto coprocessor to sign - $HALG $SCHEME" 
+	    ${PREFIX}sign -hk 80000002 -halg $HALG -scheme $SCHEME -if policies/aaa -os sig.bin > run.out
+	    checkSuccess $?
 
-	echo "Flush the openssl signing key"
-	${PREFIX}flushcontext -ha 80000002 > run.out
-	checkSuccess $?
+	    echo "Verify the signature - $HALG"
+	    ${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is sig.bin > run.out
+	    checkSuccess $?
+
+	    echo "Flush the openssl signing key"
+	    ${PREFIX}flushcontext -ha 80000002 > run.out
+	    checkSuccess $?
+
+	done
     
     done
 
-done
+    echo "Flush the RSA signing key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
 
-echo "Flush the RSA signing key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
+done
 
 echo ""
 echo "ECC Signing key"
@@ -387,9 +388,10 @@ do
 
 done
 
-
-rm -f tmpkeypair.pem
-rm -f tmpkeypair.der
+rm -f tmpkeypairrsa2048.pem
+rm -f tmpkeypairrsa2048.der
+rm -f tmpkeypairrsa3072.pem
+rm -f tmpkeypairrsa3072.der
 rm -f tmpkeypairecc.pem
 rm -f tmpkeypairecc.der
 rm -r pssig.bin

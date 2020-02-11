@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -51,7 +51,7 @@ do
     do
 
 	echo "Load the signing key under the primary key"
-	${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+	${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 	checkSuccess $?
 
 	echo "Start an HMAC session ${BIND}"
@@ -63,7 +63,7 @@ do
 	checkSuccess $?
 
 	echo "Load the signing key with the changed auth ${SESS}"
-	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu signrsapub.bin -pwdp sto ${SESS} > run.out
+	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu signrsa2048pub.bin -pwdp sto ${SESS} > run.out
 	checkSuccess $?
 
 	echo "Sign a digest with the original key ${SESS}"
@@ -94,7 +94,7 @@ echo "Object Change Auth with password from file"
 echo ""
 
 echo "Load the decryption key under the primary key 80000001"
-${PREFIX}load -hp 80000000 -ipr derpriv.bin -ipu derpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr derrsa2048priv.bin -ipu derrsa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Generate a random password"
@@ -106,7 +106,7 @@ ${PREFIX}objectchangeauth -hp 80000000 -ho 80000001 -pwdo dec -ipwdn tmppwd.bin 
 checkSuccess $?
 
 echo "Load the decryption key with the changed auth 800000002"
-${PREFIX}load -hp 80000000 -pwdp sto -ipr tmppriv.bin -ipu derpub.bin > run.out
+${PREFIX}load -hp 80000000 -pwdp sto -ipr tmppriv.bin -ipu derrsa2048pub.bin > run.out
 checkSuccess $?
 
 echo "Encrypt the message"

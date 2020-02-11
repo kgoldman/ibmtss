@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -71,7 +71,7 @@ ${PREFIX}contextsave -ha 02000001 -of tmp.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Context save the signing key"
@@ -179,7 +179,7 @@ ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -se0 02000000 1 >
 checkFailure $?
 
 echo "Load the signing key - should fail, primary key missing"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 checkFailure $?
 
 # Create a platform primary storage key
@@ -191,7 +191,7 @@ ${PREFIX}certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -se0 02000000 1 >
 checkFailure $?
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Signing Key Self Certify - should fail, session missing"
@@ -235,7 +235,7 @@ echo "TPM Restart (state/clear) - hibernate"
 echo ""
 
 echo "Load the signing key"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Context save the signing key"

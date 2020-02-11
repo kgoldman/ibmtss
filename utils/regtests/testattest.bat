@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2018 - 2019					#
+REM # (c) Copyright IBM Corporation 2018 - 2020					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -44,7 +44,7 @@ echo "Attestation"
 echo ""
 
 echo "Load the RSA signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -319,7 +319,7 @@ echo "Audit with one session"
 echo ""
 
 echo "Load the audit signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -336,13 +336,13 @@ for %%B in ("" "-bi 80000001 -pwdb sig") do (
     )
 
     echo "Sign a digest %%H"
-    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu signrsapub.bin -se0 02000000 81 > run.out
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa2048pub.bin -se0 02000000 81 > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 
     echo "Sign a digest %%H"
-    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu signrsapub.bin -se0 02000000 81  > run.out
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa2048pub.bin -se0 02000000 81  > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -383,7 +383,7 @@ echo "Audit with HMAC and audit sessions"
 echo ""
 
 echo "Load the audit signing key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -405,7 +405,7 @@ for %%S in ("" "-se0 02000000 1") do (
        )
     
        echo "Sign a digest %%H"
-       %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu signrsapub.bin -se0 02000001 81 > run.out
+       %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa2048pub.bin -se0 02000001 81 > run.out
        IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
        )
@@ -448,7 +448,7 @@ echo "Certify Creation"
 echo ""
 
 echo "Load the RSA signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -466,7 +466,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the RSA storage key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

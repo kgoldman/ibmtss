@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2018 - 2019					#
+REM # (c) Copyright IBM Corporation 2018 - 2020					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -229,7 +229,7 @@ echo "Sign with ticket"
 echo ""
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsarpriv.bin -ipu signrsarpub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048rpriv.bin -ipu signrsa2048rpub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2019					#
+REM # (c) Copyright IBM Corporation 2015 - 2020					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -65,8 +65,17 @@ REM #	duplicate to K1
 REM #	import to K1
 REM # signing key        K2	80000002
 
-for %%A in ("rsa" "ecc") do (
-    
+set SALG=rsa ecc
+set SKEY=rsa2048 ecc
+
+set i=0
+for %%a in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%a
+set i=0
+for %%b in (!SKEY!) do set /A i+=1 & set SKEY[!i!]=%%b
+set L=!i!
+
+for /L %%i in (1,1,!L!) do (
+
     for %%E in ("" "-salg aes -ik tmprnd.bin") do (
 
     	for %%H in (%ITERATE_ALGS%) do (
@@ -77,8 +86,8 @@ for %%A in ("rsa" "ecc") do (
 	       exit /B 1
 	    )
 
-	    echo "Load the %%~A storage key K1"
-	    %TPM_EXE_PATH%load -hp 80000000 -ipr store%%~Apriv.bin -ipu store%%~Apub.bin -pwdp sto > run.out
+	    echo "Load the !SALG[%%i]! storage key K1"
+	    %TPM_EXE_PATH%load -hp 80000000 -ipr store!SKEY[%%i]!priv.bin -ipu store!SKEY[%%i]!pub.bin -pwdp sto > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
@@ -125,7 +134,7 @@ for %%A in ("rsa" "ecc") do (
 	        exit /B 1
 	    )
 	    
-	    echo "Duplicate K2 under %%~A K1, %%~E"
+	    echo "Duplicate K2 under !SALG[%%i]! K1, %%~E"
 	    %TPM_EXE_PATH%duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin %%~E -se0 03000000 1 > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
@@ -137,7 +146,7 @@ for %%A in ("rsa" "ecc") do (
 	        exit /B 1
 	    )
 
-	    echo "Import K2 under %%~A K1, %%~E"
+	    echo "Import K2 under !SALG[%%i]! K1, %%~E"
 	    %TPM_EXE_PATH%import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin %%~E -opr tmppriv.bin > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
@@ -391,7 +400,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the storage key K1 80000001 public key "
-%TPM_EXE_PATH%loadexternal -hi p -ipu storersapub.bin > run.out
+%TPM_EXE_PATH%loadexternal -hi p -ipu storersa2048pub.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -456,7 +465,7 @@ IF !ERRORLEVEL! NEQ 0 (
 REM at TPM 2
 
 echo "Load storage key K1 80000001 public and private key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -540,16 +549,16 @@ REM # defer recreating the EK until later.
 
 REM # Target
 
-for %%A in ("rsa" "ecc") do (
+for /L %%i in (1,1,!L!) do (
 
-    echo "Target: Provision a target %%A EK certificate"
-    %TPM_EXE_PATH%createekcert -alg %%A -cakey cakey.pem -capwd rrrr > run.out
+    echo "Target: Provision a target !SALG[%%i]! EK certificate"
+    %TPM_EXE_PATH%createekcert -alg !SALG[%%i]! -cakey cakey.pem -capwd rrrr > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 
-    echo "Target: Recreate the %%A EK at 80000001"
-    %TPM_EXE_PATH%createek -alg %%A -cp -noflush > run.out
+    echo "Target: Recreate the !SALG[%%i]! EK at 80000001"
+    %TPM_EXE_PATH%createek -alg !SALG[%%i]! -cp -noflush > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -589,8 +598,8 @@ REM # Source
         exit /B 1
     )
 
-    echo "Source: Load the target %%A EK public key as a storage key 80000002"
-    %TPM_EXE_PATH%loadexternal -%%A -st -ipem tmpekpub.pem > run.out
+    echo "Source: Load the target !SALG[%%i]! EK public key as a storage key 80000002"
+    %TPM_EXE_PATH%loadexternal -!SALG[%%i]! -st -ipem tmpekpub.pem > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -642,8 +651,8 @@ REM # NOTE This assumes that the endorsement hierarchy password is Empty.
 REM # This may be a bad assumption if an attacker can get access and
 REM # change it.
 
-    echo "Target: Recreate the -%%A EK at 80000001"
-    %TPM_EXE_PATH%createek -alg %%A -cp -noflush > run.out
+    echo "Target: Recreate the -!SALG[%%i]! EK at 80000001"
+    %TPM_EXE_PATH%createek -alg !SALG[%%i]! -cp -noflush > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

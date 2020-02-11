@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2019					#
+REM # (c) Copyright IBM Corporation 2015 - 2020					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -43,27 +43,25 @@ echo ""
 echo "RSA Signing key"
 echo ""
 
-REM # loop over unrestricted hash algorithms
+for %%B in (2048 3072) do (
 
-echo "Load the RSA signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
+    echo "Create an RSA key pair in PEM format using openssl"
+    openssl genrsa -out tmpkeypairrsa%%B.pem -aes256 -passout pass:rrrr 2048 > run.out
 
-echo "Create an RSA key pair in PEM format using openssl"
-  
-openssl genrsa -out tmpkeypair.pem -aes256 -passout pass:rrrr 2048 > run.out
+    echo "Convert key pair to plaintext DER format"
+    openssl rsa -inform pem -outform der -in tmpkeypairrsa%%B.pem -out tmpkeypairrsa%%B.der -passin pass:rrrr > run.out
 
-echo "Convert key pair to plaintext DER format"
+    echo "Load the RSA signing key under the primary key"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr signrsa%%Bpriv.bin -ipu signrsa%%Bpub.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
 
-openssl rsa -inform pem -outform der -in tmpkeypair.pem -out tmpkeypair.der -passin pass:rrrr > run.out
+    for %%H in (%ITERATE_ALGS%) do (
+    	for %%S in (rsassa rsapss) do (
 
-for %%H in (%ITERATE_ALGS%) do (
-    for %%S in (rsassa rsapss) do (
-
-	    echo "Sign a digest - %%H"
-	    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -scheme %%S -if policies/aaa -os sig.bin -pwdk sig -ipu signrsapub.bin  > run.out
+	    echo "Sign a digest - %%H %%S %%B"
+	    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -scheme %%S -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa%%Bpub.bin  > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
@@ -75,7 +73,7 @@ for %%H in (%ITERATE_ALGS%) do (
 	    )
 	
 	    echo "Verify the signature using PEM - %%H"
-	    %TPM_EXE_PATH%verifysignature -ipem signrsapub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
+	    %TPM_EXE_PATH%verifysignature -ipem signrsa%%Bpub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
@@ -92,8 +90,8 @@ for %%H in (%ITERATE_ALGS%) do (
 	       exit /B 1
 	    )
 	
-	    echo "Load the openssl key pair in the NULL hierarchy - %%H"
-	    %TPM_EXE_PATH%loadexternal -halg %%H -scheme %%S -ider tmpkeypair.der > run.out
+	    echo "Load the openssl key pair in the NULL hierarchy - %%H %%S %%B"
+	    %TPM_EXE_PATH%loadexternal -halg %%H -scheme %%S -ider tmpkeypairrsa%%B.der > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
@@ -115,13 +113,14 @@ for %%H in (%ITERATE_ALGS%) do (
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
+       	)
     )
-)
+    echo "Flush the signing key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
 
-echo "Flush the signing key"
-%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
 )
 
 echo ""
@@ -489,8 +488,10 @@ for %%H in (%ITERATE_ALGS%) do (
 
 )
 
-rm tmpkeypair.pem
-rm tmpkeypair.der
+rm tmpkeypairrsa2048.pem
+rm tmpkeypairrsa2048.der
+rm tmpkeypairrsa3072.pem
+rm tmpkeypairrsa3072.der
 rm tmpkeypairecc.pem
 rm tmpkeypairecc.der
 rm pssig.bin

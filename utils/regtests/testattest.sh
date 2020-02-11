@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -49,7 +49,7 @@ echo ""
 # 80000002 ECC signing key
 
 echo "Load the RSA signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Load the ECC signing key under the primary key"
@@ -247,7 +247,7 @@ echo "Audit with one session"
 echo ""
 
 echo "Load the audit signing key"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 for BIND in "" "-bi 80000001 -pwdb sig"
@@ -260,11 +260,11 @@ do
 	checkSuccess $?
 
 	echo "Sign a digest ${HALG}"
-	${PREFIX}sign -hk 80000001 -halg ${HALG} -if policies/aaa -os sig.bin -pwdk sig -ipu signrsapub.bin -se0 02000000 81 > run.out
+	${PREFIX}sign -hk 80000001 -halg ${HALG} -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa2048pub.bin -se0 02000000 81 > run.out
 	checkSuccess $?
 
 	echo "Sign a digest ${HALG}"
-	${PREFIX}sign -hk 80000001 -halg ${HALG} -if policies/aaa -os sig.bin -pwdk sig -se0 02000000 81 -ipu signrsapub.bin > run.out
+	${PREFIX}sign -hk 80000001 -halg ${HALG} -if policies/aaa -os sig.bin -pwdk sig -se0 02000000 81 -ipu signrsa2048pub.bin > run.out
 	checkWarning $? "Interaction between bind and audit session response HMAC may not be fixed"
 
 	echo "Get Session Audit Digest ${HALG}"
@@ -295,7 +295,7 @@ echo "Audit with HMAC and audit sessions"
 echo ""
 
 echo "Load the audit signing key"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an HMAC auth session"
@@ -313,7 +313,7 @@ do
 	checkSuccess $?
 
 	echo "Sign a digest ${HALG}"
-	${PREFIX}sign -hk 80000001 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig -ipu signrsapub.bin -se0 02000001 81 > run.out
+	${PREFIX}sign -hk 80000001 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa2048pub.bin -se0 02000001 81 > run.out
 	checkSuccess $?
 
 	echo "Get Session Audit Digest ${SESS}"
@@ -344,7 +344,7 @@ echo "Certify Creation"
 echo ""
 
 echo "Load the RSA signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Certify the creation data for the primary key 80000000"
@@ -356,7 +356,7 @@ ${PREFIX}verifysignature -hk 80000001 -if tmp.bin -is sig.bin > run.out
 checkSuccess $?
 
 echo "Load the RSA storage key under the primary key"
-${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Certify the creation data for the storage key 80000002"

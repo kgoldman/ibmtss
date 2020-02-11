@@ -76,6 +76,7 @@ int main(int argc, char *argv[])
     TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_HASH		nalg = TPM_ALG_SHA256;
+    TPMI_RSA_KEY_BITS 		keyBits = 2048;
     TPMI_ECC_CURVE		curveID = TPM_ECC_NONE;
     const char			*policyFilename = NULL;
     const char			*publicKeyFilename = NULL;
@@ -130,6 +131,10 @@ int main(int argc, char *argv[])
 	    keyType = TYPE_DEO;
 	    keyTypeSpecified++;
 	}
+	else if (strcmp(argv[i], "-dee") == 0) {
+	    keyType = TYPE_DEE;
+	    keyTypeSpecified++;
+	}
 	else if (strcmp(argv[i], "-des") == 0) {
 	    keyType = TYPE_DES;
 	    keyTypeSpecified++;
@@ -175,6 +180,14 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-rsa") == 0) {
 	    algPublic = TPM_ALG_RSA;
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%hu", &keyBits);
+	    }
+	    else {
+		printf("Missing parameter for -rsa\n");
+		printUsage();
+	    }
 	}
 	else if (strcmp(argv[i], "-ecc") == 0) {
 	    algPublic = TPM_ALG_ECC;
@@ -486,6 +499,7 @@ int main(int argc, char *argv[])
       case TYPE_ST:
       case TYPE_DEN:
       case TYPE_DEO:
+      case TYPE_DEE:
       case TYPE_SI:
       case TYPE_SIR:
       case TYPE_GP:
@@ -594,12 +608,13 @@ int main(int argc, char *argv[])
 	  case TYPE_DAAR:
 	  case TYPE_DEN:
 	  case TYPE_DEO:
+	  case TYPE_DEE:
 	  case TYPE_SI:
 	  case TYPE_SIR:
 	  case TYPE_GP:
 	    rc = asymPublicTemplate(&in.inPublic.publicArea,
 				    addObjectAttributes, deleteObjectAttributes,
-				    keyType, algPublic, curveID, nalg, halg,
+				    keyType, algPublic, keyBits, curveID, nalg, halg,
 				    policyFilename);
 	    break;
 	  case TYPE_DES:

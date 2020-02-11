@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2019					#
+REM # (c) Copyright IBM Corporation 2015 - 2020					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -46,8 +46,8 @@ echo ""
 echo "RSA Storage key"
 echo ""
 
-echo "Load RSA the storage key 80000001 under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+echo "Load the RSA storage key 80000001 under the primary key"
+%TPM_EXE_PATH%load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -87,7 +87,7 @@ for %%N in (%ITERATE_ALGS%) do (
         )
     
         echo "Load external just the storage key public part 80000002 %%N"
-        %TPM_EXE_PATH%loadexternal -halg sha256 -nalg %%N -ipu storersapub.bin > run.out
+        %TPM_EXE_PATH%loadexternal -halg sha256 -nalg %%N -ipu storersa2048pub.bin > run.out
         IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
         )

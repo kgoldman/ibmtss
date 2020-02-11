@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -183,7 +183,7 @@ echo "Sign with ticket"
 echo ""
 
 echo "Load the signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signrsarpriv.bin -ipu signrsarpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048rpriv.bin -ipu signrsa2048rpub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Hash and create ticket"

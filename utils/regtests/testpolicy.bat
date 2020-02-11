@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2020					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -2487,7 +2487,7 @@ echo ""
 for %%H in (%ITERATE_ALGS%) do (
 
     echo "Create an rsa %%H key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000000 -rsa -nalg %%H -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -rsa 2048 -nalg %%H -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2019					#
+REM # (c) Copyright IBM Corporation 2019 - 2020					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -47,7 +47,7 @@ rem # 80000001 RSA signing key
 rem # 80000002 ECC signing key
 
 echo "Load the RSA signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

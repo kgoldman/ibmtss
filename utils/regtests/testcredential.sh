@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -56,7 +56,7 @@ ${PREFIX}getrandom -by 32 -of tmpcredin.bin > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key, 80000001"
-${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Create a restricted signing key under the primary key"
@@ -131,7 +131,7 @@ if [ ${CRYPTOLIBRARY} == "openssl" ]; then
 	checkSuccess $?
 
 	echo "Validate the ${ALG} EK certificate against the root"
-# 	${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
+	${PREFIX}createek -alg ${ALG} -root certificates/rootcerts.txt > run.out
 	checkSuccess $?
 
     done
@@ -300,7 +300,7 @@ for ((i = 0 ; i < 3; i++))
 do 
 
     echo "Create an RSA primary key ${HALG[i]} 80000001"
-    ${PREFIX}createprimary -si -nalg ${HALG[i]} -pwdk kkk -pol policies/policyiwgekb${HALG[i]}.bin -rsa > run.out 
+    ${PREFIX}createprimary -si -nalg ${HALG[i]} -pwdk kkk -pol policies/policyiwgekb${HALG[i]}.bin -rsa 2048 > run.out 
     checkSuccess $?
 
     echo "Start a policy session ${HALG[i]} 03000000"

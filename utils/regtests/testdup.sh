@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -70,7 +70,10 @@ echo ""
 #	import to K1
 # signing key        K2 80000002
 
-for ALG in "rsa" "ecc"
+SALG=(rsa ecc)
+SKEY=(rsa2048 ecc)
+
+for ((i = 0 ; i < 2 ; i++))
 do
     for ENC in "" "-salg aes -ik tmprnd.bin"
     do 
@@ -81,8 +84,8 @@ do
 	    ${PREFIX}create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccduplicate.bin > run.out
 	    checkSuccess $?
 
-	    echo "Load the ${ALG} storage key K1 80000001"
-	    ${PREFIX}load -hp 80000000 -ipr store${ALG}priv.bin -ipu store${ALG}pub.bin -pwdp sto > run.out
+	    echo "Load the ${SALG[i]} storage key K1 80000001"
+	    ${PREFIX}load -hp 80000000 -ipr store${SKEY[i]}priv.bin -ipu store${SKEY[i]}pub.bin -pwdp sto > run.out
 	    checkSuccess $?
 
 	    echo "Load the signing key K2 80000002"
@@ -113,7 +116,7 @@ do
 	    ${PREFIX}getrandom -by 16 -of tmprnd.bin > run.out 
 	    checkSuccess $?
 
-	    echo "Duplicate K2 under ${ALG} K1, ${ENC}"
+	    echo "Duplicate K2 under ${SALG[i]} K1, ${ENC}"
 	    ${PREFIX}duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin ${ENC} -se0 03000000 1 > run.out
 	    checkSuccess $?
 
@@ -121,7 +124,7 @@ do
 	    ${PREFIX}flushcontext -ha 80000002 > run.out
 	    checkSuccess $?
 
-	    echo "Import K2 under ${ALG} K1, ${ENC}"
+	    echo "Import K2 under ${SALG[i]} K1, ${ENC}"
 	    ${PREFIX}import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin ${ENC} -opr tmppriv.bin > run.out
 	    checkSuccess $?
 
@@ -334,7 +337,7 @@ ${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpk2priv.bin -opu tmpk2pub.bi
 checkSuccess $?
 
 echo "Load the storage key K1 80000001 public key "
-${PREFIX}loadexternal -hi p -ipu storersapub.bin > run.out
+${PREFIX}loadexternal -hi p -ipu storersa2048pub.bin > run.out
 checkSuccess $?
 
 echo "Create a signing key O1 with policy"
@@ -379,7 +382,7 @@ checkSuccess $?
 # at TPM 2
 
 echo "Load storage key K1 80000001 public and private key"
-${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Load storage key K2 80000002 public key"
@@ -442,15 +445,15 @@ echo ""
 # The mbedtls port does not support EC certificate creation yet */
 
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
-    for ALG in "rsa" "ecc" 
+    for ((i = 0 ; i < 2 ; i++))
     do
 
-	echo "Target: Provision a target ${ALG} EK certificate"
-	${PREFIX}createekcert -alg ${ALG} -cakey cakey.pem -capwd rrrr > run.out
+	echo "Target: Provision a target ${SALG[i]} EK certificate"
+	${PREFIX}createekcert -alg ${SALG[i]} -cakey cakey.pem -capwd rrrr > run.out
 	checkSuccess $?
 
-	echo "Target: Recreate the ${ALG} EK at 80000001"
-	${PREFIX}createek -alg ${ALG} -cp -noflush > run.out
+	echo "Target: Recreate the ${SALG[i]} EK at 80000001"
+	${PREFIX}createek -alg ${SALG[i]} -cp -noflush > run.out
 	checkSuccess $?
 
 	echo "Target: Convert the EK public key to PEM format for transmission to source"
@@ -480,8 +483,8 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 	${PREFIX}createprimary -bl -kt nf -kt np -if tmpaeskeysrc.bin -pol policies/policyccduplicate.bin -opu tmpsdbpub.bin > run.out
 	checkSuccess $?
 
-	echo "Source: Load the target ${ALG} EK public key as a storage key 80000002"
-	${PREFIX}loadexternal -${ALG} -st -ipem tmpekpub.pem > run.out
+	echo "Source: Load the target ${SALG[i]} EK public key as a storage key 80000002"
+	${PREFIX}loadexternal -${SALG[i]} -st -ipem tmpekpub.pem > run.out
 	checkSuccess $?
 
 	echo "Source: Start a policy session, duplicate needs a policy 03000000"
@@ -519,8 +522,8 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 # This may be a bad assumption if an attacker can get access and
 # change it.
 
-	echo "Target: Recreate the -${ALG} EK at 80000001"
-	${PREFIX}createek -alg ${ALG} -cp -noflush > run.out
+	echo "Target: Recreate the -${SALG[i]} EK at 80000001"
+	${PREFIX}createek -alg ${SALG[i]} -cp -noflush > run.out
 	checkSuccess $?
 
 	echo "Target: Start a policy session, EK use needs a policy"

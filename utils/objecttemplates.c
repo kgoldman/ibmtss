@@ -3,9 +3,8 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 1346 2018-10-09 17:40:01Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -54,13 +53,14 @@
 
 #include "objecttemplates.h"
 
-/* asymPublicTemplate() is a template for an ECC or RSA 2048 key.
+/* asymPublicTemplate() is a template for an ECC or RSA key.
 
    It can create these types:
 
    TYPE_ST:   storage key (decrypt, restricted, RSA NULL scheme, EC NULL scheme)
    TYPE_DEN:  decryption key (not storage key, RSA NULL scheme, EC NULL scheme)
    TYPE_DEO:  decryption key (not storage key, RSA OAEP scheme, EC NULL scheme)
+   TYPE_DEE:  decryption key (not storage key, RSA ES scheme, EC NULL scheme)
    TYPE_SI:   signing key (unrestricted, RSA NULL schemem EC NULL scheme)
    TYPE_SIR:  signing key (restricted, RSA RSASSA scheme, EC ECDSA scheme)
    TYPE_GP:   general purpose key
@@ -73,7 +73,8 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 								   here */
 			  TPMA_OBJECT deleteObjectAttributes,
 			  int keyType,			/* see above */
-			  TPMI_ALG_PUBLIC algPublic,	/* RSA or ECC */	
+			  TPMI_ALG_PUBLIC algPublic,	/* RSA or ECC */
+			  TPMI_RSA_KEY_BITS keyBits,	/* RSA modulus */
 			  TPMI_ECC_CURVE curveID,	/* for ECC */
 			  TPMI_ALG_HASH nalg,		/* Name algorithm */
 			  TPMI_ALG_HASH halg,		/* hash algorithm */
@@ -96,6 +97,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	switch (keyType) {
 	  case TYPE_DEN:
 	  case TYPE_DEO:
+	  case TYPE_DEE:
 	    publicArea->objectAttributes.val &= ~TPMA_OBJECT_SIGN;
 	    publicArea->objectAttributes.val |= TPMA_OBJECT_DECRYPT;
 	    publicArea->objectAttributes.val &= ~TPMA_OBJECT_RESTRICTED;
@@ -136,6 +138,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	    switch (keyType) {
 	      case TYPE_DEN:
 	      case TYPE_DEO:
+	      case TYPE_DEE:
 	      case TYPE_SI:
 	      case TYPE_SIR:
 	      case TYPE_GP:
@@ -167,6 +170,14 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 		/* Table 135 - Definition of TPMS_SCHEME_HASH hashAlg */
 		publicArea->parameters.rsaDetail.scheme.details.oaep.hashAlg = halg;
 		break;
+	      case TYPE_DEE:
+		publicArea->parameters.rsaDetail.scheme.scheme = TPM_ALG_RSAES;
+		/* Table 152 - Definition of TPMU_ASYM_SCHEME details */
+		/* Table 152 - Definition of TPMU_ASYM_SCHEME rsassa */
+		/* Table 142 - Definition of {RSA} Types for RSA Signature Schemes */
+		/* Table 135 - Definition of TPMS_SCHEME_HASH hashAlg */
+		publicArea->parameters.rsaDetail.scheme.details.oaep.hashAlg = halg;
+		break;
 	      case TYPE_SIR:
 		publicArea->parameters.rsaDetail.scheme.scheme = TPM_ALG_RSASSA;
 		/* Table 152 - Definition of TPMU_ASYM_SCHEME details */
@@ -178,7 +189,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	    }
 	
 	    /* Table 159 - Definition of {RSA} (TPM_KEY_BITS) TPMI_RSA_KEY_BITS Type keyBits */
-	    publicArea->parameters.rsaDetail.keyBits = 2048;
+	    publicArea->parameters.rsaDetail.keyBits = keyBits;
 	    publicArea->parameters.rsaDetail.exponent = 0;
 	    /* Table 177 - TPMU_PUBLIC_ID unique */
 	    /* Table 177 - Definition of TPMU_PUBLIC_ID */
@@ -190,6 +201,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	    switch (keyType) {
 	      case TYPE_DEN:
 	      case TYPE_DEO:
+	      case TYPE_DEE:
 	      case TYPE_SI:
 	      case TYPE_SIR:
 	      case TYPE_DAA:
@@ -213,6 +225,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	      case TYPE_SI:
 	      case TYPE_DEN:
 	      case TYPE_DEO:
+	      case TYPE_DEE:
 		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
 		/* Table 165 - Definition of {ECC} (TPM_ECC_CURVE) TPMI_ECC_CURVE Type */
 		/* Table 10 - Definition of (UINT16) {ECC} TPM_ECC_CURVE Constants curveID */
@@ -525,7 +538,8 @@ void printUsageTemplate(void)
 {
     printf("\t[Asymmetric Key Algorithm]\n");
     printf("\n");
-    printf("\t-rsa (default)\n");
+    printf("\t-rsa keybits (default)\n");
+    printf("\t\t(2048 default)\n");
     printf("\t-ecc curve\n");
     printf("\t\tbnp256\n");
     printf("\t\tnistp256\n");
@@ -537,6 +551,7 @@ void printUsageTemplate(void)
     printf("\t\t\trequires -if\n");
     printf("\t\t-den\tdecryption, (unrestricted, RSA and EC NULL scheme)\n");
     printf("\t\t-deo\tdecryption, (unrestricted, RSA OAEP, EC NULL scheme)\n");
+    printf("\t\t-dee\tdecryption, (unrestricted, RSA ES, EC NULL scheme)\n");
     printf("\t\t-des\tencryption/decryption, AES symmetric\n");
     printf("\t\t\t[-116 for TPM rev 116 compatibility]\n");
     printf("\t\t-st\tstorage (restricted)\n");
