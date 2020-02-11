@@ -3,9 +3,8 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.c 1346 2018-10-09 17:40:01Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2018.					*/
+/* (c) Copyright IBM Corporation 2016 - 2019.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -54,7 +53,7 @@
 
 #include "objecttemplates.h"
 
-/* asymPublicTemplate() is a template for an ECC or RSA 2048 key.
+/* asymPublicTemplate() is a template for an ECC or RSA key.
 
    It can create these types:
 
@@ -74,7 +73,8 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 								   here */
 			  TPMA_OBJECT deleteObjectAttributes,
 			  int keyType,			/* see above */
-			  TPMI_ALG_PUBLIC algPublic,	/* RSA or ECC */	
+			  TPMI_ALG_PUBLIC algPublic,	/* RSA or ECC */
+			  TPMI_RSA_KEY_BITS keyBits,	/* RSA modulus */
 			  TPMI_ECC_CURVE curveID,	/* for ECC */
 			  TPMI_ALG_HASH nalg,		/* Name algorithm */
 			  TPMI_ALG_HASH halg,		/* hash algorithm */
@@ -189,7 +189,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	    }
 	
 	    /* Table 159 - Definition of {RSA} (TPM_KEY_BITS) TPMI_RSA_KEY_BITS Type keyBits */
-	    publicArea->parameters.rsaDetail.keyBits = 2048;
+	    publicArea->parameters.rsaDetail.keyBits = keyBits;
 	    publicArea->parameters.rsaDetail.exponent = 0;
 	    /* Table 177 - TPMU_PUBLIC_ID unique */
 	    /* Table 177 - Definition of TPMU_PUBLIC_ID */
@@ -538,7 +538,8 @@ void printUsageTemplate(void)
 {
     printf("\t[Asymmetric Key Algorithm]\n");
     printf("\n");
-    printf("\t-rsa (default)\n");
+    printf("\t-rsa keybits (default)\n");
+    printf("\t\t(2048 default)\n");
     printf("\t-ecc curve\n");
     printf("\t\tbnp256\n");
     printf("\t\tnistp256\n");

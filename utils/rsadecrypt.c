@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019					*/
+/* (c) Copyright IBM Corporation 2015 - 2020					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -52,6 +52,9 @@
 #include <ibmtss/tsscryptoh.h>
 
 static void printRsaDecrypt(RSA_Decrypt_Out *out);
+static TPM_RC getKeySize(TSS_CONTEXT 		*tssContext,
+			 TPMI_RSA_KEY_BITS	*keyBits,
+			 TPMI_DH_PCR		objectHandle);
 static TPM_RC padData(uint8_t 		**buffer,
 		      size_t		*padLength,
 		      TPMI_ALG_HASH 	halg,
@@ -68,6 +71,7 @@ int main(int argc, char *argv[])
     RSA_Decrypt_In 		in;
     RSA_Decrypt_Out 		out;
     TPMI_DH_OBJECT		keyHandle = 0;
+    TPMI_RSA_KEY_BITS		keyBits;
     const char			*encryptFilename = NULL;
     const char			*decryptFilename = NULL;
     const char			*keyPassword = NULL;
@@ -275,13 +279,21 @@ int main(int argc, char *argv[])
 	    keyPasswordPtr = NULL;
 	}
     }
+    /* Start a TSS context */
+    if (rc == 0) {
+	rc = TSS_Create(&tssContext);
+    }
+    /* get the public modulus size for checks and padding */
+    if (rc == 0) {
+	rc = getKeySize(tssContext, &keyBits, keyHandle);
+    }
     if (rc == 0) {
 	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 				     &length,
 				     encryptFilename);
     }
     if (rc == 0) {
-	if (length > 256) {
+	if (length > (keyBits / 8U)) {
 	    printf("Input data too long %u\n", (unsigned int)length);
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
@@ -290,9 +302,8 @@ int main(int argc, char *argv[])
     if ((rc == 0) && (halg != TPM_ALG_NULL)) {
 	rc = padData(&buffer,		/* realloced to fit */
 		     &length,		/* resized for OID and pad */
-		     halg,
-		     2048);		/* hard coded RSA-2048 */
-	/* FIXME use readpublic and get bit size or maybe byte size */
+		     halg,		/* gigest algorithm for size and OID */
+		     keyBits);		/* RSA modulus length in bits */
     }
     if (rc == 0) {
 	/* Handle of key that will perform rsa decrypt */
@@ -317,10 +328,6 @@ int main(int argc, char *argv[])
     free(buffer);		/* @1 */
     buffer = NULL;
 
-    /* Start a TSS context */
-    if (rc == 0) {
-	rc = TSS_Create(&tssContext);
-    }
     /* call TSS to execute the command */
     if (rc == 0) {
 	rc = TSS_Execute(tssContext,
@@ -367,6 +374,13 @@ int main(int argc, char *argv[])
     free(keyPasswordBuffer);	/* @2 */
     return rc;
 }
+
+/* padData() is used then the private key operation is a signing operation over a hash.  It takes a
+   'buffer' of original 'length'.  The original length should match the hash algorithm digest size.
+
+   buffer is realloc'ed to the key size, than then padded with the OID for the hash algorithm and
+   the PKCS1 padding.
+*/
 
 static TPM_RC padData(uint8_t 			**buffer,
 		      size_t			*padLength,
@@ -438,6 +452,33 @@ static TPM_RC padData(uint8_t 			**buffer,
 	memset(&(*buffer)[2], 0xff, *padLength - 3 - oidSize - digestSize);
 	(*buffer)[*padLength - oidSize - digestSize - 1] = 0x00;
 	if (tssUtilsVerbose) TSS_PrintAll("padData: padded data", *buffer, *padLength);
+    }
+    return rc;
+}
+
+/* getKeySize() gets the key size in bits */
+
+static TPM_RC getKeySize(TSS_CONTEXT 		*tssContext,
+			 TPMI_RSA_KEY_BITS	*keyBits,
+			 TPMI_DH_PCR		objectHandle)
+{
+    TPM_RC			rc = 0;
+    ReadPublic_In 		in;
+    ReadPublic_Out 		out;
+
+    /* call TSS to execute the command */
+    if (rc == 0) {
+	in.objectHandle = objectHandle;
+	rc = TSS_Execute(tssContext,
+			 (RESPONSE_PARAMETERS *)&out, 
+			 (COMMAND_PARAMETERS *)&in,
+			 NULL,
+			 TPM_CC_ReadPublic,
+			 TPM_RH_NULL, NULL, 0);
+    }
+    if (rc == 0) {
+	*keyBits = out.outPublic.publicArea.parameters.rsaDetail.keyBits;
+	if (tssUtilsVerbose) printf("getKeySize: size %u\n", *keyBits);
     }
     return rc;
 }

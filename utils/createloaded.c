@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
     uint32_t 			keyTypeSpecified = 0;
     int				rev116 = FALSE;
     TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
+    TPMI_RSA_KEY_BITS 		keyBits = 2048;
     TPMI_ECC_CURVE		curveID = TPM_ECC_NONE;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     TPMI_ALG_HASH		nalg = TPM_ALG_SHA256;
@@ -166,6 +167,14 @@ int main(int argc, char *argv[])
 	}
 	else if (strcmp(argv[i], "-rsa") == 0) {
 	    algPublic = TPM_ALG_RSA;
+	    i++;
+	    if (i < argc) {
+		sscanf(argv[i],"%hu", &keyBits);
+	    }
+	    else {
+		printf("Missing parameter for -rsa\n");
+		printUsage();
+	    }
 	}
 	else if (strcmp(argv[i], "-ecc") == 0) {
 	    algPublic = TPM_ALG_ECC;
@@ -496,7 +505,7 @@ int main(int argc, char *argv[])
 	  case TYPE_GP:
 	    rc = asymPublicTemplate(&publicArea,
 				    addObjectAttributes, deleteObjectAttributes,
-				    keyType, algPublic, curveID, nalg, halg,
+				    keyType, algPublic, keyBits, curveID, nalg, halg,
 				    policyFilename);
 	    break;
 	  case TYPE_DES:

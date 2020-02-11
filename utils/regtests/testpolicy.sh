@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -1858,7 +1858,7 @@ for HALG in ${ITERATE_ALGS}
 do
 
     echo "Create an rsa ${HALG} key under the primary key"
-    ${PREFIX}create -hp 80000000 -rsa -nalg ${HALG} -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
+    ${PREFIX}create -hp 80000000 -rsa 2048 -nalg ${HALG} -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
     checkSuccess $?
 
     echo "Load the rsa ${HALG} key 80000001"

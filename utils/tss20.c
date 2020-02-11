@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018 - 2019					*/
+/* (c) Copyright IBM Corporation 2018 - 2020					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -3922,12 +3922,11 @@ static TPM_RC TSS_RSA_Salt(TPM2B_DIGEST 		*salt,
 	    int b1 = publicArea->type != TPM_ALG_RSA;
 	    int b2 = publicArea->objectAttributes.val & TPMA_OBJECT_SIGN;
 	    int b3 = !(publicArea->objectAttributes.val & TPMA_OBJECT_DECRYPT);
-	    int b4 = publicArea->parameters.rsaDetail.keyBits != 2048;
-	    int b5 = (publicArea->parameters.rsaDetail.exponent != 0) &&
+	    int b4 = (publicArea->parameters.rsaDetail.exponent != 0) &&
 		     /* some HW TPMs return 010001 for the RSA EK with the default IWG template */
 		     (publicArea->parameters.rsaDetail.exponent != RSA_DEFAULT_PUBLIC_EXPONENT);
 	    /* TSS support checks */
-	    if (b1 || b2 || b3 || b4 || b5) {
+	    if (b1 || b2 || b3 || b4) {
 		if (tssVerbose)
 		    printf("TSS_RSA_Salt: public key attributes not supported\n");
 		rc = TSS_RC_BAD_SALT_KEY;

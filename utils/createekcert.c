@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 	"Yorktown",	/* 2 locality*/
 	"IBM",		/* 3 organization */
 	NULL,		/* 4 organization unit */
-	"IBM SW TPM",	/* 5 common name */
+	"IBM's SW TPM",	/* 5 common name */
 	NULL		/* 6 email */
     };
     /* FIXME should come from root certificate, cacert.pem, cacertec.pem */

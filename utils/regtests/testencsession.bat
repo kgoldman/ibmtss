@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2019					#
+REM # (c) Copyright IBM Corporation 2015 - 2020					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -51,7 +51,7 @@ echo "Parameter Encryption"
 echo ""
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -172,7 +172,7 @@ echo "Salt encrypt and decrypt HMAC sessions"
 echo ""
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -242,7 +242,7 @@ echo "Bind encrypt and decrypt HMAC sessions"
 echo ""
 
 echo "Load the signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

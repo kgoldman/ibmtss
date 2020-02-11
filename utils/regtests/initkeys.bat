@@ -4,7 +4,7 @@ REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
 REM										#
-REM (c) Copyright IBM Corporation 2015 - 2019					#
+REM (c) Copyright IBM Corporation 2015 - 2020					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -63,7 +63,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create an RSA storage key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersapriv.bin -opu storersapub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
+%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa2048priv.bin -opu storersa2048pub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
@@ -74,10 +74,20 @@ IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
-echo "Create an unrestricted RSA signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr signrsapriv.bin -opu signrsapub.bin -opem signrsapub.pem -pwdp sto -pwdk sig > run.out
-IF !ERRORLEVEL! NEQ 0 (
-  exit /B 1
+for %%B in (2048 3072) do (
+
+    echo "Create an unrestricted RSA %%B signing key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr signrsa%%Bpriv.bin -opu signrsa%%Bpub.bin -opem signrsa%%Bpub.pem -pwdp sto -pwdk sig > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+      exit /B 1
+    )
+
+    echo "Create an RSA decryption key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -den -kt f -kt p -opr derrsa%%Bpriv.bin -opu derrsa%%Bpub.bin -pwdp sto -pwdk dec > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+      exit /B 1
+    )
+
 )
 
 echo "Create an unrestricted ECC signing key under the primary key"
@@ -87,7 +97,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a restricted RSA signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -sir -kt f -kt p -opr signrsarpriv.bin -opu signrsarpub.bin -opem signrsarpub.pem -pwdp sto -pwdk sig > run.out
+%TPM_EXE_PATH%create -hp 80000000 -sir -kt f -kt p -opr signrsa2048rpriv.bin -opu signrsa2048rpub.bin -opem signrsa2048rpub.pem -pwdp sto -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
@@ -99,19 +109,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a not fixedTPM RSA signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -sir -opr signrsanfpriv.bin -opu signrsanfpub.bin -opem signrsanfpub.pem -pwdp sto -pwdk sig > run.out
+%TPM_EXE_PATH%create -hp 80000000 -sir -opr signrsa2048nfpriv.bin -opu signrsa2048nfpub.bin -opem signrsa2048nfpub.pem -pwdp sto -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
 echo "Create a not fixedTPM ECC signing key under the primary key"
 %TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -sir -opr signeccnfpriv.bin -opu signeccnfpub.bin -opem signeccnfpub.pem -pwdp sto -pwdk sig > run.out
-IF !ERRORLEVEL! NEQ 0 (
-  exit /B 1
-)
-
-echo "Create an RSA decryption key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -den -kt f -kt p -opr derpriv.bin -opu derpub.bin -pwdp sto -pwdk dec > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )

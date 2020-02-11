@@ -3,9 +3,8 @@
 /*			 Object Templates					*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: objecttemplates.h 1340 2018-09-28 18:32:11Z kgoldman $	*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016.						*/
+/* (c) Copyright IBM Corporation 2016 - 2019					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -66,6 +65,7 @@ extern "C" {
 			      TPMA_OBJECT deleteObjectAttributes,
 			      int type,
 			      TPMI_ALG_PUBLIC algPublic,
+			      TPMI_RSA_KEY_BITS keyBits,
 			      TPMI_ECC_CURVE curveID,			       
 			      TPMI_ALG_HASH nalg,
 			      TPMI_ALG_HASH halg,

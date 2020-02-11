@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2019						#
+# (c) Copyright IBM Corporation 2019 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -48,7 +48,7 @@ echo ""
 # 80000002 ECC signing key
 
 echo "Load the RSA signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Load the ECC signing key under the primary key"

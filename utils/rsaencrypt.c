@@ -50,6 +50,9 @@
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tssmarshal.h>
 
+static TPM_RC getKeySize(TSS_CONTEXT 		*tssContext,
+			 TPMI_RSA_KEY_BITS	*keyBits,
+			 TPMI_DH_PCR		objectHandle);
 static void printRsaEncrypt(RSA_Encrypt_Out *out);
 static void printUsage(void);
 
@@ -63,6 +66,7 @@ int main(int argc, char *argv[])
     RSA_Encrypt_In 		in;
     RSA_Encrypt_Out 		out;
     TPMI_DH_OBJECT		keyHandle = 0;
+    TPMI_RSA_KEY_BITS		keyBits;
     const char			*decryptFilename = NULL;
     const char			*encryptFilename = NULL;
 
@@ -126,13 +130,21 @@ int main(int argc, char *argv[])
 	printf("Missing decrypted file -id\n");
 	printUsage();
     }
+    /* Start a TSS context */
     if (rc == 0) {
+	rc = TSS_Create(&tssContext);
+    }
+    /* get the public modulus size for checks and padding */
+    if (rc == 0) {
+	rc = getKeySize(tssContext, &keyBits, keyHandle);
+    }
+     if (rc == 0) {
 	rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 				     &length,
 				     decryptFilename);
     }
     if (rc == 0) {
-	if (length > 256) {
+	if (length > (keyBits / 8U)) {
 	    printf("Input data too long %u\n", (unsigned int)length);
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
@@ -161,10 +173,6 @@ int main(int argc, char *argv[])
     }
     free (buffer);	/* @1 */
     buffer = NULL;
-    /* Start a TSS context */
-    if (rc == 0) {
-	rc = TSS_Create(&tssContext);
-    }
     /* call TSS to execute the command */
     if (rc == 0) {
 	rc = TSS_Execute(tssContext,
@@ -205,6 +213,33 @@ int main(int argc, char *argv[])
 	rc = EXIT_FAILURE;
     }
     free(buffer);	/* @1 */
+    return rc;
+}
+
+/* getKeySize() gets the key size in bits */
+
+static TPM_RC getKeySize(TSS_CONTEXT 		*tssContext,
+			 TPMI_RSA_KEY_BITS	*keyBits,
+			 TPMI_DH_PCR		objectHandle)
+{
+    TPM_RC			rc = 0;
+    ReadPublic_In 		in;
+    ReadPublic_Out 		out;
+
+    /* call TSS to execute the command */
+    if (rc == 0) {
+	in.objectHandle = objectHandle;
+	rc = TSS_Execute(tssContext,
+			 (RESPONSE_PARAMETERS *)&out, 
+			 (COMMAND_PARAMETERS *)&in,
+			 NULL,
+			 TPM_CC_ReadPublic,
+			 TPM_RH_NULL, NULL, 0);
+    }
+    if (rc == 0) {
+	*keyBits = out.outPublic.publicArea.parameters.rsaDetail.keyBits;
+	if (tssUtilsVerbose) printf("getKeySize: size %u\n", *keyBits);
+    }
     return rc;
 }
 

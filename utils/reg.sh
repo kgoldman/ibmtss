@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2014 - 2019					#
+# (c) Copyright IBM Corporation 2014 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -158,8 +158,10 @@ cleanup()
 # stdout
     rm -f run.out
 # general purpose keys
-    rm -f derpriv.bin
-    rm -f derpub.bin
+    rm -f derrsa2048priv.bin
+    rm -f derrsa2048pub.bin
+    rm -f derrsa3072priv.bin
+    rm -f derrsa3072pub.bin
     rm -f despriv.bin
     rm -f despub.bin
     rm -f khprivsha1.bin
@@ -189,23 +191,26 @@ cleanup()
     rm -f signeccrpriv.bin
     rm -f signeccrpub.bin
     rm -f signeccrpub.pem
-    rm -f signrsanfpriv.bin
-    rm -f signrsanfpub.bin
-    rm -f signrsanfpub.pem
-    rm -f signrsapriv.bin
-    rm -f signrsapub.bin
-    rm -f signrsapub.pem
-    rm -f signrsarpriv.bin
-    rm -f signrsarpub.bin
-    rm -f signrsarpub.pem
+    rm -f signrsa2048nfpriv.bin
+    rm -f signrsa2048nfpub.bin
+    rm -f signrsa2048nfpub.pem
+    rm -f signrsa2048priv.bin
+    rm -f signrsa2048pub.bin
+    rm -f signrsa2048pub.pem
+    rm -f signrsa3072priv.bin
+    rm -f signrsa3072pub.bin
+    rm -f signrsa3072pub.pem
+    rm -f signrsa2048rpriv.bin
+    rm -f signrsa2048rpub.bin
+    rm -f signrsa2048rpub.pem
     rm -f stoch.bin
     rm -f storeeccpriv.bin
     rm -f storeeccpub.bin
     rm -f storsach.bin
     rm -f storsatk.bin
     rm -f stotk.bin
-    rm -r storersapriv.bin
-    rm -r storersapub.bin
+    rm -r storersa2048priv.bin
+    rm -r storersa2048pub.bin
 
 # misc
     rm -f dec.bin

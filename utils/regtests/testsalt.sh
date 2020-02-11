@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -47,9 +47,9 @@ echo ""
 # mbedtls port does not support ECC salted sessions yet
 
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
-    SALTALGS=("-rsa" "-ecc nistp256")
+    SALTALGS=("-rsa 2048" "-rsa 3072" "-ecc nistp256")
 elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
-    SALTALGS=("-rsa")
+    SALTALGS=("-rsa 2048")
 else
     echo "Error: crypto library ${CRYPTOLIBRARY} not supported"
     exit 255
@@ -204,7 +204,7 @@ echo "Salt Session - EvictControl"
 echo ""
 
 echo "Load the storage key"
-${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Make the storage key persistent"
@@ -232,7 +232,7 @@ echo "Salt Session - ContextSave and ContextLoad"
 echo ""
 
 echo "Load the storage key at 80000001"
-${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Save context for the key at 80000001"
@@ -264,7 +264,7 @@ echo "Salt Audit Session - PCR Read, Read Public, NV Read Public"
 echo ""
 
 echo "Load the storage key at 80000001"
-${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a salted HMAC auth session"
@@ -303,8 +303,8 @@ echo ""
 echo "Salt Policy Session with policyauthvalue"
 echo ""
 
-echo "Load RSA the storage key 80000001 under the primary key 80000000"
-${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+echo "Load the RSA storage key 80000001 under the primary key 80000000"
+${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a salted policy session"

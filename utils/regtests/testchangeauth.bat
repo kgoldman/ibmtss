@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2019					#
+REM # (c) Copyright IBM Corporation 2015 - 2020					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -48,7 +48,7 @@ for %%B in ("" "-bi 80000001 -pwdb sig") do (
     for %%S in ("" "-se0 02000000 1") do (
 
 	echo "Load the signing key under the primary key"
-	%TPM_EXE_PATH%load -hp 80000000 -ipr signrsapriv.bin -ipu signrsapub.bin -pwdp sto > run.out
+	%TPM_EXE_PATH%load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwdp sto > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	   )
@@ -66,7 +66,7 @@ for %%B in ("" "-bi 80000001 -pwdb sig") do (
 	   )
 
 	echo "Load the signing key with the changed auth %%~S"
-	%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu signrsapub.bin -pwdp sto %%~S > run.out
+	%TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu signrsa2048pub.bin -pwdp sto %%~S > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	   )
@@ -109,7 +109,7 @@ echo "Object Change Auth with password from file"
 echo ""
 
 echo "Load the decryption key under the primary key 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr derpriv.bin -ipu derpub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr derrsa2048priv.bin -ipu derrsa2048pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -127,7 +127,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the decryption key with the changed auth 800000002"
-%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipr tmppriv.bin -ipu derpub.bin > run.out
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipr tmppriv.bin -ipu derrsa2048pub.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

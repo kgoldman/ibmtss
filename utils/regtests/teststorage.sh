@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -47,8 +47,8 @@ echo ""
 echo "RSA Storage key"
 echo ""
 
-echo "Load RSA the storage key 80000001 under the primary key 80000000"
-${PREFIX}load -hp 80000000 -ipr storersapriv.bin -ipu storersapub.bin -pwdp sto > run.out
+echo "Load the RSA storage key 80000001 under the primary key 80000000"
+${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start an HMAC auth session"
@@ -77,8 +77,8 @@ do
 	${PREFIX}flushcontext -ha 80000002 > run.out
 	checkSuccess $?
 
-	echo "Load external, storage key public part 80000002 ${NALG}"
-	${PREFIX}loadexternal -halg sha256 -nalg ${NALG} -ipu storersapub.bin > run.out
+	echo "Load external just the storage key public part 80000002 ${NALG}"
+	${PREFIX}loadexternal -halg sha256 -nalg ${NALG} -ipu storersa2048pub.bin > run.out
 	checkSuccess $?
 
 	echo "Flush the public key 80000002"
