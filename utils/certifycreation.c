@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017 - 2019.					*/
+/* (c) Copyright IBM Corporation 2017 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -382,6 +382,9 @@ int main(int argc, char *argv[])
 	rc = TSS_TPMS_ATTEST_Unmarshalu(&tpmsAttest, &tmpBuffer, &tmpSize);
     }
     if (rc == 0) {
+	if (tssUtilsVerbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
+    }
+    if (rc == 0) {
 	int match;
 	match = TSS_TPM2B_Compare(&in.qualifyingData.b, &tpmsAttest.extraData.b);
 	if (!match) {
@@ -396,9 +399,6 @@ int main(int argc, char *argv[])
 	    printf("certifycreation: failed, in creationHash != out creationHash\n");
 	    rc = EXIT_FAILURE;
 	}
-    }
-    if (rc == 0) {
-	if (tssUtilsVerbose) TSS_TPMS_ATTEST_Print(&tpmsAttest, 0);
     }
     if ((rc == 0) && (signatureFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.signature,

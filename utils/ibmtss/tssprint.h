@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -174,8 +174,10 @@ extern "C" {
     void TSS_TPMU_ATTEST_Print(TPMU_ATTEST *source, TPMI_ST_ATTEST selector, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMS_ATTEST_Print(TPMS_ATTEST *source, unsigned int indent);
+#if 0
     LIB_EXPORT
     void TSS_TPM2B_ATTEST_Print(TPM2B_ATTEST *source, unsigned int indent);
+#endif
     LIB_EXPORT
     void TSS_TPMS_AUTH_COMMAND_Print(TPMS_AUTH_COMMAND *source, unsigned int indent);
     LIB_EXPORT

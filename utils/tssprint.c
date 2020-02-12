@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -41,7 +41,6 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include <ibmtss/Unmarshal_fp.h>
 #include <ibmtss/tsserror.h>
 #include <ibmtss/tssutils.h>
 
@@ -1489,6 +1488,9 @@ void TSS_TPMS_ATTEST_Print(TPMS_ATTEST *source, unsigned int indent)
     return;
 }
 
+#if 0	/* Removed because it required a large stack allocation.  The utilities didn't use it, but
+	   rather did the unmarshal and print themselves. */
+
 /* Table 127 - Definition of TPM2B_ATTEST Structure <OUT> */
 
 void TSS_TPM2B_ATTEST_Print(TPM2B_ATTEST *source, unsigned int indent)
@@ -1512,6 +1514,7 @@ void TSS_TPM2B_ATTEST_Print(TPM2B_ATTEST *source, unsigned int indent)
     }
     return;
 }
+#endif
 
 /* Table 128 - Definition of TPMS_AUTH_COMMAND Structure <IN> */
 
