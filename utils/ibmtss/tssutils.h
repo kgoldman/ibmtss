@@ -86,7 +86,10 @@ extern "C" {
     
     LIB_EXPORT 
     BOOL TSS_TPM2B_Compare(TPM2B *expect, TPM2B *actual);
-    
+
+    LIB_EXPORT
+    uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg);
+
 #ifdef __cplusplus
 }
 #endif

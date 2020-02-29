@@ -270,48 +270,6 @@ TPM_RC TSS_Hash_Generate(TPMT_HA *digest,		/* largest size of a digest */
     return rc;
 }
 
-/* TSS_GetDigestSize() returns the digest size in bytes based on the hash algorithm.
-
-   Returns 0 for an unknown algorithm.
-*/
-
-/* NOTE: Marked as const function in header */
-
-uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
-{
-    uint16_t size;
-    
-    switch (hashAlg) {
-#ifdef TPM_ALG_SHA1
-      case TPM_ALG_SHA1:
-	size = SHA1_DIGEST_SIZE;
-	break;
-#endif
-#ifdef TPM_ALG_SHA256	
-     case TPM_ALG_SHA256:
-	size = SHA256_DIGEST_SIZE;
-	break;
-#endif
-#ifdef TPM_ALG_SHA384
-      case TPM_ALG_SHA384:
-	size = SHA384_DIGEST_SIZE;
-	break;
-#endif
-#ifdef TPM_ALG_SHA512
-     case TPM_ALG_SHA512:
-	size = SHA512_DIGEST_SIZE;
-	break;
-#endif
-#if 0
-      case TPM_ALG_SM3_256:
-	size = SM3_256_DIGEST_SIZE;
-	break;
-#endif
-      default:
-	size = 0;
-    }
-    return size;
-}
 
 /* TSS_GetDigestBlockSize() returns the digest block size in bytes based on the hash algorithm.
 

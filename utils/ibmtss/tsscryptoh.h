@@ -49,13 +49,6 @@ extern "C" {
 #endif
 
     LIB_EXPORT
-    uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
-#ifdef __ULTRAVISOR__
-	__attribute__ ((const))
-#endif
-	;
-
-    LIB_EXPORT
     uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg)
 #ifdef __ULTRAVISOR__
 	__attribute__ ((const))
