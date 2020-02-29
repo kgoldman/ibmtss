@@ -43,8 +43,11 @@
 #include <ibmtss/tssprint.h>
 #include <ibmtss/Unmarshal_fp.h>
 #include <ibmtss/tssmarshal.h>
+#include <ibmtss/tsserror.h>
+#ifndef TPM_TSS_NOCRYPTO
 #include <ibmtss/tsscryptoh.h>
 #include <ibmtss/tsscrypto.h>
+#endif /* TPM_TSS_NOCRYPTO */
 #include <ibmtss/tssutils.h>
 
 #include "eventlib.h"
@@ -259,6 +262,7 @@ TPM_RC TSS_EVENT_Line_LE_Unmarshal(TCG_PCR_EVENT *target, BYTE **buffer, uint32_
     return rc;
 }
 
+#ifndef TPM_TSS_NOCRYPTO
 /* TSS_EVENT_PCR_Extend() extends PCR digest with the digest from the TCG_PCR_EVENT event log
    entry.
 */
@@ -287,6 +291,7 @@ TPM_RC TSS_EVENT_PCR_Extend(TPMT_HA pcrs[IMPLEMENTATION_PCR],
     }
     return rc;
 }
+#endif /* TPM_TSS_NOCRYPTO */
 
 void TSS_EVENT_Line_Trace(TCG_PCR_EVENT *event)
 {
@@ -695,6 +700,7 @@ TPM_RC TSS_EVENT2_Line_LE_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint3
     return rc;
 }
 
+#ifndef TPM_TSS_NOCRYPTO
 /* TSS_EVENT2_PCR_Extend() extends PCR digests with the digest from the TCG_PCR_EVENT2 event log
    entry.
 */
@@ -750,7 +756,7 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
     }
     return rc;
 }
-
+#endif /* TPM_TSS_NOCRYPTO */
 #endif	/* TPM_TPM20 */
 
 #ifndef TPM_TSS_NOFILE
