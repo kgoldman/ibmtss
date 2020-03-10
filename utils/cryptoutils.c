@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018 - 2019.					*/
+/* (c) Copyright IBM Corporation 2018 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -1026,6 +1026,7 @@ TPM_RC convertEcPemToPublic(TPM2B_PUBLIC 	*objectPublic,
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
+#ifndef TPM_TSS_NORSA
 
 /* convertRsaPemToKeyPair() converts an RSA PEM file to a TPM2B_PUBLIC and TPM2B_PRIVATE */
 
@@ -1072,8 +1073,9 @@ TPM_RC convertRsaPemToKeyPair(TPM2B_PUBLIC 		*objectPublic,
     return rc;
 }
 
-#endif
-#endif
+#endif /* TPM_TSS_NORSA */
+#endif /* TPM_TPM20 */
+#endif /* TPM_TSS_NOFILE */
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
@@ -1193,6 +1195,7 @@ TPM_RC convertEcDerToPublic(TPM2B_PUBLIC 		*objectPublic,
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
+#ifndef TPM_TSS_NORSA
 
 /* convertRsaDerToKeyPair() converts an RSA keypair stored in DER to a TPM2B_PUBLIC and
    TPM2B_SENSITIVE.  Useful for LoadExternal.
@@ -1290,8 +1293,9 @@ TPM_RC convertRsaDerToPublic(TPM2B_PUBLIC 		*objectPublic,
     return rc;
 }
 
-#endif
-#endif
+#endif /* TPM_TSS_NORSA */
+#endif /* TPM_TPM20 */
+#endif /* TPM_TSS_NOFILE */
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
@@ -1615,6 +1619,8 @@ TPM_RC verifySignatureFromPem(unsigned char *message,
 						 halg,
 						 evpPkey);
 	    break;
+#else
+	    halg = halg;
 #endif /* TPM_TSS_NORSA */
 #ifndef TPM_TSS_NOECC
 	  case TPM_ALG_ECDSA:
@@ -1636,6 +1642,8 @@ TPM_RC verifySignatureFromPem(unsigned char *message,
 }
 
 #endif
+
+#ifndef TPM_TSS_NORSA
 
 /* verifyRSASignatureFromEvpPubKey() verifies the signature 'tSignature' against the digest
    'message' using the RSA public key in evpPkey.
@@ -1813,6 +1821,8 @@ TPM_RC verifyRSASignatureFromRSA(unsigned char *message,
     }
     return rc;
 }
+
+#endif /* TPM_TSS_NORSA */
 
 #ifndef TPM_TSS_NOECC
 
