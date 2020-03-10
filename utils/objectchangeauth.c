@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
     /* save the private key */
     if ((rc == 0) && (privateKeyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.outPrivate,
-				     (MarshalFunction_t)TSS_TPM2B_PRIVATE_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_PRIVATE_Marshalu,
 				     privateKeyFilename);
     }
     if (rc == 0) {

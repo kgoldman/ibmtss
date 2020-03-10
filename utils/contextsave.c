@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     /* save the context */
     if ((rc == 0) && (contextFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.context,
-				     (MarshalFunction_t)TSS_TPMS_CONTEXT_Marshal,
+				     (MarshalFunction_t)TSS_TPMS_CONTEXT_Marshalu,
 				     contextFilename );
     }
     if (rc == 0) {

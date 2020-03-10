@@ -259,7 +259,7 @@ int main(int argc, char *argv[])
     }
     if ((rc == 0) && (ticketFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.validation,
-				     (MarshalFunction_t)TSS_TPMT_TK_HASHCHECK_Marshal,
+				     (MarshalFunction_t)TSS_TPMT_TK_HASHCHECK_Marshalu,
 				     ticketFilename);
     }
     if (rc == 0) {

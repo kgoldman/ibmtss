@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 	rc = TSS_Structure_Marshal(&buffer,	/* freed @1 */
 				   &written,
 				   &out.outData,
-				   (MarshalFunction_t)TSS_TPM2B_PUBLIC_KEY_RSA_Marshal);
+				   (MarshalFunction_t)TSS_TPM2B_PUBLIC_KEY_RSA_Marshalu);
     }
     if ((rc == 0) && (encryptFilename != NULL)) {
 	rc = TSS_File_WriteBinaryFile(buffer + sizeof(uint16_t),

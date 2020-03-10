@@ -705,7 +705,7 @@ int main(int argc, char *argv[])
 	    rc = TSS_Structure_Marshal(&buffer,	/* freed @1 */
 				       &written,
 				       &out.creationData.creationData,
-				       (MarshalFunction_t)TSS_TPMS_CREATION_DATA_Marshal);
+				       (MarshalFunction_t)TSS_TPMS_CREATION_DATA_Marshalu);
 	}
 	/* recalculate the creationHash from creationData */
 	if (rc == 0) {
@@ -728,7 +728,7 @@ int main(int argc, char *argv[])
     /* save the public key */
     if ((rc == 0) && (publicKeyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.outPublic,
-				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshalu,
 				     publicKeyFilename);
     }
     /* save the optional PEM public key */
@@ -739,7 +739,7 @@ int main(int argc, char *argv[])
     /* save the optional creation ticket */
     if ((rc == 0) && (ticketFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.creationTicket,
-				     (MarshalFunction_t)TSS_TPMT_TK_CREATION_Marshal,
+				     (MarshalFunction_t)TSS_TPMT_TK_CREATION_Marshalu,
 				     ticketFilename);
     }
     /* save the optional creation hash */

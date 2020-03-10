@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     }
     if ((rc == 0) && (datafilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.parameters,
-				     (MarshalFunction_t)TSS_TPMS_ALGORITHM_DETAIL_ECC_Marshal,
+				     (MarshalFunction_t)TSS_TPMS_ALGORITHM_DETAIL_ECC_Marshalu,
 				     datafilename);
     }
     if (rc == 0) {

@@ -516,7 +516,7 @@ int main(int argc, char *argv[])
     }
     if ((rc == 0) && (signatureFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.signature,
-				     (MarshalFunction_t)TSS_TPMT_SIGNATURE_Marshal,
+				     (MarshalFunction_t)TSS_TPMT_SIGNATURE_Marshalu,
 				     signatureFilename);
     }
     if (rc == 0) {

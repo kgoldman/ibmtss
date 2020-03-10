@@ -356,7 +356,7 @@ int main(int argc, char *argv[])
     }
     if ((rc == 0) && (ticketFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.policyTicket,
-				     (MarshalFunction_t)TSS_TPMT_TK_AUTH_Marshal,
+				     (MarshalFunction_t)TSS_TPMT_TK_AUTH_Marshalu,
 				     ticketFilename);
     }
     if ((rc == 0) && (timeoutFilename != NULL)) {

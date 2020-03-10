@@ -308,14 +308,14 @@ int main(int argc, char *argv[])
     }
     if ((rc == 0) && (z1Filename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.outZ1,
-				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshalu,
 				     z1Filename);
 
 
     }
     if ((rc == 0) && (z2Filename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.outZ2,
-				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshalu,
 				     z2Filename);
 
 
