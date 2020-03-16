@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2019						*/
+/* (c) Copyright IBM Corporation 2019 - 2020					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -43,18 +43,34 @@
 
 #include "cryptoutils.h"
 
+static void printUsage(void);
+
 extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
     TPM_RC		rc = 0;
+    int			i;    /* argc iterator */
     const char 		*name = NULL;
 
-    argc = argc;
-    argv = argv;
-    
+    /* command line argument defaults */
+    for (i=1 ; (i<argc) && (rc == 0) ; i++) {
+	if (strcmp(argv[i],"-h") == 0) {
+	    printUsage();
+	}
+    }
     getCryptoLibrary(&name);
     printf("%s\n", name);
     return rc;
 }
 
+static void printUsage(void)
+{
+    printf("\n");
+    printf("getcryptolibrary\n");
+    printf("\n");
+    printf("Returns a string indicating the crypto library compiled in.\n");
+    printf("\n");
+    printf("This is used within test scripts.\n");
+    exit(1);	
+}
