@@ -1,0 +1,83 @@
+dist: bionic
+language: C
+services:
+    - docker
+
+matrix:
+    include:
+        # 32 bit build
+        - os: linux
+          env: DISTRO=debian:stable VARIANT=i386 ARCH=i386
+          compiler: gcc
+
+        # cross compilation builds
+        - os: linux
+          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=ppc64el
+          compiler: powerpc64le-linux-gnu-gcc
+
+        - os: linux
+          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=arm64
+          compiler: aarch64-linux-gnu-gcc
+
+        - os: linux
+          env: DISTRO=debian:stable VARIANT=cross-compile ARCH=s390x
+          compiler: s390x-linux-gnu-gcc
+
+        # musl
+        - os: linux
+          env: DISTRO=alpine:latest
+          compiler: gcc
+
+        # glibc (gcc/clang)
+        - os: linux
+          env: DISTRO=opensuse/tumbleweed
+          compiler: clang
+
+        - os: linux
+          env: DISTRO=opensuse/leap
+          compiler: gcc
+
+        - os: linux
+          env: DISTRO=ubuntu:groovy
+          compiler: gcc
+
+        - os: linux
+          env: DISTRO=ubuntu:xenial
+          compiler: clang
+
+        - os: linux
+          env: DISTRO=fedora:latest
+          compiler: clang
+
+        - os: linux
+          env: DISTRO=centos:7
+          compiler: gcc
+
+        - os: linux
+          env: DISTRO=centos:latest
+          compiler: clang
+
+        - os: linux
+          env: DISTRO=debian:testing
+          compiler: clang
+
+        - os: linux
+          env: DISTRO=debian:stable
+          compiler: gcc
+
+before_install:
+    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    - sudo add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    - sudo apt-get update
+    - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
+    - sudo rm -f /usr/local/bin/docker
+    - sudo systemctl restart docker
+    - df -hT
+    - DIR="/usr/src/tpm2"
+    - printf "FROM $DISTRO\nRUN mkdir -p $DIR\nWORKDIR $DIR\nCOPY . $DIR\n" > Dockerfile
+    - sudo docker build -t tpm2 .
+
+script:
+    - INSTALL="${DISTRO%%:*}"
+    - INSTALL="${INSTALL%%/*}"
+    - sudo docker run -t tpm2 /bin/sh -c "cd travis && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ARCH=\"$ARCH\" CC=\"$CC\" ./$INSTALL.sh && if [ ! \"$VARIANT\" ]; then ../travis/install-ibmtpm.sh; fi && CC=\"$CC\" VARIANT=\"$VARIANT\" ../build.sh"

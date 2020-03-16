@@ -1,5 +1,9 @@
 transform=s&^&tss&
 
+check-local:
+	./reg.sh -a
+
+
 lib_LTLIBRARIES = libibmtss.la
 #if CONFIG_TPM20
 lib_LTLIBRARIES += libibmtssutils.la
