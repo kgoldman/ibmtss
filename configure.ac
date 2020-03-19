@@ -3,13 +3,13 @@
 
 # Set package release version"
 # After committing set git tag version.
-AC_INIT(ibmtss, 1.2.1, kgold@linux.ibm.com)
+AC_INIT(ibmtss, 1.3.1, kgold@linux.ibm.com)
 AC_PREREQ([2.63])
 
 # Convert major.minor.micro to libtool versioning (current-revision-age)
 TSSLIB_VER_MAJOR=1
 TSSLIB_VER_MINOR=3
-TSSLIB_VER_MICRO=0
+TSSLIB_VER_MICRO=1
 TSSLIB_VERSION_INFO=`expr $TSSLIB_VER_MAJOR + $TSSLIB_VER_MINOR`:$TSSLIB_VER_MICRO:$TSSLIB_VER_MINOR
 AC_SUBST([TSSLIB_VERSION_INFO], [$TSSLIB_VERSION_INFO])
 
