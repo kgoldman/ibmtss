@@ -167,16 +167,14 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 #ifndef TPM_NOSOCKET
 	tssContext->sock_fd = -1;
 #endif 	/* TPM_NOSOCKET */
-#endif
 	tssContext->dev_fd = -1;
-#ifdef TPM_WINDOWS
-#ifdef TPM_WINDOWS_TBSI
-#endif
-#endif
+#endif	/* TPM_POSIX */
+
 #ifdef TPM_SKIBOOT
 	tssContext->tpm_driver = NULL;
 	tssContext->tpm_device = NULL;
 #endif /* TPM_SKIBOOT */
+	
 #ifndef TPM_TSS_NOCRYPTO
 #ifndef TPM_TSS_NOFILE
 	tssContext->tssSessionEncKey = NULL;

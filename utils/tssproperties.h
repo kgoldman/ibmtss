@@ -3,9 +3,8 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -59,18 +58,11 @@
 #endif /* TPM_SKIBOOT */
 
 #ifdef TPM_WINDOWS_TBSI
-/* Windows 7 */
-#if defined TPM_WINDOWS_TBSI_WIN7
-#include <c:/progra~1/Micros~2/Windows/v7.1/include/tbs.h>
-/* Windows 8, 10 */
-#elif defined  TPM_WINDOWS_TBSI_WIN8
 #include <tbs.h>
-#else
-#error "Must define either TPM_WINDOWS_TBSI_WIN7 or TPM_WINDOWS_TBSI_WIN8"
-#endif
-#endif
+#endif /* TPM_WINDOWS_TBSI */
 
 typedef SOCKET TSS_SOCKET_FD;
+
 #endif /* TPM_WINDOWS */
 
 #ifdef TPM_POSIX
@@ -164,7 +156,9 @@ extern "C" {
 #endif 	/* TPM_NOSOCKET */
 
 	/* Linux device file descriptor */
+#ifdef TPM_POSIX
 	int dev_fd;
+#endif	/* TPM_POSIX */
 
 	/* Windows device driver handle */
 #ifdef TPM_WINDOWS
