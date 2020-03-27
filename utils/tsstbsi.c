@@ -1,11 +1,10 @@
 /********************************************************************************/
 /*										*/
-/*	Windows 7,8,10 Device Transmit and Receive Utilities			*/
+/*	Windows 10 Device Transmit and Receive Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tsstbsi.c 1308 2018-08-21 16:55:56Z kgoldman $ 		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -39,26 +38,6 @@
 
 #ifdef TPM_WINDOWS_TBSI
 
-/*
-  Must copy winerror.h with the TBS error codes to:
-  
-  C:\Program Files\MinGW\include
-
-  Original obtained from
-  
-  http://sourceforge.net/apps/trac/mingw-w64/browser/experimental/headers_additions_test/include/winerror.h?rev=5328
-
-  Link with:
-
-  Windows 7
-
-  c:/progra~1/Micros~2/Windows/v7.1/lib/Tbs.lib
-
-  Windows 8
-
-  tbs.lib
-*/
-
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,17 +57,9 @@
 #include <ibmtss/Unmarshal_fp.h>
 #include "tssproperties.h"
 
-#include "tsstbsi.h"
-
-
 /* local prototypes */
 
-static uint32_t TSS_Tbsi_Open(
-#if defined TPM_WINDOWS_TBSI_WIN7
-			      TBS_CONTEXT_PARAMS *contextParams,
-#elif defined  TPM_WINDOWS_TBSI_WIN8
-			      TBS_CONTEXT_PARAMS2 *contextParams,
-#endif
+static uint32_t TSS_Tbsi_Open(TBS_CONTEXT_PARAMS2 *contextParams,
 			      TBS_HCONTEXT *hContext);
 static uint32_t TSS_Tbsi_SubmitCommand(TBS_HCONTEXT hContext,
 				       uint8_t *responseBuffer, uint32_t *read,
@@ -103,35 +74,21 @@ static void TSS_Tbsi_GetTBSError(const char *prefix,
 extern int tssVverbose;
 extern int tssVerbose;
 
-/* TSS_Tbsi_Transmit() transmits the command and receives the response. 'responseBuffer' must be at
+/* TSS_Dev_Transmit() transmits the command and receives the response. 'responseBuffer' must be at
    least MAX_RESPONSE_SIZE bytes.
-
 
    Can return device transmit and receive packet errors, but normally returns the TPM response code.
 */
 
-TPM_RC TSS_Tbsi_Transmit(TSS_CONTEXT *tssContext,
+TPM_RC TSS_Dev_Transmit(TSS_CONTEXT *tssContext,
 			 uint8_t *responseBuffer, uint32_t *read,
 			 const uint8_t *commandBuffer, uint32_t written,
 			 const char *message)
 {
     TPM_RC rc = 0;
-#if defined TPM_WINDOWS_TBSI_WIN7
-    TBS_CONTEXT_PARAMS contextParams;
-#elif defined  TPM_WINDOWS_TBSI_WIN8
     TBS_CONTEXT_PARAMS2 contextParams;
-#else
-#error "One of TPM_WINDOWS_TBSI_WIN7 or TPM_WINDOWS_TBSI_WIN8 must be defined"
-#endif
 
     if (rc == 0) {
-#if defined TPM_WINDOWS_TBSI_WIN7
-	if (!tssContext->tpm12Command) {
-	    if (tssVerbose) printf("TSS_Tbsi_Transmit: TPM 2.0 unsupported\n");
-	    rc = TSS_RC_INSUPPORTED_INTERFACE;
-	}
-	contextParams.version = TBS_CONTEXT_VERSION_ONE;
-#elif defined  TPM_WINDOWS_TBSI_WIN8
 	contextParams.version = TBS_CONTEXT_VERSION_TWO;
 	if (!tssContext->tpm12Command) {	/* TPM 2.0 command */
 	    contextParams.includeTpm12 = 0;
@@ -141,7 +98,6 @@ TPM_RC TSS_Tbsi_Transmit(TSS_CONTEXT *tssContext,
 	    contextParams.includeTpm12 = 1;
 	    contextParams.includeTpm20 = 0;
 	}
-#endif
     }
     *read = MAX_RESPONSE_SIZE;
     /* open on first transmit */
@@ -152,7 +108,7 @@ TPM_RC TSS_Tbsi_Transmit(TSS_CONTEXT *tssContext,
 	if (rc == 0) {
 	    tssContext->tssFirstTransmit = FALSE;
 	}
-     }
+    }
     /* send the command to the device.  Error if the device send fails. */
     if (rc == 0) {
 	rc = TSS_Tbsi_SubmitCommand(tssContext->hContext,
@@ -165,12 +121,7 @@ TPM_RC TSS_Tbsi_Transmit(TSS_CONTEXT *tssContext,
 
 /* TSS_Tbsi_Open() opens the TPM device */
 
-static uint32_t TSS_Tbsi_Open(
-#if defined TPM_WINDOWS_TBSI_WIN7
-			      TBS_CONTEXT_PARAMS *contextParams,
-#elif defined  TPM_WINDOWS_TBSI_WIN8
-			      TBS_CONTEXT_PARAMS2 *contextParams,
-#endif
+static uint32_t TSS_Tbsi_Open(TBS_CONTEXT_PARAMS2 *contextParams,
 			      TBS_HCONTEXT *hContext)
 {
     uint32_t rc = 0;
@@ -240,10 +191,10 @@ static uint32_t TSS_Tbsi_SubmitCommand(TBS_HCONTEXT hContext,
     return rc;
 }
 
-TPM_RC TSS_Tbsi_Close(TSS_CONTEXT *tssContext)
+TPM_RC TSS_Dev_Close(TSS_CONTEXT *tssContext)
 {
     TPM_RC rc = 0;
-    if (tssVverbose) printf("TSS_Tbsi_Close: Closing connection\n");
+    if (tssVverbose) printf("TSS_Dev_Close: Closing connection\n");
     rc = Tbsip_Context_Close(tssContext->hContext);
     return rc;
 }
@@ -336,10 +287,9 @@ static void TSS_Tbsi_GetTBSError(const char *prefix,
 	error_string = "unknown error type\n";
 	break;
 
-	
     }
     printf("%s %s\n", prefix, error_string);
     return;
 }
 
-#endif	/* TPM_WINDOWS */
+#endif	/* TPM_WINDOWS_TBSI */
