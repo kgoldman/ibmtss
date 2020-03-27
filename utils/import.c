@@ -335,7 +335,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	rc = TSS_File_WriteStructure(&out.outPrivate,
-				     (MarshalFunction_t)TSS_TPM2B_PRIVATE_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_PRIVATE_Marshalu,
 				     outPrivateFilename);
     }
     if (rc == 0) {

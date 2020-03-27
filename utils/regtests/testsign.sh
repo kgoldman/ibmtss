@@ -48,10 +48,10 @@ for BITS in 2048 3072
 do
 
     echo "Create an RSA $BITS key pair in PEM format using openssl"
-    openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr 2048 > run.out
+    openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
 
     echo "Convert RSA $BITS key pair to plaintext DER format"
-    openssl rsa -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out
+    openssl rsa -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out 2>&1
 
     echo "Load the RSA $BITS signing key under the primary key"
     ${PREFIX}load -hp 80000000 -ipr signrsa${BITS}priv.bin -ipu signrsa${BITS}pub.bin -pwdp sto > run.out
@@ -119,11 +119,11 @@ checkSuccess $?
 
 echo "Create an ECC key pair in PEM format using openssl"
   
-openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out
+openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out 2>&1
 
 echo "Convert key pair to plaintext DER format"
 
-openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
+openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out 2>&1
 
 for HALG in ${ITERATE_ALGS}
 do
@@ -294,7 +294,7 @@ ${PREFIX}loadexternal -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.o
 checkSuccess $?
 
 echo "Sign a test message with openssl RSA"
-openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
+openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin > run.out 2>&1
 
 echo "Verify the RSA signature"
 ${PREFIX}verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw > run.out
@@ -314,7 +314,7 @@ ${PREFIX}loadexternal -halg sha1 -nalg sha1 -ipem policies/p256pubkey.pem -ecc >
 checkSuccess $?
 
 echo "Sign a test message with openssl ECC"
-openssl dgst -sha1 -sign policies/p256privkey.pem -out pssig.bin msg.bin
+openssl dgst -sha1 -sign policies/p256privkey.pem -out pssig.bin msg.bin > run.out 2>&1
 
 echo "Verify the ECC signature"
 ${PREFIX}verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw -ecc > run.out

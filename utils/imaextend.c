@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2014 - 2019.					*/
+/* (c) Copyright IBM Corporation 2014 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -57,6 +57,7 @@
 #include <ibmtss/tss.h>
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tssutils.h>
 
 #include "imalib.h"
 

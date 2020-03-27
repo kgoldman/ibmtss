@@ -574,13 +574,13 @@ int main(int argc, char *argv[])
     /* save the private key */
     if ((rc == 0) && (privateKeyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.outPrivate,
-				     (MarshalFunction_t)TSS_TPM2B_PRIVATE_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_PRIVATE_Marshalu,
 				     privateKeyFilename);
     }
     /* save the public key */
     if ((rc == 0) && (publicKeyFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.outPublic,
-				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshalu,
 				     publicKeyFilename);
     }
     /* save the optional PEM public key */

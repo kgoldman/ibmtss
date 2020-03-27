@@ -258,13 +258,13 @@ int main(int argc, char *argv[])
     /* optionally save the credential */
     if ((rc == 0) && (outputCredentialFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.credentialBlob,
-				     (MarshalFunction_t)TSS_TPM2B_ID_OBJECT_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_ID_OBJECT_Marshalu,
 				     outputCredentialFilename);
     }
     /* optionally save the secret */
     if ((rc == 0) && (secretFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.secret,
-				     (MarshalFunction_t)TSS_TPM2B_ENCRYPTED_SECRET_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_ENCRYPTED_SECRET_Marshalu,
 				     secretFilename);
     }
     if (rc == 0) {

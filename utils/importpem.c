@@ -420,13 +420,13 @@ int main(int argc, char *argv[])
     /* output the TPM2B_PUBLIC */
     if (rc == 0) {
 	rc = TSS_File_WriteStructure(&in.objectPublic,
-				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshalu,
 				     outPublicFilename);
     }
     /* output the TPM2B_PRIVATE, which is now wrapped by the parent */
     if (rc == 0) {
 	rc = TSS_File_WriteStructure(&out.outPrivate,
-				     (MarshalFunction_t)TSS_TPM2B_PRIVATE_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_PRIVATE_Marshalu,
 				     outPrivateFilename);
     }
     if (rc == 0) {

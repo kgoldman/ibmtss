@@ -151,14 +151,14 @@ int main(int argc, char *argv[])
     }
     if ((rc == 0) && (QFilename != NULL)) {
         rc = TSS_File_WriteStructure(&out.Q,
-                                     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshal,
+                                     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshalu,
 				     QFilename);
     }
     if (rc == 0) {
 	if (tssUtilsVerbose) printf("counter is %d\n", out.counter);
 	if (counterFilename != NULL)  {
 	    rc = TSS_File_WriteStructure(&out.counter,
-					 (MarshalFunction_t)TSS_UINT16_Marshal,
+					 (MarshalFunction_t)TSS_UINT16_Marshalu,
 					 counterFilename);
 	}
     }

@@ -1917,7 +1917,7 @@ static TPM_RC TSS_Public_Store(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_Public_Store: File %s\n", publicFilename);
 	rc = TSS_File_WriteStructure(public,
-				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_PUBLIC_Marshalu,
 				     publicFilename);
     }
     return rc;
@@ -2265,7 +2265,7 @@ static TPM_RC TSS_NVPublic_Store(TSS_CONTEXT *tssContext,
     if (rc == 0) {
 	sprintf(nvpFilename, "%s/nvp%08x.bin", tssContext->tssDataDirectory, nvIndex);
 	rc = TSS_File_WriteStructure(nvPublic,
-				     (MarshalFunction_t)TSS_TPMS_NV_PUBLIC_Marshal,
+				     (MarshalFunction_t)TSS_TPMS_NV_PUBLIC_Marshalu,
 				     nvpFilename);
     }
     return rc;

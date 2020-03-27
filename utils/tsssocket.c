@@ -78,7 +78,7 @@ static uint32_t TSS_Socket_SendCommand(TSS_CONTEXT *tssContext,
 				       const uint8_t *buffer, uint16_t length,
 				       const char *message);
 static uint32_t TSS_Socket_SendPlatform(TSS_SOCKET_FD sock_fd, uint32_t command, const char *message);
-static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext, uint8_t *buffer, uint32_t *length);
+static uint32_t TSS_Socket_ReceiveResponse(TSS_CONTEXT *tssContext, uint8_t *buffer, uint32_t *length);
 static uint32_t TSS_Socket_ReceivePlatform(TSS_SOCKET_FD sock_fd);
 static uint32_t TSS_Socket_ReceiveBytes(TSS_SOCKET_FD sock_fd, uint8_t *buffer, uint32_t nbytes);
 static uint32_t TSS_Socket_SendBytes(TSS_SOCKET_FD sock_fd, const uint8_t *buffer, size_t length);
@@ -213,7 +213,7 @@ TPM_RC TSS_Socket_Transmit(TSS_CONTEXT *tssContext,
     /* receive the response over the socket.  Returns socket errors, malformed response errors.
        Else returns the TPM response code. */
     if (rc == 0) {
-	rc = TSS_Socket_ReceiveCommand(tssContext, responseBuffer, read);
+	rc = TSS_Socket_ReceiveResponse(tssContext, responseBuffer, read);
     }
     /* rawsingle flags a close after each command */
     if (rawsingle) {
@@ -456,7 +456,7 @@ static uint32_t TSS_Socket_SendBytes(TSS_SOCKET_FD sock_fd, const uint8_t *buffe
     return 0;
 }
 
-/* TSS_Socket_ReceiveCommand() reads a TPM response packet from the socket.  'buffer' must be at
+/* TSS_Socket_ReceiveResponse() reads a TPM response packet from the socket.  'buffer' must be at
    least MAX_RESPONSE_SIZE bytes.  The bytes read are returned in 'length'.
 
    The MS simulator packet is of the form:
@@ -470,7 +470,7 @@ static uint32_t TSS_Socket_SendBytes(TSS_SOCKET_FD sock_fd, const uint8_t *buffe
    Validates that the packet length and the packet responseSize match 
 */
 
-static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
+static uint32_t TSS_Socket_ReceiveResponse(TSS_CONTEXT *tssContext,
 					  uint8_t *buffer, uint32_t *length)
 {
     uint32_t 	rc = 0;
@@ -511,14 +511,14 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
 	/* check the response size, see TSS_CONTEXT structure */
 	if (responseSize > MAX_RESPONSE_SIZE) {
 	    if (tssVerbose)
-		printf("TSS_Socket_ReceiveCommand: ERROR: responseSize %u greater than %u\n",
+		printf("TSS_Socket_ReceiveResponse: ERROR: responseSize %u greater than %u\n",
 		       responseSize, MAX_RESPONSE_SIZE);
 	    rc = TSS_RC_BAD_CONNECTION;
 	}
 	/* check that MS sim prepended length is the same as the response TPM packet
 	   length parameter */
 	if (mssim && (responseSize != responseLength)) {
-	    if (tssVerbose) printf("TSS_Socket_ReceiveCommand: "
+	    if (tssVerbose) printf("TSS_Socket_ReceiveResponse: "
 				   "ERROR: responseSize %u not equal to responseLength %u\n",
 				   responseSize, responseLength);
 	    rc = TSS_RC_BAD_CONNECTION;
@@ -531,7 +531,7 @@ static uint32_t TSS_Socket_ReceiveCommand(TSS_CONTEXT *tssContext,
 				     responseSize - (sizeof(TPM_ST) + sizeof(uint32_t)));
     }
     if ((rc == 0) && tssVverbose) {
-	TSS_PrintAll("TSS_Socket_ReceiveCommand",
+	TSS_PrintAll("TSS_Socket_ReceiveResponse",
 		     buffer, responseSize);
     }
     /* read the MS sim acknowledgement */

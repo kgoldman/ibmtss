@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
     /* save the Name */
     if ((rc == 0) && (nameFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&name,
-				     (MarshalFunction_t)TSS_TPMT_HA_Marshal,
+				     (MarshalFunction_t)TSS_TPMT_HA_Marshalu,
 				     nameFilename);
     }
     if (rc != 0) {

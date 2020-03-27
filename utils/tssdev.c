@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -157,9 +157,8 @@ static uint32_t TSS_Dev_SendCommand(int dev_fd,
 static uint32_t TSS_Dev_ReceiveResponse(int dev_fd, uint8_t *buffer, uint32_t *length)
 {
     uint32_t 	rc = 0;
-    int 	irc;
-    uint32_t 	responseSize = 0;
-    uint32_t 	responseCode = 0;
+    int 	irc;		/* read() return code, negative is error, positive is length */
+    uint32_t 	responseSize = 0;	/* from TPM packet response stream */
 
     if (tssVverbose) printf("TSS_Dev_ReceiveResponse:\n");
     /* read the TPM device */
@@ -173,11 +172,12 @@ static uint32_t TSS_Dev_ReceiveResponse(int dev_fd, uint8_t *buffer, uint32_t *l
 	    }
 	}
     }
+    /* read() is successful, trace the response */
     if ((rc == 0) && tssVverbose) {
 	TSS_PrintAll("TSS_Dev_ReceiveResponse",
 		     buffer, irc);
     }
-    /* verify that there is at least a tag, responseSize, and responseCode */
+    /* verify that there is at least a tag, responseSize, and responseCode in TPM response */
     if (rc == 0) {
 	if ((unsigned int)irc < (sizeof(TPM_ST) + sizeof(uint32_t) + sizeof(uint32_t))) {
 	    if (tssVerbose) printf("TSS_Dev_ReceiveResponse: read bytes %u < header\n", irc);
@@ -191,17 +191,13 @@ static uint32_t TSS_Dev_ReceiveResponse(int dev_fd, uint8_t *buffer, uint32_t *l
 	if ((uint32_t)irc != responseSize) {
 	    if (tssVerbose) printf("TSS_Dev_ReceiveResponse: read bytes %u != responseSize %u\n",
 				   (uint32_t)irc, responseSize);
-	    rc = TSS_RC_BAD_CONNECTION;
+	    rc = TSS_RC_MALFORMED_RESPONSE;
 	}
     }
-    /* read the TPM return code from the packet */
+    /* if there was no lower level failure, return the TPM packet responseCode */
     if (rc == 0) {
-	responseCode = ntohl(*(uint32_t *)(buffer + sizeof(TPM_ST)+ sizeof(uint32_t)));
+	rc = ntohl(*(uint32_t *)(buffer + sizeof(TPM_ST)+ sizeof(uint32_t)));
     }
-    if (rc == 0) {
-	rc = responseCode;
-    }
-	
     *length = responseSize;
     if (tssVverbose) printf("TSS_Dev_ReceiveResponse: rc %08x\n", rc);
     return rc;

@@ -3,9 +3,8 @@
 /*			    TSS Configuration Properties			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssproperties.h 1257 2018-06-27 20:52:08Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -54,19 +53,16 @@
 #include <windows.h>
 #include <specstrings.h>
 
-#ifdef TPM_WINDOWS_TBSI
-/* Windows 7 */
-#if defined TPM_WINDOWS_TBSI_WIN7
-#include <c:/progra~1/Micros~2/Windows/v7.1/include/tbs.h>
-/* Windows 8, 10 */
-#elif defined  TPM_WINDOWS_TBSI_WIN8
-#include <tbs.h>
-#else
-#error "Must define either TPM_WINDOWS_TBSI_WIN7 or TPM_WINDOWS_TBSI_WIN8"
-#endif
-#endif
+#ifdef TPM_SKIBOOT
+#include <libstb/tpm_chip.h>
+#endif /* TPM_SKIBOOT */
 
-typedef SOCKET TSS_SOCKET_FD; 
+#ifdef TPM_WINDOWS_TBSI
+#include <tbs.h>
+#endif /* TPM_WINDOWS_TBSI */
+
+typedef SOCKET TSS_SOCKET_FD;
+
 #endif /* TPM_WINDOWS */
 
 #ifdef TPM_POSIX
@@ -95,7 +91,7 @@ extern "C" {
     } TSS_SESSIONS;
 
     /* Structure to hold transient or persistent object data within the context */
-    
+
     typedef struct TSS_OBJECT_PUBLIC {
 	TPM_HANDLE objectHandle;
 	TPM2B_NAME name;
@@ -160,7 +156,9 @@ extern "C" {
 #endif 	/* TPM_NOSOCKET */
 
 	/* Linux device file descriptor */
+#ifdef TPM_POSIX
 	int dev_fd;
+#endif	/* TPM_POSIX */
 
 	/* Windows device driver handle */
 #ifdef TPM_WINDOWS
@@ -169,11 +167,15 @@ extern "C" {
 #endif
 #endif
 
+#ifdef TPM_SKIBOOT
+	struct tpm_dev *tpm_device;
+	struct tpm_driver *tpm_driver;
+#endif /* TPM_SKIBOOT */
     };
 
     TPM_RC TSS_GlobalProperties_Init(void);
     TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext);
-    
+
 #ifdef __cplusplus
 }
 #endif

@@ -93,13 +93,13 @@ echo ""
 
 echo "Create RSA and ECC key pairs in PEM format using openssl"
   
-openssl genrsa -out tmpkeypairrsa.pem -aes256 -passout pass:rrrr 2048 > run.out
-openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out
+openssl genrsa -out tmpkeypairrsa.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
+openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out 2>&1
 
 echo "Convert key pair to plaintext DER format"
 
-openssl rsa -inform pem -outform der -in tmpkeypairrsa.pem -out tmpkeypairrsa.der -passin pass:rrrr > run.out
-openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
+openssl rsa -inform pem -outform der -in tmpkeypairrsa.pem -out tmpkeypairrsa.der -passin pass:rrrr > run.out 2>&1
+openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out 2>&1
 
 for HALG in ${ITERATE_ALGS}
 do

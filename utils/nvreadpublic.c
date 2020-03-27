@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
     /* save the public key */
     if ((rc == 0) && (nvPublicFilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.nvPublic,
-				     (MarshalFunction_t)TSS_TPM2B_NV_PUBLIC_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_NV_PUBLIC_Marshalu,
 				     nvPublicFilename);
     }
     /* save the Name */

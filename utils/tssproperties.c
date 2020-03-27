@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -167,12 +167,14 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 #ifndef TPM_NOSOCKET
 	tssContext->sock_fd = -1;
 #endif 	/* TPM_NOSOCKET */
-#endif
 	tssContext->dev_fd = -1;
-#ifdef TPM_WINDOWS
-#ifdef TPM_WINDOWS_TBSI
-#endif
-#endif
+#endif	/* TPM_POSIX */
+
+#ifdef TPM_SKIBOOT
+	tssContext->tpm_driver = NULL;
+	tssContext->tpm_device = NULL;
+#endif /* TPM_SKIBOOT */
+	
 #ifndef TPM_TSS_NOCRYPTO
 #ifndef TPM_TSS_NOFILE
 	tssContext->tssSessionEncKey = NULL;
@@ -320,7 +322,7 @@ static TPM_RC TSS_SetTraceLevel(const char *value)
 	    value = TPM_TRACE_LEVEL_DEFAULT;
 	}
     }
-#ifndef __ULTRAVISOR__
+#if !defined(__ULTRAVISOR__) && !defined(TPM_SKIBOOT)
     if (rc == 0) {
 	irc = sscanf(value, "%u", &level);
 	if (irc != 1) {
@@ -328,7 +330,8 @@ static TPM_RC TSS_SetTraceLevel(const char *value)
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
-#else	/* disable tracing within the ultravisor, which doesn't implement sscanf() anyway */
+    /* disable tracing within the ultravisor and skiboot, which doesn't implement sscanf() anyway */
+#else
     irc = irc;
     level = 0;
 #endif
@@ -386,7 +389,7 @@ static TPM_RC TSS_SetCommandPort(TSS_CONTEXT *tssContext, const char *value)
 	    value = TPM_COMMAND_PORT_DEFAULT;
 	}
     }
-#ifndef __ULTRAVISOR__
+#ifndef TPM_NOSOCKET
     if (rc == 0) {
 	irc = sscanf(value, "%hu", &tssContext->tssCommandPort);
 	if (irc != 1) {
@@ -394,11 +397,10 @@ static TPM_RC TSS_SetCommandPort(TSS_CONTEXT *tssContext, const char *value)
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
-#else	/* disable within the ultravisor, which doesn't implement sscanf() anyway.  It's a don't
-	   care because the ultravisor does not use sockets. */
+#else
     tssContext->tssCommandPort = 0;
     irc = irc;
-#endif
+#endif /* TPM_NOSOCKET */
     return rc;
 }
 
@@ -416,7 +418,7 @@ static TPM_RC TSS_SetPlatformPort(TSS_CONTEXT *tssContext, const char *value)
 	    value = TPM_PLATFORM_PORT_DEFAULT;
 	}
     }
-#ifndef __ULTRAVISOR__
+#ifndef TPM_NOSOCKET
    if (rc == 0) {
 	irc = sscanf(value, "%hu", &tssContext->tssPlatformPort);
 	if (irc != 1) {
@@ -424,11 +426,10 @@ static TPM_RC TSS_SetPlatformPort(TSS_CONTEXT *tssContext, const char *value)
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
-#else	/* disable within the ultravisor, which doesn't implement sscanf() anyway.  It's a don't
-	   care because the ultravisor does not use sockets. */
+#else
    tssContext->tssPlatformPort = 0;
     irc = irc;
-#endif
+#endif /* TPM_NOSOCKET */
     return rc;
 }
 
@@ -518,7 +519,7 @@ static TPM_RC TSS_SetEncryptSessions(TSS_CONTEXT *tssContext, const char *value)
 	    value = TPM_ENCRYPT_SESSIONS_DEFAULT;
 	}
     }
-#ifndef __ULTRAVISOR__
+#ifndef TPM_TSS_NOFILE
    if (rc == 0) {
 	irc = sscanf(value, "%u", &tssContext->tssEncryptSessions);
 	if (irc != 1) {
@@ -526,10 +527,9 @@ static TPM_RC TSS_SetEncryptSessions(TSS_CONTEXT *tssContext, const char *value)
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
-#else	/* disable within the ultravisor, which doesn't implement sscanf() anyway.  It's a don't
-	   care because the ultravisor does not use files. */
+#else
    tssContext->tssEncryptSessions = TRUE;
    irc = irc;
-#endif
+#endif /* TPM_TSS_NOFILE */
    return rc;
 }

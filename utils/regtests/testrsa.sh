@@ -50,10 +50,10 @@ for BITS in 2048 3072
 do
 
     echo "generate the RSA $BITS encryption key with openssl"
-    openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr 2048
+    openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
 
     echo "Convert key pair to plaintext DER format"
-    openssl rsa -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out
+    openssl rsa -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out 2>&1
 
 done
 
@@ -232,7 +232,7 @@ ${PREFIX}load -hp 80000000 -pwdp sto -ipr tmpprivkey.bin -ipu tmppubkey.bin  > r
 checkSuccess $?
 
 echo "Encrypt using OpenSSL and the PEM public key"
-openssl rsautl -oaep -encrypt -inkey tmppubkey.pem -pubin -in policies/aaa -out enc.bin > run.out
+openssl rsautl -oaep -encrypt -inkey tmppubkey.pem -pubin -in policies/aaa -out enc.bin > run.out 2>&1
 checkSuccess $?
 
 echo "Decrypt using TPM key at 80000001"

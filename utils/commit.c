@@ -324,21 +324,21 @@ int main(int argc, char *argv[])
     }
     if ((rc == 0) && (Kfilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.K,
-				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshalu,
 				     Kfilename);
 
 
     }
     if ((rc == 0) && (Lfilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.L,
-				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshalu,
 				     Lfilename);
 
 
     }
     if ((rc == 0) && (Efilename != NULL)) {
 	rc = TSS_File_WriteStructure(&out.E,
-				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshal,
+				     (MarshalFunction_t)TSS_TPM2B_ECC_POINT_Marshalu,
 				     Efilename);
 
 
@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
 	if (tssUtilsVerbose) printf("counter is %d\n", out.counter);
         if (counterFilename != NULL)  {
 	    rc = TSS_File_WriteStructure(&out.counter,
-					 (MarshalFunction_t)TSS_UINT16_Marshal,
+					 (MarshalFunction_t)TSS_UINT16_Marshalu,
 					 counterFilename);
         }
     } 
