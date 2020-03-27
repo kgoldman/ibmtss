@@ -8,7 +8,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2016 - 2019					#
+# (c) Copyright IBM Corporation 2016 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -372,7 +372,7 @@ checkSuccess $?
 # Once per new PCR approved values, signer authorizing PCRs in policysha256.bin
 
 echo "Openssl generate and sign aHash (empty policyRef) ${HALG}"
-openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policypcr16aaasha256.bin
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policypcr16aaasha256.bin > run.out 2>&1
 echo " INFO:"
 
 # Once per boot, simulating setting PCRs to authorized values, lock

@@ -329,7 +329,7 @@ do
     checkSuccess $?
 
     echo "Sign a test message with openssl - $HALG"
-    openssl dgst -$HALG -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
+    openssl dgst -$HALG -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin > run.out 2>&1
 
     echo "Verify the signature with 80000001 - $HALG"
     ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if msg.bin -is pssig.bin -raw > run.out
@@ -368,7 +368,7 @@ do
     checkSuccess $?
 
     echo "Sign just expiration (uint32_t 4 zeros) with openssl - $HALG"
-    openssl dgst -$HALG -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/zero4.bin
+    openssl dgst -$HALG -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/zero4.bin > run.out 2>&1
 
     echo "Policy signed, signature generated externally - $HALG"
     ${PREFIX}policysigned -hk 80000001 -ha 03000000 -halg $HALG -is pssig.bin > run.out
@@ -675,7 +675,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Openssl generate and sign aHash (empty policyRef)"
-openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policyccsign.bin
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policyccsign.bin > run.out 2>&1
 
 echo "Verify the signature to generate ticket 80000001"
 ${PREFIX}verifysignature -hk 80000001 -halg sha256 -if policies/policyccsign.bin -is pssig.bin -raw -tk tkt.bin > run.out
@@ -1222,7 +1222,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Sign aHash with openssl 8813 6530 ..."
-openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out sig.bin policies/nvwriteahasha.bin
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out sig.bin policies/nvwriteahasha.bin > run.out 2>&1
 echo ""
 
 echo "Policy signed, signature generated externally"
@@ -1285,7 +1285,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Sign aHash with openssl 3700 0a91 ..."
-openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out sig.bin policies/nvwriteahashb.bin > run.out
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out sig.bin policies/nvwriteahashb.bin > run.out 2>&1
 echo ""
 
 echo "Policy signed, signature generated externally"
@@ -1522,7 +1522,7 @@ ${PREFIX}flushcontext -ha 80000002 > run.out
 checkSuccess $?
 
 echo "Openssl generate and sign aHash (empty policyRef)"
-openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policydupsel-yes.bin
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policydupsel-yes.bin > run.out 2>&1
 
 echo "Load external just the public part of PEM authorizing key 80000002"
 ${PREFIX}loadexternal -hi p -halg sha256 -nalg sha256 -ipem policies/rsapubkey.pem > run.out
@@ -1641,7 +1641,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Openssl generate and sign aHash (empty policyRef)"
-openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policynamehash.bin
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policynamehash.bin > run.out 2>&1
 
 echo "Load external just the public part of PEM authorizing key 80000002"
 ${PREFIX}loadexternal -hi p -halg sha256 -nalg sha256 -ipem policies/rsapubkey.pem > run.out
@@ -1894,7 +1894,7 @@ do
     checkSuccess $?
 
     echo "Convert the TPM PEM key to DER"
-    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin
+    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin > run.out 2>&1
     echo "INFO:"
 
     echo "Compute the DER Name"
@@ -1955,7 +1955,7 @@ do
     checkSuccess $?
 
     echo "Convert the TPM PEM key to DER"
-    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin -pubout
+    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin -pubout > run.out 2>&1
     echo "INFO:"
 
     echo "Compute the DER Name"

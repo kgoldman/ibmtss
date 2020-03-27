@@ -213,7 +213,7 @@ echo "Import PEM RSA signing key under RSA and ECC storage key"
 echo ""
 
 echo "generate the signing key with openssl"
-openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048
+openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
 
 echo "load the ECC storage key"
 ${PREFIX}load -hp 80000000 -pwdp sto -ipr storeeccpriv.bin -ipu storeeccpub.bin > run.out
@@ -267,13 +267,13 @@ echo ""
 
 echo "generate the signing key with openssl"
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
-    openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem
+    openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem 2>&1
 
 elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
 # plaintext key pair, legacy plaintext -----BEGIN PRIVATE KEY-----
-    openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -text -out tmpecprivkeydec.pem
+    openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -text -out tmpecprivkeydec.pem > run.out 2>&1
 # encrypt key pair, legacy encrypted -----BEGIN EC PRIVATE KEY-----
-    openssl ec -aes128 -passout pass:rrrr -in tmpecprivkeydec.pem -out tmpecprivkey.pem 
+    openssl ec -aes128 -passout pass:rrrr -in tmpecprivkeydec.pem -out tmpecprivkey.pem > run.out 2>&1
 
 else
     echo "Error: crypto library ${CRYPTOLIBRARY} not supported"

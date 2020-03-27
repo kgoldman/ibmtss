@@ -83,12 +83,12 @@ do
     # openssl x509 -text -inform der -in tmpx5091.bin -noout > tmpx5091.txt
 
     echo "Convert issuer X509 DER to PEM"
-    openssl x509 -inform der -in tmpx5091.bin -out tmpx5091.pem
+    openssl x509 -inform der -in tmpx5091.bin -out tmpx5091.pem > run.out 2>&1
     echo " INFO:"
 
     echo "Verify ${SALG[i]} self signed issuer root" 
     echo -n " INFO: "
-    openssl verify -CAfile tmpx5091.pem tmpx5091.pem
+    openssl verify -CAfile tmpx5091.pem tmpx5091.pem > run.out 2>&1
 
     echo "Signing Key Certify ${SALG[i]}"
     ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -iob 00040472 > run.out
@@ -105,12 +105,12 @@ do
     # openssl x509 -text -inform der -in tmpx5092.bin -noout > tmpx5092.txt
 
     echo "Convert subject X509 DER to PEM"
-    openssl x509 -inform der -in tmpx5092.bin -out tmpx5092.pem
+    openssl x509 -inform der -in tmpx5092.bin -out tmpx5092.pem > run.out 2>&1
     echo " INFO:"
 
     echo "Verify ${SALG[i]} subject against issuer" 
     echo -n " INFO: "
-    openssl verify -CAfile tmpx5091.pem tmpx5092.pem
+    openssl verify -CAfile tmpx5091.pem tmpx5092.pem > run.out 2>&1
 
 
     echo "Signing Key Certify ${SALG[i]} with bad OID"

@@ -462,7 +462,7 @@ do
     # Once per new PCR approved values, authorizing PCRs in policy${HALG}.bin
 
     echo "Openssl generate and sign aHash (empty policyRef) ${HALG}"
-    openssl dgst -${HALG} -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policypcr16aaa${HALG}.bin
+    openssl dgst -${HALG} -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin policies/policypcr16aaa${HALG}.bin > run.out 2>&1
 
     # Once per boot, simulating setting PCRs to authorized values
 
