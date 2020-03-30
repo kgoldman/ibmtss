@@ -224,7 +224,7 @@ do
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} keyEncipherment"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SAL[i]G} -ku critical,keyEncipherment > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SAL[i]} -ku critical,keyEncipherment > run.out
     checkFailure $?
 
    echo "Signing Key Certify ${SALG[i]} dataEncipherment"
