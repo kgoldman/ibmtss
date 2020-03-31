@@ -275,7 +275,7 @@ set L=!i!
 
 for /L %%i in (1,1,!L!) do (
 
-    echo "Signing Key Self Certify, three auth, salted parameter encryption !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
+    echo "Signing Key Self Certify, three auth, bind parameter encryption !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
     %TPM_EXE_PATH%certify -hk 80000001 -ho 80000001 -pwdk sig -pwdo sig -qd policies/aaa -os sig.bin -oa tmp.bin ^
         -se0 02000000 !THREEAUTH0[%%i]! -se1 02000001 !THREEAUTH1[%%i]! -se2 02000002 !THREEAUTH2[%%i]! > run.out
     IF !ERRORLEVEL! NEQ 0 (
@@ -445,7 +445,7 @@ for /L %%i in (1,1,!L!) do (
        exit /B 1
     )
 
-    echo "Signing Key Self Certify, three auth, salted parameter encryption !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
+    echo "Signing Key Self Certify, three auth, bind parameter encryption !THREEAUTH0[%%i]! !THREEAUTH1[%%i]! !THREEAUTH2[%%i]!"
     %TPM_EXE_PATH%certify -hk 80000001 -ho 80000001 -pwdo sig -pwdk xxx -qd policies/aaa -os sig.bin -oa tmp.bin ^
         -se0 02000000 !THREEAUTH0[%%i]! -se1 03000001 !THREEAUTH1[%%i]! -se2 02000002 !THREEAUTH2[%%i]! > run.out
     IF !ERRORLEVEL! NEQ 0 (
