@@ -271,6 +271,7 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 	TSS_PrintAll("IMA_TemplateData_Trace: MODSIG modSigData",
 		     imaTemplateData->imaTemplateMODSIG.modSigData,
 		     imaTemplateData->imaTemplateMODSIG.modSigLength);
+#ifndef TPM_TSS_MBEDTLS
 	{
 	    PKCS7 		*pkcs7 = NULL;
 	    unsigned char 	*tmpData = NULL; 
@@ -295,12 +296,14 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 		printf("IMA_TemplateData_Trace: MODSIG Could not trace modSigData as PKCS7\n");
 	    }
 	}
+#endif /* TPM_TSS_MBEDTLS */
     }
     /* buf */
     printf("IMA_TemplateData_Trace: BUF bufLength %u\n", imaTemplateData->imaTemplateBUF.bufLength);
     if (imaTemplateData->imaTemplateBUF.bufLength != 0) {
 	TSS_PrintAll("IMA_TemplateData_Trace: BUF bufData",
 		     imaTemplateData->imaTemplateBUF.bufData, imaTemplateData->imaTemplateBUF.bufLength);
+#ifndef TPM_TSS_MBEDTLS
 	if ((strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName, ".builtin_trusted_keys") == 0) ||
 	    (strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName, ".ima") == 0)) {
 	    {
@@ -321,6 +324,7 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 	    }
 	    
 	}
+#endif /* TPM_TSS_MBEDTLS */
     }
     return;    
 }
