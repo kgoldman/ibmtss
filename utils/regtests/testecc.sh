@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testecc.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -208,53 +207,61 @@ echo ""
 echo "ECC zgen2phase"
 echo ""
 
-echo "ECC Parameters for curve nistp256"
-${PREFIX}eccparameters -cv nistp256 > run.out
-checkSuccess $?
+for CURVE in "bnp256" "nistp256" "nistp384"
+do
+    echo "ECC Parameters for curve ${CURVE}"
+    ${PREFIX}eccparameters -cv ${CURVE} > run.out
+    checkSuccess $?
+done
 
-# This is just a script for a B "remote" side to create a static key
-# pair and ephemeral for use in demonstrating (on the local side) a
-# two-phase operation involving ecephemeral and zgen2phase
+for CURVE in "bnp256" "nistp256" "nistp384"
+do
 
-echo "Create decryption key for curve nistp256"
-${PREFIX}create -hp 80000000 -pwdp sto -den -ecc nistp256 -opu QsBpub.bin > run.out
-checkSuccess $?
+    # This is just a script for a B "remote" side to create a static key
+    # pair and ephemeral for use in demonstrating (on the local side) a
+    # two-phase operation involving ecephemeral and zgen2phase
 
-echo "EC Ephemeral for curve nistp256"
-${PREFIX}ecephemeral -ecc nistp256 -oq QeBpt.bin > run.out
-checkSuccess $?
+    echo "Create decryption key for curve ${CURVE}"
+    ${PREFIX}create -hp 80000000 -pwdp sto -den -ecc ${CURVE} -opu QsBpub.bin > run.out
+    checkSuccess $?
 
-# local side
+    echo "EC Ephemeral for curve ${CURVE}"
+    ${PREFIX}ecephemeral -ecc ${CURVE} -oq QeBpt.bin > run.out
+    checkSuccess $?
 
-# scp or cp the QsBpub.bin and QeBpt.bin from the B side over to the
-# A side. This assumes QsBpub is a TPM2B_PUBLIC from a create command
-# on B side.  QeBpt is already in TPM2B_ECC_POINT form since it was
-# created by ecephemeral on B side QsBpub.bin is presumed in a form
-# produced by a create commamnd using another TPM
+    # local side
 
-echo "Create decryption key for curve nistp256"
-${PREFIX}create -hp 80000000 -pwdp sto -den -ecc nistp256 -opr QsApriv.bin -opu QsApub.bin > run.out
-checkSuccess $?
+    # scp or cp the QsBpub.bin and QeBpt.bin from the B side over to the
+    # A side. This assumes QsBpub is a TPM2B_PUBLIC from a create command
+    # on B side.  QeBpt is already in TPM2B_ECC_POINT form since it was
+    # created by ecephemeral on B side QsBpub.bin is presumed in a form
+    # produced by a create commamnd using another TPM
 
-echo "Load the decryption key under the primary key, 80000001"
-${PREFIX}load -hp 80000000 -ipr QsApriv.bin -ipu QsApub.bin -pwdp sto > run.out
-checkSuccess $?
+    echo "Create decryption key for curve ${CURVE}"
+    ${PREFIX}create -hp 80000000 -pwdp sto -den -ecc ${CURVE} -opr QsApriv.bin -opu QsApub.bin > run.out
+    checkSuccess $?
 
-echo "EC Ephemeral for curve nistp256"
-${PREFIX}ecephemeral -ecc nistp256 -oq QeApt.bin -cf counter.bin  > run.out
-checkSuccess $?
+    echo "Load the decryption key under the primary key, 80000001"
+    ${PREFIX}load -hp 80000000 -ipr QsApriv.bin -ipu QsApub.bin -pwdp sto > run.out
+    checkSuccess $?
 
-echo "Convert public raw to TPM2B_ECC_POINT"
-${PREFIX}tpmpublic2eccpoint -ipu QsBpub.bin -pt QsBpt.bin > run.out
-checkSuccess $?
+    echo "EC Ephemeral for curve ${CURVE}"
+    ${PREFIX}ecephemeral -ecc ${CURVE} -oq QeApt.bin -cf counter.bin  > run.out
+    checkSuccess $?
 
-echo "Execute zgen2phase for curve ${CURVE}"
-${PREFIX}zgen2phase -hk 80000001 -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin > run.out
-checkSuccess $?
+    echo "Convert public raw to TPM2B_ECC_POINT"
+    ${PREFIX}tpmpublic2eccpoint -ipu QsBpub.bin -pt QsBpt.bin > run.out
+    checkSuccess $?
 
-echo "Flush the key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
+    echo "Execute zgen2phase for curve ${CURVE}"
+    ${PREFIX}zgen2phase -hk 80000001 -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
 
 rm -rf efile.bin
 rm -rf tmprpub.bin

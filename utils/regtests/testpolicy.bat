@@ -2568,84 +2568,86 @@ echo ""
 echo "publicname ECC"
 echo ""
 
-for %%H in (%ITERATE_ALGS%) do (
+for %%C in ("nistp256" "nistp384") do (
 
-    echo "Create an ecc nistp256 %%H key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -nalg %%H -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
+    for %%H in (%ITERATE_ALGS%) do (
+
+        echo "Create an ecc %%C %%H key under the primary key"
+        %TPM_EXE_PATH%create -hp 80000000 -ecc %%C -nalg %%H -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Load the ecc %%C %%H key 80000001"
+        %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Compute the TPM2B_PUBLIC Name"
+        %TPM_EXE_PATH%publicname -ipu tmppub.bin -on tmp.bin > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Verify the TPM2B_PUBLIC result"
+        diff tmp.bin h80000001.bin > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Convert the ecc %%C public key to PEM format"
+        %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Flush the ecc %%C %%H key"
+        %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "loadexternal the ecc %%C PEM public key"
+        %TPM_EXE_PATH%loadexternal -ipem tmppub.pem -si -ecc -nalg %%H -halg %%H > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Compute the PEM Name"
+        %TPM_EXE_PATH%publicname -ipem tmppub.pem -ecc -si -nalg %%H -halg %%H -on tmp.bin > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Verify the PEM result"
+        diff tmp.bin h80000001.bin > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Convert the TPM PEM key to DER"
+        openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin -pubout
+        echo "INFO:"
+
+        echo "Compute the DER Name"
+        %TPM_EXE_PATH%publicname -ider tmppub.der -ecc -si -nalg %%H -halg %%H -on tmp.bin -v > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Verify the DER result"
+        diff tmp.bin h80000001.bin > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Flush the ecc %%C %%H key"
+        %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
     )
-
-    echo "Load the ecc %%H key 80000001"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "Compute the TPM2B_PUBLIC Name"
-    %TPM_EXE_PATH%publicname -ipu tmppub.bin -on tmp.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "Verify the TPM2B_PUBLIC result"
-    diff tmp.bin h80000001.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "Convert the ecc public key to PEM format"
-    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "Flush the ecc %%H key"
-    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "loadexternal the ecc PEM public key"
-    %TPM_EXE_PATH%loadexternal -ipem tmppub.pem -si -ecc -nalg %%H -halg %%H > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "Compute the PEM Name"
-    %TPM_EXE_PATH%publicname -ipem tmppub.pem -ecc -si -nalg %%H -halg %%H -on tmp.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "Verify the PEM result"
-    diff tmp.bin h80000001.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "Convert the TPM PEM key to DER"
-    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin -pubout
-    echo "INFO:"
-
-    echo "Compute the DER Name"
-    %TPM_EXE_PATH%publicname -ider tmppub.der -ecc -si -nalg %%H -halg %%H -on tmp.bin -v > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "Verify the DER result"
-    diff tmp.bin h80000001.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "Flush the ecc %%H key"
-    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
 )
 
 echo ""

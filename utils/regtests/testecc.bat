@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2019.				#
+REM # (c) Copyright IBM Corporation 2015 - 2020.				#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -234,72 +234,77 @@ echo ""
 echo "ECC zgen2phase"
 echo ""
 
-echo "ECC Parameters for curve nistp256"
-%TPM_EXE_PATH%eccparameters -cv nistp256 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
+for %%C in (bnp256 nistp256 nistp384) do (
+
+    echo "ECC Parameters for curve %%C"
+    %TPM_EXE_PATH%eccparameters -cv %%C > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
 )
 
-REM This is just a script for a B "remote" side to create a static key
-REM pair and ephemeral for use in demonstrating (on the local side) a
-REM two-phase operation involving ecephemeral and zgen2phase
+for %%C in (bnp256 nistp256 nistp384) do (
 
-echo "Create decryption key for curve nistp256"
-%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -den -ecc nistp256 -opu QsBpub.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
+    REM This is just a script for a B "remote" side to create a static key
+    REM pair and ephemeral for use in demonstrating (on the local side) a
+    REM two-phase operation involving ecephemeral and zgen2phase
+
+    echo "Create decryption key for curve %%C"
+    %TPM_EXE_PATH%create -hp 80000000 -pwdp sto -den -ecc %%C -opu QsBpub.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "EC Ephemeral for curve %%C"
+    %TPM_EXE_PATH%ecephemeral -ecc %%C -oq QeBpt.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+	
+    REM local side
+    REM 
+    REM scp or cp the QsBpub.bin and QeBpt.bin from the B side over to the
+    REM A side. This assumes QsBpub is a TPM2B_PUBLIC from a create command
+    REM on B side.  QeBpt is already in TPM2B_ECC_POINT form since it was
+    REM created by ecephemeral on B side QsBpub.bin is presumed in a form
+    REM produced by a create commamnd using another TPM
+
+    echo "Create decryption key for curve %%C"
+    %TPM_EXE_PATH%create -hp 80000000 -pwdp sto -den -ecc %%C -opr QsApriv.bin -opu QsApub.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Load the decryption key under the primary key, 80000001"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr QsApriv.bin -ipu QsApub.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "EC Ephemeral for curve %%C"
+    %TPM_EXE_PATH%ecephemeral -ecc %%C -oq QeApt.bin -cf counter.bin  > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Convert public raw to TPM2B_ECC_POINT"
+    %TPM_EXE_PATH%tpmpublic2eccpoint -ipu QsBpub.bin -pt QsBpt.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Execute zgen2phase for curve %%C"
+    %TPM_EXE_PATH%zgen2phase -hk 80000001 -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Flush the key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
 )
-
-echo "EC Ephemeral for curve nistp256"
-%TPM_EXE_PATH%ecephemeral -ecc nistp256 -oq QeBpt.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
-REM local side
-REM 
-REM scp or cp the QsBpub.bin and QeBpt.bin from the B side over to the
-REM A side. This assumes QsBpub is a TPM2B_PUBLIC from a create command
-REM on B side.  QeBpt is already in TPM2B_ECC_POINT form since it was
-REM created by ecephemeral on B side QsBpub.bin is presumed in a form
-REM produced by a create commamnd using another TPM
-
-echo "Create decryption key for curve nistp256"
-%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -den -ecc nistp256 -opr QsApriv.bin -opu QsApub.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
-echo "Load the decryption key under the primary key, 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr QsApriv.bin -ipu QsApub.bin -pwdp sto > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
-echo "EC Ephemeral for curve nistp256"
-%TPM_EXE_PATH%ecephemeral -ecc nistp256 -oq QeApt.bin -cf counter.bin  > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
-echo "Convert public raw to TPM2B_ECC_POINT"
-%TPM_EXE_PATH%tpmpublic2eccpoint -ipu QsBpub.bin -pt QsBpt.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
-echo "Execute zgen2phase for curve nistp256"
-%TPM_EXE_PATH%zgen2phase -hk 80000001 -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
-echo "Flush the key"
-%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
 rm -rf efile.bin
 rm -rf tmprpub.bin
 rm -rf tmprpriv.bin

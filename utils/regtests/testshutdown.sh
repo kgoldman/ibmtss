@@ -388,9 +388,6 @@ checkSuccess $?
 rm h02000000.bin
 rm tmpsk.bin
 
-exit
-
-
 # ${PREFIX}getcapability  -cap 1 -pr 80000000
 # ${PREFIX}getcapability  -cap 1 -pr 02000000
 # ${PREFIX}getcapability  -cap 1 -pr 01000000

@@ -65,8 +65,8 @@ REM #	duplicate to K1
 REM #	import to K1
 REM # signing key        K2	80000002
 
-set SALG=rsa ecc
-set SKEY=rsa2048 ecc
+set SALG=rsa ecc ecc
+set SKEY=rsa2048 eccnistp256 eccnistp384
 
 set i=0
 for %%a in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%a
@@ -275,7 +275,7 @@ echo "generate the signing key with openssl"
 openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048
 
 echo "load the ECC storage key"
-%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipr storeeccpriv.bin -ipu storeeccpub.bin > run.out
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipr storeeccnistp256priv.bin -ipu storeeccnistp256pub.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -328,43 +328,47 @@ echo ""
 echo "Import PEM EC signing key under RSA and ECC storage key"
 echo ""
 
-echo "generate the signing key with openssl"
-openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem
+echo "generate the prime256v signing key with openssl"
+openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecnistp256privkey.pem
+echo "generate the secp384r1 signing key with openssl"
+openssl ecparam -name secp384r1  -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecnistp384privkey.pem
 
-for %%S in ("" "-se0 02000000 1") do (
-    for %%H in (%ITERATE_ALGS%) do (
-        for %%P in (80000000 80000001) do (
+for %%C in (nistp256 nistp384) do (
+    for %%S in ("" "-se0 02000000 1") do (
+        for %%H in (%ITERATE_ALGS%) do (
+            for %%P in (80000000 80000001) do (
 
-	    echo "Import the signing key under the parent key %%P %%H"
-	    %TPM_EXE_PATH%importpem -hp %%P -pwdp sto -ipem tmpecprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
-	    IF !ERRORLEVEL! NEQ 0 (
+    	    	echo "Import the  %C signing key under the parent key %%P %%H"
+    		%TPM_EXE_PATH%importpem -hp %%P -pwdp sto -ipem tmpec%%Cprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
+		    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
-	    )
+		)
 
-	    echo "Load the TPM signing key"
-	    %TPM_EXE_PATH%load -hp %%P -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
-	    IF !ERRORLEVEL! NEQ 0 (
+	    	echo "Load the TPM signing key"
+		%TPM_EXE_PATH%load -hp %%P -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+		    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
-	    )
+		)
 
-	    echo "Sign the message %%H %%~S"
-	    %TPM_EXE_PATH%sign -hk 80000002 -salg ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H %%~S > run.out
-	    IF !ERRORLEVEL! NEQ 0 (
+	    	echo "Sign the message %%H %%~S"
+		%TPM_EXE_PATH%sign -hk 80000002 -salg ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg %%H %%~S > run.out
+		    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1test
-	    )
+		)
 
-	    echo "Verify the signature %%H"
-	    %TPM_EXE_PATH%verifysignature -hk 80000002 -ecc -if policies/aaa -is tmpsig.bin -halg %%H > run.out
-	    IF !ERRORLEVEL! NEQ 0 (
+	    	echo "Verify the signature %%H"
+		%TPM_EXE_PATH%verifysignature -hk 80000002 -ecc -if policies/aaa -is tmpsig.bin -halg %%H > run.out
+		    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
-	    )
+		)
 
-	    echo "Flush the signing key"
-	    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
-	    IF !ERRORLEVEL! NEQ 0 (
+	    	echo "Flush the signing key"
+		%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+		    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
-	    )
+		)
 
+	    )
 	)
     )
 )
@@ -765,7 +769,10 @@ rm -f tmpk2priv.bin
 rm -f tmpk2pub.bin
 rm -f tmposs.bin 
 rm -f tmpprivkey.pem
-rm -f tmpecprivkey.pem
+rm -f tmpecnistp256privkey.pem
+rm -f tmpecnistp384privkey.pem
+rm -f tmpecnistp256privkeydec.pem
+rm -f tmpecnistp384privkeydec.pem
 rm -f tmppub.bin
 rm -f tmppriv.bin
 rm -f tmpekpub.pem

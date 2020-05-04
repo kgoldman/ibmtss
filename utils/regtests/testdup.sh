@@ -70,10 +70,10 @@ echo ""
 #	import to K1
 # signing key        K2 80000002
 
-SALG=(rsa ecc)
-SKEY=(rsa2048 ecc)
+SALG=(rsa ecc ecc)
+SKEY=(rsa2048 eccnistp256 eccnistp384)
 
-for ((i = 0 ; i < 2 ; i++))
+for ((i = 0 ; i < 3 ; i++))
 do
     for ENC in "" "-salg aes -ik tmprnd.bin"
     do 
@@ -81,10 +81,10 @@ do
 	do
 
 	    echo "Create a signing key K2 under the primary key, with policy"
-	    ${PREFIX}create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccduplicate.bin > run.out
+	     ${PREFIX}create -hp 80000000 -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -pol policies/policyccduplicate.bin > run.out
 	    checkSuccess $?
 
-	    echo "Load the ${SALG[i]} storage key K1 80000001"
+	    echo "Load the ${SALG[i]} ${SKEY[i]} storage key K1 80000001"
 	    ${PREFIX}load -hp 80000000 -ipr store${SKEY[i]}priv.bin -ipu store${SKEY[i]}pub.bin -pwdp sto > run.out
 	    checkSuccess $?
 
@@ -215,8 +215,8 @@ echo ""
 echo "generate the signing key with openssl"
 openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
 
-echo "load the ECC storage key"
-${PREFIX}load -hp 80000000 -pwdp sto -ipr storeeccpriv.bin -ipu storeeccpub.bin > run.out
+echo "load the ECC storage key 80000001"
+${PREFIX}load -hp 80000000 -pwdp sto -ipr storeeccnistp256priv.bin -ipu storeeccnistp256pub.bin > run.out
 checkSuccess $?
 
 echo "Start an HMAC auth session"
@@ -267,47 +267,54 @@ echo ""
 
 echo "generate the signing key with openssl"
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
-    openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecprivkey.pem 2>&1
+    openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecnistp256privkey.pem 2>&1
+    openssl ecparam -name secp384r1  -genkey -noout | openssl pkey -aes256 -passout pass:rrrr -text > tmpecnistp384privkey.pem 2>&1
 
 elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
 # plaintext key pair, legacy plaintext -----BEGIN PRIVATE KEY-----
-    openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -text -out tmpecprivkeydec.pem > run.out 2>&1
+    openssl ecparam -name prime256v1 -genkey -noout | openssl pkey -text -out tmpecnistp256privkeydec.pem > run.out 2>&1
+    openssl ecparam -name secp384r1  -genkey -noout | openssl pkey -text -out tmpecnistp384privkeydec.pem > run.out 2>&1
 # encrypt key pair, legacy encrypted -----BEGIN EC PRIVATE KEY-----
-    openssl ec -aes128 -passout pass:rrrr -in tmpecprivkeydec.pem -out tmpecprivkey.pem > run.out 2>&1
+    openssl ec -aes128 -passout pass:rrrr -in tmpecnistp256privkeydec.pem -out tmpecnistp256privkey.pem > run.out 2>&1
+    openssl ec -aes128 -passout pass:rrrr -in tmpecnistp384privkeydec.pem -out tmpecnistp384privkey.pem > run.out 2>&1
 
 else
     echo "Error: crypto library ${CRYPTOLIBRARY} not supported"
     exit 255
 fi
 
-for SESS in "" "-se0 02000000 1"
+for CURVE in "nistp256" "nistp384"
 do
-    for HALG in ${ITERATE_ALGS}
+    
+    for SESS in "" "-se0 02000000 1"
     do
-
-	for PARENT in 80000000 80000001
+	for HALG in ${ITERATE_ALGS}
 	do
 
-	    echo "Import the signing key under the parent key ${PARENT} ${HALG}"
-	    ${PREFIX}importpem -hp ${PARENT} -pwdp sto -ipem tmpecprivkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
-	    checkSuccess $?
+	    for PARENT in 80000000 80000001
+	    do
 
-	    echo "Load the TPM signing key"
-	    ${PREFIX}load -hp ${PARENT} -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
-	    checkSuccess $?
+		echo "Import the ${CURVE} signing key under the parent key ${PARENT} ${HALG}"
+		${PREFIX}importpem -hp ${PARENT} -pwdp sto -ipem tmpec${CURVE}privkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
+		checkSuccess $?
 
-	    echo "Sign the message ${HALG} ${SESS}"
-	    ${PREFIX}sign -hk 80000002 -salg ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
-	    checkSuccess $?
+		echo "Load the TPM signing key"
+		${PREFIX}load -hp ${PARENT} -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+		checkSuccess $?
 
-	    echo "Verify the signature ${HALG}"
-	    ${PREFIX}verifysignature -hk 80000002 -ecc -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
-	    checkSuccess $?
+		echo "Sign the message ${HALG} ${SESS}"
+		${PREFIX}sign -hk 80000002 -salg ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
+		checkSuccess $?
 
-	    echo "Flush the signing key"
-	    ${PREFIX}flushcontext -ha 80000002 > run.out
-	    checkSuccess $?
+		echo "Verify the signature ${HALG}"
+		${PREFIX}verifysignature -hk 80000002 -ecc -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
+		checkSuccess $?
 
+		echo "Flush the signing key"
+		${PREFIX}flushcontext -ha 80000002 > run.out
+		checkSuccess $?
+
+	    done
 	done
     done
 done
@@ -606,8 +613,10 @@ rm -f tmpk2priv.bin
 rm -f tmpk2pub.bin
 rm -f tmposs.bin 
 rm -f tmpprivkey.pem
-rm -f tmpecprivkey.pem
-rm -f tmpecprivkeydec.pem
+rm -f tmpecnistp256privkey.pem
+rm -f tmpecnistp384privkey.pem
+rm -f tmpecnistp256privkeydec.pem
+rm -f tmpecnistp384privkeydec.pem
 rm -f tmppub.bin
 rm -f tmppriv.bin
 rm -f tmpekpub.pem

@@ -63,9 +63,28 @@ echo "Create an RSA storage key under the primary key"
 ${PREFIX}create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa2048priv.bin -opu storersa2048pub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
 checkSuccess $?
 
-echo "Create an ECC storage key under the primary key"
-${PREFIX}create -hp 80000000 -ecc nistp256 -st -kt f -kt p -opr storeeccpriv.bin -opu storeeccpub.bin -pwdp sto -pwdk sto > run.out
-checkSuccess $?
+for CURVE in nistp256 nistp384
+do
+
+    echo "Create a ${CURVE} ECC storage key under the primary key"
+    ${PREFIX}create -hp 80000000 -ecc ${CURVE} -st -kt f -kt p -opr storeecc${CURVE}priv.bin -opu storeecc${CURVE}pub.bin -pwdp sto -pwdk sto > run.out
+    checkSuccess $?
+
+    echo "Create a ${CURVE} unrestricted ECC signing key under the primary key"
+    ${PREFIX}create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signecc${CURVE}priv.bin -opu signecc${CURVE}pub.bin -opem signecc${CURVE}pub.pem -pwdp sto -pwdk sig > run.out
+    checkSuccess $?
+
+    echo "Create a ${CURVE} restricted ECC signing key under the primary key"
+${PREFIX}create -hp 80000000 -ecc nistp256 -sir -kt f -kt p -opr signecc${CURVE}rpriv.bin -opu signecc${CURVE}rpub.bin -opem signecc${CURVE}rpub.pem -pwdp sto -pwdk sig > run.out
+    checkSuccess $?
+
+    echo "Create a not fixedTPM ${CURVE} ECC signing key under the primary key"
+${PREFIX}create -hp 80000000 -ecc nistp256 -sir -opr signecc${CURVE}nfpriv.bin -opu signecc${CURVE}nfpub.bin -opem signecc${CURVE}nfpub.pem -pwdp sto -pwdk sig > run.out
+    checkSuccess $?
+
+
+
+done
 
 for BITS in 2048 3072
 do
@@ -80,24 +99,12 @@ do
 
 done
 
-echo "Create an unrestricted ECC signing key under the primary key"
-${PREFIX}create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signeccpriv.bin -opu signeccpub.bin -opem signeccpub.pem -pwdp sto -pwdk sig > run.out
-checkSuccess $?
-
 echo "Create a restricted RSA signing key under the primary key"
 ${PREFIX}create -hp 80000000 -rsa 2048 -sir -kt f -kt p -opr signrsa2048rpriv.bin -opu signrsa2048rpub.bin -opem signrsa2048rpub.pem -pwdp sto -pwdk sig > run.out
 checkSuccess $?
 
-echo "Create an restricted ECC signing key under the primary key"
-${PREFIX}create -hp 80000000 -ecc nistp256 -sir -kt f -kt p -opr signeccrpriv.bin -opu signeccrpub.bin -opem signeccrpub.pem -pwdp sto -pwdk sig > run.out
-checkSuccess $?
-
 echo "Create a not fixedTPM RSA signing key under the primary key"
 ${PREFIX}create -hp 80000000 -sir -opr signrsa2048nfpriv.bin -opu signrsa2048nfpub.bin -opem signrsa2048nfpub.pem -pwdp sto -pwdk sig > run.out
-checkSuccess $?
-
-echo "Create a not fixedTPM ECC signing key under the primary key"
-${PREFIX}create -hp 80000000 -ecc nistp256 -sir -opr signeccnfpriv.bin -opu signeccnfpub.bin -opem signeccnfpub.pem -pwdp sto -pwdk sig > run.out
 checkSuccess $?
 
 echo "Create a symmetric cipher key under the primary key"

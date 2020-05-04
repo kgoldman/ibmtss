@@ -50,7 +50,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the ECC signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr signeccnistp256priv.bin -ipu signeccnistp256pub.bin -pwdp sto > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

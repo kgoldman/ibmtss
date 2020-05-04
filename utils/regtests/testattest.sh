@@ -53,7 +53,7 @@ ${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwd
 checkSuccess $?
 
 echo "Load the ECC signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr signeccnistp256priv.bin -ipu signeccnistp256pub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "NV Define Space"

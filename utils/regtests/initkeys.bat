@@ -68,10 +68,31 @@ IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
-echo "Create an ECC storage key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -st -kt f -kt p -opr storeeccpriv.bin -opu storeeccpub.bin -pwdp sto -pwdk sto > run.out
-IF !ERRORLEVEL! NEQ 0 (
-  exit /B 1
+for %%C in (nistp256 nistp384) do (
+
+    echo "Create a %%C ECC storage key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -ecc %%C -st -kt f -kt p -opr storeecc%%Cpriv.bin -opu storeecc%%Cpub.bin -pwdp sto -pwdk sto > run.out
+     IF !ERRORLEVEL! NEQ 0 (
+      exit /B 1
+    )
+
+    echo "Create a %%C unrestricted ECC signing key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signecc%%Cpriv.bin -opu signecc%%Cpub.bin -opem signecc%%Cpub.pem -pwdp sto -pwdk sig > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+      exit /B 1
+    )
+
+    echo "Create a %%C restricted ECC signing key under the primary key"
+%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -sir -kt f -kt p -opr signecc%%Crpriv.bin -opu signecc%%Crpub.bin -opem signecc%%Crpub.pem -pwdp sto -pwdk sig > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+      exit /B 1
+    )
+
+    echo "Create a not fixedTPM %%C ECC signing key under the primary key"
+%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -sir -opr signecc%%Cnfpriv.bin -opu signecc%%Cnfpub.bin -opem signecc%%Cnfpub.pem -pwdp sto -pwdk sig > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+      exit /B 1
+    )
 )
 
 for %%B in (2048 3072) do (

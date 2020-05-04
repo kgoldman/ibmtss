@@ -109,66 +109,73 @@ do
 
 done
 
+echo "Create an ECC key pair in PEM format using openssl"
+
+openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypaireccnistp256.pem > run.out 2>&1
+openssl ecparam -name secp384r1  -genkey -noout -out tmpkeypaireccnistp384.pem > run.out 2>&1
+
+echo "Convert key pair to plaintext DER format"
+
+openssl ec -inform pem -outform der -in tmpkeypaireccnistp256.pem -out tmpkeypaireccnistp256.der -passin pass:rrrr > run.out 2>&1
+openssl ec -inform pem -outform der -in tmpkeypaireccnistp384.pem -out tmpkeypaireccnistp384.der -passin pass:rrrr > run.out 2>&1
+
 echo ""
 echo "ECC Signing key"
 echo ""
 
-echo "Load the ECC signing key under the primary key"
-${PREFIX}load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp sto > run.out
-checkSuccess $?
-
-echo "Create an ECC key pair in PEM format using openssl"
-  
-openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out 2>&1
-
-echo "Convert key pair to plaintext DER format"
-
-openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out 2>&1
-
-for HALG in ${ITERATE_ALGS}
+for CURVE in "nistp256" "nistp384"
 do
 
-    echo "Sign a digest - $HALG"
-    ${PREFIX}sign -hk 80000001 -halg $HALG -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
+    echo "Load the ${CURVE} ECC signing key under the primary key"
+    ${PREFIX}load -hp 80000000 -ipr signecc${CURVE}priv.bin -ipu signecc${CURVE}pub.bin -pwdp sto > run.out
     checkSuccess $?
 
-    echo "Verify the ECC signature using the TPM - $HALG"
-    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -ecc -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+    for HALG in ${ITERATE_ALGS}
+    do
 
-    echo "Verify the signature using PEM - $HALG"
-    ${PREFIX}verifysignature -ipem signeccpub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+	echo "Sign a digest - $HALG"
+	${PREFIX}sign -hk 80000001 -halg $HALG -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
+	checkSuccess $?
 
-    echo "Read the public part"
-    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
-    checkSuccess $?
+	echo "Verify the ECC signature using the TPM - $HALG"
+	${PREFIX}verifysignature -hk 80000001 -halg $HALG -ecc -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
+	
+	echo "Verify the signature using PEM - $HALG"
+	${PREFIX}verifysignature -ipem signecc${CURVE}pub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
 
-    echo "Verify the signature using readpublic PEM - $HALG"
-    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+	echo "Read the public part"
+	${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+	checkSuccess $?
 
-    echo "Load the openssl key pair in the NULL hierarchy 80000002 - $HALG"
-    ${PREFIX}loadexternal -halg $HALG -ecc -ider tmpkeypairecc.der > run.out
-    checkSuccess $?
+	echo "Verify the signature using readpublic PEM - $HALG"
+	${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
 
-    echo "Use the TPM as a crypto coprocessor to sign - $HALG" 
-    ${PREFIX}sign -hk 80000002 -halg $HALG -salg ecc -if policies/aaa -os sig.bin > run.out
-    checkSuccess $?
+	echo "Load the openssl key pair in the NULL hierarchy 80000002 - $HALG"
+	${PREFIX}loadexternal -halg $HALG -ecc -ider tmpkeypairecc${CURVE}.der > run.out
+	checkSuccess $?
 
-    echo "Verify the signature - $HALG"
-    ${PREFIX}verifysignature -hk 80000002 -halg $HALG -ecc -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+	echo "Use the TPM as a crypto coprocessor to sign - $HALG" 
+	${PREFIX}sign -hk 80000002 -halg $HALG -salg ecc -if policies/aaa -os sig.bin > run.out
+	checkSuccess $?
 
-    echo "Flush the openssl signing key"
-    ${PREFIX}flushcontext -ha 80000002 > run.out
+	echo "Verify the signature - $HALG"
+	${PREFIX}verifysignature -hk 80000002 -halg $HALG -ecc -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
+
+	echo "Flush the openssl signing key"
+	${PREFIX}flushcontext -ha 80000002 > run.out
+	checkSuccess $?
+
+    done
+
+    echo "Flush the ECC signing key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
     checkSuccess $?
 
 done
-
-echo "Flush the ECC signing key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
 
 echo ""
 echo "Primary RSA Signing Key"
@@ -219,46 +226,51 @@ echo ""
 echo "Primary ECC Signing Key"
 echo ""
 
-echo "Create primary signing key - ECC 80000001"
-${PREFIX}createprimary -si -opu tmppub.bin -opem tmppub.pem -ecc nistp256 -pwdk sig > run.out
-checkSuccess $?
-
-for HALG in ${ITERATE_ALGS}
+for CURVE in "nistp256" "nistp384"
 do
-    
-    echo "Sign a digest - $HALG"
-    ${PREFIX}sign -hk 80000001 -halg $HALG -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
+
+    echo "Create primary signing key - ECC 80000001"
+    ${PREFIX}createprimary -si -opu tmppub.bin -opem tmppub.pem -ecc ${CURVE} -pwdk sig > run.out
     checkSuccess $?
 
-    echo "Verify the signature - $HALG"
-    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+    for HALG in ${ITERATE_ALGS}
+    do
+	
+	echo "Sign a digest - $HALG"
+	${PREFIX}sign -hk 80000001 -halg $HALG -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out 
+	checkSuccess $?
 
-    echo "Verify the signature using PEM - $HALG"
-    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+	echo "Verify the signature - $HALG"
+	${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
 
-    echo "Read the public part"
-    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
-    checkSuccess $?
+	echo "Verify the signature using PEM - $HALG"
+	${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
 
-    echo "Verify the signature using readpublic PEM - $HALG"
-    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
-    checkSuccess $?
+	echo "Read the public part"
+	${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+	checkSuccess $?
 
-    echo "Convert TPM public key to PEM"
-    ${PREFIX}tpm2pem -ipu tmppub.bin -opem tmppub.pem > run.out
-    checkSuccess $?
+	echo "Verify the signature using readpublic PEM - $HALG"
+	${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
 
-    echo "Verify the signature using createprimary converted PEM - $HALG"
-    ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	echo "Convert TPM public key to PEM"
+	${PREFIX}tpm2pem -ipu tmppub.bin -opem tmppub.pem > run.out
+	checkSuccess $?
+
+	echo "Verify the signature using createprimary converted PEM - $HALG"
+	${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
+	checkSuccess $?
+
+    done
+
+    echo "Flush the primary signing key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
     checkSuccess $?
 
 done
-
-echo "Flush the primary signing key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
 
 echo ""
 echo "Restricted Signing Key"
@@ -306,23 +318,31 @@ checkSuccess $?
 
 # generate the p256 key
 # > openssl ecparam -name prime256v1 -genkey -noout -out p256privkey.pem
+# > openssl ecparam -name secp384r1  -genkey -noout -out p384privkey.pem
+
 # extract public key
 # > openssl pkey -inform pem -outform pem -in p256privkey.pem -pubout -out p256pubkey.pem
+# > openssl pkey -inform pem -outform pem -in p384privkey.pem -pubout -out p384pubkey.pem
 
-echo "Load external just the public part of PEM ECC"
-${PREFIX}loadexternal -halg sha1 -nalg sha1 -ipem policies/p256pubkey.pem -ecc > run.out
-checkSuccess $?
+for CURVE in p256 p384
+do
 
-echo "Sign a test message with openssl ECC"
-openssl dgst -sha1 -sign policies/p256privkey.pem -out pssig.bin msg.bin > run.out 2>&1
+    echo "Load external just the public part of PEM ECC ${CURVE}"
+    ${PREFIX}loadexternal -halg sha1 -nalg sha1 -ipem policies/${CURVE}pubkey.pem -ecc > run.out
+    checkSuccess $?
 
-echo "Verify the ECC signature"
-${PREFIX}verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw -ecc > run.out
-checkSuccess $?
+    echo "Sign a test message with openssl ECC ${CURVE}"
+    openssl dgst -sha1 -sign policies/${CURVE}privkey.pem -out pssig.bin msg.bin > run.out 2>&1
 
-echo "Flush the signing key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
+    echo "Verify the ECC signature ${CURVE}"
+    ${PREFIX}verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw -ecc > run.out
+    checkSuccess $?
+
+    echo "Flush the ECC ${CURVE} signing key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
 
 echo ""
 echo "Sign with restricted HMAC key"

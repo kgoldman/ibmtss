@@ -542,7 +542,7 @@ echo ""
 # sealed data S1 80000001 originally under 80000000
 # target storage key K1 80000002
 
-for ALG in "rsa2048" "ecc"
+for ALG in "rsa2048" "eccnistp256" "eccnistp384"
 do 
 
     echo "Create a sealed data object S1 under the primary key P1 80000000"

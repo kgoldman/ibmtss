@@ -123,86 +123,92 @@ for %%B in (2048 3072) do (
 
 )
 
+echo "Create an ECC key pair in PEM format using openssl"
+  
+openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypaireccnistp256.pem > run.out
+openssl ecparam -name secp384r1  -genkey -noout -out tmpkeypaireccnistp384.pem > run.out
+
+echo "Convert key pair to plaintext DER format"
+
+openssl ec -inform pem -outform der -in tmpkeypaireccnistp256.pem -out tmpkeypaireccnistp256.der -passin pass:rrrr > run.out
+openssl ec -inform pem -outform der -in tmpkeypaireccnistp384.pem -out tmpkeypaireccnistp384.der -passin pass:rrrr > run.out
+
 echo ""
 echo "ECC Signing key"
 echo ""
 
-echo "Create an ECC key pair in PEM format using openssl"
-  
-openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out
+for %%C in ("nistp256" "nistp384") do (
 
-echo "Convert key pair to plaintext DER format"
-
-openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out
-
-echo "Load the ECC signing key under the primary key"
-%TPM_EXE_PATH%load -hp 80000000 -ipr signeccpriv.bin -ipu signeccpub.bin -pwdp sto > run.out
-IF !ERRORLEVEL! NEQ 0 (
-   exit /B 1
-)
-
-for %%H in (%ITERATE_ALGS%) do (
-
-    echo "Sign a digest - %%H"
-    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
+    echo "Load the %%C ECC signing key under the primary key"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr signecc%%Cpriv.bin -ipu signecc%%Cpub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
+        exit /B 1
     )
 
-    echo "Verify the ECC signature using the TPM - %%H"
-    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -ecc -if policies/aaa -is sig.bin  > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
+    for %%H in (%ITERATE_ALGS%) do (
 
-    echo "Verify the signature using PEM - %%H"
-    %TPM_EXE_PATH%verifysignature -ipem signeccpub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
+        echo "Sign a digest - %%H"
+        %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Verify the ECC signature using the TPM - %%H"
+        %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -ecc -if policies/aaa -is sig.bin  > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Verify the signature using PEM - %%H"
+        %TPM_EXE_PATH%verifysignature -ipem signecc%%Cpub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
    
-    echo "Read the public part"
-    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
+        echo "Read the public part"
+        %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Verify the signature using readpublic PEM - %%H"
+        %TPM_EXE_PATH%verifysignature -ipem tmppub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Load the openssl key pair in the NULL hierarchy 80000002 - %%H"
+        %TPM_EXE_PATH%loadexternal -halg %%H -ecc -ider tmpkeypairecc%%C.der > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Use the TPM as a crypto coprocessor to sign - %%H" 
+        %TPM_EXE_PATH%sign -hk 80000002 -halg %%H -salg ecc -if policies/aaa -os sig.bin > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Verify the signature - %%H"
+        %TPM_EXE_PATH%verifysignature -hk 80000002 -halg %%H -ecc -if policies/aaa -is sig.bin > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+
+        echo "Flush the openssl signing key"
+        %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+        IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+        )
+    )
+
+    echo "Flush the ECC signing key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "Verify the signature using readpublic PEM - %%H"
-    %TPM_EXE_PATH%verifysignature -ipem tmppub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
-
-    echo "Load the openssl key pair in the NULL hierarchy 80000002 - %%H"
-    %TPM_EXE_PATH%loadexternal -halg %%H -ecc -ider tmpkeypairecc.der > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
-
-    echo "Use the TPM as a crypto coprocessor to sign - %%H" 
-    %TPM_EXE_PATH%sign -hk 80000002 -halg %%H -salg ecc -if policies/aaa -os sig.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
-
-    echo "Verify the signature - %%H"
-    %TPM_EXE_PATH%verifysignature -hk 80000002 -halg %%H -ecc -if policies/aaa -is sig.bin > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
-
-    echo "Flush the openssl signing key"
-    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
 )
-
-echo "Flush the ECC signing key"
-%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       exit /B 1
-    )
 
 echo ""
 echo "Primary RSA Signing Key 80000001"

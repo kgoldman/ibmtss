@@ -48,8 +48,8 @@ rem # basic test
 rem # sign%%Arpriv.bin is a restricted signing key
 rem # sign%%Apriv.bin is an unrestricted signing key
 
-set SALG=rsa ecc
-set SKEY=rsa2048 ecc
+set SALG=rsa ecc ecc
+set SKEY=rsa2048 eccnistp256 eccnistp384
 
 set i=0
 for %%a in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%a
@@ -59,24 +59,23 @@ set L=!i!
 
 for /L %%i in (1,1,!L!) do (
 
-    echo "Load the !SALG[%%i]! issuer key 80000001 under the primary key"
+    echo "Load the !SALG[%%i]! !SKEY[%%i]! issuer key 80000001 under the primary key"
     %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SKEY[%%i]!rpriv.bin -ipu sign!SKEY[%%i]!rpub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Load the !SALG[%%i]! subject key 80000002 under the primary key"
+    echo "Load the !SALG[%%i]! !SKEY[%%i]! subject key 80000002 under the primary key"
     %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SKEY[%%i]!priv.bin -ipu sign!SKEY[%%i]!pub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Self Certify CA Root !SKEY[%%i]!"
+    echo "Signing Key Self Certify CA Root !SKEY[%%i]! !SKEY[%%i]!"
     %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000001 -halg sha256 -pwdk sig -pwdo sig -opc tmppart1.bin -os tmpsig1.bin -oa tmpadd1.bin -otbs tmptbs1.bin -ocert tmpx5091.bin -salg !SALG[%%i]! -sub -v -iob 00050472 > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
-
 
     rem # dumpasn1 -a -l -d     tmpx509i.bin > tmpx509i1.dump
     rem # dumpasn1 -a -l -d -hh tmpx509i.bin > tmpx509i1.dumphh

@@ -103,53 +103,58 @@ echo ""
 echo "ECC Storage key"
 echo ""
 
-echo "Load ECC the storage key 80000001 under the primary key 80000000"
-${PREFIX}load -hp 80000000 -ipr storeeccpriv.bin -ipu storeeccpub.bin -pwdp sto > run.out
-checkSuccess $?
-
-for NALG in ${ITERATE_ALGS}
+for CURVE in nistp256 nistp384
 do
 
-    for SESS in "" "-se0 02000000 1"
+    echo "Load the ECC storage key 80000001 under the primary key 80000000"
+    ${PREFIX}load -hp 80000000 -ipr storeecc${CURVE}priv.bin -ipu storeecc${CURVE}pub.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    for NALG in ${ITERATE_ALGS}
     do
 
-	echo "Create an unrestricted signing key under the ECC storage key 80000001 ${NALG} ${SESS}"
-	${PREFIX}create -hp 80000001 -si -kt f -kt p -ecc nistp256 -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 111 -nalg ${NALG} ${SESS} > run.out
-	checkSuccess $?
+	for SESS in "" "-se0 02000000 1"
+	do
 
-	echo "Load the ECC signing key 80000002 under the ECC storage key 80000001 ${SESS}"
-	${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto ${SESS}> run.out
-	checkSuccess $?
+	    echo "Create an unrestricted ${CURVE} signing key under the ECC storage key 80000001 ${NALG} ${SESS}"
+	    ${PREFIX}create -hp 80000001 -si -kt f -kt p -ecc ${CURVE} -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk 111 -nalg ${NALG} ${SESS} > run.out
+	    checkSuccess $?
+	    
+	    echo "Load the ECC signing key 80000002 under the ECC storage key 80000001 ${SESS}"
+	    ${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto ${SESS}> run.out
+	    checkSuccess $?
 
-	echo "Read the signing key 80000002 public area"
-	${PREFIX}readpublic -ho 80000002 -opu tmppub2.bin > run.out
-	checkSuccess $?
+	    echo "Read the signing key 80000002 public area"
+	    ${PREFIX}readpublic -ho 80000002 -opu tmppub2.bin > run.out
+	    checkSuccess $?
 
-	echo "Flush the signing key 80000002"
-	${PREFIX}flushcontext -ha 80000002 > run.out
-	checkSuccess $?
+	    echo "Flush the signing key 80000002"
+	    ${PREFIX}flushcontext -ha 80000002 > run.out
+	    checkSuccess $?
 
-	echo "Load external, storage key public part 80000002 ${NALG}"
-	${PREFIX}loadexternal -halg sha256 -nalg ${NALG} -ipu storeeccpub.bin > run.out
-	checkSuccess $?
+	    echo "Load external, ${CURVE} storage key public part 80000002 ${NALG}"
+	    ${PREFIX}loadexternal -halg sha256 -nalg ${NALG} -ipu storeecc${CURVE}pub.bin > run.out
+	    checkSuccess $?
 
-	echo "Flush the public key 80000002"
-	${PREFIX}flushcontext -ha 80000002 > run.out
-	checkSuccess $?
+	    echo "Flush the public key 80000002"
+	    ${PREFIX}flushcontext -ha 80000002 > run.out
+	    checkSuccess $?
 
-	echo "Load external, signing key public part 80000002 ${NALG}"
-	${PREFIX}loadexternal -halg sha256 -nalg ${NALG} -ipu tmppub2.bin > run.out
-	checkSuccess $?
+	    echo "Load external, signing key public part 80000002 ${NALG}"
+	    ${PREFIX}loadexternal -halg sha256 -nalg ${NALG} -ipu tmppub2.bin > run.out
+	    checkSuccess $?
 
-	echo "Flush the signing key 80000002"
-	${PREFIX}flushcontext -ha 80000002 > run.out
-	checkSuccess $?
+	    echo "Flush the signing key 80000002"
+	    ${PREFIX}flushcontext -ha 80000002 > run.out
+	    checkSuccess $?
+	done
     done
-done
 
-echo "Flush the ECC storage key 80000001 "
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
+    echo "Flush the ECC storage key 80000001 "
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
 
 echo "Flush the auth session"
 ${PREFIX}flushcontext -ha 02000000 > run.out

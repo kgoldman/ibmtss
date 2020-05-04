@@ -43,7 +43,7 @@ echo ""
 echo "Salt Session - Load"
 echo ""
 
-for %%A in ("-rsa 2048" "-rsa 3072" "-ecc nistp256") do (
+for %%A in ("-rsa 2048" "-rsa 3072" "-ecc nistp256" "-ecc nistp384") do (
 
     for %%H in (%ITERATE_ALGS%) do (
 

@@ -47,7 +47,7 @@ echo ""
 # mbedtls port does not support ECC salted sessions yet
 
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
-    SALTALGS=("-rsa 2048" "-rsa 3072" "-ecc nistp256")
+    SALTALGS=("-rsa 2048" "-rsa 3072" "-ecc nistp256" "-ecc nistp384")
 elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
     SALTALGS=("-rsa 2048")
 else

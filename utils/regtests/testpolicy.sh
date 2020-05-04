@@ -1915,61 +1915,65 @@ echo ""
 echo "publicname ECC"
 echo ""
 
-for HALG in ${ITERATE_ALGS}
+for CURVE in nistp256 nistp384
 do
 
-    echo "Create an ecc nistp256 ${HALG} key under the primary key"
-    ${PREFIX}create -hp 80000000 -ecc nistp256 -nalg ${HALG} -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
-    checkSuccess $?
+    for HALG in ${ITERATE_ALGS}
+    do
 
-    echo "Load the ecc ${HALG} key 80000001"
-    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
-    checkSuccess $?
+	echo "Create an ecc ${CURVE} ${HALG} key under the primary key"
+	${PREFIX}create -hp 80000000 -ecc ${CURVE} -nalg ${HALG} -si -opr tmppriv.bin -opu tmppub.bin -pwdp sto > run.out
+	checkSuccess $?
 
-    echo "Compute the TPM2B_PUBLIC Name"
-    ${PREFIX}publicname -ipu tmppub.bin -on tmp.bin > run.out
-    checkSuccess $?
+	echo "Load the ecc ${CURVE} ${HALG} key 80000001"
+	${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+	checkSuccess $?
 
-    echo "Verify the TPM2B_PUBLIC result"
-    diff tmp.bin h80000001.bin > run.out
-    checkSuccess $?
+	echo "Compute the TPM2B_PUBLIC Name"
+	${PREFIX}publicname -ipu tmppub.bin -on tmp.bin > run.out
+	checkSuccess $?
 
-    echo "Convert the ecc public key to PEM format"
-    ${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
-    checkSuccess $?
+	echo "Verify the TPM2B_PUBLIC result"
+	diff tmp.bin h80000001.bin > run.out
+	checkSuccess $?
 
-    echo "Flush the ecc ${HALG} key"
-    ${PREFIX}flushcontext -ha 80000001 > run.out
-    checkSuccess $?
+	echo "Convert the ecc ${CURVE} public key to PEM format"
+	${PREFIX}readpublic -ho 80000001 -opem tmppub.pem > run.out
+	checkSuccess $?
 
-    echo "loadexternal the ecc PEM public key"
-    ${PREFIX}loadexternal -ipem tmppub.pem -si -ecc -nalg ${HALG} -halg ${HALG} > run.out
-    checkSuccess $?
+	echo "Flush the ecc ${CURVE} ${HALG} key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
 
-    echo "Compute the PEM Name"
-    ${PREFIX}publicname -ipem tmppub.pem -ecc -si -nalg ${HALG} -halg ${HALG} -on tmp.bin > run.out
-    checkSuccess $?
+	echo "loadexternal the ecc ${CURVE} PEM public key"
+	${PREFIX}loadexternal -ipem tmppub.pem -si -ecc -nalg ${HALG} -halg ${HALG} > run.out
+	checkSuccess $?
 
-    echo "Verify the PEM result"
-    diff tmp.bin h80000001.bin > run.out
-    checkSuccess $?
+	echo "Compute the PEM Name"
+	${PREFIX}publicname -ipem tmppub.pem -ecc -si -nalg ${HALG} -halg ${HALG} -on tmp.bin > run.out
+	checkSuccess $?
 
-    echo "Convert the TPM PEM key to DER"
-    openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin -pubout > run.out 2>&1
-    echo "INFO:"
+	echo "Verify the PEM result"
+	diff tmp.bin h80000001.bin > run.out
+	checkSuccess $?
 
-    echo "Compute the DER Name"
-    ${PREFIX}publicname -ider tmppub.der -ecc -si -nalg ${HALG} -halg ${HALG} -on tmp.bin -v > run.out
-    checkSuccess $?
+	echo "Convert the TPM PEM key to DER"
+	openssl pkey -inform pem -outform der -in tmppub.pem -out tmppub.der -pubin -pubout > run.out 2>&1
+	echo "INFO:"
 
-    echo "Verify the DER result"
-    diff tmp.bin h80000001.bin > run.out
-    checkSuccess $?
+	echo "Compute the DER Name"
+	${PREFIX}publicname -ider tmppub.der -ecc -si -nalg ${HALG} -halg ${HALG} -on tmp.bin -v > run.out
+	checkSuccess $?
 
-    echo "Flush the ecc ${HALG} key"
-    ${PREFIX}flushcontext -ha 80000001 > run.out
-    checkSuccess $?
+	echo "Verify the DER result"
+	diff tmp.bin h80000001.bin > run.out
+	checkSuccess $?
 
+	echo "Flush the ecc ${CURVE} ${HALG} key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
+
+    done
 done
 
 echo ""

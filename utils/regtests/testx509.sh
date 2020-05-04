@@ -53,21 +53,21 @@ echo ""
 # sign${SKEY[i]}rpriv.bin is a restricted signing key
 # sign${SKEY[i]}priv.bin is an unrestricted signing key
 
-SALG=(rsa ecc)
-SKEY=(rsa2048 ecc)
+SALG=(rsa ecc ecc)
+SKEY=(rsa2048 eccnistp256 eccnistp384)
 
-for ((i = 0 ; i < 2 ; i++))
+for ((i = 0 ; i < 3 ; i++))
 do
 
-    echo "Load the ${SALG[i]} issuer key 80000001 under the primary key"
+    echo "Load the ${SALG[i]} ${SKEY[i]} issuer key 80000001 under the primary key"
     ${PREFIX}load -hp 80000000 -ipr sign${SKEY[i]}rpriv.bin -ipu sign${SKEY[i]}rpub.bin -pwdp sto > run.out
     checkSuccess $?
 
-    echo "Load the ${SALG[i]} subject key 80000002 under the primary key"
+    echo "Load the ${SALG[i]} ${SKEY[i]} subject key 80000002 under the primary key"
     ${PREFIX}load -hp 80000000 -ipr sign${SKEY[i]}priv.bin -ipu sign${SKEY[i]}pub.bin -pwdp sto > run.out
     checkSuccess $?
 
-    echo "Signing Key Self Certify CA Root ${SALG[i]}"
+    echo "Signing Key Self Certify CA Root ${SALG[i]} ${SKEY[i]}"
     ${PREFIX}certifyx509 -hk 80000001 -ho 80000001 -halg sha256 -pwdk sig -pwdo sig -opc tmppart1.bin -os tmpsig1.bin -oa tmpadd1.bin -otbs tmptbs1.bin -ocert tmpx5091.bin -salg ${SALG[i]} -sub -v -iob 00050472 > run.out
     checkSuccess $?
 
