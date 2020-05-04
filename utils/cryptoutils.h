@@ -296,6 +296,8 @@ extern "C" {
 				EC_KEY 			*ecKey);
     TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,	
 				      const TPMS_ECC_POINT *tpmsEccPoint);
+    TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,
+					  const TPMT_PUBLIC *tpmtPublic);
     TPM_RC verifyEcSignatureFromEvpPubKey(unsigned char *message,
 					  unsigned int messageSize,
 					  TPMT_SIGNATURE *tSignature,

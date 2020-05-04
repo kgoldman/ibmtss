@@ -78,6 +78,14 @@
 #include "objecttemplates.h"
 #include "cryptoutils.h"
 
+#ifndef TPM_TSS_NOECC
+static TPM_RC getEcNid(int		*nid,
+		       TPMI_ECC_CURVE 	curveID);
+static TPM_RC getEcModulusBytes(int	*modulusBytes,
+				int	*pointBytes,
+				TPMI_ECC_CURVE curveID);
+#endif
+
 /* verbose tracing flag shared by command line utilities */
 
 int tssUtilsVerbose;
@@ -196,7 +204,7 @@ TPM_RC convertPemToEvpPrivKey(EVP_PKEY **evpPkey,		/* freed by caller */
 	*evpPkey = PEM_read_PrivateKey(pemKeyFile, NULL, NULL, (void *)password);
 	if (*evpPkey == NULL) {
 	    printf("convertPemToEvpPrivKey: Error reading key file %s\n", pemKeyFilename);
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_PEM_ERROR;
 	}
     }
     if (pemKeyFile != NULL) {
@@ -224,7 +232,7 @@ TPM_RC convertPemToEvpPubKey(EVP_PKEY **evpPkey,		/* freed by caller */
 	*evpPkey = PEM_read_PUBKEY(pemKeyFile, NULL, NULL, NULL);
 	if (*evpPkey == NULL) {
 	    printf("convertPemToEvpPubKey: Error reading key file %s\n", pemKeyFilename);
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_PEM_ERROR;
 	}
     }
     if (pemKeyFile != NULL) {
@@ -260,7 +268,7 @@ TPM_RC convertPemToRsaPrivKey(void **rsaKey,		/* freed by caller */
 	*rsaKey = (void *)PEM_read_RSAPrivateKey(pemKeyFile, NULL, NULL, (void *)password);
 	if (*rsaKey == NULL) {
 	    printf("convertPemToRsaPrivKey: Error in OpenSSL PEM_read_RSAPrivateKey()\n");
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_PEM_ERROR;
 	}
     }
     if (pemKeyFile != NULL) {
@@ -284,7 +292,7 @@ TPM_RC convertEvpPkeyToEckey(EC_KEY **ecKey,		/* freed by caller */
 	*ecKey = EVP_PKEY_get1_EC_KEY(evpPkey);
 	if (*ecKey == NULL) {
 	    printf("convertEvpPkeyToEckey: Error extracting EC key from EVP_PKEY\n");
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
     }
     return rc;
@@ -303,7 +311,7 @@ TPM_RC convertEvpPkeyToRsakey(RSA **rsaKey,		/* freed by caller */
 	*rsaKey = EVP_PKEY_get1_RSA(evpPkey);
 	if (*rsaKey == NULL) {
 	    printf("convertEvpPkeyToRsakey: EVP_PKEY_get1_RSA failed\n");  
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
     }
     return rc;
@@ -313,7 +321,7 @@ TPM_RC convertEvpPkeyToRsakey(RSA **rsaKey,		/* freed by caller */
 
 /* convertEcKeyToPrivateKeyBin() converts an OpenSSL EC_KEY to a binary array
 
-   FIXME  Only supports NIST P256 curve.
+   Only supports NIST P256 and P384 curves.
 */
 
 TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
@@ -341,6 +349,9 @@ TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
 	switch (nid) {
 	  case NID_X9_62_prime256v1:
 	    *privateKeyBytes = 32;
+	    break;
+	  case NID_secp384r1:
+	    *privateKeyBytes = 48;
 	    break;
 	  default:
 	    printf("convertEcKeyToPrivateKeyBin: Error, curve NID %u not supported\n", nid);
@@ -501,7 +512,7 @@ TPM_RC convertEcPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 	if (((objectPrivate == NULL) && (objectSensitive == NULL)) ||
 	    ((objectPrivate != NULL) && (objectSensitive != NULL))) {
 	    printf("convertEcPrivateKeyBinToPrivate: Only one result supported\n");
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_NULL_PARAMETER;
 	}
     }
     /* In some cases, the sensitive data is not encrypted and the integrity value is not present.
@@ -521,10 +532,10 @@ TPM_RC convertEcPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 				  sizeof(tSensitive.authValue.t.buffer));
     }
     if (rc == 0) {
-	if (privateKeyBytes > 32) {	/* hard code NISTP256 */
+	if ((size_t)privateKeyBytes > sizeof(tSensitive.sensitive.ecc.t.buffer)) {
 	    printf("convertEcPrivateKeyBinToPrivate: Error, private key size %u not 32\n",
 		   privateKeyBytes);
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     if (rc == 0) {
@@ -586,7 +597,7 @@ TPM_RC convertRsaPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 	if (((objectPrivate == NULL) && (objectSensitive == NULL)) ||
 	    ((objectPrivate != NULL) && (objectSensitive != NULL))) {
 	    printf("convertRsaPrivateKeyBinToPrivate: Only one result supported\n");
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_NULL_PARAMETER;
 	}
     }
     /* In some cases, the sensitive data is not encrypted and the integrity value is not present.
@@ -614,7 +625,7 @@ TPM_RC convertRsaPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 	    printf("convertRsaPrivateKeyBinToPrivate: "
 		   "Error, private key modulus %d greater than %lu\n",
 		   privateKeyBytes, (unsigned long)sizeof(tSensitive.sensitive.rsa.t.buffer));
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     if (rc == 0) {
@@ -658,7 +669,6 @@ TPM_RC convertRsaPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 
 /* convertEcPublicKeyBinToPublic() converts an EC modulus and other parameters to a TPM2B_PUBLIC
 
-   FIXME  Only supports NIST P256 curve.
 */
 
 TPM_RC convertEcPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
@@ -670,14 +680,19 @@ TPM_RC convertEcPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
 				     int 			modulusBytes,
 				     uint8_t 			*modulusBin)
 {
-    TPM_RC 		rc = 0;
+    TPM_RC 	rc = 0;
+    int		pointBytes;
+    int		curveModulusBytes;
 
     scheme = scheme;	/* scheme parameter not supported yet */
-    if (rc == 0) {
-	if (modulusBytes != 65) {	/* 1 for compression + 32 + 32 */
-	    printf("convertEcPublicKeyBinToPublic: public modulus expected 65 bytes, actual %u\n",
-		   modulusBytes);
-	    rc = EXIT_FAILURE;
+     if (rc == 0) {
+	 rc = getEcModulusBytes(&curveModulusBytes, &pointBytes, curveID);
+     }
+     if (rc == 0) {
+	if (modulusBytes != curveModulusBytes) {
+	    printf("convertEcPublicKeyBinToPublic: public modulus expected %u bytes, actual %u\n",
+		   curveModulusBytes, modulusBytes);
+	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
     }
     if (rc == 0) {
@@ -714,11 +729,13 @@ TPM_RC convertEcPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
 	objectPublic->publicArea.parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
 	objectPublic->publicArea.parameters.eccDetail.kdf.details.mgf1.hashAlg = halg;
 
-	objectPublic->publicArea.unique.ecc.x.t.size = 32;	
-	memcpy(objectPublic->publicArea.unique.ecc.x.t.buffer, modulusBin +1, 32);	
+	objectPublic->publicArea.unique.ecc.x.t.size = pointBytes;	
+	memcpy(objectPublic->publicArea.unique.ecc.x.t.buffer,
+	       modulusBin +1, pointBytes);	
 
-	objectPublic->publicArea.unique.ecc.y.t.size = 32;	
-	memcpy(objectPublic->publicArea.unique.ecc.y.t.buffer, modulusBin +33, 32);	
+	objectPublic->publicArea.unique.ecc.y.t.size = pointBytes;	
+	memcpy(objectPublic->publicArea.unique.ecc.y.t.buffer,
+	       modulusBin +1 + pointBytes, pointBytes);	
     }
     return rc;
 }
@@ -742,7 +759,7 @@ TPM_RC convertRsaPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
 	    printf("convertRsaPublicKeyBinToPublic: Error, "
 		   "public key modulus %d greater than %lu\n", modulusBytes,
 		   (unsigned long)sizeof(objectPublic->publicArea.unique.rsa.t.buffer));
-	    rc = EXIT_FAILURE;
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     if (rc == 0) {
@@ -981,7 +998,7 @@ TPM_RC convertEcPemToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
-/* convertEcPemToPublic() converts an ECC P256 signing public key in PEM format to a
+/* convertEcPemToPublic() converts an ECC signing public key in PEM format to a
    TPM2B_PUBLIC */
 
 TPM_RC convertEcPemToPublic(TPM2B_PUBLIC 	*objectPublic,
@@ -1395,8 +1412,8 @@ TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *public,
 #endif /* TPM_TSS_NORSA */
 #ifndef TPM_TSS_NOECC
 	  case TPM_ALG_ECC:
-	    rc = convertEcPublicToEvpPubKey(&evpPubkey,		/* freed @1 */
-					    &public->publicArea.unique.ecc);
+	    rc = convertEcTPMTPublicToEvpPubKey(&evpPubkey,		/* freed @1 */
+						&public->publicArea);
 	    break;
 #endif	/* TPM_TSS_NOECC */
 	  default:
@@ -1468,6 +1485,8 @@ TPM_RC convertRsaPublicToEvpPubKey(EVP_PKEY **evpPubkey,	/* freed by caller */
 #ifndef TPM_TSS_NOECC
 
 /* convertEcPublicToEvpPubKey() converts an EC TPMS_ECC_POINT to an EVP_PKEY.
+
+   Deprecated: This is hard coded to NIST P256.  See convertEcTPMTPublicToEvpPubKey().
  */
 
 TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller */
@@ -1535,6 +1554,100 @@ TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller */
 	irc = EVP_PKEY_set1_EC_KEY(*evpPubkey, ecKey);
 	if (irc != 1) {
 	    printf("convertEcPublicToEvpPubKey: "
+		   "Error converting public key from EC to EVP format\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (ecGroup != NULL) {
+	EC_GROUP_free(ecGroup);	/* @4 */
+    }
+    if (ecKey != NULL) {
+	EC_KEY_free(ecKey);	/* @1 */
+    }
+    if (x != NULL) {
+	BN_free(x);		/* @2 */
+    }
+    if (y != NULL) {
+	BN_free(y);		/* @3 */
+    }
+    return rc;
+}
+
+/* convertEcTPMTPublicToEvpPubKey() converts an EC TPMS_ECC_POINT to an EVP_PKEY.
+
+   This is the replacement for convertEcPublicToEvpPubKey().
+ */
+
+TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller */
+				      const TPMT_PUBLIC *tpmtPublic)
+{
+    TPM_RC 	rc = 0;
+    int		irc;
+    int		nid;
+    EC_GROUP 	*ecGroup = NULL;
+    EC_KEY 	*ecKey = NULL;
+    BIGNUM 	*x = NULL;		/* freed @2 */
+    BIGNUM 	*y = NULL;		/* freed @3 */
+    
+    if (rc == 0) {
+	ecKey = EC_KEY_new();		/* freed @1 */
+	if (ecKey == NULL) {
+	    printf("convertEcTPMTPublicToEvpPubKey: Error creating EC_KEY\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    /* map from the TCG curve to the openssl nid */
+    if (rc == 0) {
+	rc = getEcNid(&nid, tpmtPublic->parameters.eccDetail.curveID);
+    }
+    if (rc == 0) {
+	ecGroup = EC_GROUP_new_by_curve_name(nid);	/* freed @4 */
+	if (ecGroup == NULL) {
+	    printf("convertEcTPMTPublicToEvpPubKey: Error in EC_GROUP_new_by_curve_name\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	/* returns void */
+	EC_GROUP_set_asn1_flag(ecGroup, OPENSSL_EC_NAMED_CURVE);
+    }
+    /* assign curve to EC_KEY */
+    if (rc == 0) {
+	irc = EC_KEY_set_group(ecKey, ecGroup);
+	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey: Error in EC_KEY_set_group\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	rc = convertBin2Bn(&x,				/* freed @2 */
+			   tpmtPublic->unique.ecc.x.t.buffer,
+			   tpmtPublic->unique.ecc.x.t.size);	
+    }
+    if (rc == 0) {
+	rc = convertBin2Bn(&y,				/* freed @3 */
+			   tpmtPublic->unique.ecc.y.t.buffer,
+			   tpmtPublic->unique.ecc.y.t.size);
+    }
+    if (rc == 0) {
+	irc = EC_KEY_set_public_key_affine_coordinates(ecKey, x, y);
+	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
+		   "Error converting public key from X Y to EC_KEY format\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	*evpPubkey = EVP_PKEY_new();		/* freed by caller */
+	if (*evpPubkey == NULL) {
+	    printf("convertEcTPMTPublicToEvpPubKey: EVP_PKEY failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_set1_EC_KEY(*evpPubkey, ecKey);
+	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
 		   "Error converting public key from EC to EVP format\n");
 	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
@@ -1966,8 +2079,8 @@ TPM_RC convertEcBinToTSignature(TPMT_SIGNATURE *tSignature,
 {
     TPM_RC rc = 0;
     ECDSA_SIG 		*ecSig = NULL;
-    int 		rBytes;
-    int 		sBytes;
+    uint16_t		rBytes;
+    uint16_t 		sBytes;
     const BIGNUM 	*pr = NULL;
     const BIGNUM 	*ps = NULL;
     
@@ -1986,12 +2099,13 @@ TPM_RC convertEcBinToTSignature(TPMT_SIGNATURE *tSignature,
     /* check that the signature size agrees with the currently hard coded P256 curve */
     if (rc == 0) {
 	ECDSA_SIG_get0(ecSig, &pr, &ps);
-	rBytes = BN_num_bytes(pr);
-	sBytes = BN_num_bytes(ps);
-	if ((rBytes > 32) ||
-	    (sBytes > 32)) {
-	    printf("convertEcBinToTSignature: signature rBytes %u or sBytes %u greater than 32\n",
-		   rBytes, sBytes);
+	rBytes = (uint16_t)BN_num_bytes(pr);
+	sBytes = (uint16_t)BN_num_bytes(ps);
+	if ((rBytes > sizeof(tSignature->signature.ecdsa.signatureR.t.buffer)) ||
+	    (sBytes > sizeof(tSignature->signature.ecdsa.signatureS.t.buffer))) {
+	    printf("convertEcBinToTSignature: signature rBytes %u or sBytes %u greater than %u\n",
+		   rBytes, sBytes,
+		   (unsigned int)sizeof(tSignature->signature.ecdsa.signatureR.t.buffer));
 	    rc = TPM_RC_VALUE;
 	}
     }
@@ -2038,10 +2152,94 @@ TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
 	  case NID_X9_62_prime256v1:
 	    *curveID = TPM_ECC_NIST_P256;
 	    break;
+	  case NID_secp384r1:
+	    *curveID = TPM_ECC_NIST_P384;
+	    break;
 	  default:
 	    printf("getEcCurve: Error, curve NID %u not supported \n", nid);
 	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
+    }
+    return rc;
+}
+
+/* getEcNid() gets the OpenSSL nid corresponding to the TCG algorithm ID curve */
+
+TPM_RC getEcNid(int		*nid,
+		TPMI_ECC_CURVE 	curveID)
+{
+    TPM_RC 		rc = 0;
+
+    switch (curveID) {
+      case TPM_ECC_NIST_P192:
+	*nid = NID_X9_62_prime192v1;	/* untested guess */
+	break;
+      case TPM_ECC_NIST_P224:
+	*nid = NID_secp224r1;		/* untested guess */
+	break;
+      case TPM_ECC_NIST_P256:		/* TCG standard */
+	*nid = NID_X9_62_prime256v1;
+	break;
+      case TPM_ECC_NIST_P384:		/* TCG standard */
+	*nid = NID_secp384r1;
+	break;
+      case TPM_ECC_NIST_P521:
+	*nid = NID_secp521r1;		/* untested guess */
+	break;
+      case TPM_ECC_BN_P256:
+      case TPM_ECC_BN_P638:
+      case TPM_ECC_SM2_P256:
+      case TPM_ECC_BP_P256_R1:
+      case TPM_ECC_BP_P384_R1:
+      case TPM_ECC_BP_P512_R1:
+      case TPM_ECC_CURVE_25519:
+      default:
+	*nid = NID_undef;
+	printf("getEcNid: Error, TCG curve %04x not supported \n", curveID);
+	rc = TSS_RC_EC_KEY_CONVERT;
+    }
+    return rc;
+}
+
+/* getEcModulusBytes() gets the modulus size and bytes on the point corresponding to the TCG
+   algorithm ID curve */
+
+static TPM_RC getEcModulusBytes(int	*modulusBytes,
+				int	*pointBytes,
+				TPMI_ECC_CURVE curveID)
+{
+    TPM_RC 		rc = 0;
+
+    /* add 1 byte for point compression */
+    switch (curveID) {
+      case TPM_ECC_NIST_P192:
+	*pointBytes = 24;
+	*modulusBytes = 49;		/* 1+24+24 untested guess */
+	break;
+      case TPM_ECC_NIST_P224:
+	*pointBytes = 28;
+	*modulusBytes = 57;		/* 1+28+28 untested guess */
+	break;
+      case TPM_ECC_NIST_P256:
+	*pointBytes = 32;
+	*modulusBytes = 65;		/* 1+32+32 TCG standard */
+	break;
+      case TPM_ECC_NIST_P384:
+	*pointBytes = 48;
+	*modulusBytes = 97;		/* 1+48+48 TCG standard */
+	break;
+      case TPM_ECC_NIST_P521:
+      case TPM_ECC_BN_P256:
+      case TPM_ECC_BN_P638:
+      case TPM_ECC_SM2_P256:
+      case TPM_ECC_BP_P256_R1:
+      case TPM_ECC_BP_P384_R1:
+      case TPM_ECC_BP_P512_R1:
+      case TPM_ECC_CURVE_25519:
+      default:
+	*modulusBytes = 0;
+	printf("getEcModulusBytes: Error, TCG curve %04x not supported \n", curveID);
+	rc = TSS_RC_EC_KEY_CONVERT;
     }
     return rc;
 }

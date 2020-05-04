@@ -93,7 +93,8 @@ typedef struct
 } CURVE_DATA;
 
 static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData,
-						   EC_KEY *myecc);
+						   EC_KEY *myecc,
+						   TPMI_ECC_CURVE curveID);
 static TPM_RC TSS_BN_new(BIGNUM **bn);
 static TPM_RC TSS_BN_hex2bn(BIGNUM **bn, const char *str);
 #endif	/* TPM_TSS_NOECC */
@@ -516,13 +517,17 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
 
 #ifndef TPM_TSS_NOECC
 
-/* TSS_GeneratePlatformEphemeralKey sets the EC parameters to NIST P256 for generating the ephemeral
+/* TSS_GeneratePlatformEphemeralKey sets the EC parameters to curveID for generating the ephemeral
    key. Some OpenSSL versions do not come with NIST p256.
 
+   Supports NIST p256 and NIST p384.  curveID must be correct from the caller.
+   
    On success, eCurveData->G must be freed by the caller.
 */
 
-static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KEY *myecc)
+static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData,
+						   EC_KEY *myecc,
+						   TPMI_ECC_CURVE curveID)
 {
     TPM_RC      rc = 0;
     BIGNUM 	*p = NULL;
@@ -533,27 +538,47 @@ static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KE
     BIGNUM 	*z = NULL;
     EC_POINT    *G = NULL; 	/* generator */
 
-    /* ---------------------------------------------------------- *
-     * Set the EC parameters to NISTp256. Openssl versions might  *
-     * not have NISTP256 as a possible parameter so we make it    *
-     * possible by setting the curve ourselves.                   *
-     * ---------------------------------------------------------- */
+    /* Set the EC parameters to NISTp256 or NISTp384. Openssl versions might not have NISTP256 as a
+     possible parameter so we make it possible by setting the curve ourselves.*/
 
     /*  NIST P256  from FIPS 186-3 */
-    if (rc == 0) {
-	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting p\n");
-	rc = TSS_BN_hex2bn(&p,		/* freed @1 */
-			   "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF");
+    if (curveID == TPM_ECC_NIST_P256) {
+	if (rc == 0) {
+	    if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting p\n");
+	    rc = TSS_BN_hex2bn(&p,		/* freed @1 */
+			       "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF");
+	}
+	if (rc == 0) {
+	    if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting a (p-3)\n");
+	    rc = TSS_BN_hex2bn(&a,		/* freed @2 */
+			       "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFC");
+	}
+	if (rc == 0) {
+	    if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting b\n");
+	    rc = TSS_BN_hex2bn(&b,		/* freed @3 */
+			       "5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B");
+	}
     }
-    if (rc == 0) {
-	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting a\n");
-	rc = TSS_BN_hex2bn(&a,		/* freed @2 */
-			   "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFC");
-    }
-    if (rc == 0) {
-	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting b\n");
-	rc = TSS_BN_hex2bn(&b,		/* freed @3 */
-			   "5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B");
+    /*  NIST P384 */
+    else if (curveID == TPM_ECC_NIST_P384) {
+	if (rc == 0) {
+	    if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting p\n");
+	    rc = TSS_BN_hex2bn(&p,		/* freed @1 */
+			       "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+			       "FFFFFFFFFFFFFFFEFFFFFFFF0000000000000000FFFFFFFF");
+	}
+	if (rc == 0) {
+	    if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting a (p-3)\n");
+	    rc = TSS_BN_hex2bn(&a,		/* freed @2 */
+			       "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+			       "FFFFFFFFFFFFFFFEFFFFFFFF0000000000000000FFFFFFFC");
+	}
+	if (rc == 0) {
+	    if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: Converting b\n");
+	    rc = TSS_BN_hex2bn(&b,		/* freed @3 */
+			       "B3312FA7E23EE7E4988E056BE3F82D19181D9C6EFE814112"
+			       "0314088F5013875AC656398D8A2ED19D2A85C8EDD3EC2AEF");
+	}
     }
     if (rc == 0) {
 	if (tssVverbose) printf("TSS_ECC_GeneratePlatformEphemeralKey: New group\n");
@@ -579,13 +604,27 @@ static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KE
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
-    if (rc == 0) {
-	rc = TSS_BN_hex2bn(&x,					/* freed @6 */
-			   "6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296");
+    if (curveID == TPM_ECC_NIST_P256) {
+	if (rc == 0) {			/* G.x */
+	    rc = TSS_BN_hex2bn(&x,					/* freed @6 */
+			       "6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296");
+	}
+	if (rc == 0) {			/* G.y */
+	    rc = TSS_BN_hex2bn(&y,					/* freed @7 */
+			       "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
+	}
     }
-    if (rc == 0) {
-	rc = TSS_BN_hex2bn(&y,					/* freed @7 */
-			   "4fe342e2fe1a7f9b8ee7eb4a7c0f9e162bce33576b315ececbb6406837bf51f5");
+    else if (curveID == TPM_ECC_NIST_P384) {
+	if (rc == 0) {		/* G.x */
+	    rc = TSS_BN_hex2bn(&x,					/* freed @6 */
+			       "AA87CA22BE8B05378EB1C71EF320AD746E1D3B628BA79B98"
+			       "59F741E082542A385502F25DBF55296C3A545E3872760AB7");
+	}
+	if (rc == 0) {		/* G.y */
+	    rc = TSS_BN_hex2bn(&y,					/* freed @7 */
+			       "3617de4a96262c6f5d9e98bf9292dc29f8f41dbd289a147c"
+			       "e9da3113b5f0b8c00a60b1ce1d7e819d7a431d7c90ea0e5f");
+	}
     }
     if (rc == 0) {
 	if (EC_POINT_set_affine_coordinates(eCurveData->G, G, x, y, eCurveData->ctx) == 0) {
@@ -602,9 +641,18 @@ static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KE
 	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
 	}
     }
-    if (rc == 0) {
-	rc = TSS_BN_hex2bn(&z,					/* freed @8 */
-			   "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
+    if (curveID == TPM_ECC_NIST_P256) {
+	if (rc == 0) {		/* q */
+	    rc = TSS_BN_hex2bn(&z,					/* freed @8 */
+			       "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
+	}
+    }
+    else if (curveID == TPM_ECC_NIST_P384) {
+	if (rc == 0) {		/* q */
+	    rc = TSS_BN_hex2bn(&z,					/* freed @8 */
+			       "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+			       "C7634D81F4372DDF581A0DB248B0A77AECEC196ACCC52973");
+	}
     }
     if (rc == 0) {
 	if (EC_GROUP_set_generator(eCurveData->G, G, z, BN_value_one()) == 0) {
@@ -673,7 +721,6 @@ static TPM_RC TSS_ECC_GeneratePlatformEphemeralKey(CURVE_DATA *eCurveData, EC_KE
 
 /* TSS_ECC_Salt() returns both the plaintext and excrypted salt, based on the salt key bPublic.
 
-   This is currently hard coded to the TPM_ECC_NIST_P256 curve.
 */
 
 TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
@@ -708,14 +755,16 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     TPM2B_ECC_PARAMETER	p_caller_X_For_KDFE;
     TPM2B_ECC_PARAMETER	p_tpmX_For_KDFE;
     CURVE_DATA 		eCurveData;
+    uint16_t		pointInBytes = 0;
 
     eCurveData.ctx = NULL;	/* for free */
     eCurveData.G = NULL;	/* this is initialized in TSS_ECC_GeneratePlatformEphemeralKey() at
 				   EC_GROUP_new() but gcc -O3 emits a warning that it's
 				   uninitialized. */
-    /* only NIST P256 is currently supported */
+    /* only NIST P256 and NIST P384 are currently supported */
     if (rc == 0) {
-	if ((publicArea->parameters.eccDetail.curveID != TPM_ECC_NIST_P256)) {
+	if (((publicArea->parameters.eccDetail.curveID != TPM_ECC_NIST_P256)) &&
+	    ((publicArea->parameters.eccDetail.curveID != TPM_ECC_NIST_P384))) {
 	    if (tssVerbose)
 		printf("TSS_ECC_Salt: ECC curve ID %04x not supported\n",
 		       publicArea->parameters.eccDetail.curveID);
@@ -742,13 +791,14 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 	if (tssVverbose) printf("TSS_ECC_Salt: "
 				"Calling TSS_ECC_GeneratePlatformEphemeralKey\n");
 	/* eCurveData->G freed @17 */
-	rc = TSS_ECC_GeneratePlatformEphemeralKey(&eCurveData, myecc);
+	rc = TSS_ECC_GeneratePlatformEphemeralKey(&eCurveData, myecc,
+						  publicArea->parameters.eccDetail.curveID);
     }
     if (rc == 0) {
 	d_caller = EC_KEY_get0_private_key(myecc);		/* ephemeral private key */
 	callerPointPub = EC_KEY_get0_public_key(myecc); 	/* ephemeral public key */
     } 
-    /* validate that the public point is on the NIST P-256 curve */
+    /* validate that the public point is on the curve */
     if (rc == 0) 		{
 	if (EC_POINT_is_on_curve(eCurveData.G, callerPointPub, eCurveData.ctx) == 0) {
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
@@ -804,10 +854,26 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 	    rc = TSS_RC_EC_EPHEMERAL_FAILURE;
 	}
     }
-    /* RFC 2440 Named curve prime256v1 */
+    /* RFC 2440 Named curves */
     if (rc == 0) {
-	rc = TSS_BN_hex2bn(&zBn,			/* freed @4 */
-			   "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
+	if (publicArea->parameters.eccDetail.curveID == TPM_ECC_NIST_P256) {
+	    pointInBytes = 256/8;
+	    rc = TSS_BN_hex2bn(&zBn,			/* freed @4 */
+			       "FFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551");
+	}
+	else if (publicArea->parameters.eccDetail.curveID == TPM_ECC_NIST_P384) {
+	    pointInBytes = 384/8;
+	    rc = TSS_BN_hex2bn(&zBn,			/* freed @4 */
+			       "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+			       "C7634D81F4372DDF581A0DB248B0A77AECEC196ACCC52973");
+	}
+	else {
+	    if (tssVerbose)
+		printf("TSS_ECC_Salt: ECC curve ID %04x not supported\n",
+		       publicArea->parameters.eccDetail.curveID);
+	    rc = TSS_RC_BAD_SALT_KEY;
+	}
+	
     }    
     /* add the generator z to the group we are constructing */
     if (rc == 0) {
@@ -964,24 +1030,23 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
        TPMS_ECC_POINT has two TPMB_ECC_PARAMETER, x and y
     */
     if (rc == 0) {
-	/* TPMS_ECC_POINT 256/8 is a hard coded value for NIST P256, the only curve
-	   currently supported */
+	/* TPMS_ECC_POINT size is pointInBytes */
 	uint8_t *secret = encryptedSalt->t.secret;	/* TPMU_ENCRYPTED_SECRET pointer for
 							   clarity */
 	/* TPM2B_ENCRYPTED_SECRET size */
-	encryptedSalt->t.size = sizeof(uint16_t) + (256/8) + sizeof(uint16_t) + (256/8);
+	encryptedSalt->t.size = sizeof(uint16_t) + pointInBytes + sizeof(uint16_t) + pointInBytes;
 	/* leading zeros, because some points may be less than 32 bytes */
 	memset(secret, 0, sizeof(TPMU_ENCRYPTED_SECRET));
 	/* TPMB_ECC_PARAMETER X point */
-	*(uint16_t *)(secret) = htons(256/8);
+	*(uint16_t *)(secret) = htons(pointInBytes);
 	memcpy(secret +
-	       sizeof(uint16_t) + (256/8) - length_p_caller_Xbin,
+	       sizeof(uint16_t) + pointInBytes - length_p_caller_Xbin,
 	       p_caller_Xbin, length_p_caller_Xbin);
 	/* TPMB_ECC_PARAMETER Y point */
-	*(uint16_t *)(secret + sizeof(uint16_t) + (256/8)) = htons(256/8);
+	*(uint16_t *)(secret + sizeof(uint16_t) + pointInBytes) = htons(pointInBytes);
 	memcpy(secret +
-	       sizeof(uint16_t) + (256/8) +
-	       sizeof(uint16_t) + (256/8) - length_p_caller_Ybin,
+	       sizeof(uint16_t) + pointInBytes +
+	       sizeof(uint16_t) + pointInBytes - length_p_caller_Ybin,
 	       p_caller_Ybin, length_p_caller_Ybin);
     }
     if (rc == 0) {
@@ -991,7 +1056,7 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     }
     /* TPM2B_ECC_PARAMETER sharedX_For_KDFE */
     if (rc == 0) {
-	if (lengthSharedXBin > 32) {
+	if (lengthSharedXBin > pointInBytes) {
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
 				   "lengthSharedXBin %u too large\n",
 				   lengthSharedXBin);
@@ -999,9 +1064,9 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 	}
     }
     if (rc == 0) {
-	sharedX_For_KDFE.t.size = 32;
+	sharedX_For_KDFE.t.size = pointInBytes;
 	memset(sharedX_For_KDFE.t.buffer, 0, sizeof(sharedX_For_KDFE.t.buffer));
-	memcpy(sharedX_For_KDFE.t.buffer + 32 - lengthSharedXBin,
+	memcpy(sharedX_For_KDFE.t.buffer + pointInBytes - lengthSharedXBin,
 	       sharedXBin, lengthSharedXBin);
 	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: sharedX_For_KDFE",
 				      sharedX_For_KDFE.t.buffer,
@@ -1009,7 +1074,7 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     }
     /* TPM2B_ECC_PARAMETER p_caller_X_For_KDFE */
     if (rc == 0) {
-	if (length_p_caller_Xbin > 32) {
+	if (length_p_caller_Xbin > pointInBytes) {
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
 				   "length_p_caller_Xbin %u too large\n",
 				   length_p_caller_Xbin);
@@ -1017,9 +1082,9 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 	}
     }
     if (rc == 0) {
-	p_caller_X_For_KDFE.t.size = 32;
+	p_caller_X_For_KDFE.t.size = pointInBytes;
 	memset(p_caller_X_For_KDFE.t.buffer, 0, sizeof(p_caller_X_For_KDFE.t.buffer));
-	memcpy(p_caller_X_For_KDFE.t.buffer + 32 - length_p_caller_Xbin,
+	memcpy(p_caller_X_For_KDFE.t.buffer + pointInBytes - length_p_caller_Xbin,
 	       p_caller_Xbin, length_p_caller_Xbin);
 	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: p_caller_X_For_KDFE",
 				      p_caller_X_For_KDFE.t.buffer,
@@ -1027,7 +1092,7 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
     }
     /* p_tpmX_For_KDFE */
     if (rc == 0) {
-	if (length_p_tpmXbin > 32) {
+	if (length_p_tpmXbin > pointInBytes) {
 	    if (tssVerbose) printf("TSS_ECC_Salt: "
 				   "length_p_tpmXbin %u too large\n",
 				   length_p_tpmXbin);
@@ -1035,9 +1100,9 @@ TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 	}
     }
     if (rc == 0) {
-	p_tpmX_For_KDFE .t.size = 32;
+	p_tpmX_For_KDFE .t.size = pointInBytes;
 	memset(p_tpmX_For_KDFE.t.buffer, 0, sizeof(p_tpmX_For_KDFE.t.buffer));
-	memcpy(p_tpmX_For_KDFE.t.buffer + 32 - length_p_tpmXbin,
+	memcpy(p_tpmX_For_KDFE.t.buffer + pointInBytes - length_p_tpmXbin,
 	       p_tpmXbin, length_p_tpmXbin);
 	if (tssVverbose) TSS_PrintAll("TSS_ECC_Salt: p_tpmX_For_KDFE",
 				      p_tpmX_For_KDFE.t.buffer,

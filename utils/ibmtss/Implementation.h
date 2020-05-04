@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2019				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2020				*/
 /*										*/
 /********************************************************************************/
 
@@ -523,6 +523,11 @@
 #define  TPM_ECC_BN_P256      (TPM_ECC_CURVE)(0x0010)
 #define  TPM_ECC_BN_P638      (TPM_ECC_CURVE)(0x0011)
 #define  TPM_ECC_SM2_P256     (TPM_ECC_CURVE)(0x0020)
+#define  TPM_ECC_BP_P256_R1   (TPM_ECC_CURVE)(0x0030)
+#define  TPM_ECC_BP_P384_R1   (TPM_ECC_CURVE)(0x0031)
+#define  TPM_ECC_BP_P512_R1   (TPM_ECC_CURVE)(0x0032)
+#define  TPM_ECC_CURVE_25519  (TPM_ECC_CURVE)(0x0040)
+
 
 // From TCG Algorithm Registry: Table 12 - Defines for SHA1 Hash Values
 #define  SHA1_DIGEST_SIZE    20
