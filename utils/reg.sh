@@ -182,15 +182,6 @@ cleanup()
     rm -f khrpubsha512.bin
     rm -f prich.bin
     rm -f pritk.bin
-    rm -f signeccnfpriv.bin
-    rm -f signeccnfpub.bin
-    rm -f signeccnfpub.pem
-    rm -f signeccpriv.bin
-    rm -f signeccpub.bin
-    rm -f signeccpub.pem
-    rm -f signeccrpriv.bin
-    rm -f signeccrpub.bin
-    rm -f signeccrpub.pem
     rm -f signrsa2048nfpriv.bin
     rm -f signrsa2048nfpub.bin
     rm -f signrsa2048nfpub.pem
@@ -204,8 +195,27 @@ cleanup()
     rm -f signrsa2048rpub.bin
     rm -f signrsa2048rpub.pem
     rm -f stoch.bin
-    rm -f storeeccpriv.bin
-    rm -f storeeccpub.bin
+    for CURVE in nistp256 nistp384
+    do
+	rm -f storeecc${CURVE}priv.bin
+	rm -f storeecc${CURVE}pub.bin
+
+	rm -f signecc${CURVE}priv.bin
+	rm -f signecc${CURVE}pub.bin
+	rm -f signecc${CURVE}pub.pem
+
+	rm -f signecc${CURVE}rpriv.bin
+	rm -f signecc${CURVE}rpub.bin
+	rm -f signecc${CURVE}rpub.pem
+	
+	rm -f signecc${CURVE}nfpriv.bin
+	rm -f signecc${CURVE}nfpub.bin
+	rm -f signecc${CURVE}nfpub.pem
+
+	rm -f tmpkeypairecc${CURVE}.pem
+	rm -f tmpkeypairecc${CURVE}.der
+	
+    done
     rm -f storsach.bin
     rm -f storsatk.bin
     rm -f stotk.bin

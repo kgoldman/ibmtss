@@ -87,7 +87,7 @@ do
     echo " INFO:"
 
     echo "Verify ${SALG[i]} self signed issuer root" 
-    echo -n " INFO: "
+    echo  " INFO: "
     openssl verify -CAfile tmpx5091.pem tmpx5091.pem > run.out 2>&1
 
     echo "Signing Key Certify ${SALG[i]}"
@@ -109,7 +109,7 @@ do
     echo " INFO:"
 
     echo "Verify ${SALG[i]} subject against issuer" 
-    echo -n " INFO: "
+    echo  " INFO: "
     openssl verify -CAfile tmpx5091.pem tmpx5092.pem > run.out 2>&1
 
 
