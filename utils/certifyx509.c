@@ -617,7 +617,7 @@ TPM_RC createPartialCertificate(X509 *x509Certificate,			/* input / output */
     if (rc == 0) {
 	if (verbose) printf("createPartialCertificate: Adding issuer, size %lu\n",
 				(unsigned long)issuerEntriesSize);
-	rc = createX509Name(&x509IssuerName,
+	rc = createX509Name(&x509IssuerName,	/* freed @1 */
 			    issuerEntriesSize,
 			    issuerEntries);
     }
@@ -653,7 +653,7 @@ TPM_RC createPartialCertificate(X509 *x509Certificate,			/* input / output */
 	if (!subeqiss) {
 	    if (verbose) printf("createPartialCertificate: Adding subject, size %lu\n",
 				(unsigned long)subjectEntriesSize);
-	    rc = createX509Name(&x509SubjectName,
+	    rc = createX509Name(&x509SubjectName,	/* freed @2 */
 				subjectEntriesSize,
 				subjectEntries);
 	}
@@ -661,7 +661,7 @@ TPM_RC createPartialCertificate(X509 *x509Certificate,			/* input / output */
 	else {
 	    if (verbose) printf("createPartialCertificate: Adding subject (issuer), size %lu\n",
 				(unsigned long)issuerEntriesSize);
-	    rc = createX509Name(&x509SubjectName,
+	    rc = createX509Name(&x509SubjectName,	/* freed @2 */
 				issuerEntriesSize,
 				issuerEntries);
 	}
@@ -710,7 +710,9 @@ TPM_RC createPartialCertificate(X509 *x509Certificate,			/* input / output */
 				      certificateDerLength,
 				      certificateDer);		/* input X509 */
     }
-    free(certificateDer);	/* @4 */
+    X509_NAME_free(x509IssuerName);	/* @1 */
+    X509_NAME_free(x509SubjectName);	/* @2 */
+    free(certificateDer);		/* @4 */
     return rc;
 }
 

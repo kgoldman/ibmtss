@@ -1693,7 +1693,7 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
 
 */
 
-TPM_RC createX509Name(X509_NAME **x509Name,
+TPM_RC createX509Name(X509_NAME **x509Name,	/* freed by caller X509_NAME_free() */
 		      size_t entriesSize,
 		      char **entries)
 {
