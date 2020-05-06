@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 	}
 	/* use password from file */
 	else if (newPasswordFilename != NULL) {
-	    rc = TSS_File_ReadBinaryFile(&newPasswordBuffer,     /* freed @2 */
+	    rc = TSS_File_ReadBinaryFile(&newPasswordBuffer,     /* freed @1 */
 					 &newPasswordBufferLength,
 					 newPasswordFilename);
 	    newPasswordPtr = (const char *)newPasswordBuffer;
@@ -303,6 +303,8 @@ int main(int argc, char *argv[])
 	printf("%s%s%s\n", msg, submsg, num);
 	rc = EXIT_FAILURE;
     }
+    free(newPasswordBuffer);	/* @1 */
+
     return rc;
 }
 
