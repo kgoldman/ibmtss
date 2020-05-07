@@ -1009,6 +1009,7 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 		  }
 		  break;
 #endif /* TPM_TSS_NORSA */
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 	      case EK_CERT_EC_INDEX:
 		  {
@@ -1043,6 +1044,7 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 		  }
 		  break;
 #endif	/* TPM_TSS_NOECC */
+#endif  /* TPM_TPM20 */
 	      default:
 		printf("convertCertificatePubKey: "
 		       "ekCertIndex %08x (asymmetric algorithm) not supported\n", ekCertIndex);
@@ -1535,11 +1537,13 @@ TPM_RC createCertificate(char **x509CertString,		/* freed by caller */
 	    rc = addCertKeyRsa(x509Certificate, &tpmtPublic->unique.rsa);
 	    break;
 #endif /* TPM_TSS_NORSA */
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 	  case TPM_ALG_ECC:
 	    rc = addCertKeyEcc(x509Certificate, &tpmtPublic->unique.ecc);
 	    break;
 #endif	/* TPM_TSS_NOECC */
+#endif  /* TPM_TPM20 */
 	  default:
 	    printf("createCertificate: public key algorithm %04x not supported\n",
 		   tpmtPublic->type);
@@ -1823,6 +1827,7 @@ TPM_RC addCertKeyRsa(X509 *x509Certificate,
 
 #endif /* TPM_TSS_NORSA */
 
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
 /* addCertKeyEcc() adds the TPM ECC public key (the key to be certified) to the openssl X509
@@ -1858,6 +1863,7 @@ TPM_RC addCertKeyEcc(X509 *x509Certificate,
 }
 
 #endif	/* TPM_TSS_NOECC */
+#endif /* TPM_TPM20 */
 
 /* addCertSignatureRoot() uses the openSSL root key to sign the X509 certificate.
 

@@ -78,13 +78,15 @@
 #include "objecttemplates.h"
 #include "cryptoutils.h"
 
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 static TPM_RC getEcNid(int		*nid,
 		       TPMI_ECC_CURVE 	curveID);
 static TPM_RC getEcModulusBytes(int	*modulusBytes,
 				int	*pointBytes,
 				TPMI_ECC_CURVE curveID);
-#endif
+#endif /* TPM_TSS_NOECC */
+#endif /* TPM_TPM20 */
 
 /* verbose tracing flag shared by command line utilities */
 
@@ -279,6 +281,7 @@ TPM_RC convertPemToRsaPrivKey(void **rsaKey,		/* freed by caller */
 
 #endif	/* TPM_TSS_NOFILE */
 
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
 /* convertEvpPkeyToEckey retrieves the EC_KEY key token from the EVP_PKEY */
@@ -298,7 +301,8 @@ TPM_RC convertEvpPkeyToEckey(EC_KEY **ecKey,		/* freed by caller */
     return rc;
 }
 
-#endif	/* TPM_TSS_NOECC */
+#endif /* TPM_TSS_NOECC */
+#endif /* TPM_TPM20 */
 
 /* convertEvpPkeyToRsakey() retrieves the RSA key token from the EVP_PKEY */
 
@@ -317,6 +321,7 @@ TPM_RC convertEvpPkeyToRsakey(RSA **rsaKey,		/* freed by caller */
     return rc;
 }
 
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
 /* convertEcKeyToPrivateKeyBin() converts an OpenSSL EC_KEY to a binary array
@@ -387,6 +392,7 @@ TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
 }
 
 #endif	/* TPM_TSS_NOECC */
+#endif  /* TPM_TPM20 */
 
 /* convertRsaKeyToPrivateKeyBin() converts an OpenSSL RSA key token private prime p to a binary
    array */
@@ -415,7 +421,7 @@ TPM_RC convertRsaKeyToPrivateKeyBin(int 	*privateKeyBytes,
     return rc;
 }
 
-
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
 /* convertEcKeyToPublicKeyBin() converts an OpenSSL EC_KEY public key token to a binary array */
@@ -461,6 +467,7 @@ TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
 }
 
 #endif	/* TPM_TSS_NOECC */
+#endif  /* TPM_TPM20 */
 
 /* convertRsaKeyToPublicKeyBin() converts from an openssl RSA key token to a public modulus */
 
@@ -490,7 +497,6 @@ TPM_RC convertRsaKeyToPublicKeyBin(int 		*modulusBytes,
 }
 
 #ifdef TPM_TPM20
-
 #ifndef TPM_TSS_NOECC
 
 /* convertEcPrivateKeyBinToPrivate() converts an EC 'privateKeyBin' to either a
@@ -665,6 +671,7 @@ TPM_RC convertRsaPrivateKeyBinToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 
 #endif /* TPM_TPM20 */
 
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
 /* convertEcPublicKeyBinToPublic() converts an EC modulus and other parameters to a TPM2B_PUBLIC
@@ -741,6 +748,9 @@ TPM_RC convertEcPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
 }
 
 #endif	/* TPM_TSS_NOECC */
+#endif	/* TPM_TPM20 */
+
+#ifdef TPM_TPM20
 
 /* convertRsaPublicKeyBinToPublic() converts a public modulus to a TPM2B_PUBLIC structure. */
 
@@ -799,6 +809,8 @@ TPM_RC convertRsaPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
     return rc;
 }
 
+#endif	/* TPM_TPM20 */
+
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
@@ -833,6 +845,9 @@ TPM_RC convertEcKeyToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 }
 
 #endif	/* TPM_TSS_NOECC */
+#endif  /* TPM_TPM20 */
+
+#ifdef TPM_TPM20
 
 /* convertRsaKeyToPrivate() converts an openssl RSA key token to either a TPM2B_PRIVATE or
    TPM2B_SENSITIVE
@@ -865,6 +880,9 @@ TPM_RC convertRsaKeyToPrivate(TPM2B_PRIVATE 	*objectPrivate,
     return rc;
 }
 
+#endif /* TPM_TPM20 */
+
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
 /* convertEcKeyToPublic() converts an EC_KEY to a TPM2B_PUBLIC */
@@ -904,6 +922,9 @@ TPM_RC convertEcKeyToPublic(TPM2B_PUBLIC 		*objectPublic,
 }
 
 #endif	/* TPM_TSS_NOECC */
+#endif 	/* TPM_TPM20 */
+
+#ifdef TPM_TPM20
 
 /* convertRsaKeyToPublic() converts from an openssl RSA key token to a TPM2B_PUBLIC */
 
@@ -938,7 +959,7 @@ TPM_RC convertRsaKeyToPublic(TPM2B_PUBLIC 		*objectPublic,
     return rc;
 }
 
-#endif
+#endif /* TPM_TPM20 */
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
@@ -991,8 +1012,8 @@ TPM_RC convertEcPemToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 }
 
 #endif	/* TPM_TSS_NOECC */
-#endif
-#endif
+#endif  /* TPM_TPM20 */
+#endif  /* TPM_TSS_NOFILE */
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
@@ -1038,8 +1059,8 @@ TPM_RC convertEcPemToPublic(TPM2B_PUBLIC 	*objectPublic,
 }
 
 #endif	/* TPM_TSS_NOECC */
-#endif
-#endif
+#endif  /* TPM_TPM20 */
+#endif  /* TPM_TSS_NOFILE */
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
@@ -1207,8 +1228,8 @@ TPM_RC convertEcDerToPublic(TPM2B_PUBLIC 		*objectPublic,
 }
 
 #endif	/* TPM_TSS_NOECC */
-#endif
-#endif
+#endif  /* TPM_TPM20 */
+#endif  /* TPM_TSS_NOFILE */
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
@@ -1353,8 +1374,8 @@ TPM_RC convertRsaPemToPublic(TPM2B_PUBLIC 		*objectPublic,
     return rc;
 }
 
-#endif
-#endif
+#endif /* TPM_TPM20 */ 
+#endif /* TPM_TSS_NOFILE */
 
 /* getRsaKeyParts() gets the RSA key parts from an OpenSSL RSA key token.
 
@@ -1410,12 +1431,14 @@ TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *public,
 					     &public->publicArea.unique.rsa);
 	    break;
 #endif /* TPM_TSS_NORSA */
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 	  case TPM_ALG_ECC:
 	    rc = convertEcTPMTPublicToEvpPubKey(&evpPubkey,		/* freed @1 */
 						&public->publicArea);
 	    break;
-#endif	/* TPM_TSS_NOECC */
+#endif /* TPM_TSS_NOECC */
+#endif /* TPM_TPM20 */
 	  default:
 	    printf("convertPublicToPEM: Unknown publicArea.type %04hx unsupported\n",
 		   public->publicArea.type);
@@ -1482,6 +1505,7 @@ TPM_RC convertRsaPublicToEvpPubKey(EVP_PKEY **evpPubkey,	/* freed by caller */
 
 #endif /* TPM_TSS_NORSA */
 
+#ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
 /* convertEcPublicToEvpPubKey() converts an EC TPMS_ECC_POINT to an EVP_PKEY.
@@ -1668,6 +1692,7 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 }
 
 #endif	/* TPM_TSS_NOECC */
+#endif  /* TPM_TPM20 */
 
 #ifndef TPM_TSS_NOFILE
 
@@ -2165,8 +2190,8 @@ TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
 
 /* getEcNid() gets the OpenSSL nid corresponding to the TCG algorithm ID curve */
 
-TPM_RC getEcNid(int		*nid,
-		TPMI_ECC_CURVE 	curveID)
+static TPM_RC getEcNid(int		*nid,
+		       TPMI_ECC_CURVE 	curveID)
 {
     TPM_RC 		rc = 0;
 
