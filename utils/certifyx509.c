@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2019.						*/
+/* (c) Copyright IBM Corporation 2019 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -78,8 +78,10 @@ TPM_RC convertCertToPartialCert(uint16_t *partialCertificateDerLength,
 				uint8_t *partialCertificateDer,
 				uint16_t certificateDerLength,
 				uint8_t *certificateDer);
-TPM_RC reformCertificate(X509 *x509Certificate,
-			 int useRsa,
+TPM_RC reformCertificate(X509 			*x509Certificate,
+			 TPMI_ALG_HASH		halg,
+			 TPMI_ALG_SIG_SCHEME   	scheme,
+			 TPMI_ECC_CURVE		curveID,
 			 TPM2B_MAX_BUFFER *addedToCertificate,
 			 TPMT_SIGNATURE *tSignature);
 TPM_RC addSerialNumber(X509 		*x509Certificate,
@@ -89,12 +91,15 @@ TPM_RC addPubKeyRsa(X509 		*x509Certificate,
 		    unsigned char 	*tmpAddedToCert,
 		    uint16_t 		*tmpAddedToCertIndex);
 TPM_RC addSignatureRsa(X509 		*x509Certificate,
+		       TPMI_ALG_HASH	halg,
 		       TPMT_SIGNATURE 	*tSignature);
 TPM_RC addSignatureEcc(X509 		*x509Certificate,
+		       TPMI_ALG_HASH	halg,
 		       TPMT_SIGNATURE 	*signature);
 TPM_RC addPubKeyEcc(X509 		*x509Certificate,
 		    unsigned char 	*tmpAddedToCert,
-		    uint16_t 		*tmpAddedToCertIndex);
+		    uint16_t 		*tmpAddedToCertIndex,
+		    TPMI_ECC_CURVE	curveID);
 TPM_RC addCertExtensionTpmaOid(X509 *x509Certificate,
 			       uint32_t tpmaObject);
 
@@ -131,6 +136,10 @@ int main(int argc, char *argv[])
     CertifyX509_Out 		out;
     TPMI_DH_OBJECT		objectHandle = 0;
     TPMI_DH_OBJECT		signHandle = 0;
+    unsigned int		algCount = 0;
+    TPMI_ALG_SIG_SCHEME    	scheme;
+    TPMI_RSA_KEY_BITS 		keyBits = 0;
+    TPMI_ECC_CURVE		curveID = 0;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
     unsigned int 		bit = 0;
     int 			testBit = FALSE;
@@ -149,7 +158,6 @@ int main(int argc, char *argv[])
     TPMI_SH_AUTH_SESSION    	sessionHandle2 = TPM_RH_NULL;
     unsigned int		sessionAttributes2 = 0;
 
-    int				useRsa = 1;
     int				subeqiss = FALSE;	/* TRUE: subject = issuer */
     const char 			*keyUsage = "critical,digitalSignature,keyCertSign,cRLSign";
     uint32_t			tpmaObject = 0;
@@ -206,17 +214,11 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-halg") == 0) {
 	    i++;
 	    if (i < argc) {
-		if (strcmp(argv[i],"sha1") == 0) {
-		    halg = TPM_ALG_SHA1;
-		}
-		else if (strcmp(argv[i],"sha256") == 0) {
+		if (strcmp(argv[i],"sha256") == 0) {
 		    halg = TPM_ALG_SHA256;
 		}
 		else if (strcmp(argv[i],"sha384") == 0) {
 		    halg = TPM_ALG_SHA384;
-		}
-		else if (strcmp(argv[i],"sha512") == 0) {
-		    halg = TPM_ALG_SHA512;
 		}
 		else {
 		    printf("Bad parameter %s for -halg\n", argv[i]);
@@ -228,22 +230,36 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
-	else if (strcmp(argv[i],"-salg") == 0) {
+	else if (strcmp(argv[i], "-rsa") == 0) {
+	    scheme = TPM_ALG_RSASSA;
+	    algCount++;
 	    i++;
 	    if (i < argc) {
-		if (strcmp(argv[i],"rsa") == 0) {
-		    useRsa = 1;
+		sscanf(argv[i],"%hu", &keyBits);
+	    }
+	    else {
+		printf("Missing keysize parameter for -rsa\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i], "-ecc") == 0) {
+	    scheme = TPM_ALG_ECDSA;
+	    algCount++;
+	    i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"nistp256") == 0) {
+		    curveID = TPM_ECC_NIST_P256;
 		}
-		else if (strcmp(argv[i],"ecc") == 0) {
-		    useRsa = 0;
+		else if (strcmp(argv[i],"nistp384") == 0) {
+		    curveID = TPM_ECC_NIST_P384;
 		}
 		else {
-		    printf("Bad parameter %s for -salg\n", argv[i]);
+		    printf("Bad curve parameter %s for -ecc\n", argv[i]);
 		    printUsage();
 		}
 	    }
 	    else {
-		printf("-salg option needs a value\n");
+		printf("-ecc option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -407,21 +423,28 @@ int main(int argc, char *argv[])
 	printf("Missing sign handle parameter -hk\n");
 	printUsage();
     }
+    if (algCount == 0) {
+	printf("One of -rsa, -ecc must be specified\n");
+	printUsage();
+    }
+    if (algCount > 1) {
+	printf("Only one of -rsa, -ecc can be specified\n");
+	printUsage();
+    }
     if (rc == 0) {
 	/* Handle of the object to be certified */
 	in.objectHandle = objectHandle;
 	/* Handle of key that will perform certifying */
 	in.signHandle = signHandle;
-	if (useRsa) {
+	in.inScheme.scheme = scheme;
+	if (scheme == TPM_ALG_RSASSA) {
 	    /* Table 145 - Definition of TPMT_SIG_SCHEME Structure */
-	    in.inScheme.scheme = TPM_ALG_RSASSA;	
 	    /* Table 144 - Definition of TPMU_SIG_SCHEME Union <IN/OUT, S> */
 	    /* Table 142 - Definition of {RSA} Types for RSA Signature Schemes */
 	    /* Table 135 - Definition of TPMS_SCHEME_HASH Structure */
 	    in.inScheme.details.rsassa.hashAlg = halg;
 	}
 	else {	/* ecc */
-	    in.inScheme.scheme = TPM_ALG_ECDSA;	
 	    in.inScheme.details.ecdsa.hashAlg = halg;
 	}
 	in.reserved.t.size = 0;
@@ -525,7 +548,7 @@ int main(int argc, char *argv[])
     /* reform the signed certificate from the original input plus the response parameters */
     if (rc == 0) {
 	rc = reformCertificate(x509Certificate,
-			       useRsa,
+			       halg, scheme, curveID,
 			       &out.addedToCertificate,
 			       &out.signature);
     }
@@ -874,10 +897,12 @@ TPM_RC convertCertToPartialCert(uint16_t *partialCertificateDerLength,
    signature values to reform the X509 certificate that the TPM signed.
 */
 
-TPM_RC reformCertificate(X509 *x509Certificate,
-			 int useRsa,
-			 TPM2B_MAX_BUFFER *addedToCertificate,
-			 TPMT_SIGNATURE *tSignature)
+TPM_RC reformCertificate(X509 			*x509Certificate,
+			 TPMI_ALG_HASH		halg,
+			 TPMI_ALG_SIG_SCHEME   	scheme,
+			 TPMI_ECC_CURVE		curveID,
+			 TPM2B_MAX_BUFFER 	*addedToCertificate,
+			 TPMT_SIGNATURE 	*tSignature)
 {
     TPM_RC 		rc = 0;
     unsigned char 	*tmpAddedToCert = NULL;
@@ -895,7 +920,7 @@ TPM_RC reformCertificate(X509 *x509Certificate,
 			     tmpAddedToCert,
 			     &tmpAddedToCertIndex);
     }
-    if (useRsa) {
+    if (scheme == TPM_ALG_RSASSA) {
 	/* add public key algorithm and public key */
 	if (rc == 0) {
 	    rc = addPubKeyRsa(x509Certificate,
@@ -904,19 +929,20 @@ TPM_RC reformCertificate(X509 *x509Certificate,
 	}
 	/* add certificate signature */
 	if (rc == 0) {
-	    rc = addSignatureRsa(x509Certificate, tSignature);
+	    rc = addSignatureRsa(x509Certificate, halg, tSignature);
 	}
     }
-    else {
+    else {	/* scheme == TPM_ALG_ECDSA */
 	/* add public key  */
 	if (rc == 0) {
 	    rc = addPubKeyEcc(x509Certificate,
 			      tmpAddedToCert,
-			      &tmpAddedToCertIndex);
+			      &tmpAddedToCertIndex,
+			      curveID);
 	}
 	/* add certificate signature */
 	if (rc == 0) {
-	    rc = addSignatureEcc(x509Certificate, tSignature);
+	    rc = addSignatureEcc(x509Certificate, halg, tSignature);
 	}
     }
     return rc;
@@ -1034,18 +1060,21 @@ TPM_RC addPubKeyRsa(X509 		*x509Certificate,
 
 /* addPubKeyEcc() adds the public key to the certificate. tmpAddedToCertIndex must point to the
    public key.
+
+   Supports TPM_ECC_NIST_P256, TPM_ECC_NIST_P384.
 */
 
 
 TPM_RC addPubKeyEcc(X509 		*x509Certificate,
 		    unsigned char 	*tmpAddedToCert,
-		    uint16_t 		*tmpAddedToCertIndex)
+		    uint16_t 		*tmpAddedToCertIndex,
+		    TPMI_ECC_CURVE	curveID)
 {
     TPM_RC 		rc = 0;
     uint16_t 		dataLength;
-    TPMS_ECC_POINT 	tpmsEccPoint;
+    uint16_t		pointSize;
 
-    /* skip the SEQUENCE with the Signature Algorithm object identifier ecdsaWithSHA256 */
+    /* skip the SEQUENCE with the Signature Algorithm object identifier ecdsaWithSHAnnn */
     if (rc == 0) {
 	rc = copyType(0x30, NULL, NULL, 		/* NULL says to skip */
 		      tmpAddedToCertIndex, tmpAddedToCert);
@@ -1063,22 +1092,37 @@ TPM_RC addPubKeyEcc(X509 		*x509Certificate,
     if (rc == 0) {
 	rc = skipBitString(&dataLength, tmpAddedToCertIndex, tmpAddedToCert);
     }
+    if (rc == 0) {
+	switch(curveID) {
+	  case TPM_ECC_NIST_P256:
+	    pointSize = 256/8;
+	    break;
+	  case TPM_ECC_NIST_P384:
+	    pointSize = 384/8;
+	    break;
+	  default:	/* should never occur */
+	    printf("addPubKeyEcc: Bad curveID %04x\n", curveID);
+	    rc = TSS_RC_BAD_SIGNATURE_ALGORITHM;
+	    break;
+	}
+    }
     /* the next bytes are the 04, x and y */
     if (rc == 0) {
-
-	/* FIXME check that dataLength is 65 */
+	TPMT_PUBLIC tpmtPublic;
 
 	*tmpAddedToCertIndex += 1;	/* skip the 0x04 compression byte */
 
-	tpmsEccPoint.x.t.size = 32;	
-	memcpy(tpmsEccPoint.x.t.buffer, tmpAddedToCert +  *tmpAddedToCertIndex, 32);	
-	*tmpAddedToCertIndex += 32;
+	tpmtPublic.unique.ecc.x.t.size = pointSize;
+	memcpy(tpmtPublic.unique.ecc.x.t.buffer, tmpAddedToCert +  *tmpAddedToCertIndex, pointSize);
+	*tmpAddedToCertIndex += pointSize;
 
-	tpmsEccPoint.y.t.size = 32;	
-	memcpy(tpmsEccPoint.y.t.buffer, tmpAddedToCert +  *tmpAddedToCertIndex, 32);	
-	*tmpAddedToCertIndex += 32;
 
-	rc = addCertKeyEcc(x509Certificate, &tpmsEccPoint);
+	tpmtPublic.unique.ecc.y.t.size = pointSize;
+	memcpy(tpmtPublic.unique.ecc.y.t.buffer, tmpAddedToCert +  *tmpAddedToCertIndex, pointSize);
+	*tmpAddedToCertIndex += pointSize;
+
+	tpmtPublic.parameters.eccDetail.curveID = curveID;
+	rc = addCertKeyEccT(x509Certificate, &tpmtPublic);
     }
     return rc;
 }
@@ -1088,6 +1132,7 @@ TPM_RC addPubKeyEcc(X509 		*x509Certificate,
  */
 
 TPM_RC addSignatureRsa(X509 		*x509Certificate,
+		       TPMI_ALG_HASH	halg,
 		       TPMT_SIGNATURE 	*tSignature)
 {
     TPM_RC 		rc = 0;
@@ -1105,14 +1150,25 @@ TPM_RC addSignatureRsa(X509 		*x509Certificate,
 			    x509Certificate);
     }
     /* set the algorithm in the top level structure */
-    if (rc == 0) {
-	X509_ALGOR_set0(signatureAlgorithm,
-			OBJ_nid2obj(NID_sha256WithRSAEncryption), V_ASN1_NULL, NULL);
-    }
     /* set the algorithm in the to be signed structure */
     if (rc == 0) {
-	X509_ALGOR_set0(certSignatureAlgorithm,
-			OBJ_nid2obj(NID_sha256WithRSAEncryption), V_ASN1_NULL, NULL);
+	switch (halg) {
+	  case TPM_ALG_SHA256:
+	    X509_ALGOR_set0(signatureAlgorithm,
+			    OBJ_nid2obj(NID_sha256WithRSAEncryption), V_ASN1_NULL, NULL);
+	    X509_ALGOR_set0(certSignatureAlgorithm,
+			    OBJ_nid2obj(NID_sha256WithRSAEncryption), V_ASN1_NULL, NULL);
+	    break;
+	  case TPM_ALG_SHA384:
+	    X509_ALGOR_set0(signatureAlgorithm,
+			    OBJ_nid2obj(NID_sha384WithRSAEncryption), V_ASN1_NULL, NULL);
+	    X509_ALGOR_set0(certSignatureAlgorithm,
+			    OBJ_nid2obj(NID_sha384WithRSAEncryption), V_ASN1_NULL, NULL);
+	    break;
+	  default:
+	    printf("addSignatureRsa: Unsupported hash algorithm %04x\n", halg);
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
     }
     /* ASN1_BIT_STRING x509Certificate->signature contains a BIT STRING with the RSA signature */
     if (rc == 0) {
@@ -1134,6 +1190,7 @@ TPM_RC addSignatureRsa(X509 		*x509Certificate,
 */
 
 TPM_RC addSignatureEcc(X509 		*x509Certificate,
+		       TPMI_ALG_HASH	halg,
 		       TPMT_SIGNATURE 	*tSignature)
 {
     TPM_RC 		rc = 0;
@@ -1156,14 +1213,25 @@ TPM_RC addSignatureEcc(X509 		*x509Certificate,
 			    x509Certificate);
     }
     /* set the algorithm in the top level structure */
-    if (rc == 0) {
-	X509_ALGOR_set0(signatureAlgorithm,
-			OBJ_nid2obj(NID_ecdsa_with_SHA256), V_ASN1_UNDEF, NULL);
-    }
     /* set the algorithm in the to be signed structure */
     if (rc == 0) {
-	X509_ALGOR_set0(certSignatureAlgorithm,
-			OBJ_nid2obj(NID_ecdsa_with_SHA256), V_ASN1_UNDEF, NULL);
+	switch (halg) {
+	  case TPM_ALG_SHA256:
+	    X509_ALGOR_set0(signatureAlgorithm,
+			    OBJ_nid2obj(NID_ecdsa_with_SHA256), V_ASN1_UNDEF, NULL);
+	    X509_ALGOR_set0(certSignatureAlgorithm,
+			    OBJ_nid2obj(NID_ecdsa_with_SHA256), V_ASN1_UNDEF, NULL);
+	    break;
+	  case TPM_ALG_SHA384:
+	    X509_ALGOR_set0(signatureAlgorithm,
+			    OBJ_nid2obj(NID_ecdsa_with_SHA384), V_ASN1_UNDEF, NULL);
+	    X509_ALGOR_set0(certSignatureAlgorithm,
+			    OBJ_nid2obj(NID_ecdsa_with_SHA384), V_ASN1_UNDEF, NULL);
+	    break;
+	  default:
+	    printf("addSignatureEcc: Unsupported hash algorithm %04x\n", halg);
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
     }
     /* ASN1_BIT_STRING x509Certificate->signature contains a sequence with two INTEGER, R and S */
     /* construct DER and then ASN1_BIT_STRING_set into X509 */
@@ -1457,8 +1525,14 @@ static void printUsage(void)
     printf("\t[-pwdo\tpassword for object (default empty)]\n");
     printf("\t-hk\tcertifying key handle\n");
     printf("\t[-pwdk\tpassword for key (default empty)]\n");
-    printf("\t[-halg\t(sha1, sha256, sha384 sha512) (default sha256)]\n");
-    printf("\t[-salg\tsignature algorithm (rsa, ecc) (default rsa)]\n");
+    printf("\t[-halg\t(sha256, sha384) (default sha256)]\n");
+
+    printf("\t-rsa keybits\n");
+    printf("\t\t2048\n");
+    printf("\t\t3072\n");
+    printf("\t-ecc curve\n");
+    printf("\t\tnistp256\n");
+    printf("\t\tnistp384\n");
 
     printf("\t[-ku\tX509 key usage - string - comma separated, no spaces]\n");
     printf("\t[-iob\tTPMA_OBJECT - 4 byte hex]\n");

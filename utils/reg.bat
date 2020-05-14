@@ -323,55 +323,74 @@ REM cleanup
 
 %TPM_EXE_PATH%flushcontext -ha 80000000
 
-rm -f dec.bin
-rm -f derpriv.bin
-rm -f derpub.bin
+rm -f run.out
 rm -f despriv.bin
 rm -f despub.bin
-rm -f empty.bin
+rm -f prich.bin
+rm -f pritk.bin
+
+for %%H in (%ITERATE_ALGS%) do (
+	rm -f khpriv%%H.bin
+	rm -f khpub%%H.bin
+	rm -f khrpriv%%H.bin
+	rm -f khrpub%%H.bin
+)
+
+for %%B in (2048 3072) do (
+	rm -f signrsa%%Bpriv.bin
+	rm -f signrsa%%Bpub.bin
+	rm -f signrsa%%Bpub.pem
+	rm -f derrsa%%Bpriv.bin
+	rm -f derrsa%%Bpub.bin
+	rm -f signrsa%%Brpriv.bin
+	rm -f signrsa%%Brpub.bin
+	rm -f signrsa%%Brpub.pem
+	rm -f signrsa%%Bnfpriv.bin
+	rm -f signrsa%%Bnfpub.bin
+	rm -f signrsa%%Bnfpub.pem
+	rm -r storersa%%Bpriv.bin
+	rm -r storersa%%Bpub.bin
+	rm -f storersa%%Bch.bin
+	rm -f storersa%%Btk.bin)
+
+for %%C in (nistp256 nistp384) do (
+	rm -f storeecc%%Cpriv.bin
+	rm -f storeecc%%Cpub.bin
+
+	rm -f signecc%%Cpriv.bin
+	rm -f signecc%%Cpub.bin
+	rm -f signecc%%Cpub.pem
+
+	rm -f signecc%%Crpriv.bin
+	rm -f signecc%%Crpub.bin
+	rm -f signecc%%Crpub.pem
+
+	rm -f signecc%%Cnfpriv.bin
+	rm -f signecc%%Cnfpub.bin
+	rm -f signecc%%Cnfpub.pem
+
+	rm -f tmpkeypairecc%%C.pem
+	rm -f tmpkeypairecc%%C.der
+)
+
+rm -f stotk.bin
+rm -f dec.bin
+rm -f derpriv.bin
 rm -f enc.bin
-rm -f khprivsha1.bin
-rm -f khprivsha256.bin
-rm -f khprivsha384.bin
-rm -f khprivsha512.bin
-rm -f khpubsha1.bin
-rm -f khpubsha256.bin
-rm -f khpubsha384.bin
-rm -f khpubsha512.bin
 rm -f msg.bin
 rm -f noncetpm.bin
 rm -f policyapproved.bin
-rm -f prich.bin
-rm -f pritk.bin
 rm -f pssig.bin
-rm -f run.out
 rm -f sig.bin
-rm -f signeccpriv.bin
-rm -f signeccpub.bin
-rm -f signeccpub.pem
-rm -f signpriv.bin
-rm -f signpub.bin
-rm -f signpub.pem
-rm -f signpub.pem
-rm -f signrpriv.bin
-rm -f signrpub.bin
-rm -f signrpub.pem
-rm -f stoch.bin
-rm -f storeeccpriv.bin
-rm -f storeeccpub.bin
-rm -f storepriv.bin
-rm -f storepub.bin
-rm -f stotk.bin
-rm -f tkt.bin
 rm -f tmp.bin
 rm -f tmp1.bin
 rm -f tmp2.bin
-rm -f tmppriv.bin
-rm -f tmppub.bin
 rm -f tmpsha1.bin
 rm -f tmpsha256.bin
 rm -f tmpsha384.bin
 rm -f tmpsha512.bin
+rm -f tmppriv.bin
+rm -f tmppub.bin
 rm -f tmpspriv.bin
 rm -f tmpspub.bin
 rm -f to.bin

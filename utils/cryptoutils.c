@@ -1597,7 +1597,8 @@ TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller */
     return rc;
 }
 
-/* convertEcTPMTPublicToEvpPubKey() converts an EC TPMS_ECC_POINT to an EVP_PKEY.
+/* convertEcTPMTPublicToEvpPubKey() converts an EC TPMT_PUBLIC to an EVP_PKEY.  The only items used
+   from the TPMT_PUBLIC are the curveID and X and Y points.
 
    This is the replacement for convertEcPublicToEvpPubKey().
  */

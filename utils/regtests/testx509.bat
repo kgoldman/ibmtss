@@ -45,34 +45,37 @@ echo ""
 
 rem # basic test
 
-rem # sign%%Arpriv.bin is a restricted signing key
-rem # sign%%Apriv.bin is an unrestricted signing key
+rem rpriv.bin is a restricted signing key
+rem priv.bin is an unrestricted signing key
 
-set SALG=rsa ecc ecc
-set SKEY=rsa2048 eccnistp256 eccnistp384
+set HALG=sha256 sha384 sha256 sha384
+set SALG=rsa rsa ecc ecc
+set SKEY=2048 3072 nistp256 nistp384
 
 set i=0
-for %%a in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%a
+for %%a in (!HALG!) do set /A i+=1 & set HALG[!i!]=%%a
 set i=0
-for %%b in (!SKEY!) do set /A i+=1 & set SKEY[!i!]=%%b
+for %%b in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%b
+set i=0
+for %%c in (!SKEY!) do set /A i+=1 & set SKEY[!i!]=%%c
 set L=!i!
 
 for /L %%i in (1,1,!L!) do (
 
     echo "Load the !SALG[%%i]! !SKEY[%%i]! issuer key 80000001 under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SKEY[%%i]!rpriv.bin -ipu sign!SKEY[%%i]!rpub.bin -pwdp sto > run.out
+    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SALG[%%i]!!SKEY[%%i]!rpriv.bin -ipu sign!SALG[%%i]!!SKEY[%%i]!rpub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
     echo "Load the !SALG[%%i]! !SKEY[%%i]! subject key 80000002 under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SKEY[%%i]!priv.bin -ipu sign!SKEY[%%i]!pub.bin -pwdp sto > run.out
+    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SALG[%%i]!!SKEY[%%i]!priv.bin -ipu sign!SALG[%%i]!!SKEY[%%i]!pub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Self Certify CA Root !SKEY[%%i]! !SKEY[%%i]!"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000001 -halg sha256 -pwdk sig -pwdo sig -opc tmppart1.bin -os tmpsig1.bin -oa tmpadd1.bin -otbs tmptbs1.bin -ocert tmpx5091.bin -salg !SALG[%%i]! -sub -v -iob 00050472 > run.out
+    echo "Signing Key Self Certify CA Root !SALG[%%i]! !SKEY[%%i]! !SALG[%%i]! !SKEY[%%i]!"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000001 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart1.bin -os tmpsig1.bin -oa tmpadd1.bin -otbs tmptbs1.bin -ocert tmpx5091.bin -!SALG[%%i]! !SKEY[%%i]! -sub -v -iob 00050472 > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
@@ -94,7 +97,7 @@ for /L %%i in (1,1,!L!) do (
     openssl verify -CAfile tmpx5091.pem tmpx5091.pem
 
     echo "Signing Key Certify !SALG[%%i]!"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -iob 00040472 > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -iob 00040472 > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
@@ -117,7 +120,7 @@ rem     # openssl x509 -text -inform der -in tmpx5092.bin -noout > tmpx5092.txt
 
 
     echo "Signing Key Certify !SALG[%%i]! with bad OID"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -iob ffffffff > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -iob ffffffff > run.out
     IF !ERRORLEVEL! EQU 0 (
        exit /B 1
     )
@@ -127,7 +130,7 @@ rem # better to get size from tmppart2.bin
 rem     # for bit in {0..2}
 rem     # do
 rem     # 	echo "Signing Key Certify !SKEY[%%i]! testing bit $bit"
-rem     # 	%TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -bit $bit > run.out
+rem     # 	%TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -bit $bit > run.out
     rem IF !ERRORLEVEL! NEQ 0 (
     rem 	exit /B 1
     rem )
@@ -146,6 +149,19 @@ rem     # 	%TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwd
 
 )
 
+set HALG=sha256 sha384
+set SALG=rsa rsa
+set SKEY=2048 3072
+
+set i=0
+for %%a in (!HALG!) do set /A i+=1 & set HALG[!i!]=%%a
+set i=0
+for %%b in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%b
+set i=0
+for %%c in (!SKEY!) do set /A i+=1 & set SKEY[!i!]=%%c
+set L=!i!
+
+
 rem # bad extensions for key type
 
 echo ""
@@ -154,68 +170,68 @@ echo ""
 
 for /L %%i in (1,1,!L!) do (
 
-    echo "Load the !SKEY[%%i]! issuer key 80000001 under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SKEY[%%i]!rpriv.bin -ipu sign!SKEY[%%i]!rpub.bin -pwdp sto > run.out
+    echo "Load the !SALG[%%i]! !SKEY[%%i]! issuer key 80000001 under the primary key"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SALG[%%i]!!SKEY[%%i]!rpriv.bin -ipu sign!SALG[%%i]!!SKEY[%%i]!rpub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Load the !SKEY[%%i]! subject key 80000002 under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SKEY[%%i]!priv.bin -ipu sign!SKEY[%%i]!pub.bin -pwdp sto > run.out
+    echo "Load the !SALG[%%i]! !SKEY[%%i]! subject key 80000002 under the primary key"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SALG[%%i]!!SKEY[%%i]!priv.bin -ipu sign!SALG[%%i]!!SKEY[%%i]!pub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! digitalSignature"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,digitalSignature > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! digitalSignature"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,digitalSignature > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! nonRepudiation"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,nonRepudiation > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! nonRepudiation"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,nonRepudiation > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! keyEncipherment"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,keyEncipherment > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! keyEncipherment"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,keyEncipherment > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
-   echo "Signing Key Certify !SALG[%%i]! dataEncipherment"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,dataEncipherment > run.out
+   echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! dataEncipherment"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,dataEncipherment > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! keyAgreement"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,keyAgreement > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! keyAgreement"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,keyAgreement > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! keyCertSign"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,keyCertSign > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]!z keyCertSign"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,keyCertSign > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! cRLSign"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,cRLSign > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! cRLSign"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,cRLSign > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! encipherOnly"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,encipherOnly > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! encipherOnly"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,encipherOnly > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! decipherOnly"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,decipherOnly > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! decipherOnly"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,decipherOnly > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
@@ -229,7 +245,7 @@ for /L %%i in (1,1,!L!) do (
     echo "Flush the subject signing key"
     %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
     IF !ERRORLEVEL! NEQ 0 (
-	exit /B 1
+	exit /B 1z
     )
 
 )
@@ -238,70 +254,78 @@ echo ""
 echo "TPM2_CertifyX509 Key Usage Extension for not fixedTPM signing key"
 echo ""
 
+set i=0
+for %%a in (!HALG!) do set /A i+=1 & set HALG[!i!]=%%a
+set i=0
+for %%b in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%b
+set i=0
+for %%c in (!SKEY!) do set /A i+=1 & set SKEY[!i!]=%%c
+set L=!i!
+
 for /L %%i in (1,1,!L!) do (
 
-    echo "Load the !SKEY[%%i]! issuer key 80000001 under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SKEY[%%i]!nfpriv.bin -ipu sign!SKEY[%%i]!nfpub.bin -pwdp sto > run.out
+    echo "Load the !SALG[%%i]! !SKEY[%%i]! issuer key 80000001 under the primary key"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SALG[%%i]!!SKEY[%%i]!nfpriv.bin -ipu sign!SALG[%%i]!!SKEY[%%i]!nfpub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Load the !SKEY[%%i]! subject key 80000002 under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SKEY[%%i]!nfpriv.bin -ipu sign!SKEY[%%i]!nfpub.bin -pwdp sto > run.out
+    echo "Load the !SALG[%%i]! !SKEY[%%i]! subject key 80000002 under the primary key"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SALG[%%i]!!SKEY[%%i]!nfpriv.bin -ipu sign!SALG[%%i]!!SKEY[%%i]!nfpub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! digitalSignature"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,digitalSignature > run.out
+    echo "Signing Key Certify !HALG[%%i]! !SALG[%%i]!!SKEY[%%i]! digitalSignature"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,digitalSignature > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! nonRepudiation"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,nonRepudiation > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! nonRepudiation"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,nonRepudiation > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! keyEncipherment"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,keyEncipherment > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! keyEncipherment"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,keyEncipherment > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
-   echo "Signing Key Certify !SALG[%%i]! dataEncipherment"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,dataEncipherment > run.out
+   echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! dataEncipherment"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,dataEncipherment > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! keyAgreement"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,keyAgreement > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! keyAgreement"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,keyAgreement > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! keyCertSign"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,keyCertSign > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! keyCertSign"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,keyCertSign > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! cRLSign"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,cRLSign > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! cRLSign"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,cRLSign > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! encipherOnly"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,encipherOnly > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! encipherOnly"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,encipherOnly > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! decipherOnly"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg!SALG[%%i]!A -ku critical,decipherOnly > run.out
+    echo "Signing Key Certify !SALG[%%i]!!SKEY[%%i]! decipherOnly"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! !SALG[%%i]!A -ku critical,decipherOnly > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
@@ -324,70 +348,77 @@ echo ""
 echo "TPM2_CertifyX509 Key Usage Extension for fixedTpm restricted encryption key"
 echo ""
 
+set i=0
+for %%a in (!HALG!) do set /A i+=1 & set HALG[!i!]=%%a
+set i=0
+for %%b in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%b
+set i=0
+for %%c in (!SKEY!) do set /A i+=1 & set SKEY[!i!]=%%c
+set L=!i!
 for /L %%i in (1,1,!L!) do (
 
-    echo "Load the !SKEY[%%i]! issuer key 80000001 under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SKEY[%%i]!rpriv.bin -ipu sign!SKEY[%%i]!rpub.bin -pwdp sto > run.out
+    echo "Load the !SALG[%%i]! !SKEY[%%i]! issuer key 80000001 under the primary key"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr sign!SALG[%%i]!!SKEY[%%i]!rpriv.bin -ipu sign!SALG[%%i]!!SKEY[%%i]!rpub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Load the !SKEY[%%i]! subject key 80000002 under the primary key"
-    %TPM_EXE_PATH%load -hp 80000000 -ipr store!SKEY[%%i]!priv.bin -ipu store!SKEY[%%i]!pub.bin -pwdp sto > run.out
+    echo "Load the !SALG[%%i]! !SKEY[%%i]! subject key 80000002 under the primary key"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr store!SALG[%%i]!!SKEY[%%i]!priv.bin -ipu store!SALG[%%i]!!SKEY[%%i]!pub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
-    echo "Signing Key Certify !SALG[%%i]! digitalSignature"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,digitalSignature > run.out
+    echo "Signing Key Certify !SALG[%%i]! !SKEY[%%i]! digitalSignature"
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,digitalSignature > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
     echo "Signing Key Certify !SALG[%%i]! nonRepudiation"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,nonRepudiation > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,nonRepudiation > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
     echo "Signing Key Certify !SALG[%%i]! keyEncipherment"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,keyEncipherment > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,keyEncipherment > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
     echo "Signing Key Certify !SALG[%%i]! dataEncipherment"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,dataEncipherment > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,dataEncipherment > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
     echo "Signing Key Certify !SALG[%%i]! keyAgreement"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,keyAgreement > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,keyAgreement > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
     echo "Signing Key Certify !SALG[%%i]! keyCertSign"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,keyCertSign > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,keyCertSign > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
     echo "Signing Key Certify !SALG[%%i]! cRLSign"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,cRLSign > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,cRLSign > run.out
     IF !ERRORLEVEL! EQU 0 (
 	exit /B 1
     )
 
     echo "Signing Key Certify !SALG[%%i]! encipherOnly"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,encipherOnly > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,encipherOnly > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )
 
     echo "Signing Key Certify !SALG[%%i]! decipherOnly"
-    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg !SALG[%%i]! -ku critical,decipherOnly > run.out
+    %TPM_EXE_PATH%certifyx509 -hk 80000001 -ho 80000002 -halg !HALG[%%i]! -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -!SALG[%%i]! !SKEY[%%i]! -ku critical,decipherOnly > run.out
     IF !ERRORLEVEL! NEQ 0 (
 	exit /B 1
     )

@@ -56,89 +56,80 @@ echo ""
 echo "Initialize Regression Test Keys"
 echo ""
 
-echo "Create a platform primary storage key"
+echo "Create a platform primary RSA storage key"
 %TPM_EXE_PATH%createprimary -hi p -pwdk sto -pol policies/zerosha256.bin -tk pritk.bin -ch prich.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
-echo "Create an RSA storage key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa2048priv.bin -opu storersa2048pub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
-IF !ERRORLEVEL! NEQ 0 (
-  exit /B 1
-)
+set SHALG=sha256 sha384
+set BITS=2048 3072
+set CURVE=nistp256 nistp384
 
-for %%C in (nistp256 nistp384) do (
+set i=0
+for %%s in (!SHALG!) do set /A i+=1 & set SHALG[!i!]=%%s
+set i=0
+for %%b in (!BITS!)  do set /A i+=1 & set BITS[!i!]=%%b
+set i=0
+for %%c in (!CURVE!) do set /A i+=1 & set CURVE[!i!]=%%c
+set L=!i!
 
-    echo "Create a %%C ECC storage key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000000 -ecc %%C -st -kt f -kt p -opr storeecc%%Cpriv.bin -opu storeecc%%Cpub.bin -pwdp sto -pwdk sto > run.out
+for /L %%i in (1,1,!L!) do (
+
+    echo "Create an RSA !BITS[%%i]! !SHALG[%%i]! storage key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa!BITS[%%i]!priv.bin -opu storersa!BITS[%%i]!pub.bin -tk storersa!BITS[%%i]!tk.bin -ch storersa!BITS[%%i]!ch.bin -pwdp sto -pwdk sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Create an RSA !BITS[%%i]! !SHALG[%%i]! unrestricted signing key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -rsa !BITS[%%i]! -halg !SHALG[%%i]! -si -kt f -kt p -opr signrsa!BITS[%%i]!priv.bin -opu signrsa!BITS[%%i]!pub.bin -opem signrsa!BITS[%%i]!pub.pem -pwdp sto -pwdk sig > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+      exit /B 1
+    )
+
+    echo "Create an RSA !BITS[%%i]! decryption key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -den -kt f -kt p -opr derrsa!BITS[%%i]!priv.bin -opu derrsa!BITS[%%i]!pub.bin -pwdp sto -pwdk dec > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+      exit /B 1
+    )
+
+    echo "Create an RSA !BITS[%%i]! !SHALG[%%i]! restricted signing key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -rsa !BITS[%%i]! -halg !SHALG[%%i]! -sir -kt f -kt p -opr signrsa!BITS[%%i]!rpriv.bin -opu signrsa!BITS[%%i]!rpub.bin -opem signrsa!BITS[%%i]!rpub.pem -pwdp sto -pwdk sig > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+      exit /B 1
+    )
+
+    echo "Create an RSA !BITS[%%i]! !SHALG[%%i]! not fixedTPM signing key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -rsa !BITS[%%i]! -halg !SHALG[%%i]! -sir -opr signrsa!BITS[%%i]!nfpriv.bin -opu signrsa!BITS[%%i]!nfpub.bin -opem signrsa!BITS[%%i]!nfpub.pem -pwdp sto -pwdk sig > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Create an ECC !CURVE[%%i]! !SHALG[%%i]! storage key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -ecc !CURVE[%%i]! -halg !SHALG[%%i]! -st -kt f -kt p -opr storeecc!CURVE[%%i]!priv.bin -opu storeecc!CURVE[%%i]!pub.bin -pwdp sto -pwdk sto > run.out
      IF !ERRORLEVEL! NEQ 0 (
       exit /B 1
     )
 
-    echo "Create a %%C unrestricted ECC signing key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signecc%%Cpriv.bin -opu signecc%%Cpub.bin -opem signecc%%Cpub.pem -pwdp sto -pwdk sig > run.out
+    echo "Create an ECC !CURVE[%%i]! !SHALG[%%i]! unrestricted signing key under the primary key"
+    %TPM_EXE_PATH%create -hp 80000000 -ecc !CURVE[%%i]! -halg !SHALG[%%i]! -si -kt f -kt p -opr signecc!CURVE[%%i]!priv.bin -opu signecc!CURVE[%%i]!pub.bin -opem signecc!CURVE[%%i]!pub.pem -pwdp sto -pwdk sig > run.out
     IF !ERRORLEVEL! NEQ 0 (
       exit /B 1
     )
 
-    echo "Create a %%C restricted ECC signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -sir -kt f -kt p -opr signecc%%Crpriv.bin -opu signecc%%Crpub.bin -opem signecc%%Crpub.pem -pwdp sto -pwdk sig > run.out
+    echo "Create an ECC !CURVE[%%i]! !SHALG[%%i]! restricted signing key under the primary key"
+%TPM_EXE_PATH%create -hp 80000000 -ecc !CURVE[%%i]! -halg !SHALG[%%i]! -sir -kt f -kt p -opr signecc!CURVE[%%i]!rpriv.bin -opu signecc!CURVE[%%i]!rpub.bin -opem signecc!CURVE[%%i]!rpub.pem -pwdp sto -pwdk sig > run.out
     IF !ERRORLEVEL! NEQ 0 (
       exit /B 1
     )
 
-    echo "Create a not fixedTPM %%C ECC signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -sir -opr signecc%%Cnfpriv.bin -opu signecc%%Cnfpub.bin -opem signecc%%Cnfpub.pem -pwdp sto -pwdk sig > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-      exit /B 1
-    )
-)
-
-for %%B in (2048 3072) do (
-
-    echo "Create an unrestricted RSA %%B signing key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr signrsa%%Bpriv.bin -opu signrsa%%Bpub.bin -opem signrsa%%Bpub.pem -pwdp sto -pwdk sig > run.out
+    echo "Create an ECC !CURVE[%%i]! !SHALG[%%i]! not fixedTPM signing key under the primary key"
+%TPM_EXE_PATH%create -hp 80000000 -ecc !CURVE[%%i]! -halg !SHALG[%%i]! -sir -opr signecc%%Cnfpriv.bin -opu signecc%%Cnfpub.bin -opem signecc%%Cnfpub.pem -pwdp sto -pwdk sig > run.out
     IF !ERRORLEVEL! NEQ 0 (
       exit /B 1
     )
 
-    echo "Create an RSA decryption key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000000 -den -kt f -kt p -opr derrsa%%Bpriv.bin -opu derrsa%%Bpub.bin -pwdp sto -pwdk dec > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-      exit /B 1
-    )
-
-)
-
-echo "Create an unrestricted ECC signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signeccpriv.bin -opu signeccpub.bin -opem signeccpub.pem -pwdp sto -pwdk sig > run.out
-IF !ERRORLEVEL! NEQ 0 (
-  exit /B 1
-)
-
-echo "Create a restricted RSA signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -sir -kt f -kt p -opr signrsa2048rpriv.bin -opu signrsa2048rpub.bin -opem signrsa2048rpub.pem -pwdp sto -pwdk sig > run.out
-IF !ERRORLEVEL! NEQ 0 (
-  exit /B 1
-)
-
-echo "Create a restricted ECC signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -sir -kt f -kt p -opr signeccrpriv.bin -opu signeccrpub.bin -opem signeccrpub.pem -pwdp sto -pwdk sig > run.out
-IF !ERRORLEVEL! NEQ 0 (
-  exit /B 1
-)
-
-echo "Create a not fixedTPM RSA signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -sir -opr signrsa2048nfpriv.bin -opu signrsa2048nfpub.bin -opem signrsa2048nfpub.pem -pwdp sto -pwdk sig > run.out
-IF !ERRORLEVEL! NEQ 0 (
-  exit /B 1
-)
-
-echo "Create a not fixedTPM ECC signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -ecc nistp256 -sir -opr signeccnfpriv.bin -opu signeccnfpub.bin -opem signeccnfpub.pem -pwdp sto -pwdk sig > run.out
-IF !ERRORLEVEL! NEQ 0 (
-  exit /B 1
 )
 
 echo "Create a symmetric cipher key under the primary key"

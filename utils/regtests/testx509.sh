@@ -53,10 +53,11 @@ echo ""
 # sign${SKEY[i]}rpriv.bin is a restricted signing key
 # sign${SKEY[i]}priv.bin is an unrestricted signing key
 
-SALG=(rsa ecc ecc)
-SKEY=(rsa2048 eccnistp256 eccnistp384)
+HALG=(sha256 sha384 sha256 sha384)
+SALG=("-rsa 2048" "-rsa 3072" "-ecc nistp256" "-ecc nistp384")
+SKEY=(rsa2048 rsa3072 eccnistp256 eccnistp384)
 
-for ((i = 0 ; i < 3 ; i++))
+for ((i = 0 ; i < 4 ; i++))
 do
 
     echo "Load the ${SALG[i]} ${SKEY[i]} issuer key 80000001 under the primary key"
@@ -67,8 +68,8 @@ do
     ${PREFIX}load -hp 80000000 -ipr sign${SKEY[i]}priv.bin -ipu sign${SKEY[i]}pub.bin -pwdp sto > run.out
     checkSuccess $?
 
-    echo "Signing Key Self Certify CA Root ${SALG[i]} ${SKEY[i]}"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000001 -halg sha256 -pwdk sig -pwdo sig -opc tmppart1.bin -os tmpsig1.bin -oa tmpadd1.bin -otbs tmptbs1.bin -ocert tmpx5091.bin -salg ${SALG[i]} -sub -v -iob 00050472 > run.out
+    echo "Signing Key Self Certify CA Root ${HALG[i]} ${SALG[i]} ${SKEY[i]}"
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000001 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart1.bin -os tmpsig1.bin -oa tmpadd1.bin -otbs tmptbs1.bin -ocert tmpx5091.bin ${SALG[i]} -sub -v -iob 00050472 > run.out
     checkSuccess $?
 
 
@@ -87,11 +88,12 @@ do
     echo " INFO:"
 
     echo "Verify ${SALG[i]} self signed issuer root" 
-    echo  " INFO: "
     openssl verify -CAfile tmpx5091.pem tmpx5091.pem > run.out 2>&1
+    grep -q OK run.out
+    checkSuccess $?
 
-    echo "Signing Key Certify ${SALG[i]}"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -iob 00040472 > run.out
+    echo "Signing Key Certify ${HALG[i]} ${SALG[i]}"
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -iob 00040472 > run.out
     checkSuccess $?
 
     # dumpasn1 -a -l -d     tmpx509i.bin > tmpx509i2.dump
@@ -109,12 +111,12 @@ do
     echo " INFO:"
 
     echo "Verify ${SALG[i]} subject against issuer" 
-    echo  " INFO: "
     openssl verify -CAfile tmpx5091.pem tmpx5092.pem > run.out 2>&1
-
+    grep -q OK run.out
+    checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} with bad OID"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -iob ffffffff > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -iob ffffffff > run.out
     checkFailure $?
 
 # bad der, test bits for 250 bytes
@@ -123,7 +125,7 @@ do
     # for bit in {0..2}
     # do
     # 	echo "Signing Key Certify ${SALG[i]} testing bit $bit"
-    # 	${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -bit $bit > run.out
+    # 	${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -bit $bit > run.out
     # 	checkSuccess0 $?
     # done
 
@@ -155,39 +157,39 @@ do
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} digitalSignature"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,digitalSignature > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,digitalSignature > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} nonRepudiation"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,nonRepudiation > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,nonRepudiation > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} keyEncipherment"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,keyEncipherment > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,keyEncipherment > run.out
     checkFailure $?
 
    echo "Signing Key Certify ${SALG[i]} dataEncipherment"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,dataEncipherment > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,dataEncipherment > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} keyAgreement"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,keyAgreement > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,keyAgreement > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} keyCertSign"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,keyCertSign > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,keyCertSign > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} cRLSign"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,cRLSign > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,cRLSign > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} encipherOnly"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,encipherOnly > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,encipherOnly > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} decipherOnly"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,decipherOnly > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,decipherOnly > run.out
     checkFailure $?
 
     echo "Flush the root CA issuer signing key"
@@ -216,39 +218,39 @@ do
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} digitalSignature"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,digitalSignature > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,digitalSignature > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} nonRepudiation"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,nonRepudiation > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,nonRepudiation > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} keyEncipherment"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SAL[i]} -ku critical,keyEncipherment > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SAL[i]} -ku critical,keyEncipherment > run.out
     checkFailure $?
 
    echo "Signing Key Certify ${SALG[i]} dataEncipherment"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,dataEncipherment > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,dataEncipherment > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} keyAgreement"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,keyAgreement > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,keyAgreement > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} keyCertSign"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,keyCertSign > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,keyCertSign > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} cRLSign"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,cRLSign > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,cRLSign > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} encipherOnly"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,encipherOnly > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,encipherOnly > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} decipherOnly"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,decipherOnly > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,decipherOnly > run.out
     checkFailure $?
 
     echo "Flush the root CA issuer signing key"
@@ -277,39 +279,39 @@ do
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} digitalSignature"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,digitalSignature > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,digitalSignature > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} nonRepudiation"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,nonRepudiation > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,nonRepudiation > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} keyEncipherment"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,keyEncipherment > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,keyEncipherment > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} dataEncipherment"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,dataEncipherment > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,dataEncipherment > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} keyAgreement"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,keyAgreement > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,keyAgreement > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} keyCertSign"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,keyCertSign > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,keyCertSign > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} cRLSign"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,cRLSign > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,cRLSign > run.out
     checkFailure $?
 
     echo "Signing Key Certify ${SALG[i]} encipherOnly"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,encipherOnly > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,encipherOnly > run.out
     checkSuccess $?
 
     echo "Signing Key Certify ${SALG[i]} decipherOnly"
-    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg sha256 -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin -salg ${SALG[i]} -ku critical,decipherOnly > run.out
+    ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sto -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -ku critical,decipherOnly > run.out
     checkSuccess $?
 
     echo "Flush the root CA issuer signing key"

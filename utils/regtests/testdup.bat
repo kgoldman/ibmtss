@@ -67,11 +67,14 @@ REM # signing key        K2	80000002
 
 set SALG=rsa ecc ecc
 set SKEY=rsa2048 eccnistp256 eccnistp384
+set EKALG=2048 nistp256 nistp384
 
 set i=0
 for %%a in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%a
 set i=0
 for %%b in (!SKEY!) do set /A i+=1 & set SKEY[!i!]=%%b
+set i=0
+for %%e in (!EKALG!) do set /A i+=1 & set EKALG[!i!]=%%e
 set L=!i!
 
 for /L %%i in (1,1,!L!) do (
@@ -553,16 +556,28 @@ REM # defer recreating the EK until later.
 
 REM # Target
 
+set SALG=rsa ecc
+set SKEY=rsa2048 eccnistp256
+set EKALG=2048 nistp256
+
+set i=0
+for %%a in (!SALG!) do set /A i+=1 & set SALG[!i!]=%%a
+set i=0
+for %%b in (!SKEY!) do set /A i+=1 & set SKEY[!i!]=%%b
+set i=0
+for %%e in (!EKALG!) do set /A i+=1 & set EKALG[!i!]=%%e
+set L=!i!
+
 for /L %%i in (1,1,!L!) do (
 
-    echo "Target: Provision a target !SALG[%%i]! EK certificate"
-    %TPM_EXE_PATH%createekcert -alg !SALG[%%i]! -cakey cakey.pem -capwd rrrr > run.out
+    echo "Target: Provision a target !SALG[%%i]! !EKALG[%%i]! EK certificate"
+    %TPM_EXE_PATH%createekcert -!SALG[%%i]! !EKALG[%%i]! -cakey cakey.pem -capwd rrrr > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 
-    echo "Target: Recreate the !SALG[%%i]! EK at 80000001"
-    %TPM_EXE_PATH%createek -alg !SALG[%%i]! -cp -noflush > run.out
+    echo "Target: Recreate the !SALG[%%i]! !EKALG[%%i]! EK at 80000001"
+    %TPM_EXE_PATH%createek -!SALG[%%i]! !EKALG[%%i]! -cp -noflush > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -655,8 +670,8 @@ REM # NOTE This assumes that the endorsement hierarchy password is Empty.
 REM # This may be a bad assumption if an attacker can get access and
 REM # change it.
 
-    echo "Target: Recreate the -!SALG[%%i]! EK at 80000001"
-    %TPM_EXE_PATH%createek -alg !SALG[%%i]! -cp -noflush > run.out
+    echo "Target: Recreate the !SALG[%%i]! !EKALG[%%i]! EK at 80000001"
+    %TPM_EXE_PATH%createek -!SALG[%%i]! !EKALG[%%i]! -cp -noflush > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -674,7 +689,7 @@ REM # change it.
     )
 
     echo "Target: Read policy digest for debug"
-    %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
+    %TPM_EXE_PATH%policygetdigest -ha 03000000 -v
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

@@ -472,7 +472,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Certify the creation data for the storage key 80000002"
-%TPM_EXE_PATH%certifycreation -ho 80000002 -hk 80000001 -pwdk sig -tk storsatk.bin -ch storsach.bin -os sig.bin -oa tmp.bin > run.out
+%TPM_EXE_PATH%certifycreation -ho 80000002 -hk 80000001 -pwdk sig -tk storersa2048tk.bin -ch storersa2048ch.bin -os sig.bin -oa tmp.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

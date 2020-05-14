@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2019.					*/
+/* (c) Copyright IBM Corporation 2016 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -54,15 +54,30 @@
 
 #include <ibmtss/tss.h>
 
-/* legacy TCG IWG NV indexes */
+/* legacy TCG IWG NV indexes (low range) */
 
-#define EK_CERT_RSA_INDEX 	0x01c00002
-#define EK_NONCE_RSA_INDEX 	0x01c00003 
-#define EK_TEMPLATE_RSA_INDEX 	0x01c00004
+#define EK_CERT_RSA_INDEX 	0x01c00002	/* RSA 2048 EK Certificate */
+#define EK_NONCE_RSA_INDEX 	0x01c00003 	/* RSA 2048 EK Nonce */
+#define EK_TEMPLATE_RSA_INDEX 	0x01c00004	/* RSA 2048 EK Template */
 
-#define EK_CERT_EC_INDEX 	0x01c0000a
-#define EK_NONCE_EC_INDEX 	0x01c0000b
-#define EK_TEMPLATE_EC_INDEX 	0x01c0000c
+#define EK_CERT_EC_INDEX 	0x01c0000a	/* ECC NIST P256 EK Certificate */
+#define EK_NONCE_EC_INDEX 	0x01c0000b	/* ECC NIST P256 EK Nonce */
+#define EK_TEMPLATE_EC_INDEX 	0x01c0000c	/* ECC NIST P256 EK Template */
+
+/* TCG IWG NV indexes in the high range */
+
+#define EK_CERT_RSA_2048_INDEX_H1 	0x01c00012	/* RSA 2048 EK Certificate (H-1) */
+#define EK_CERT_ECC_NISTP256_INDEX_H2	0x01c00014	/* ECC NIST P256 EK Certificate (H-2) */
+#define EK_CERT_ECC_NISTP384_INDEX_H3	0x01c00016	/* ECC NIST P384 EK Certificate (H-3) */
+#define EK_CERT_ECC_NISTP521_INDEX_H4	0x01c00018	/* ECC NIST P521 EK Certificate (H-4) */
+#define EK_CERT_ECC_SM2P256INDEX_H5	0x01c0001a	/* ECC SM2_P256 EK Certificate (H-5) */
+#define EK_CERT_RSA_3072_INDEX_H6	0x01c0001c	/* RSA 3072 EK Certificate (H-6) */
+#define EK_CERT_RSA_4096_INDEX_H7	0x01c0001e	/* RSA 4096 EK Certificate (H-7) */
+
+#define EK_NVPOLICY_SHA256_I1	0x01c07f01	/* Policy Index I-1 with nameAlg = SHA256 (B.5.3) */
+#define EK_NVPOLICY_SHA384_I2	0x01c07f02	/* Policy Index I-2 with nameAlg = SHA384 (B.5.4) */
+#define EK_NVPOLICY_SHA512_I3	0x01c07f03	/* Policy Index I-3 with nameAlg = SHA512 (B.5.5) */
+#define EK_NVPOLICY_SM3256_I4	0x01c07f04	/* Policy Index I-4 with nameAlg = SM3_256 (B.5.6) */
 
 #define MAX_ROOTS		100	/* 100 should be more than enough */
 
@@ -87,8 +102,14 @@ extern "C" {
 			    unsigned char **buffer,
 			    uint16_t *bufferSize,
 			    TPMI_RH_NV_INDEX nvIndex);
+    TPM_RC getIwgTemplate(TPMT_PUBLIC *tpmtPublic,
+			  TPMI_RH_NV_INDEX ekCertIndex);
     void getRsaTemplate(TPMT_PUBLIC *tpmtPublic);
     void getEccTemplate(TPMT_PUBLIC *tpmtPublic);
+    TPM_RC getRsaHighTemplate(TPMT_PUBLIC *tpmtPublic,
+			      TPMI_RH_NV_INDEX ekCertIndex);
+    TPM_RC getEccHighTemplate(TPMT_PUBLIC *tpmtPublic,
+			      TPMI_RH_NV_INDEX ekCertIndex);
     TPM_RC getRootCertificateFilenames(char *rootFilename[],
 				       unsigned int *rootFileCount,
 				       const char *listFilename,
@@ -146,6 +167,18 @@ extern "C" {
 			     const char *rootFilename[],
 			     unsigned int rootFileCount,
 			     int print);
+    TPM_RC processCreatePrimaryE(TSS_CONTEXT *tssContext,
+				 TPM_HANDLE *keyHandle,
+				 const char *endorsementPassword,
+				 const char *keyPassword,
+				 TPMI_RH_NV_INDEX ekCertIndex,
+				 unsigned char *nonce,
+				 uint16_t nonceSize,
+				 TPMT_PUBLIC *tpmtPublicIn,
+				 TPMT_PUBLIC *tpmtPublicOut,
+				 unsigned int noFlush,
+				 int print);
+    /* deprecated */
     TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
 				TPM_HANDLE *keyHandle,
 				TPMI_RH_NV_INDEX ekCertIndex,
@@ -160,6 +193,16 @@ extern "C" {
 				  TPMT_PUBLIC *tpmtPublic,
 				  TPMI_RH_NV_INDEX ekCertIndex,
 				  int print);
+    TPM_RC processPrimaryE(TSS_CONTEXT *tssContext,
+			   TPM_HANDLE *keyHandle,
+			   const char *endorsementPassword,
+			   const char *keyPassword,
+			   TPMI_RH_NV_INDEX ekCertIndex,
+			   TPMI_RH_NV_INDEX ekNonceIndex, 
+			   TPMI_RH_NV_INDEX ekTemplateIndex,
+			   unsigned int noFlush,
+			   int print);
+    /* deprecated */
     TPM_RC processPrimary(TSS_CONTEXT *tssContext,
 			  TPM_HANDLE *keyHandle,
 			  TPMI_RH_NV_INDEX ekCertIndex,
@@ -235,6 +278,8 @@ extern "C" {
 #ifndef TPM_TSS_NOECC
     TPM_RC addCertKeyEcc(X509 *x509Certificate,
 			 const TPMS_ECC_POINT *tpmsEccPoint);
+    TPM_RC addCertKeyEccT(X509 *x509Certificate,
+			  const TPMT_PUBLIC *tpmtPublic);
 #endif	/* TPM_TSS_NOECC */
     TPM_RC addCertSignatureRoot(X509 *x509Certificate,
 				const char *caKeyFileName,

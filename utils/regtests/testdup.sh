@@ -72,6 +72,7 @@ echo ""
 
 SALG=(rsa ecc ecc)
 SKEY=(rsa2048 eccnistp256 eccnistp384)
+EKALG=("-rsa 2048" "-ecc nistp256" "-ecc nistp384")
 
 for ((i = 0 ; i < 3 ; i++))
 do
@@ -455,12 +456,12 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
     for ((i = 0 ; i < 2 ; i++))
     do
 
-	echo "Target: Provision a target ${SALG[i]} EK certificate"
-	${PREFIX}createekcert -alg ${SALG[i]} -cakey cakey.pem -capwd rrrr > run.out
+	echo "Target: Provision a target ${EKALG[i]} EK certificate"
+	${PREFIX}createekcert ${EKALG[i]} -cakey cakey.pem -capwd rrrr > run.out
 	checkSuccess $?
 
-	echo "Target: Recreate the ${SALG[i]} EK at 80000001"
-	${PREFIX}createek -alg ${SALG[i]} -cp -noflush > run.out
+	echo "Target: Recreate the ${EKALG[i]} EK at 80000001"
+	${PREFIX}createek ${EKALG[i]} -cp -noflush > run.out
 	checkSuccess $?
 
 	echo "Target: Convert the EK public key to PEM format for transmission to source"
@@ -530,7 +531,7 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 # change it.
 
 	echo "Target: Recreate the -${SALG[i]} EK at 80000001"
-	${PREFIX}createek -alg ${SALG[i]} -cp -noflush > run.out
+	${PREFIX}createek ${EKALG[i]} -cp -noflush > run.out
 	checkSuccess $?
 
 	echo "Target: Start a policy session, EK use needs a policy"

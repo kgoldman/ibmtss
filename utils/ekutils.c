@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2019.					*/
+/* (c) Copyright IBM Corporation 2016 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -80,6 +80,13 @@
 #define PATH_MAX 4096
 #endif
 #endif
+
+/* local functions */
+
+static TPM_RC processAlgorithmSize(uint16_t *algorithmSize,
+				   unsigned char *nonce,
+				   uint16_t nonceSize,
+				   TPMI_RH_NV_INDEX ekCertIndex);
 
 /* The print flag is set by the caller, depending on whether it wants information displayed.
 
@@ -287,14 +294,76 @@ TPM_RC getIndexContents(TSS_CONTEXT *tssContext,
     return rc;
 }
 
-/* IWG (TCG Infrastructure Work Group) default EK primary key policy */
+/* IWG (TCG Infrastructure Work Group) default EK primary key policies */
 
-static const unsigned char iwgPolicy[] = {
+/* Low range */
+
+static const unsigned char iwgPolicyASha256[] = {
     0x83, 0x71, 0x97, 0x67, 0x44, 0x84, 0xB3, 0xF8, 0x1A, 0x90, 0xCC, 0x8D, 0x46, 0xA5, 0xD7, 0x24,
     0xFD, 0x52, 0xD7, 0x6E, 0x06, 0x52, 0x0B, 0x64, 0xF2, 0xA1, 0xDA, 0x1B, 0x33, 0x14, 0x69, 0xAA
 };
 
-/* RSA EK primary key IWG default template */
+/* High range PolicyB SHA256 (policy OR) */
+
+static const unsigned char iwgPolicyBSha256[] = {
+    0xca, 0x3d, 0x0a, 0x99, 0xa2, 0xb9, 0x39, 0x06, 0xf7, 0xa3, 0x34, 0x24, 0x14, 0xef, 0xcf, 0xb3,
+    0xa3, 0x85, 0xd4, 0x4c, 0xd1, 0xfd, 0x45, 0x90, 0x89, 0xd1, 0x9b, 0x50, 0x71, 0xc0, 0xb7, 0xa0
+};
+
+/* High range PolicyB SHA384 (policy OR)*/
+static const unsigned char iwgPolicyBSha384[] = {
+    0xb2, 0x6e, 0x7d, 0x28, 0xd1, 0x1a, 0x50, 0xbc, 0x53, 0xd8, 0x82, 0xbc, 0xf5, 0xfd, 0x3a, 0x1a,
+    0x07, 0x41, 0x48, 0xbb, 0x35, 0xd3, 0xb4, 0xe4, 0xcb, 0x1c, 0x0a, 0xd9, 0xbd, 0xe4, 0x19, 0xca,
+    0xcb, 0x47, 0xba, 0x09, 0x69, 0x96, 0x46, 0x15, 0x0f, 0x9f, 0xc0, 0x00, 0xf3, 0xf8, 0x0e, 0x12,
+};
+
+/* High range PolicyB SHA512 (policy OR) */
+
+static const unsigned char iwgPolicyBSha512[] = {
+    0xb8, 0x22, 0x1c, 0xa6, 0x9e, 0x85, 0x50, 0xa4, 0x91, 0x4d, 0xe3, 0xfa, 0xa6, 0xa1, 0x8c, 0x07,
+    0x2c, 0xc0, 0x12, 0x08, 0x07, 0x3a, 0x92, 0x8d, 0x5d, 0x66, 0xd5, 0x9e, 0xf7, 0x9e, 0x49, 0xa4,
+    0x29, 0xc4, 0x1a, 0x6b, 0x26, 0x95, 0x71, 0xd5, 0x7e, 0xdb, 0x25, 0xfb, 0xdb, 0x18, 0x38, 0x42,
+    0x56, 0x08, 0xb4, 0x13, 0xcd, 0x61, 0x6a, 0x5f, 0x6d, 0xb5, 0xb6, 0x07, 0x1a, 0xf9, 0x9b, 0xea,
+};
+
+/* getIwgTemplate() bulds a TPMT_PUBLIC template according to the IWG specification.  It handles
+   both the low and high NV index ranges.
+*/
+
+TPM_RC getIwgTemplate(TPMT_PUBLIC *tpmtPublic,
+		      TPMI_RH_NV_INDEX ekCertIndex)
+{
+    TPM_RC	rc = 0;
+
+    if (ekCertIndex == EK_CERT_RSA_INDEX) {		/* RSA primary key, low range */
+	getRsaTemplate(tpmtPublic);
+    }
+    else if (ekCertIndex == EK_CERT_EC_INDEX) {		/* EC primary key, low range */
+	getEccTemplate(tpmtPublic);
+    }
+    else {
+	switch (ekCertIndex) {
+	  case EK_CERT_RSA_2048_INDEX_H1:	/* high range */
+	  case EK_CERT_RSA_3072_INDEX_H6:
+	  case EK_CERT_RSA_4096_INDEX_H7:
+	    rc = getRsaHighTemplate(tpmtPublic, ekCertIndex);
+	    break;
+	  case EK_CERT_ECC_NISTP256_INDEX_H2:
+	  case EK_CERT_ECC_NISTP384_INDEX_H3:
+	  case EK_CERT_ECC_NISTP521_INDEX_H4:
+	  case EK_CERT_ECC_SM2P256INDEX_H5:
+	    rc = getEccHighTemplate(tpmtPublic, ekCertIndex);
+	    break;
+	  default:
+	    printf("getIwgTemplate: "
+		   "ekCertIndex %08x (asymmetric algorithm) not supported\n", ekCertIndex);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+    }
+    return rc;
+}
+
+/* RSA low range EK primary key IWG default template */
 
 void getRsaTemplate(TPMT_PUBLIC *tpmtPublic)
 {
@@ -306,8 +375,8 @@ void getRsaTemplate(TPMT_PUBLIC *tpmtPublic)
 				       TPMA_OBJECT_ADMINWITHPOLICY |
 				       TPMA_OBJECT_RESTRICTED |
 				       TPMA_OBJECT_DECRYPT;
-    tpmtPublic->authPolicy.t.size = 32;
-    memcpy(&tpmtPublic->authPolicy.t.buffer, iwgPolicy, 32);
+    tpmtPublic->authPolicy.t.size = sizeof(iwgPolicyASha256);
+    memcpy(&tpmtPublic->authPolicy.t.buffer, iwgPolicyASha256, sizeof(iwgPolicyASha256));
     tpmtPublic->parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
     tpmtPublic->parameters.rsaDetail.symmetric.keyBits.aes = 128;
     tpmtPublic->parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
@@ -320,7 +389,7 @@ void getRsaTemplate(TPMT_PUBLIC *tpmtPublic)
     return;
 }
 
-/* ECC EK primary key IWG default template */
+/* ECC low range EK primary key IWG default template */
 
 void getEccTemplate(TPMT_PUBLIC *tpmtPublic)
 {
@@ -332,8 +401,8 @@ void getEccTemplate(TPMT_PUBLIC *tpmtPublic)
 				       TPMA_OBJECT_ADMINWITHPOLICY |
 				       TPMA_OBJECT_RESTRICTED |
 				       TPMA_OBJECT_DECRYPT;
-    tpmtPublic->authPolicy.t.size = sizeof(iwgPolicy);
-    memcpy(tpmtPublic->authPolicy.t.buffer, iwgPolicy, sizeof(iwgPolicy));
+    tpmtPublic->authPolicy.t.size = sizeof(iwgPolicyASha256);
+    memcpy(tpmtPublic->authPolicy.t.buffer, iwgPolicyASha256, sizeof(iwgPolicyASha256));
     tpmtPublic->parameters.eccDetail.symmetric.algorithm = TPM_ALG_AES;
     tpmtPublic->parameters.eccDetail.symmetric.keyBits.aes = 128;
     tpmtPublic->parameters.eccDetail.symmetric.mode.aes = TPM_ALG_CFB;
@@ -347,6 +416,109 @@ void getEccTemplate(TPMT_PUBLIC *tpmtPublic)
     tpmtPublic->unique.ecc.y.t.size = 32;	
     memset(&tpmtPublic->unique.ecc.y.t.buffer, 0, 32);	
     return;
+}
+
+/* RSA high range EK primary key IWG default template */
+
+TPM_RC getRsaHighTemplate(TPMT_PUBLIC *tpmtPublic,
+			  TPMI_RH_NV_INDEX ekCertIndex)
+{
+    TPM_RC	rc = 0;
+    switch (ekCertIndex) {
+      case EK_CERT_RSA_2048_INDEX_H1:	/* high range */
+	tpmtPublic->nameAlg = TPM_ALG_SHA256;
+	tpmtPublic->authPolicy.t.size = sizeof(iwgPolicyBSha256);
+	memcpy(&tpmtPublic->authPolicy.t.buffer, iwgPolicyBSha256, sizeof(iwgPolicyBSha256));
+	tpmtPublic->parameters.rsaDetail.symmetric.keyBits.aes = 128;
+	tpmtPublic->parameters.rsaDetail.keyBits = 2048;
+	break;
+      case EK_CERT_RSA_3072_INDEX_H6:
+	tpmtPublic->nameAlg = TPM_ALG_SHA384;
+	tpmtPublic->authPolicy.t.size = sizeof(iwgPolicyBSha384);
+	memcpy(&tpmtPublic->authPolicy.t.buffer, iwgPolicyBSha384, sizeof(iwgPolicyBSha384));
+	tpmtPublic->parameters.rsaDetail.symmetric.keyBits.aes = 256;
+	tpmtPublic->parameters.rsaDetail.keyBits = 3072;
+	break;
+      case EK_CERT_RSA_4096_INDEX_H7:
+	tpmtPublic->nameAlg = TPM_ALG_SHA384;
+	tpmtPublic->authPolicy.t.size = sizeof(iwgPolicyBSha384);
+	memcpy(&tpmtPublic->authPolicy.t.buffer, iwgPolicyBSha384, sizeof(iwgPolicyBSha384));
+	tpmtPublic->parameters.rsaDetail.symmetric.keyBits.aes = 256;
+	tpmtPublic->parameters.rsaDetail.keyBits = 4096;
+	break;
+      default:
+	printf("getRsaHighTemplate: "
+	       "ekCertIndex %08x (asymmetric algorithm) not supported\n", ekCertIndex);
+	rc = TSS_RC_BAD_PROPERTY_VALUE;
+    }
+    tpmtPublic->type = TPM_ALG_RSA;
+    tpmtPublic->objectAttributes.val = TPMA_OBJECT_FIXEDTPM |
+				       TPMA_OBJECT_FIXEDPARENT |
+				       TPMA_OBJECT_SENSITIVEDATAORIGIN |
+				       TPMA_OBJECT_USERWITHAUTH |
+				       TPMA_OBJECT_ADMINWITHPOLICY |
+				       TPMA_OBJECT_RESTRICTED |
+				       TPMA_OBJECT_DECRYPT;
+    tpmtPublic->parameters.rsaDetail.symmetric.algorithm = TPM_ALG_AES;
+    tpmtPublic->parameters.rsaDetail.symmetric.mode.aes = TPM_ALG_CFB;
+    tpmtPublic->parameters.rsaDetail.scheme.scheme = TPM_ALG_NULL;
+    tpmtPublic->parameters.rsaDetail.scheme.details.anySig.hashAlg = 0;
+    tpmtPublic->parameters.rsaDetail.exponent = 0;
+    tpmtPublic->unique.rsa.t.size = 0;
+    return rc;
+}
+
+/* ECC low range EK primary key IWG default template */
+
+TPM_RC getEccHighTemplate(TPMT_PUBLIC *tpmtPublic,
+			  TPMI_RH_NV_INDEX ekCertIndex)
+{
+    TPM_RC	rc = 0;
+    switch (ekCertIndex) {
+      case EK_CERT_ECC_NISTP256_INDEX_H2:
+	tpmtPublic->nameAlg = TPM_ALG_SHA256;
+	tpmtPublic->authPolicy.t.size = sizeof(iwgPolicyBSha256);
+	memcpy(tpmtPublic->authPolicy.t.buffer, iwgPolicyBSha256, sizeof(iwgPolicyBSha256));
+	tpmtPublic->parameters.eccDetail.symmetric.keyBits.aes = 128;
+	tpmtPublic->parameters.eccDetail.curveID = TPM_ECC_NIST_P256;
+	break;
+      case EK_CERT_ECC_NISTP384_INDEX_H3:
+	tpmtPublic->nameAlg = TPM_ALG_SHA384;
+	tpmtPublic->authPolicy.t.size = sizeof(iwgPolicyBSha384);
+	memcpy(tpmtPublic->authPolicy.t.buffer, iwgPolicyBSha384, sizeof(iwgPolicyBSha384));
+	tpmtPublic->parameters.eccDetail.symmetric.keyBits.aes = 256;
+	tpmtPublic->parameters.eccDetail.curveID = TPM_ECC_NIST_P384;
+	break;
+      case EK_CERT_ECC_NISTP521_INDEX_H4:
+	tpmtPublic->nameAlg = TPM_ALG_SHA512;
+	tpmtPublic->authPolicy.t.size = sizeof(iwgPolicyBSha512);
+	memcpy(tpmtPublic->authPolicy.t.buffer, iwgPolicyBSha512, sizeof(iwgPolicyBSha512));
+	tpmtPublic->parameters.eccDetail.symmetric.keyBits.aes = 256;
+	tpmtPublic->parameters.eccDetail.curveID = TPM_ECC_NIST_P521;
+	break;
+      case EK_CERT_ECC_SM2P256INDEX_H5:
+      default:
+	printf("getEccHighTemplate: "
+	       "ekCertIndex %08x (asymmetric algorithm) not supported\n", ekCertIndex);
+	rc = TSS_RC_BAD_PROPERTY_VALUE;
+    }
+    tpmtPublic->type = TPM_ALG_ECC;
+    tpmtPublic->objectAttributes.val = TPMA_OBJECT_FIXEDTPM |
+				       TPMA_OBJECT_FIXEDPARENT |
+				       TPMA_OBJECT_SENSITIVEDATAORIGIN |
+				       TPMA_OBJECT_USERWITHAUTH |
+				       TPMA_OBJECT_ADMINWITHPOLICY |
+				       TPMA_OBJECT_RESTRICTED |
+				       TPMA_OBJECT_DECRYPT;
+    tpmtPublic->parameters.eccDetail.symmetric.algorithm = TPM_ALG_AES;
+    tpmtPublic->parameters.eccDetail.symmetric.mode.aes = TPM_ALG_CFB;
+    tpmtPublic->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
+    tpmtPublic->parameters.eccDetail.scheme.details.anySig.hashAlg = 0;
+    tpmtPublic->parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
+    tpmtPublic->parameters.eccDetail.kdf.details.mgf1.hashAlg = 0;
+    tpmtPublic->unique.ecc.x.t.size = 0;
+    tpmtPublic->unique.ecc.y.t.size = 0;
+    return rc;
 }
 
 /* getIndexX509Certificate() reads the X509 certificate from the nvIndex and converts the DER
@@ -758,15 +930,17 @@ TPM_RC processEKNonce(TSS_CONTEXT *tssContext,
 {
     TPM_RC			rc = 0;
 
-    if (rc == 0) { 
-	rc = getIndexContents(tssContext,
-			      nonce,
-			      nonceSize,
-			      ekNonceIndex);
-    }
-    /* optional tracing */
-    if (rc == 0) {
-	if (print) TSS_PrintAll("EK Nonce: ", *nonce, *nonceSize);
+    if (ekNonceIndex != 0) {	/* the high range does not have a nonce, so skip this step */
+	if (rc == 0) {
+	    rc = getIndexContents(tssContext,
+				  nonce,
+				  nonceSize,
+				  ekNonceIndex);
+	}
+	/* optional tracing */
+	if (rc == 0) {
+	    if (print) TSS_PrintAll("EK Nonce: ", *nonce, *nonceSize);
+	}
     }
     return rc;
 }
@@ -828,7 +1002,7 @@ TPM_RC processEKCertificate(TSS_CONTEXT *tssContext,
 				     ekCertificate,	/* freed by caller */
 				     ekCertIndex);
 	if (rc != 0) {
-	    printf("No EK certificate\n");
+	    printf("No EK certificate for EK certifcate index %08x\n", ekCertIndex);
 	}
     }
     /* extract the public modulus from the X509 structure */
@@ -963,8 +1137,8 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	    rc = convertCertificatePubKey12(modulusBin,	/* freed by caller */
 					    modulusBytes,
 					    ekCertificate);
-#else	    
-	    printf("convertCertificatePubKey12: Could not extract X509_PUBKEY public key "
+#else
+	    printf("convertCertificatePubKey: Could not extract X509_PUBKEY public key "
 		   "from X509 certificate\n");
 	    rc =  TPM_RC_INTEGRITY;
 #endif /* TPM_TSS_NORSA */
@@ -976,7 +1150,10 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	    }
 	    switch (ekCertIndex) {
 #ifndef TPM_TSS_NORSA
-	      case EK_CERT_RSA_INDEX:
+	      case EK_CERT_RSA_INDEX:		/* low range */
+	      case EK_CERT_RSA_2048_INDEX_H1:	/* high range */
+	      case EK_CERT_RSA_3072_INDEX_H6:
+	      case EK_CERT_RSA_4096_INDEX_H7:
 		  {
 		      RSA *rsaKey = NULL;
 		      /* check that the public key algorithm matches the ekCertIndex algorithm */
@@ -1012,6 +1189,10 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 	      case EK_CERT_EC_INDEX:
+	      case EK_CERT_ECC_NISTP256_INDEX_H2:
+	      case EK_CERT_ECC_NISTP384_INDEX_H3:
+	      case EK_CERT_ECC_NISTP521_INDEX_H4:
+	      case EK_CERT_ECC_SM2P256INDEX_H5:
 		  {
 		      EC_KEY *ecKey = NULL;
 		      /* check that the public key algorithm matches the ekCertIndex algorithm */
@@ -1048,7 +1229,7 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	      default:
 		printf("convertCertificatePubKey: "
 		       "ekCertIndex %08x (asymmetric algorithm) not supported\n", ekCertIndex);
-		rc = TPM_RC_INTEGRITY;
+		rc = TSS_RC_BAD_PROPERTY_VALUE;
 		break;
 	    }
 	}
@@ -1460,6 +1641,58 @@ TPM_RC calculateNid(void)
     return rc;
 }
 
+typedef struct tdAlgorithmList
+{
+    TPMI_RH_NV_INDEX ekCertIndex;
+    uint16_t algorithmSize;
+} AlgorithmList;
+
+AlgorithmList algorithmList[] = {
+    {EK_CERT_RSA_INDEX, 2048/8}, 		/* RSA 2048 EK Certificate */
+    {EK_CERT_EC_INDEX, 256/8}, 			/* ECC NIST P256 EK Certificate */
+    {EK_CERT_RSA_2048_INDEX_H1, 2048/8}, 	/* RSA 2048 EK Certificate (H-1) */
+    {EK_CERT_ECC_NISTP256_INDEX_H2, 256/8}, 	/* ECC NIST P256 EK Certificate (H-2) */
+    {EK_CERT_ECC_NISTP384_INDEX_H3, 384/8}, 	/* ECC NIST P384 EK Certificate (H-3) */
+    {EK_CERT_ECC_NISTP521_INDEX_H4, 521/8}, 	/* ECC NIST P521 EK Certificate (H-4) */
+    {EK_CERT_ECC_SM2P256INDEX_H5, 256/8},	/* ECC SM2_P256 EK Certificate (H-5) */
+    {EK_CERT_RSA_3072_INDEX_H6, 3072/8}, 	/* RSA 3072 EK Certificate (H-6) */
+    {EK_CERT_RSA_4096_INDEX_H7, 4096/8}, 	/* RSA 4096 EK Certificate (H-7) */
+};
+
+/* processAlgorithmSize() validates the nonce size to be copied to the unique field against the EK
+   algorithm.
+
+   It returns the modulus size in bytes.
+*/
+
+static TPM_RC processAlgorithmSize(uint16_t *algorithmSize,
+				   unsigned char *nonce,
+				   uint16_t nonceSize,
+				   TPMI_RH_NV_INDEX ekCertIndex)
+{
+    TPM_RC rc = TSS_RC_BAD_PROPERTY_VALUE;	/* return if index not found */
+    size_t i;
+
+    for (i = 0 ; i < sizeof(algorithmList)/sizeof(AlgorithmList) ; i++) {
+	if (algorithmList[i].ekCertIndex == ekCertIndex) {
+	    *algorithmSize = algorithmList[i].algorithmSize;
+	    if ((nonce != NULL) && (nonceSize > algorithmList[i].algorithmSize)) {
+		printf("processAlgorithmSize: EK cert index %08x NV nonce size %u > %u\n",
+		       ekCertIndex, nonceSize, algorithmList[i].algorithmSize);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	    else {
+		rc = 0;
+	    }
+	    break;
+	}
+    }
+    if (rc == TSS_RC_BAD_PROPERTY_VALUE) {
+	printf("processAlgorithmSize: EK cert index %08x unsupported\n", ekCertIndex);
+    }
+    return rc;
+}
+
 /* createCertificate() constructs a certificate from the issuer and subject.  The public key to be
    certified is tpmtPublic.
 
@@ -1540,7 +1773,7 @@ TPM_RC createCertificate(char **x509CertString,		/* freed by caller */
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 	  case TPM_ALG_ECC:
-	    rc = addCertKeyEcc(x509Certificate, &tpmtPublic->unique.ecc);
+	    rc = addCertKeyEccT(x509Certificate, tpmtPublic);
 	    break;
 #endif	/* TPM_TSS_NOECC */
 #endif  /* TPM_TPM20 */
@@ -1789,7 +2022,6 @@ TPM_RC addCertExtension(X509 *x509Certificate, int nid, const char *value)
     }
     return rc;
 }
- 
 #ifndef TPM_TSS_NORSA
 
 /* addCertKeyRsa() adds the TPM RSA public key (the key to be certified) to the openssl X509
@@ -1830,8 +2062,42 @@ TPM_RC addCertKeyRsa(X509 *x509Certificate,
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
+/* addCertKeyEccT() adds the TPM ECC public key (the key to be certified) to the openssl X509
+   certificate.
+
+*/
+
+TPM_RC addCertKeyEccT(X509 *x509Certificate,
+		      const TPMT_PUBLIC *tpmtPublic)
+{
+    TPM_RC 		rc = 0;			/* general return code */
+    int			irc;
+    EVP_PKEY 		*evpPubkey = NULL;	/* EVP format public key to be certified */
+
+    /* convert EC TPMS_ECC_POINT to an EVP_PKEY */
+    if (rc == 0) {
+	rc = convertEcTPMTPublicToEvpPubKey(&evpPubkey,		/* freed @1 */
+					    tpmtPublic);
+    }
+    /* add the public key to the certificate */
+    if (rc == 0) {
+	irc = X509_set_pubkey(x509Certificate, evpPubkey);
+	if (irc != 1) {
+	    printf("addCertKeyEcc: Error adding public key to certificate\n");
+	    rc = TSS_RC_X509_ERROR;
+	}
+    }
+    /* cleanup */
+    if (evpPubkey != NULL) {
+	EVP_PKEY_free(evpPubkey);	/* @1 */
+    }
+    return rc;
+}
+
 /* addCertKeyEcc() adds the TPM ECC public key (the key to be certified) to the openssl X509
-   certificate
+   certificate.
+
+   Deprecated because it calls the deprecated convertEcPublicToEvpPubKey().
 
 */
 
@@ -1976,17 +2242,7 @@ TPM_RC processRoot(TSS_CONTEXT *tssContext,
 
 #endif
 
-/* processCreatePrimary() combines the EK nonce and EK template from NV to form the
-   createprimary input.  It creates the primary key.
-
-   ekCertIndex determines whether an RSA or ECC key is created.
-   
-   If nonce is NULL, the default IWG templates are used.  If nonce is non-NULL, the nonce and
-   tpmtPublicIn are used.
-
-   After returning the TPMT_PUBLIC, flushes the primary key unless noFlush is TRUE.  If noFlush is
-   FALSE, returns the loaded handle, else returns TPM_RH_NULL.
-*/
+/* processCreatePrimary() is deprecated.  It is missing the endorsement auth */
 
 TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
 			    TPM_HANDLE *keyHandle,		/* primary key handle */
@@ -1998,66 +2254,107 @@ TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
 			    unsigned int noFlush,	/* TRUE - don't flush the primary key */
 			    int print)
 {
+    TPM_RC rc = processCreatePrimaryE(tssContext,
+				      keyHandle,
+				      NULL,	/* endorsement auth */
+				      NULL,	/* EK password */
+				      ekCertIndex,
+				      nonce,
+				      nonceSize,
+				      tpmtPublicIn,
+				      tpmtPublicOut,
+				      noFlush,
+				      print);
+    return rc;
+}
+
+/* processCreatePrimaryE() combines the EK nonce and EK template from NV to form the
+   createprimary input.  It creates the primary key.
+
+   ekCertIndex determines whether an RSA or ECC key is created.
+   
+   If nonce is NULL, the default IWG templates are used.  If nonce is non-NULL, the nonce and
+   tpmtPublicIn are used.
+
+   After returning the TPMT_PUBLIC, flushes the primary key unless noFlush is TRUE.  If noFlush is
+   FALSE, returns the loaded handle, else returns TPM_RH_NULL.
+*/
+
+TPM_RC processCreatePrimaryE(TSS_CONTEXT *tssContext,
+			     TPM_HANDLE *keyHandle,		/* primary key handle */
+			     const char *endorsementPassword,
+			     const char *keyPassword,
+			     TPMI_RH_NV_INDEX ekCertIndex,
+			     unsigned char *nonce,
+			     uint16_t nonceSize,
+			     TPMT_PUBLIC *tpmtPublicIn,		/* template */
+			     TPMT_PUBLIC *tpmtPublicOut,	/* primary key */
+			     unsigned int noFlush,	/* TRUE - don't flush the primary key */
+			     int print)
+{
     TPM_RC			rc = 0;
+    uint16_t 			algorithmSize = 0;
     CreatePrimary_In 		inCreatePrimary;
     CreatePrimary_Out 		outCreatePrimary;
 
-    /* sanity check nonce size (should never happen on HW TPM) */
-    if ((rc == 0) && (nonce != NULL)) {
-	if (ekCertIndex == EK_CERT_RSA_INDEX) {			/* RSA primary key */
-	    if (nonceSize > 256) {
-		printf("processCreatePrimary: RSA NV nonce size %u > 256\n", nonceSize);
-		rc = TSS_RC_INSUFFICIENT_BUFFER;
-	    }
-	}
-	else {							/* EC primary key */
-	    if (nonceSize > 32) {
-		printf("processCreatePrimary: EC NV nonce size %u > 32\n", nonceSize);
-		rc = TSS_RC_INSUFFICIENT_BUFFER;
-	    }
-	}
-    }    
+    /* sanity check nonce size (should never happen on HW TPM).  Map the algorithm to the algorithm
+       size. */
+    if (rc == 0) {
+	rc = processAlgorithmSize(&algorithmSize, nonce, nonceSize, ekCertIndex);
+    }
     /* set up the createprimary in parameters */
     if (rc == 0) {
 	inCreatePrimary.primaryHandle = TPM_RH_ENDORSEMENT;
-	inCreatePrimary.inSensitive.sensitive.userAuth.t.size = 0;
 	inCreatePrimary.inSensitive.sensitive.data.t.size = 0;
 	/* creation data */
 	inCreatePrimary.outsideInfo.t.size = 0;
 	inCreatePrimary.creationPCR.count = 0;
     }
+    if (rc == 0) {
+	if (keyPassword == NULL) {
+	    inCreatePrimary.inSensitive.sensitive.userAuth.t.size = 0;
+	}
+	else {
+	    rc = TSS_TPM2B_StringCopy(&inCreatePrimary.inSensitive.sensitive.userAuth.b,
+				      keyPassword,
+				      sizeof
+				      (inCreatePrimary.inSensitive.sensitive.userAuth.t.buffer));
+	}
+    }
     /* construct the template from the NV template and nonce */
     if ((rc == 0) && (nonce != NULL)) {
 	inCreatePrimary.inPublic.publicArea = *tpmtPublicIn;
-	if (ekCertIndex == EK_CERT_RSA_INDEX) {			/* RSA primary key */
+	switch (ekCertIndex) {
+	  case EK_CERT_RSA_INDEX:		/* low range */
 	    /* unique field is 256 bytes */
-	    inCreatePrimary.inPublic.publicArea.unique.rsa.t.size = 256;
+	    inCreatePrimary.inPublic.publicArea.unique.rsa.t.size = algorithmSize;
 	    /* first part is nonce */
 	    memcpy(inCreatePrimary.inPublic.publicArea.unique.rsa.t.buffer, nonce, nonceSize);
 	    /* padded with zeros */
 	    memset(inCreatePrimary.inPublic.publicArea.unique.rsa.t.buffer + nonceSize, 0,
-		   256 - nonceSize);
-	}
-	else {							/* EC primary key */
+		   algorithmSize - nonceSize);
+	    break;
+	  case EK_CERT_EC_INDEX:
 	    /* unique field is X and Y points */
 	    /* X gets nonce and pad */
-	    inCreatePrimary.inPublic.publicArea.unique.ecc.x.t.size = 32;
+	    inCreatePrimary.inPublic.publicArea.unique.ecc.x.t.size = algorithmSize;
 	    memcpy(inCreatePrimary.inPublic.publicArea.unique.ecc.x.t.buffer, nonce, nonceSize);
 	    memset(inCreatePrimary.inPublic.publicArea.unique.ecc.x.t.buffer + nonceSize, 0,
-		   32 - nonceSize);
+		   algorithmSize - nonceSize);
 	    /* Y gets zeros */
-	    inCreatePrimary.inPublic.publicArea.unique.ecc.y.t.size = 32;
-	    memset(inCreatePrimary.inPublic.publicArea.unique.ecc.y.t.buffer, 0, 32);
+	    inCreatePrimary.inPublic.publicArea.unique.ecc.y.t.size = algorithmSize;
+	    memset(inCreatePrimary.inPublic.publicArea.unique.ecc.y.t.buffer, 0, algorithmSize);
+	    break;
+	  default:
+	    printf("cprocessCreatePrimaryE: "
+		   "ekCertIndex %08x with nonce not supported\n", ekCertIndex);
+	    rc = TPM_RC_INTEGRITY;
+	    break;
 	}
     }
     /* construct the template from the default IWG template */
     if ((rc == 0) && (nonce == NULL)) {
-	if (ekCertIndex == EK_CERT_RSA_INDEX) {			/* RSA primary key */
-	    getRsaTemplate(&inCreatePrimary.inPublic.publicArea);
-	}
-	else {							/* EC primary key */
-	    getEccTemplate(&inCreatePrimary.inPublic.publicArea);
-	}
+	rc = getIwgTemplate(&inCreatePrimary.inPublic.publicArea, ekCertIndex);
     }
     /* call TSS to execute the command */
     if (rc == 0) {
@@ -2066,7 +2363,7 @@ TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
 			 (COMMAND_PARAMETERS *)&inCreatePrimary,
 			 NULL,
 			 TPM_CC_CreatePrimary,
-			 TPM_RS_PW, NULL, 0,
+			 TPM_RS_PW, endorsementPassword, 0,
 			 TPM_RH_NULL, NULL, 0);
 	if (rc != 0) {
 	    const char *msg;
@@ -2108,12 +2405,12 @@ TPM_RC processCreatePrimary(TSS_CONTEXT *tssContext,
     }	    
     /* trace the public key */
     if (rc == 0) {
-	if (ekCertIndex == EK_CERT_RSA_INDEX) {
+	if (tpmtPublicOut->type == TPM_ALG_RSA) {
 	    if (print) TSS_PrintAll("createprimary: RSA public key",
 				    outCreatePrimary.outPublic.publicArea.unique.rsa.t.buffer,
 				    outCreatePrimary.outPublic.publicArea.unique.rsa.t.size);
 	}
-	else {
+	else if (tpmtPublicOut->type == TPM_ALG_ECC) {
 	    if (print) TSS_PrintAll("createprimary: ECC public key x",
 				    outCreatePrimary.outPublic.publicArea.unique.ecc.x.t.buffer,
 				    outCreatePrimary.outPublic.publicArea.unique.ecc.x.t.size);
@@ -2138,86 +2435,82 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,		/* from certificate */
 
     print = print;
     /* compare the X509 certificate public key to the createprimary public key */
-    switch (ekCertIndex) {
 #ifndef TPM_TSS_NORSA
-      case EK_CERT_RSA_INDEX:
-	  {
-	      int irc;
-	      /* RSA just has a public modulus */
-	      if (rc == 0) {
-		  if (tpmtPublic->unique.rsa.t.size != publicKeyBytes) {
-		      printf("processValidatePrimary: "
-			     "X509 certificate key length %u does not match output of createprimary %u\n",
-			     publicKeyBytes,
-			     tpmtPublic->unique.rsa.t.size);
-		      rc = TPM_RC_INTEGRITY;
-		  }
-	      }
-	      if (rc == 0) {
-		  irc = memcmp(publicKeyBin,
-			       tpmtPublic->unique.rsa.t.buffer,
-			       publicKeyBytes);
-		  if (irc != 0) {
-		      printf("processValidatePrimary: "
-			     "Public key from X509 certificate does not match output of createprimary\n");
-		      rc = TPM_RC_INTEGRITY;
-		  }
-	      }
-	  }
-	  break;
+    if (tpmtPublic->type == TPM_ALG_RSA) {
+	int irc;
+	/* RSA just has a public modulus */
+	if (rc == 0) {
+	    if (tpmtPublic->unique.rsa.t.size != publicKeyBytes) {
+		printf("processValidatePrimary: "
+		       "X509 certificate key length %u does not match output of createprimary %u\n",
+		       publicKeyBytes,
+		       tpmtPublic->unique.rsa.t.size);
+		rc = TPM_RC_INTEGRITY;
+	    }
+	}
+	if (rc == 0) {
+	    irc = memcmp(publicKeyBin,
+			 tpmtPublic->unique.rsa.t.buffer,
+			 publicKeyBytes);
+	    if (irc != 0) {
+		printf("processValidatePrimary: "
+		       "Public key from X509 certificate does not match output of createprimary\n");
+		rc = TPM_RC_INTEGRITY;
+	    }
+	}
+    }
+    else
 #endif /* TPM_TSS_NORSA */
 #ifndef TPM_TSS_NOECC
-      case EK_CERT_EC_INDEX:
-	  {
-	      int irc;
-	      /* ECC has X and Y points */
-	      /* compression algorithm is the extra byte at the beginning of the certificate */
-	      if (rc == 0) {
-		  if (tpmtPublic->unique.ecc.x.t.size +
-		      tpmtPublic->unique.ecc.y.t.size + 1
-		      != publicKeyBytes) {
-		      printf("processValidatePrimary: "
-			     "X509 certificate key length %u does not match "
-			     "output of createprimary x %u +y %u\n",
-			     publicKeyBytes,
-			     tpmtPublic->unique.ecc.x.t.size,
+	if (tpmtPublic->type == TPM_ALG_ECC) {
+	    int irc;
+	    /* ECC has X and Y points */
+	    /* compression algorithm is the extra byte at the beginning of the certificate */
+	    if (rc == 0) {
+		if (tpmtPublic->unique.ecc.x.t.size +
+		    tpmtPublic->unique.ecc.y.t.size + 1
+		    != publicKeyBytes) {
+		    printf("processValidatePrimary: "
+			   "X509 certificate key length %u does not match "
+			   "output of createprimary x %u +y %u\n",
+			   publicKeyBytes,
+			   tpmtPublic->unique.ecc.x.t.size,
+			   tpmtPublic->unique.ecc.y.t.size);
+		    rc = TPM_RC_INTEGRITY;
+		}
+	    }
+	    /* check X */
+	    if (rc == 0) {
+		irc = memcmp(publicKeyBin +1,
+			     tpmtPublic->unique.ecc.x.t.buffer,
+			     tpmtPublic->unique.ecc.x.t.size);
+		if (irc != 0) {
+		    printf("processValidatePrimary: "
+			   "Public key X from X509 certificate does not match "
+			   "output of createprimary\n");
+		    rc = TPM_RC_INTEGRITY;
+		}
+	    }
+	    /* check Y */
+	    if (rc == 0) {
+		irc = memcmp(publicKeyBin + 1 + tpmtPublic->unique.ecc.x.t.size,
+			     tpmtPublic->unique.ecc.y.t.buffer,
 			     tpmtPublic->unique.ecc.y.t.size);
-		      rc = TPM_RC_INTEGRITY;
-		  }
-	      }
-	      /* check X */
-	      if (rc == 0) {
-		  irc = memcmp(publicKeyBin +1,
-			       tpmtPublic->unique.ecc.x.t.buffer,
-			       tpmtPublic->unique.ecc.x.t.size);
-		  if (irc != 0) {
-		      printf("processValidatePrimary: "
-			     "Public key X from X509 certificate does not match "
-			     "output of createprimary\n");
-		      rc = TPM_RC_INTEGRITY;
-		  }
-	      }
-	      /* check Y */
-	      if (rc == 0) {
-		  irc = memcmp(publicKeyBin + 1 + tpmtPublic->unique.ecc.x.t.size,
-			       tpmtPublic->unique.ecc.y.t.buffer,
-			       tpmtPublic->unique.ecc.y.t.size);
-		  if (irc != 0) {
-		      printf("processValidatePrimary: "
-			     "Public key Y from X509 certificate does not match "
-			     "output of createprimary\n");
-		      rc = TPM_RC_INTEGRITY;
-		  }
-	      }	
-	  }
-	  break;
+		if (irc != 0) {
+		    printf("processValidatePrimary: "
+			   "Public key Y from X509 certificate does not match "
+			   "output of createprimary\n");
+		    rc = TPM_RC_INTEGRITY;
+		}
+	    }
+	}
+	else
 #endif /* TPM_TSS_NOECC */
-      default:
-	printf("processValidatePrimary: "
-	       "ekCertIndex %08x (asymmetric algorithm) not supported\n", ekCertIndex);
-	rc = TPM_RC_INTEGRITY;
-	break;
-    }
+	    {
+		printf("processValidatePrimary=: "
+		       "ekCertIndex %08x (asymmetric algorithm) not supported\n", ekCertIndex);
+		rc = TPM_RC_INTEGRITY;
+	    }
     if (rc == 0) {
 	if (print) printf("processValidatePrimary: "
 			  "Public key from X509 certificate matches output of createprimary\n");
@@ -2225,12 +2518,9 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,		/* from certificate */
     return rc;
 }
 
-/* processPrimary() reads the EK nonce and EK template from NV.  It combines them to form the
-   createprimary input.  It creates the primary key.
+/* processPrimary() is deprecated.  It is missing the endorsement auth.  It is missing the key
+   password, new for the high range EKs.
 
-   It reads the EK certificate from NV.  It extracts the public key.
-
-   Finally, it compares the public key in the certificate to the public key output of createprimary.
 */
 
 TPM_RC processPrimary(TSS_CONTEXT *tssContext,
@@ -2240,6 +2530,36 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
 		      TPMI_RH_NV_INDEX ekTemplateIndex,
 		      unsigned int noFlush,		/* TRUE - don't flush the primary key */
 		      int print)
+{
+    TPM_RC rc = processPrimaryE(tssContext,
+				keyHandle,
+				NULL,	/* endorsement auth */
+				NULL,	/* endorsement key password */
+				ekCertIndex,
+				ekNonceIndex,
+				ekTemplateIndex,
+				noFlush,
+				print);
+    return rc;
+}
+
+/* processPrimaryE() reads the EK nonce and EK template from NV.  It combines them to form the
+   createprimary input.  It creates the primary key.
+
+   It reads the EK certificate from NV.  It extracts the public key.
+
+   Finally, it compares the public key in the certificate to the public key output of createprimary.
+*/
+
+TPM_RC processPrimaryE(TSS_CONTEXT *tssContext,
+		       TPM_HANDLE *keyHandle,		/* primary key handle */
+		       const char *endorsementPassword,
+		       const char *keyPassword,
+		       TPMI_RH_NV_INDEX ekCertIndex,
+		       TPMI_RH_NV_INDEX ekNonceIndex,
+		       TPMI_RH_NV_INDEX ekTemplateIndex,
+		       unsigned int noFlush,		/* TRUE - don't flush the primary key */
+		       int print)
 {
     TPM_RC			rc = 0;
     void 			*ekCertificate = NULL;
@@ -2267,14 +2587,16 @@ TPM_RC processPrimary(TSS_CONTEXT *tssContext,
     }
     /* create the primary key */
     if (rc == 0) {
-	rc = processCreatePrimary(tssContext,
-				  keyHandle,
-				  ekCertIndex,
-				  nonce, nonceSize,		/* EK nonce, can be NULL */
-				  &tpmtPublicIn,		/* template */
-				  &tpmtPublicOut,		/* primary key */
-				  noFlush,
-				  print);
+	rc = processCreatePrimaryE(tssContext,
+				   keyHandle,
+				   endorsementPassword,
+				   keyPassword,
+				   ekCertIndex,
+				   nonce, nonceSize,		/* EK nonce, can be NULL */
+				   &tpmtPublicIn,		/* template */
+				   &tpmtPublicOut,		/* primary key */
+				   noFlush,
+				   print);
     }
     /* validate against the certificate if the algorithm is compiled in */
     if (rc == 0) {

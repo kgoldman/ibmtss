@@ -59,53 +59,57 @@ echo ""
 # Create a platform primary RSA storage key
 initprimary
 
-echo "Create an RSA storage key under the primary key"
-${PREFIX}create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa2048priv.bin -opu storersa2048pub.bin -tk storsatk.bin -ch storsach.bin -pwdp sto -pwdk sto > run.out
-checkSuccess $?
+SHALG=(sha256 sha384)
+BITS=(2048 3072)
 
-for CURVE in nistp256 nistp384
+for ((i = 0 ; i < 2 ; i++))
 do
 
-    echo "Create a ${CURVE} ECC storage key under the primary key"
-    ${PREFIX}create -hp 80000000 -ecc ${CURVE} -st -kt f -kt p -opr storeecc${CURVE}priv.bin -opu storeecc${CURVE}pub.bin -pwdp sto -pwdk sto > run.out
+    echo "Create an RSA ${BITS[i]} ${SHALG[i]} storage key under the primary key"
+    ${PREFIX}create -hp 80000000 -rsa ${BITS[i]} -halg ${SHALG[i]} -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa${BITS[i]}priv.bin -opu storersa${BITS[i]}pub.bin -tk storersa${BITS[i]}tk.bin -ch storersa${BITS[i]}ch.bin -pwdp sto -pwdk sto > run.out
     checkSuccess $?
 
-    echo "Create a ${CURVE} unrestricted ECC signing key under the primary key"
-    ${PREFIX}create -hp 80000000 -ecc nistp256 -si -kt f -kt p -opr signecc${CURVE}priv.bin -opu signecc${CURVE}pub.bin -opem signecc${CURVE}pub.pem -pwdp sto -pwdk sig > run.out
+    echo "Create an RSA ${BITS[i]} ${SHALG[i]} unrestricted signing key under the primary key"
+    ${PREFIX}create -hp 80000000 -rsa ${BITS[i]} -halg ${SHALG[i]} -si -kt f -kt p -opr signrsa${BITS[i]}priv.bin -opu signrsa${BITS[i]}pub.bin -opem signrsa${BITS[i]}pub.pem -pwdp sto -pwdk sig > run.out
     checkSuccess $?
 
-    echo "Create a ${CURVE} restricted ECC signing key under the primary key"
-${PREFIX}create -hp 80000000 -ecc nistp256 -sir -kt f -kt p -opr signecc${CURVE}rpriv.bin -opu signecc${CURVE}rpub.bin -opem signecc${CURVE}rpub.pem -pwdp sto -pwdk sig > run.out
+    echo "Create an RSA ${BITS[i]} decryption key under the primary key"
+    ${PREFIX}create -hp 80000000 -den -kt f -kt p -opr derrsa${BITS[i]}priv.bin -opu derrsa${BITS[i]}pub.bin -pwdp sto -pwdk dec > run.out
     checkSuccess $?
 
-    echo "Create a not fixedTPM ${CURVE} ECC signing key under the primary key"
-${PREFIX}create -hp 80000000 -ecc nistp256 -sir -opr signecc${CURVE}nfpriv.bin -opu signecc${CURVE}nfpub.bin -opem signecc${CURVE}nfpub.pem -pwdp sto -pwdk sig > run.out
+    echo "Create an RSA ${BITS[i]} ${SHALG[i]} restricted signing key under the primary key"
+    ${PREFIX}create -hp 80000000 -rsa ${BITS[i]} -halg ${SHALG[i]} -sir -kt f -kt p -opr signrsa${BITS[i]}rpriv.bin -opu signrsa${BITS[i]}rpub.bin -opem signrsa${BITS[i]}rpub.pem -pwdp sto -pwdk sig > run.out
     checkSuccess $?
 
-
-
-done
-
-for BITS in 2048 3072
-do
-
-    echo "Create an unrestricted RSA $BITS signing key under the primary key"
-    ${PREFIX}create -hp 80000000 -rsa ${BITS} -si -kt f -kt p -opr signrsa${BITS}priv.bin -opu signrsa${BITS}pub.bin -opem signrsa${BITS}pub.pem -pwdp sto -pwdk sig > run.out
-    checkSuccess $?
-
-    echo "Create an RSA $BITS decryption key under the primary key"
-    ${PREFIX}create -hp 80000000 -den -kt f -kt p -opr derrsa${BITS}priv.bin -opu derrsa${BITS}pub.bin -pwdp sto -pwdk dec > run.out
+    echo "Create an RSA ${BITS[i]} ${SHALG[i]} not fixedTPM signing key under the primary key"
+    ${PREFIX}create -hp 80000000 -rsa ${BITS[i]} -halg ${SHALG[i]} -sir -opr signrsa${BITS[i]}nfpriv.bin -opu signrsa${BITS[i]}nfpub.bin -opem signrsa${BITS[i]}nfpub.pem -pwdp sto -pwdk sig > run.out
     checkSuccess $?
 
 done
 
-echo "Create a restricted RSA signing key under the primary key"
-${PREFIX}create -hp 80000000 -rsa 2048 -sir -kt f -kt p -opr signrsa2048rpriv.bin -opu signrsa2048rpub.bin -opem signrsa2048rpub.pem -pwdp sto -pwdk sig > run.out
-checkSuccess $?
+SHALG=(sha256 sha384)
+CURVE=(nistp256 nistp384)
 
-echo "Create a not fixedTPM RSA signing key under the primary key"
-${PREFIX}create -hp 80000000 -sir -opr signrsa2048nfpriv.bin -opu signrsa2048nfpub.bin -opem signrsa2048nfpub.pem -pwdp sto -pwdk sig > run.out
-checkSuccess $?
+for ((i = 0 ; i < 2 ; i++))
+do
+
+    echo "Create an ECC ${CURVE[i]} ${SHALG[i]} storage key under the primary key"
+    ${PREFIX}create -hp 80000000 -ecc ${CURVE[i]} -halg ${SHALG[i]} -st -kt f -kt p -opr storeecc${CURVE[i]}priv.bin -opu storeecc${CURVE[i]}pub.bin -pwdp sto -pwdk sto > run.out
+    checkSuccess $?
+
+    echo "Create an ECC ${CURVE[i]} ${SHALG[i]} unrestricted signing key under the primary key"
+    ${PREFIX}create -hp 80000000 -ecc ${CURVE[i]} -halg ${SHALG[i]} -si -kt f -kt p -opr signecc${CURVE[i]}priv.bin -opu signecc${CURVE[i]}pub.bin -opem signecc${CURVE[i]}pub.pem -pwdp sto -pwdk sig > run.out
+    checkSuccess $?
+
+    echo "Create an ECC ${CURVE[i]} ${SHALG[i]} restricted signing key under the primary key"
+${PREFIX}create -hp 80000000 -ecc ${CURVE[i]} -halg ${SHALG[i]} -sir -kt f -kt p -opr signecc${CURVE[i]}rpriv.bin -opu signecc${CURVE[i]}rpub.bin -opem signecc${CURVE[i]}rpub.pem -pwdp sto -pwdk sig > run.out
+    checkSuccess $?
+
+    echo "Create an ECC ${CURVE[i]} ${SHALG[i]} not fixedTPM signing key under the primary key"
+${PREFIX}create -hp 80000000 -ecc ${CURVE[i]} -halg ${SHALG[i]} -sir -opr signecc${CURVE[i]}nfpriv.bin -opu signecc${CURVE[i]}nfpub.bin -opem signecc${CURVE[i]}nfpub.pem -pwdp sto -pwdk sig > run.out
+    checkSuccess $?
+
+done
 
 echo "Create a symmetric cipher key under the primary key"
 ${PREFIX}create -hp 80000000 -des -kt f -kt p -opr despriv.bin -opu despub.bin -pwdp sto -pwdk aes > run.out
