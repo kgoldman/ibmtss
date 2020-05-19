@@ -741,6 +741,7 @@ TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
 	if (caCertFile == NULL) {
 	    printf("getCaStore: Error opening CA root certificate file %s\n",
 		   rootFilename[i]);  
+	    printf("getCaStore: Check the fully rooted path\n");
 	    rc = TSS_RC_FILE_OPEN;
 	}
 	/* convert the root certificate from PEM to X509 */
