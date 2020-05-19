@@ -125,7 +125,7 @@ extern "C" {
 					  TPMI_ALG_HASH		halg,
 					  int 			modulusBytes,
 					  uint8_t 		*modulusBin);
-    TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *public,
+    TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *inPublic,
 			      const char *pemFilename);
 
     TPM_RC signRSAFromRSA(uint8_t *signature, size_t *signatureLength,

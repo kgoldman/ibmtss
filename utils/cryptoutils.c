@@ -1413,10 +1413,10 @@ int getRsaPubkeyAlgorithm(EVP_PKEY *pkey)
 #ifndef TPM_TSS_NOFILE
 
 /* convertPublicToPEM() saves a PEM format public key from a TPM2B_PUBLIC
-   
+ 
 */
 
-TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *public,
+TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *inPublic,
 			  const char *pemFilename)
 {
     TPM_RC 	rc = 0;
@@ -1424,24 +1424,24 @@ TPM_RC convertPublicToPEM(const TPM2B_PUBLIC *public,
 
     /* convert TPM2B_PUBLIC to EVP_PKEY */
     if (rc == 0) {
-	switch (public->publicArea.type) {
+	switch (inPublic->publicArea.type) {
 #ifndef TPM_TSS_NORSA
 	  case TPM_ALG_RSA:
 	    rc = convertRsaPublicToEvpPubKey(&evpPubkey,	/* freed @1 */
-					     &public->publicArea.unique.rsa);
+					     &inPublic->publicArea.unique.rsa);
 	    break;
 #endif /* TPM_TSS_NORSA */
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 	  case TPM_ALG_ECC:
 	    rc = convertEcTPMTPublicToEvpPubKey(&evpPubkey,		/* freed @1 */
-						&public->publicArea);
+						&inPublic->publicArea);
 	    break;
 #endif /* TPM_TSS_NOECC */
 #endif /* TPM_TPM20 */
 	  default:
 	    printf("convertPublicToPEM: Unknown publicArea.type %04hx unsupported\n",
-		   public->publicArea.type);
+		   inPublic->publicArea.type);
 	    rc = TSS_RC_NOT_IMPLEMENTED;
 	    break;
 	}
