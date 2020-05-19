@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id: tssutils.h 1324 2018-08-31 16:36:12Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -87,8 +87,14 @@ extern "C" {
     LIB_EXPORT 
     BOOL TSS_TPM2B_Compare(TPM2B *expect, TPM2B *actual);
 
+    /* TSS_GetDigestSize() was moved to tssutils.c because it is useful even when crypto is compiled
+       out.  A copy of the prototype remains tsscryptoh.h for backward compatibility.  The ifndef
+       prevents it from being defined twice. */
+#ifndef TSS_GETDIGESTSIZE_API
+#define TSS_GETDIGESTSIZE_API
     LIB_EXPORT
     uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg);
+#endif
 
 #ifdef __cplusplus
 }

@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -48,8 +48,19 @@
 extern "C" {
 #endif
 
+    /* TSS_GetDigestSize() was moved to tssutils.c because it is useful even when crypto is compiled
+       out.  A copy of the prototype remains in this header for backward compatibility.  The ifndef
+       prevents it from being defined twice. */
+#ifndef TSS_GETDIGESTSIZE_API
+#define TSS_GETDIGESTSIZE_API
     LIB_EXPORT
-    uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg)
+    uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
+#ifdef __ULTRAVISOR__
+	__attribute__ ((const))
+#endif
+	;
+#endif
+    LIB_EXPORT    uint16_t TSS_GetDigestBlockSize(TPM_ALG_ID hashAlg)
 #ifdef __ULTRAVISOR__
 	__attribute__ ((const))
 #endif
