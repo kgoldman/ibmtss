@@ -9,6 +9,7 @@
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/NuvotonTPMRootCA0100.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/NuvotonTPMRootCA1110.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/NuvotonTPMRootCA2110.pem
+/gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/NuvotonTPMRootCA2111.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/cacert.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/cacertecc.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/gstpmroot.pem
