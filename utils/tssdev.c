@@ -50,6 +50,7 @@
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tsserror.h>
 #include <ibmtss/tssprint.h>
+#include <ibmtss/Unmarshal_fp.h>
 #include "tssproperties.h"
 
 #include "tssdev.h"
@@ -159,7 +160,10 @@ static uint32_t TSS_Dev_ReceiveResponse(int dev_fd, uint8_t *buffer, uint32_t *l
     uint32_t 	rc = 0;
     int 	irc;		/* read() return code, negative is error, positive is length */
     uint32_t 	responseSize = 0;	/* from TPM packet response stream */
-
+    uint32_t	responseCode = 0;
+    uint8_t 	*tmpptr;	/* for unmarshaling responseSize and responseCode */
+    uint32_t	tmpsize;
+    
     if (tssVverbose) printf("TSS_Dev_ReceiveResponse:\n");
     /* read the TPM device */
     if (rc == 0) {
@@ -183,20 +187,31 @@ static uint32_t TSS_Dev_ReceiveResponse(int dev_fd, uint8_t *buffer, uint32_t *l
 	    if (tssVerbose) printf("TSS_Dev_ReceiveResponse: read bytes %u < header\n", irc);
 	    rc = TSS_RC_MALFORMED_RESPONSE;
 	}
+	/* skip the tag */
+	else {
+	    tmpptr = buffer + sizeof(TPM_ST);
+	    tmpsize = (unsigned int)irc - sizeof(TPM_ST);
+	}
     }
-    /* get responseSize from the packet */
+    /* get responseSize from the packet, should never fail because of above check */
     if (rc == 0) {
-	responseSize = ntohl(*(uint32_t *)(buffer + sizeof(TPM_ST)));
-	/* sanity check against the length actually received, the return code */
+	rc = TSS_UINT32_Unmarshalu(&responseSize, &tmpptr, &tmpsize);
+    }
+    /* sanity check against the length actually received, the return code */
+    if (rc == 0) {
 	if ((uint32_t)irc != responseSize) {
 	    if (tssVerbose) printf("TSS_Dev_ReceiveResponse: read bytes %u != responseSize %u\n",
 				   (uint32_t)irc, responseSize);
 	    rc = TSS_RC_MALFORMED_RESPONSE;
 	}
     }
-    /* if there was no lower level failure, return the TPM packet responseCode */
+    /* get responseCode from the packet, should never fail because of above check */
     if (rc == 0) {
-	rc = ntohl(*(uint32_t *)(buffer + sizeof(TPM_ST)+ sizeof(uint32_t)));
+	rc = TSS_UINT32_Unmarshalu(&responseCode, &tmpptr, &tmpsize);
+    }
+   /* if there was no lower level failure, return the TPM packet responseCode */
+    if (rc == 0) {
+	rc = responseCode;
     }
     *length = responseSize;
     if (tssVverbose) printf("TSS_Dev_ReceiveResponse: rc %08x\n", rc);
