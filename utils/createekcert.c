@@ -103,7 +103,6 @@ int main(int argc, char *argv[])
     int			range = LowRange;	/* default low range */
     TPMI_ALG_PUBLIC 	algPublic = 0;
     TPMI_RSA_KEY_BITS 	keyBits = 0;
-    TPMI_ECC_CURVE	curveID = 0;
     const char		*certificateFilename = NULL;
     TPMI_RH_NV_INDEX	ekCertIndex = EK_CERT_RSA_INDEX;
     /* the CA for endorsement key certificates */
@@ -214,7 +213,6 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		if (strcmp(argv[i],"nistp256") == 0) {
-		    curveID = TPM_ECC_NIST_P256;
 		    if (range == LowRange) {
 			ekCertIndex = EK_CERT_EC_INDEX;
 		    }
@@ -223,11 +221,9 @@ int main(int argc, char *argv[])
 		    }
 		}
 		else if (strcmp(argv[i],"nistp384") == 0) {
-		    curveID = TPM_ECC_NIST_P384;
 		    ekCertIndex = EK_CERT_ECC_NISTP384_INDEX_H3;
 		}
 		else if (strcmp(argv[i],"nistp521") == 0) {
-		    curveID = TPM_ECC_NIST_P521;
 		    ekCertIndex = EK_CERT_ECC_NISTP521_INDEX_H4;
 		}
 		else {
