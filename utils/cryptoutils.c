@@ -1740,7 +1740,10 @@ TPM_RC verifySignatureFromPem(unsigned char *message,
 {
     TPM_RC 		rc = 0;
     EVP_PKEY 		*evpPkey = NULL;        /* OpenSSL public key, EVP format */
-    
+#ifdef TPM_TSS_NORSA
+    halg = halg;
+#endif /* TPM_TSS_NORSA */
+
     /* read the public key from PEM format */
     if (rc == 0) {
 	rc = convertPemToEvpPubKey(&evpPkey,		/* freed @1*/
@@ -1758,8 +1761,6 @@ TPM_RC verifySignatureFromPem(unsigned char *message,
 						 halg,
 						 evpPkey);
 	    break;
-#else
-	    halg = halg;
 #endif /* TPM_TSS_NORSA */
 #ifndef TPM_TSS_NOECC
 	  case TPM_ALG_ECDSA:
