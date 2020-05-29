@@ -148,5 +148,5 @@ eventextend_LDADD = libibmtssutils12.la ../utils/libibmtss.la
 imaextend_SOURCES = imaextend.c ../utils/imalib.c
 imaextend_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 imaextend_LDFLAGS = -L$(top_srcdir)/utils
-imaextend_LDADD = libibmtssutils12.la ../utils/libibmtss.la
+imaextend_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)
 endif
