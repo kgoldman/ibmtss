@@ -4,7 +4,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -54,6 +54,7 @@ CC = "c:/program files/mingw/bin/gcc.exe"
 
 CCFLAGS += 					\
 	-DTPM_WINDOWS				\
+	-DTPM_TSS_NODEV				\
 	-I. 					\
 	-I"c:/program files/MinGW/include"	\
 	-I"c:/program files/openssl/include"	\

@@ -76,12 +76,15 @@ TPM_RC TSS_TransmitPlatform(TSS_CONTEXT *tssContext, uint32_t command, const cha
     command = command;
     message = message;
 #endif
+#ifndef TPM_TSS_NODEV
     if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
 	if (tssVerbose) printf("TSS_TransmitPlatform: device %s unsupported\n",
 			       tssContext->tssInterfaceType);
 	rc = TSS_RC_INSUPPORTED_INTERFACE;	
     }
-    else {
+    else
+#endif
+	{
 	if (tssVerbose) printf("TSS_TransmitPlatform: device %s unsupported\n",
 			       tssContext->tssInterfaceType);
 	rc = TSS_RC_INSUPPORTED_INTERFACE;	
@@ -108,12 +111,15 @@ TPM_RC TSS_TransmitCommand(TSS_CONTEXT *tssContext, uint32_t command, const char
     command = command;
     message = message;
 #endif
+#ifndef TPM_TSS_NODEV
     if ((strcmp(tssContext->tssInterfaceType, "dev") == 0)) {
 	if (tssVerbose) printf("TSS_TransmitCommand: device %s unsupported\n",
 			       tssContext->tssInterfaceType);
 	rc = TSS_RC_INSUPPORTED_INTERFACE;	
     }
-    else {
+    else
+#endif
+	{
 	if (tssVerbose) printf("TSS_TransmitCommand: device %s unsupported\n",
 			       tssContext->tssInterfaceType);
 	rc = TSS_RC_INSUPPORTED_INTERFACE;	
@@ -142,13 +148,16 @@ TPM_RC TSS_Transmit(TSS_CONTEXT *tssContext,
     }
     else
 #endif
-    if (strcmp(tssContext->tssInterfaceType, "dev") == 0) {
+#ifndef TPM_TSS_NODEV
+   if (strcmp(tssContext->tssInterfaceType, "dev") == 0) {
 	rc = TSS_Dev_Transmit(tssContext,
 			      responseBuffer, read,
 			      commandBuffer, written,
 			      message);
     }
-    else {
+   else 
+#endif
+       {
 	if (tssVerbose) printf("TSS_Transmit: device %s unsupported\n",
 			       tssContext->tssInterfaceType);
 	rc = TSS_RC_INSUPPORTED_INTERFACE;	
@@ -170,10 +179,13 @@ TPM_RC TSS_Close(TSS_CONTEXT *tssContext)
 	}
 	else
 #endif
+#ifndef TPM_TSS_NODEV
         if (strcmp(tssContext->tssInterfaceType, "dev") == 0) {
 	    rc = TSS_Dev_Close(tssContext);
 	}
-	else {
+	else  
+#endif
+	{
 	    if (tssVerbose) printf("TSS_Transmit: device %s unsupported\n",
 				   tssContext->tssInterfaceType);
 	    rc = TSS_RC_INSUPPORTED_INTERFACE;	
