@@ -46,16 +46,49 @@ echo ""
 echo "Test RSA"
 echo ""
 
-for BITS in 2048 3072
-do
+# mbedtls (actually only certain versions) appears to only support the legacy PEM format
+# -----BEGIN RSA PRIVATE KEY-----
+# and not the PKCS8 format
+# -----BEGIN ENCRYPTED PRIVATE KEY-----
+#
 
-    echo "generate the RSA $BITS encryption key with openssl"
-    openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
+echo "generate the encryption key with openssl"
+if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 
-    echo "Convert key pair to plaintext DER format"
-    openssl rsa -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out 2>&1
+    for BITS in 2048 3072
+    do
 
-done
+	echo "gEnerate the RSA $BITS encryption key with openssl"
+	openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr ${BITS} > run.out 2>&1
+
+	echo "Convert key pair to plaintext DER format"
+	openssl rsa -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out 2>&1
+
+    done
+
+elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
+
+    for BITS in 2048 3072
+    do
+
+	echo "Generate the RSA $BITS encryption key with openssl"
+	openssl genrsa -out tmpkeypairrsaenc${BITS}.pem -aes256 -passout pass:rrrr ${BITS} > run.out 2>&1
+
+	echo "Convert RSA $BITS key pair to plaintext DER format"
+	openssl rsa -in tmpkeypairrsaenc${BITS}.pem -passin pass:rrrr -outform der -out tmpkeypairrsa${BITS}.der > run.out 2>&1
+
+	echo "Convert RSA $BITS key pair to plaintext PEM format"
+	openssl rsa -in tmpkeypairrsaenc${BITS}.pem -passin pass:rrrr -out tmpkeypairrsadec${BITS}.pem > run.out 2>&1
+
+	echo "Convert RSA $BITS encryption key pair to legacy PEM format"
+	openssl rsa -aes128 -in tmpkeypairrsadec${BITS}.pem -out tmpkeypairrsa${BITS}.pem -passout pass:rrrr > run.out 2>&1
+
+    done
+
+else
+    echo "Error: crypto library ${CRYPTOLIBRARY} not supported"
+    exit 255
+fi
 
 echo ""
 echo "RSA decryption key"
@@ -336,10 +369,13 @@ rm -f deepub.bin
 rm -f tmpmsg.bin
 rm -f tmpdig.bin
 rm -f tmpsig.bin
-rm -f tmpkeypairrsa2048.der
-rm -f tmpkeypairrsa2048.pem
-rm -f tmpkeypairrsa3072.der
-rm -f tmpkeypairrsa3072.pem
+for BITS in 2048 3072
+do
+    rm -f tmpkeypairrsa${BITS}.der
+    rm -f tmpkeypairrsa${BITS}.pem
+    rm -f tmpkeypairrsaenc${BITS}.pem
+    rm -f tmpkeypairrsadec${BITS}.pem
+done
 rm -f tmppubkey.bin
 rm -f tmppubkey.pem
 rm -f tmpprivkey.bin 

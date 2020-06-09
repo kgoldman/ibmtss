@@ -95,8 +95,6 @@ echo "Flush the signing key"
 ${PREFIX}flushcontext -ha 80000002 > run.out
 checkSuccess $?
 
-echo "xxxx"
-
 # The low EK certificates remain in NV at the end of the test.  This
 # makes the test, when run stand alone, useful for provisioning a TPM.
 # It is not useful when the entire regression test runs, because a

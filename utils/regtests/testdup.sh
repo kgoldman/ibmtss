@@ -213,8 +213,24 @@ echo ""
 echo "Import PEM RSA signing key under RSA and ECC storage key"
 echo ""
 
-echo "generate the signing key with openssl"
-openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
+if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
+    echo "generate the RSA signing key with openssl"
+    openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
+
+elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
+    echo "Generate the RSA signing  key with openssl"
+    openssl genrsa -out tmpprivkeyenc.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
+
+    echo "Convert RSA key pair to plaintext PEM format"
+    openssl rsa -in tmpprivkeyenc.pem -passin pass:rrrr -out tmpprivkeydec.pem > run.out 2>&1
+
+    echo "Convert RSA key pair to legacy PEM format"
+    openssl rsa -aes128 -in tmpprivkeydec.pem -out tmpprivkey.pem -passout pass:rrrr > run.out 2>&1
+
+else
+    echo "Error: crypto library ${CRYPTOLIBRARY} not supported"
+    exit 255
+fi
 
 echo "load the ECC storage key 80000001"
 ${PREFIX}load -hp 80000000 -pwdp sto -ipr storeeccnistp256priv.bin -ipu storeeccnistp256pub.bin > run.out
@@ -627,6 +643,8 @@ rm -f tmpsdbdup.bin
 rm -f tmpss.bin
 rm -f tmpsdbpriv.bin
 rm -f tmpaeskeytgt.bin
+rm -f tmpprivkeyenc.pem
+rm -f tmpprivkeydec.pem
 
 # ${PREFIX}flushcontext -ha 80000001
 # ${PREFIX}flushcontext -ha 80000002
