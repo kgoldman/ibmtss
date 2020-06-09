@@ -279,7 +279,7 @@ static uint32_t TSS_Socket_Open(TSS_CONTEXT *tssContext, short port)
     struct hostent 	*host = NULL;
 
     if (tssVverbose) printf("TSS_Socket_Open: Opening %s:%hu-%s\n",
-			    tssContext->tssServerName, port, tssContext->tssServerType);
+			    tssContext->tssServerName, (unsigned short)port, tssContext->tssServerType);
     /* create a socket */
 #ifdef TPM_WINDOWS
     if ((irc = WSAStartup(0x202, &wsaData)) != 0) {		/* if not successful */
@@ -319,8 +319,8 @@ static uint32_t TSS_Socket_Open(TSS_CONTEXT *tssContext, short port)
     /* establish the connection to the TPM server */
 #ifdef TPM_POSIX
     if (connect(tssContext->sock_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-	if (tssVerbose) printf("TSS_Socket_Open: Error on connect to %s:%u\n",
-			       tssContext->tssServerName, port);
+	if (tssVerbose) printf("TSS_Socket_Open: Error on connect to %s:%hu\n",
+			       tssContext->tssServerName, (unsigned short)port);
 	if (tssVerbose) printf("TSS_Socket_Open: client connect: error %d %s\n",
 			       errno,strerror(errno));
 	return TSS_RC_NO_CONNECTION;
@@ -330,8 +330,8 @@ static uint32_t TSS_Socket_Open(TSS_CONTEXT *tssContext, short port)
     if (connect(tssContext->sock_fd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) != 0) {
 	if (tssVerbose) {
 	    int err;
-	    printf("TSS_Socket_Open: Error on connect to %s:%u\n",
-			       tssContext->tssServerName, port);
+	    printf("TSS_Socket_Open: Error on connect to %s:%hu\n",
+		   tssContext->tssServerName, (unsigned short)port);
 	    err = WSAGetLastError();
 	    printf("TSS_Socket_Open: client connect: error %d\n", err);
 	    TSS_Socket_PrintError(err);
