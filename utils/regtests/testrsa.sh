@@ -52,13 +52,13 @@ echo ""
 # -----BEGIN ENCRYPTED PRIVATE KEY-----
 #
 
-echo "generate the encryption key with openssl"
+echo "Generate the encryption key with openssl"
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 
     for BITS in 2048 3072
     do
 
-	echo "gEnerate the RSA $BITS encryption key with openssl"
+	echo "Generate the RSA $BITS encryption key with openssl"
 	openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr ${BITS} > run.out 2>&1
 
 	echo "Convert key pair to plaintext DER format"
@@ -208,6 +208,47 @@ done
 echo "Flush the session"
 ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
+
+echo ""
+echo "Import PEM RSA encryption key userWithAuth test"
+echo ""
+
+echo "Import the RSA 2048 encryption key under the primary key 80000000"
+${PREFIX}importpem -hp 80000000 -den -pwdp sto -ipem tmpkeypairrsa2048.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin > run.out
+checkSuccess $?
+
+echo "Load the RSA 2048 encryption key 80000001"
+${PREFIX}load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+checkSuccess $?
+
+echo "RSA encrypt with the encryption key"
+${PREFIX}rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+checkSuccess $?
+
+echo "RSA decrypt with the decryption key and password"
+${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
+checkSuccess $?
+
+echo "Flush the encryption key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "Import the RSA 2048 encryption key under the primary key, userWithAuth false"
+${PREFIX}importpem -hp 80000000 -si -pwdp sto -ipem tmpkeypairrsa2048.pem -pwdk rrrr -uwa -opu tmppub.bin -opr tmppriv.bin > run.out
+checkSuccess $?
+
+echo "Load the RSA 2048 encryption key"
+${PREFIX}load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+checkSuccess $?
+
+echo "RSA decrypt with the decryption key and password - should fail"
+${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
+checkFailure $?
+
+echo "Flush the encryption key"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
 
 echo ""
 echo "Loadexternal DER encryption key"

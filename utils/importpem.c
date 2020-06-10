@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2019					*/
+/* (c) Copyright IBM Corporation 2016 - 2020					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
     const char			*parentPassword = NULL;
     const char			*pemKeyFilename = NULL;
     const char			*pemKeyPassword = "";	/* default empty password */
+    int                         userWithAuth = TRUE;
     const char			*outPublicFilename = NULL;
     const char			*outPrivateFilename = NULL;
     const char			*policyFilename = NULL;
@@ -178,6 +179,9 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+	else if (strcmp(argv[i], "-uwa") == 0) {
+            userWithAuth = FALSE;
+        }
 	else if (strcmp(argv[i],"-opu") == 0) {
 	    i++;
 	    if (i < argc) {
@@ -394,6 +398,9 @@ int main(int argc, char *argv[])
     /* instantiate optional policy */
     if (rc == 0) {
 	rc = getPolicy(&in.objectPublic.publicArea, policyFilename);
+        if (!userWithAuth) {
+            in.objectPublic.publicArea.objectAttributes.val &= ~TPMA_OBJECT_USERWITHAUTH;
+        }
     }
     /* Start a TSS context */
     if (rc == 0) {
@@ -468,6 +475,7 @@ static void printUsage(void)
     printf("\t[-st\tstorage (NULL scheme)]\n");
     printf("\t[-den\tdecryption, (unrestricted, RSA and ECC NULL scheme)\n");
     printf("\t[-pwdk\tpassword for key (default empty)]\n");
+    printf("\t[-uwa\tuserWithAuth attribute clear (default set)]\n");
     printf("\t-opu\tpublic area file name\n");
     printf("\t-opr\tprivate area file name\n");
     printf("\t[-nalg\tname hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
