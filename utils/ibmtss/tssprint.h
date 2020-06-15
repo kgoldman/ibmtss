@@ -87,6 +87,8 @@ extern "C" {
     LIB_EXPORT
     void TSS_TPMS_TAGGED_POLICY_Print(TPMS_TAGGED_POLICY *source, unsigned int indent);
     LIB_EXPORT
+    void TSS_TPMS_ACT_DATA_Print(TPMS_ACT_DATA *source, unsigned int indent);
+    LIB_EXPORT
     void TSS_TPM_CC_Print(const char *string, TPM_CC source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPM_TPMA_ALGORITHM_Print(TPMA_ALGORITHM source, unsigned int indent);
@@ -120,6 +122,8 @@ extern "C" {
     void TSS_TPMA_MEMORY_Print(TPMA_MEMORY source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMA_MODES_Print(TPMA_MODES source, unsigned int indent);
+    LIB_EXPORT
+    void TSS_TPMA_ACT_Print(TPMA_ACT source, unsigned int indent);
     LIB_EXPORT
     void TSS_TPMI_YES_NO_Print(const char *string, TPMI_YES_NO source, unsigned int indent);
     LIB_EXPORT

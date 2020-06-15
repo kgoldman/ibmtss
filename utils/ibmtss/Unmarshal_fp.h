@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2019				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2020				*/
 /*										*/
 /********************************************************************************/
 
@@ -126,6 +126,8 @@ extern "C" {
     TSS_TPMA_LOCALITY_Unmarshalu(TPMA_LOCALITY *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TSS_TPMA_CC_Unmarshalu(TPMA_CC *target, BYTE **buffer, uint32_t *size);
+    LIB_EXPORT TPM_RC
+    TSS_TPMA_ACT_Unmarshalu(TPMA_ACT *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TSS_TPMI_YES_NO_Unmarshalu(TPMI_YES_NO *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
@@ -241,6 +243,8 @@ extern "C" {
     LIB_EXPORT TPM_RC
     TSS_TPMS_TAGGED_POLICY_Unmarshalu(TPMS_TAGGED_POLICY *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
+    TSS_TPMS_ACT_DATA_Unmarshalu(TPMS_ACT_DATA *target, BYTE **buffer, uint32_t *size);
+    LIB_EXPORT TPM_RC
     TSS_TPML_CCA_Unmarshalu(TPML_CCA *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TSS_TPML_ALG_Unmarshalu(TPML_ALG *target, BYTE **buffer, uint32_t *size);
@@ -262,6 +266,8 @@ extern "C" {
     TSS_TPML_ECC_CURVE_Unmarshalu(TPML_ECC_CURVE *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TSS_TPML_TAGGED_POLICY_Unmarshalu(TPML_TAGGED_POLICY *target, BYTE **buffer, uint32_t *size);
+    LIB_EXPORT TPM_RC
+    TSS_TPML_ACT_DATA_Unmarshalu(TPML_ACT_DATA *target, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
     TSS_TPMU_CAPABILITIES_Unmarshalu(TPMU_CAPABILITIES *target, BYTE **buffer, uint32_t *size, UINT32 selector);
     LIB_EXPORT TPM_RC

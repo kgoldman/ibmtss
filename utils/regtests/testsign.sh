@@ -412,8 +412,10 @@ rm -f tmpkeypairrsa2048.pem
 rm -f tmpkeypairrsa2048.der
 rm -f tmpkeypairrsa3072.pem
 rm -f tmpkeypairrsa3072.der
-rm -f tmpkeypairecc.pem
-rm -f tmpkeypairecc.der
+rm -f tmpkeypaireccnistp256.pem
+rm -f tmpkeypaireccnistp256.der
+rm -f tmpkeypaireccnistp384.pem
+rm -f tmpkeypaireccnistp384.der
 rm -r pssig.bin
 rm -r tmppub.bin
 rm -r tmppub.pem

@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019					*/
+/* (c) Copyright IBM Corporation 2015 - 2020					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -544,6 +544,19 @@ TSS_TPMA_CC_Unmarshalu(TPMA_CC *target, BYTE **buffer, uint32_t *size)
 	if (target->val & TPMA_CC_RESERVED) {
 	    rc = TPM_RC_RESERVED_BITS;
 	}
+    }
+    return rc;
+}
+
+/* Table 40 - Definition of (UINT32) TPMA_ACT Bits */
+
+TPM_RC
+TSS_TPMA_ACT_Unmarshalu(TPMA_ACT *target, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_UINT32_Unmarshalu(target, buffer, size);
     }
     return rc;
 }
@@ -1587,6 +1600,23 @@ TSS_TPMS_TAGGED_POLICY_Unmarshalu(TPMS_TAGGED_POLICY *target, BYTE **buffer, uin
     return rc;
 }
 
+TPM_RC
+TSS_TPMS_ACT_DATA_Unmarshalu(TPMS_ACT_DATA *target, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM_HANDLE_Unmarshalu(&target->handle, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_UINT32_Unmarshalu(&target->timeout, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPMA_ACT_Unmarshalu(&target->attributes, buffer, size);
+    }
+    return rc;
+}
+
 /* Table 95 - Definition of TPML_CC Structure */
 
 TPM_RC
@@ -1860,6 +1890,28 @@ TSS_TPML_TAGGED_POLICY_Unmarshalu(TPML_TAGGED_POLICY *target, BYTE **buffer, uin
     return rc;	
 }
 
+/* Table 112 - Definition of TPML_ACT_DATA Structure <OUT> */
+
+TPM_RC
+TSS_TPML_ACT_DATA_Unmarshalu(TPML_ACT_DATA *target, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+
+    uint32_t i;  
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_UINT32_Unmarshalu(&target->count, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	if (target->count > MAX_ACT_DATA) {
+	    rc = TPM_RC_SIZE;
+	}
+    }
+    for (i = 0 ; (rc == TPM_RC_SUCCESS) && (i < target->count) ; i++) {
+	rc = TSS_TPMS_ACT_DATA_Unmarshalu(&target->actData[i], buffer, size);
+    }
+    return rc;	
+}
+
 /* Table 107 - Definition of TPMU_CAPABILITIES Union <OUT> */
 
 TPM_RC
@@ -1897,6 +1949,9 @@ TSS_TPMU_CAPABILITIES_Unmarshalu(TPMU_CAPABILITIES *target, BYTE **buffer, uint3
 	break;
       case TPM_CAP_AUTH_POLICIES:
 	rc = TSS_TPML_TAGGED_POLICY_Unmarshalu(&target->authPolicies, buffer, size);
+	break;
+      case TPM_CAP_ACT:
+	rc = TSS_TPML_ACT_DATA_Unmarshalu(&target->actData, buffer, size);
 	break;
       default:
 	rc = TPM_RC_SELECTOR;

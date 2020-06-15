@@ -260,6 +260,7 @@ static void usageTpmProperties(void);
 static void usagePcrProperties(void);
 static void usageEccCurves(void);
 static void usageAuthPolicies(void);
+static void usageAct(void);
 
 static TPM_RC responseCapability(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
 static TPM_RC responseAlgs(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
@@ -272,6 +273,7 @@ static TPM_RC responseTpmProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32
 static TPM_RC responsePcrProperties(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
 static TPM_RC responseEccCurves(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
 static TPM_RC responseAuthPolicies(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
+static TPM_RC responseAct(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property);
 
 static const CAPABILITY_TABLE capabilityTable [] = {
     {TPM_CAP_LAST + 1, usageCapability, responseCapability}, 
@@ -284,7 +286,8 @@ static const CAPABILITY_TABLE capabilityTable [] = {
     {TPM_CAP_TPM_PROPERTIES, usageTpmProperties, responseTpmProperties},      
     {TPM_CAP_PCR_PROPERTIES, usagePcrProperties, responsePcrProperties},      
     {TPM_CAP_ECC_CURVES, usageEccCurves, responseEccCurves},          
-    {TPM_CAP_AUTH_POLICIES, usageAuthPolicies, responseAuthPolicies}          
+    {TPM_CAP_AUTH_POLICIES, usageAuthPolicies, responseAuthPolicies},
+    {TPM_CAP_ACT, usageAct, responseAct}
 };
 
 static TPM_RC printResponse(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property)
@@ -698,6 +701,20 @@ static TPM_RC responseAuthPolicies(TPMS_CAPABILITY_DATA *capabilityData, uint32_
     return rc;
 }
 
+static TPM_RC responseAct(TPMS_CAPABILITY_DATA *capabilityData, uint32_t property)
+{
+    TPM_RC	rc = 0;
+    uint32_t	count;
+    TPML_ACT_DATA *actData = (TPML_ACT_DATA *)&(capabilityData->data);
+    property = property;
+
+    printf("%u actData\n", actData->count);
+    for (count = 0 ; count < actData->count ; count++) {
+	TSS_TPMS_ACT_DATA_Print(&actData->actData[count], 4);
+    }
+    return rc;
+}
+
 static void printUsage(TPM_CAP capability)
 {
     size_t i;
@@ -742,6 +759,7 @@ static void usageCapability(void)
 	   "\t\tTPM_CAP_PCR_PROPERTIES      7\n"
 	   "\t\tTPM_CAP_ECC_CURVES          8\n"
 	   "\t\tTPM_CAP_AUTH_POLICIES       9\n"
+	   "\t\tTPM_CAP_ACT		    a\n"
 	   );
     return;
 }
@@ -815,5 +833,11 @@ static void usageEccCurves(void)
 static void usageAuthPolicies(void)
 {
     printf("TPM_CAP_AUTH_POLICIES -pr is the first handle in range 40000000\n");
+    return;
+}
+
+static void usageAct(void)
+{
+    printf("TPM_CAP_ACT -pr is the first handle in range 40000110\n");
     return;
 }

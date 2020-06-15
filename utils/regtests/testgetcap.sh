@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2019                                            #
+# (c) Copyright IBM Corporation 2019 - 2020                                     #
 # 										#
 # All rights reserved.								#
 # 										#
@@ -118,8 +118,10 @@ checkSuccess $?
 				  
 echo "Get Capability TPM_CAP_AUTH_POLICIES"
 ${PREFIX}getcapability -cap 9 -pr 40000000 > run.out
-checkSuccess $?			  
-				  
+checkSuccess $?
 
+echo "Get Capability TPM_CAP_ACT"
+${PREFIX}getcapability -cap a -pr 40000110 > run.out
+checkSuccess $?
 
 

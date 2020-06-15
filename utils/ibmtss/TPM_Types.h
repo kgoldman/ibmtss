@@ -121,7 +121,8 @@ extern "C" {
 #define    MAX_PCR_PROPERTIES   (MAX_CAP_DATA/sizeof(TPMS_TAGGED_PCR_SELECT))
 #define    MAX_ECC_CURVES       (MAX_CAP_DATA/sizeof(TPM_ECC_CURVE))
 #define    MAX_TAGGED_POLICIES  (MAX_CAP_DATA/sizeof(TPMS_TAGGED_POLICY))
-    
+#define    MAX_ACT_DATA       	(MAX_CAP_DATA/sizeof(TPMS_ACT_DATA))
+ 
 /* Table 5 - Definition of Types for Documentation Clarity */
 
 typedef UINT32	TPM_ALGORITHM_ID; 	/* this is the 1.2 compatible form of the TPM_ALG_ID */
@@ -453,8 +454,9 @@ typedef UINT32 TPM_CAP;
 #define TPM_CAP_TPM_PROPERTIES	0x00000006	/* TPM_PT		TPML_TAGGED_TPM_PROPERTY	*/
 #define TPM_CAP_PCR_PROPERTIES	0x00000007	/* TPM_PT_PCR		TPML_TAGGED_PCR_PROPERTY	*/
 #define TPM_CAP_ECC_CURVES	0x00000008	/* TPM_ECC_CURVE(1)	TPML_ECC_CURVE		*/
-#define TPM_CAP_AUTH_POLICIES	0x00000009	/* 			TPML_TAGGED_POLICY 	*/
-#define TPM_CAP_LAST		0x00000009	/* */		
+#define TPM_CAP_AUTH_POLICIES	0x00000009	/* TPM_HANDLE		TPML_TAGGED_POLICY 	*/
+#define TPM_CAP_ACT		0x0000000a	/* TPM_HANDLE		TPML_ACT_DATA 		*/
+#define TPM_CAP_LAST		0x0000000a	/* */
 #define TPM_CAP_VENDOR_PROPERTY	0x00000100	/* manufacturer specific	manufacturer-specific values */
 
 /* Table 23 - Definition of (UINT32) TPM_PT Constants <IN/OUT, S> */
@@ -1226,7 +1228,13 @@ typedef union {
 #endif
 
 #define TPMA_MODES_FIPS_140_2	 0x00000001
-    
+
+/* Table 40 - Definition of (UINT32) TPMA_ACT Bits */
+
+typedef UINT32 TPMA_ACT;
+#define TPMA_ACT_SIGNALED		0x00000001
+#define TPMA_ACT_PRESERVE_SIGNALED	0x00000002
+
 /* Table 38 - Definition of (BYTE) TPMI_YES_NO Type */
 
 typedef BYTE TPMI_YES_NO;
@@ -1607,6 +1615,14 @@ typedef struct {
     TPMT_HA                 policyHash;
 } TPMS_TAGGED_POLICY;
 
+/* Tablee 105 - Definition of TPMS_ACT_DATA Structure <OUT> */
+
+typedef struct {
+    TPM_HANDLE		handle;
+    UINT32 		timeout;
+    TPMA_ACT		attributes;
+} TPMS_ACT_DATA;
+
 /* Table 94 - Definition of TPML_CC Structure */
 
 typedef struct {
@@ -1694,9 +1710,16 @@ typedef struct {
 /* Table 109 - Definition of TPML_TAGGED_POLICY Structure */
 
 typedef struct {
-    UINT32                  count;
-    TPMS_TAGGED_POLICY      policies[MAX_TAGGED_POLICIES];
+    UINT32                  count;	/* number of tagged policies. A value of zero is allowed. */
+    TPMS_TAGGED_POLICY      policies[MAX_TAGGED_POLICIES];	/* array of tagged policies */
 } TPML_TAGGED_POLICY;
+
+/* Table 118 - Definition of TPML_ACT_DATA Structure <OUT> */
+
+typedef struct {
+    UINT32		count;				/* number of ACT instances */
+    TPMS_ACT_DATA	actData[MAX_ACT_DATA];		/* array of ACT data */
+} TPML_ACT_DATA;
 
 /* Table 106 - Definition of TPMU_CAPABILITIES Union <OUT> */
 
@@ -1711,6 +1734,7 @@ typedef union {
     TPML_TAGGED_PCR_PROPERTY	pcrProperties;	/* TPM_CAP_PCR_PROPERTIES */
     TPML_ECC_CURVE		eccCurves;	/* TPM_CAP_ECC_CURVES */
     TPML_TAGGED_POLICY		authPolicies;	/* TPM_CAP_AUTH_POLICIES */
+    TPML_ACT_DATA		actData;	/* TPM_CAP_ACT */
 } TPMU_CAPABILITIES;
     
 /* Table 107 - Definition of TPMS_CAPABILITY_DATA Structure <OUT> */

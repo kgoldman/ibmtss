@@ -336,6 +336,16 @@ void TSS_TPMS_TAGGED_POLICY_Print(TPMS_TAGGED_POLICY *source, unsigned int inden
     return;
 }
 
+/* Table 105 - Definition of TPMS_ACT_DATA Structure <OUT> */
+
+void TSS_TPMS_ACT_DATA_Print(TPMS_ACT_DATA *source, unsigned int indent)
+{
+    TSS_TPM_HANDLE_Print("handle", source->handle, indent);
+    printf("%*s" "TPMS_ACT_DATA timeout %u sec\n", indent, "", source->timeout);
+    TSS_TPMA_ACT_Print(source->attributes, indent);
+    return;
+}
+
 /* Table 12 - Definition of (UINT32) TPM_CC Constants (Numeric Order) <IN/OUT, S> */
 
 void TSS_TPM_CC_Print(const char *string, TPM_CC source, unsigned int indent)
@@ -1108,6 +1118,17 @@ void TSS_TPMA_MODES_Print(TPMA_MODES source, unsigned int indent)
 {
     printf("%*s" "TPMA_MODES: TPMA_MODES_FIPS_140_2 %s\n", indent, "",
 	   (source.val & TPMA_MODES_FIPS_140_2) ? "yes" : "no");
+    return;
+}
+
+/* Table 38 - Definition of (UINT32) TPMA_ACT Bits <Out> */
+
+void TSS_TPMA_ACT_Print(TPMA_ACT source, unsigned int indent)
+{
+    printf("%*s" "TPMA_ACT: TPMA_ACT_SIGNALED %s\n", indent, "",
+	   (source & TPMA_ACT_SIGNALED) ? "set" : "clear");
+    printf("%*s" "TPMA_ACT: TPMA_ACT_PRESERVE_SIGNALED %s\n", indent, "",
+	   (source & TPMA_ACT_PRESERVE_SIGNALED) ? "set" : "clear");
     return;
 }
 
