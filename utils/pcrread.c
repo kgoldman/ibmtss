@@ -422,7 +422,7 @@ static void printUsage(void)
     printf("Runs TPM2_PCR_Read\n");
     printf("\n");
     printf("\t-ha\tpcr handle\n");
-    printf("\t-halg\t(sha1, sha256, sha384, sha512) (default sha256)\n");
+    printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t\t-halg may be specified more than once\n");
     printf("\t[-of\tdata file for first algorithm specified, in binary]\n");
     printf("\t[-ahalg\t to extend session audit digest for testing (sha1, sha256, sha384, sha512) (default sha256)]\n");

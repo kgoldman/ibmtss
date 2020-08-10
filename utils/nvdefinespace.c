@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -62,7 +62,10 @@ int main(int argc, char *argv[])
     int				i;    /* argc iterator */
     TSS_CONTEXT			*tssContext = NULL;
     NV_DefineSpace_In 		in;
+    /* hierarchy that the index is created in, platform or owner */
     char 			hierarchyChar = 0;
+    /* index authorization attributes, owner r/w, platform r/w, index r/w.  The values set here can
+       be overridden, set or cleared, individually */
     char 			hierarchyAuthChar = '\0';
     TPMI_ALG_HASH		nalg = TPM_ALG_SHA256;
     unsigned int		hashSize = SHA256_DIGEST_SIZE;
