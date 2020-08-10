@@ -461,12 +461,12 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
     int         irc;
     RSA         *rsa_pub_key = NULL;
     unsigned char *padded_data = NULL;
-    
+ 
     if (tssVverbose) printf(" TSS_RSAPublicEncrypt: Input data size %lu\n",
 			    (unsigned long)decrypt_data_size);
     /* intermediate buffer for the decrypted but still padded data */
     if (rc == 0) {
-        rc = TSS_Malloc(&padded_data, encrypt_data_size);               /* freed @2 */
+        rc = TSS_Malloc(&padded_data, (uint32_t)encrypt_data_size);               /* freed @2 */
     }
     /* construct the OpenSSL public key object */
     if (rc == 0) {
@@ -478,10 +478,10 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
     }
     if (rc == 0) {
 	padded_data[0] = 0x00;
-	rc = TSS_RSA_padding_add_PKCS1_OAEP(padded_data,		/* to */
-					    encrypt_data_size,		/* to length */
-					    decrypt_data,		/* from */
-					    decrypt_data_size,		/* from length */
+	rc = TSS_RSA_padding_add_PKCS1_OAEP(padded_data,		    /* to */
+					    (uint32_t)encrypt_data_size,    /* to length */
+					    decrypt_data,		    /* from */
+					    (uint32_t)decrypt_data_size,    /* from length */
 					    p,		/* encoding parameter */
 					    pl,		/* encoding parameter length */
 					    halg);	/* OAEP hash algorithm */
@@ -491,11 +491,11 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
 	    printf("  TSS_RSAPublicEncrypt: Padded data size %lu\n",
 		   (unsigned long)encrypt_data_size);
         if (tssVverbose) TSS_PrintAll("  TPM_RSAPublicEncrypt: Padded data", padded_data,
-				      encrypt_data_size);
+				      (uint32_t)encrypt_data_size);
         /* encrypt with public key.  Must pad first and then encrypt because the encrypt
            call cannot specify an encoding parameter */
 	/* returns the size of the encrypted data.  On error, -1 is returned */
-	irc = RSA_public_encrypt(encrypt_data_size,         /* from length */
+	irc = RSA_public_encrypt((int)encrypt_data_size,         /* from length */
 				 padded_data,               /* from - the clear text data */
 				 encrypt_data,              /* the padded and encrypted data */
 				 rsa_pub_key,               /* key */

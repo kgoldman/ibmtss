@@ -149,10 +149,10 @@ static TPM_RC TSS_Context_Init(TSS_CONTEXT *tssContext)
 	rc = TSS_AES_GetDecKeySize(&tssSessionDecKeySize);
     }
     if (rc == 0) {
-        rc = TSS_Malloc((uint8_t **)&tssContext->tssSessionEncKey, tssSessionEncKeySize);
+        rc = TSS_Malloc((uint8_t **)&tssContext->tssSessionEncKey, (uint32_t)tssSessionEncKeySize);
     }
     if (rc == 0) {
-        rc = TSS_Malloc((uint8_t **)&tssContext->tssSessionDecKey, tssSessionDecKeySize);
+        rc = TSS_Malloc((uint8_t **)&tssContext->tssSessionDecKey, (uint32_t)tssSessionDecKeySize);
     }
     /* build the session encryption and decryption keys */
     if (rc == 0) {

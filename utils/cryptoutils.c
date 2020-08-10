@@ -384,8 +384,9 @@ TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
     if (rc == 0) {
 	/* TPM rev 116 required the ECC private key to be zero padded in the duplicate parameter of
 	   import */
-	memset(*privateKeyBin, 0, *privateKeyBytes - bnBytes);
-	BN_bn2bin(privateKeyBn, (*privateKeyBin) + (*privateKeyBytes - bnBytes));
+	size_t padSize = (size_t)(*privateKeyBytes) - (size_t)bnBytes;
+	memset(*privateKeyBin, 0, padSize);
+	BN_bn2bin(privateKeyBn, (*privateKeyBin) + padSize);
 	if (tssUtilsVerbose) TSS_PrintAll("convertEcKeyToPrivateKeyBin:", *privateKeyBin, *privateKeyBytes);
     }
     return rc;
@@ -449,12 +450,12 @@ TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
 	}
     }
     /* get the public modulus */
-    if (rc == 0) {   
-	*modulusBytes = EC_POINT_point2oct(ecGroup, ecPoint,
-					   POINT_CONVERSION_UNCOMPRESSED,
-					   NULL, 0, NULL);
+    if (rc == 0) {
+	*modulusBytes = (int)EC_POINT_point2oct(ecGroup, ecPoint,
+						POINT_CONVERSION_UNCOMPRESSED,
+						NULL, 0, NULL);
     }
-    if (rc == 0) {   
+    if (rc == 0) {
 	rc = TSS_Malloc(modulusBin, *modulusBytes);
     }
     if (rc == 0) {
@@ -1143,10 +1144,10 @@ TPM_RC convertEcDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 	rc = TSS_File_ReadBinaryFile(&derBuffer,     	/* freed @1 */
 				     &derSize,
 				     derKeyFilename); 
-    }    
+    }
     if (rc == 0) {
 	const unsigned char *tmpPtr = derBuffer;	/* because pointer moves */
-	ecKey = d2i_ECPrivateKey(NULL, &tmpPtr, derSize);	/* freed @2 */
+	ecKey = d2i_ECPrivateKey(NULL, &tmpPtr, (long)derSize);	/* freed @2 */
 	if (ecKey == NULL) {
 	    printf("convertEcDerToKeyPair: could not convert key to EC_KEY\n");
 	    rc = TPM_RC_VALUE;
@@ -1196,10 +1197,10 @@ TPM_RC convertEcDerToPublic(TPM2B_PUBLIC 		*objectPublic,
 	rc = TSS_File_ReadBinaryFile(&derBuffer,     	/* freed @1 */
 				     &derSize,
 				     derKeyFilename); 
-    }    
+    }
     if (rc == 0) {
 	const unsigned char *tmpPtr = derBuffer;	/* because pointer moves */
-	evpPkey = d2i_PUBKEY(NULL, &tmpPtr, derSize);	/* freed @2 */
+	evpPkey = d2i_PUBKEY(NULL, &tmpPtr, (long)derSize);	/* freed @2 */
 	if (evpPkey == NULL) {
 	    printf("convertEcDerToPublic: could not convert key to EVP_PKEY\n");
 	    rc = TPM_RC_VALUE;
@@ -1259,10 +1260,10 @@ TPM_RC convertRsaDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 	rc = TSS_File_ReadBinaryFile(&derBuffer,     	/* freed @1 */
 				     &derSize,
 				     derKeyFilename); 
-    }    
+    }
     if (rc == 0) {
 	const unsigned char *tmpPtr = derBuffer;	/* because pointer moves */
-	rsaKey = d2i_RSAPrivateKey(NULL, &tmpPtr, derSize);	/* freed @2 */
+	rsaKey = d2i_RSAPrivateKey(NULL, &tmpPtr, (long)derSize);	/* freed @2 */
 	if (rsaKey == NULL) {
 	    printf("convertRsaDerToKeyPair: could not convert key to RSA\n");
 	    rc = TPM_RC_VALUE;
@@ -1309,10 +1310,10 @@ TPM_RC convertRsaDerToPublic(TPM2B_PUBLIC 		*objectPublic,
 	rc = TSS_File_ReadBinaryFile(&derBuffer,     	/* freed @1 */
 				     &derSize,
 				     derKeyFilename); 
-    }    
+    }
     if (rc == 0) {
 	const unsigned char *tmpPtr = derBuffer;	/* because pointer moves */
-	rsaKey = d2i_RSA_PUBKEY(NULL, &tmpPtr, derSize);	/* freed @2 */
+	rsaKey = d2i_RSA_PUBKEY(NULL, &tmpPtr, (long)derSize);	/* freed @2 */
 	if (rsaKey == NULL) {
 	    printf("convertRsaDerToPublic: could not convert key to RSA\n");
 	    rc = TPM_RC_VALUE;
@@ -1863,7 +1864,7 @@ TPM_RC signRSAFromRSA(uint8_t *signature, size_t *signatureLength,
     if (rc == 0) {
 	unsigned int siglen;
 	irc = RSA_sign(nid,
-		       digest, digestLength,
+		       digest, (unsigned int)digestLength,
 		       signature, &siglen,
 		       rsaKey);
 	*signatureLength = siglen;
@@ -2117,7 +2118,7 @@ TPM_RC convertEcBinToTSignature(TPMT_SIGNATURE *tSignature,
     }
     /* convert DER to ECDSA_SIG */
     if (rc == 0) {
-	ecSig = d2i_ECDSA_SIG(NULL, &signatureBin, signatureBinLen);	/* freed @1 */
+	ecSig = d2i_ECDSA_SIG(NULL, &signatureBin, (long)signatureBinLen);	/* freed @1 */
 	if (ecSig == NULL) {
 	    printf("convertEcBinToTSignature: could not convert signature to ECDSA_SIG\n");
 	    rc = TPM_RC_VALUE;

@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -238,9 +238,9 @@ int main(int argc, char *argv[])
     for (pcrCount = 0 ;
 	 (rc == 0) && (pcrCount < IMPLEMENTATION_PCR) && (inFile != NULL) ;
 	 pcrCount++) {
-	
+
 	char 		lineString[256];		/* returned line in hex ascii */
-	uint32_t	lineLength;			
+	size_t		lineLength;
 
 	if (rc == 0) {
 	    prc = fgets(lineString, sizeof(lineString), inFile);
@@ -262,11 +262,12 @@ int main(int argc, char *argv[])
 	    }
 	}
 	if (rc == 0) {
-	    if (lineLength != (sizeInBytes *2)) {
-		printf("Line length %u is not twice digest size %u\n", lineLength, sizeInBytes);
+	    if (lineLength != ((size_t)(sizeInBytes) *2)) {
+		printf("Line length %lu is not twice digest size %lu\n",
+		       (unsigned long)lineLength, (unsigned long)sizeInBytes);
 		rc = -1;
 	    }
-	}	
+	}
 	/* convert hex ascii to binary */ 
 	if ((rc == 0) && (prc != NULL)) {
 	    rc = Format_FromHexascii((uint8_t *)&pcr[pcrCount],

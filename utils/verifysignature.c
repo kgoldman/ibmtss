@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -336,7 +336,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	if (!raw) {
-	    uint32_t ilength = length;	/* values that can move during the unmarshal */
+	    uint32_t ilength = (uint32_t)length;	/* values that can move during the unmarshal */
 	    buffer1 = buffer;
 	    /* input is TPMT_SIGNATURE */
 	    rc = TSS_TPMT_SIGNATURE_Unmarshalu(&in.signature, &buffer1, &ilength, NO);

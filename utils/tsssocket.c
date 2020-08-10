@@ -288,7 +288,7 @@ static uint32_t TSS_Socket_Open(TSS_CONTEXT *tssContext, short port)
 	return TSS_RC_NO_CONNECTION;
     }
     if ((tssContext->sock_fd = socket(AF_INET,SOCK_STREAM, 0)) == INVALID_SOCKET) {
-	if (tssVerbose) printf("TSS_Socket_Open: client socket() error: %u\n", tssContext->sock_fd);
+	if (tssVerbose) printf("TSS_Socket_Open: client socket() error: %lu\n", (unsigned long)tssContext->sock_fd);
 	return TSS_RC_NO_CONNECTION;
     }
 #endif 
@@ -444,7 +444,7 @@ static uint32_t TSS_Socket_SendBytes(TSS_SOCKET_FD sock_fd, const uint8_t *buffe
 #endif
 #ifdef TPM_WINDOWS
 	/* cast for winsock.  Unix uses void * */
-	nwritten = send(sock_fd, (char *)(&buffer[offset]), nleft, 0);
+	nwritten = send(sock_fd, (char *)(&buffer[offset]), (int)nleft, 0);
 	if (nwritten == SOCKET_ERROR) {        /* error */
 	    if (tssVerbose) printf("TSS_Socket_SendBytes: write error %d\n", (int)nwritten);
 	    return TSS_RC_BAD_CONNECTION;

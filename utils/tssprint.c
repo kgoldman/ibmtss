@@ -81,10 +81,10 @@ uint32_t TSS_Array_Scan(unsigned char **data,	/* output binary, freed by caller 
     }
     if (rc == 0) {
 	*len = strLength / 2;		/* safe because already tested for even number of bytes */
-        rc = TSS_Malloc(data, (*len) + 8);
+        rc = TSS_Malloc(data, (uint32_t)(*len) + 8);
     }
     if (rc == 0) {
-	unsigned int i;
+	size_t i;
 	for (i = 0 ; i < *len ; i++) {
 	    unsigned int tmpint;
 	    int irc = sscanf(string + (2*i), "%2x", &tmpint);

@@ -1439,7 +1439,7 @@ uint32_t convertPemMemToX509(X509 **x509,		/* freed by caller */
     }
     /* write the PEM from memory to BIO */
     if (rc == 0) {
-	pemLength = strlen(pemCertificate);
+	pemLength = (int)strlen(pemCertificate);
 	writeLen = BIO_write(bio, pemCertificate, pemLength);
 	if (writeLen != pemLength) {
 	    printf("convertPemMemToX509: BIO_write failed\n");  
@@ -1536,7 +1536,7 @@ TPM_RC convertX509ToPemMem(char **pemString,	/* freed by caller */
     }
     if (rc == 0) {
 	length = BIO_get_mem_data(bio, &data);
-	*pemString = malloc(length+1);
+	*pemString = malloc((size_t)(length)+1);
 	if (*pemString == NULL) {
 	    printf("ERROR: convertX509ToPemMem: Cannot malloc %lu\n", length);  
 	    rc = TSS_RC_OUT_OF_MEMORY;
@@ -1587,9 +1587,9 @@ TPM_RC convertX509ToString(char **x509String,	/* freed by caller */
     }
     if (rc == 0) {
 	length = BIO_get_mem_data(bio, &data);
-	*x509String = malloc(length+1);
+	*x509String = malloc((size_t)length+1);
 	if (*x509String == NULL) {
-	    printf("convertX509ToString: Cannot malloc %lu\n", length);  
+	    printf("convertX509ToString: Cannot malloc %lu\n", length);
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
 	else {

@@ -410,8 +410,8 @@ TSS_RESULT socketRead(SOCKET accept_fd,		/* read/write file descriptor */
     if (rc == 0) {
 	headerSize = sizeof(TPM_TAG) + sizeof(uint32_t);	
 	if (bufferSize < headerSize) {
-	    printf("socketRead: Error, buffer size %u less than minimum %u\n",
-		   bufferSize, headerSize);
+	    printf("socketRead: Error, buffer size %lu less than minimum %lu\n",
+		   (unsigned long)bufferSize, (unsigned long)headerSize);
 	    rc = ERROR_CODE;
 	}
     }
@@ -424,8 +424,8 @@ TSS_RESULT socketRead(SOCKET accept_fd,		/* read/write file descriptor */
 	paramSize = LOAD32(buffer, headerSize - sizeof(uint32_t));
 	*bufferLength = headerSize + paramSize - (sizeof(TPM_TAG) + sizeof(uint32_t));
 	if (bufferSize < *bufferLength) {
-	    printf("socketRead: Error, buffer size %u is less than required %u\n",
-		   bufferSize, *bufferLength);
+	    printf("socketRead: Error, buffer size %lu is less than required %u\n",
+		   (unsigned long)bufferSize, *bufferLength);
 	    rc = ERROR_CODE;
 	}
     }
@@ -458,7 +458,7 @@ TSS_RESULT socketReadBytes(SOCKET accept_fd,	/* read/write file descriptor */
 	}
     }
     while ((rc == 0) && (nleft > 0)) {
-	nread = recv(accept_fd, buffer, nleft, 0);
+	nread = recv(accept_fd, buffer, (int)nleft, 0);
 	if ((nread == SOCKET_ERROR) ||
 	    (nread < 0)) {       		/* error */
 	    printf("socketReadBytes: Error, read() error\n");
@@ -471,7 +471,7 @@ TSS_RESULT socketReadBytes(SOCKET accept_fd,	/* read/write file descriptor */
 	    buffer += nread;
 	}	    
 	else if (nread == 0) {  	/* EOF */
-	    printf("socketReadBytes: Error, read EOF, read %u bytes\n", nbytes - nleft);
+	    printf("socketReadBytes: Error, read EOF, read %lu bytes\n", (unsigned long)(nbytes - nleft));
             rc = ERROR_CODE;
 	}
     }
@@ -500,7 +500,7 @@ TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
     if (serverType == SERVER_TYPE_MSSIM) {
 	/* prepend the leading size */
 	if (rc == 0) {
-	    uint32_t bufferLengthNbo = htonl(buffer_length);
+	    uint32_t bufferLengthNbo = htonl((uint32_t)buffer_length);
 	    send(accept_fd, (const char *)&bufferLengthNbo, sizeof(uint32_t), 0);
 	}	
     }
@@ -508,12 +508,12 @@ TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
     if (rc == 0) {
 	if (accept_fd == SOCKET_ERROR) {
 	    printf("socketWrite: Error, connection not open, fd %d\n",
-		   accept_fd);
+		   (int)accept_fd);
 	    rc = ERROR_CODE;
 	}
     }
     while ((rc == 0) && (buffer_length > 0)) {
-	nwritten = send(accept_fd, buffer, buffer_length, 0);
+	nwritten = send(accept_fd, buffer, (int)buffer_length, 0);
 	if ((nwritten == SOCKET_ERROR) ||
 	    (nwritten < 0)) {
 	    printf("socketWrite: Error, send()\n");

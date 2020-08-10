@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017 - 2019					*/
+/* (c) Copyright IBM Corporation 2017 - 2020					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 	    startTime = time(NULL);
 	    rc = TSS_Transmit(tssContext,
 			      responseBuffer, &responseLength,
-			      commandBuffer, commandLength,
+			      commandBuffer, (uint32_t)commandLength,
 			      NULL);
 	    endTime = time(NULL);
 	    printf("End Pass %u\n", count +1);

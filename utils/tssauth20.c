@@ -1005,8 +1005,8 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
 			    sizeof(COMMAND_PARAMETERS));	/* freed @1 */
 	}
 	if (rc == 0) {
-	    size = sizeof(tssAuthContext->commandBuffer) -
-		   (tssAuthContext->commandHandleCount * sizeof(TPM_HANDLE));
+	    size = (uint32_t)(sizeof(tssAuthContext->commandBuffer) -
+			      (tssAuthContext->commandHandleCount * sizeof(TPM_HANDLE)));
 	    rc = tssAuthContext->unmarshalInFunction(target, &bufferu, &size, handles);
 	    if ((rc != 0) && tssVerbose) {
 		printf("TSS_Marshal: Invalid command parameter\n");
@@ -1025,10 +1025,10 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     /* record the interim cpBuffer and cpBufferSize before adding authorizations */
     if (rc == 0) {
 	uint32_t notCpBufferSize;
-	
+
 	/* cpBuffer does not include the header and handles */
-	notCpBufferSize = sizeof(TPMI_ST_COMMAND_TAG) + sizeof (uint32_t) + sizeof(TPM_CC) +
-			  (sizeof(TPM_HANDLE) * tssAuthContext->commandHandleCount);
+	notCpBufferSize = (uint32_t)(sizeof(TPMI_ST_COMMAND_TAG) + sizeof (uint32_t) + sizeof(TPM_CC) +
+				     (sizeof(TPM_HANDLE) * tssAuthContext->commandHandleCount));
 
 	tssAuthContext->cpBuffer = tssAuthContext->commandBuffer + notCpBufferSize;
 	tssAuthContext->cpBufferSize = tssAuthContext->commandSize - notCpBufferSize;

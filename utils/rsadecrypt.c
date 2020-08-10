@@ -406,16 +406,15 @@ static TPM_RC padData(uint8_t 			**buffer,
     }
     if (rc == 0) {
 	if (digestSize != *padLength) {
-	    unsigned long pl = *padLength;
 	    printf("paddata: hash algorithm length %u not equal data length %lu\n",
-		   digestSize, pl);
+		   digestSize, (unsigned long)*padLength);
 	    rc = TPM_RC_VALUE;
 	}
     }
     /* realloc the buffer to the key size in bytes */
     if (rc == 0) {
 	*padLength = keyBits / 8;
-	rc = TSS_Realloc(buffer, *padLength);
+	rc = TSS_Realloc(buffer, (uint32_t)*padLength);
     }
     /* determine the OID */
     if (rc == 0) {
@@ -451,7 +450,7 @@ static TPM_RC padData(uint8_t 			**buffer,
 	(*buffer)[1] = 0x01;
 	memset(&(*buffer)[2], 0xff, *padLength - 3 - oidSize - digestSize);
 	(*buffer)[*padLength - oidSize - digestSize - 1] = 0x00;
-	if (tssUtilsVerbose) TSS_PrintAll("padData: padded data", *buffer, *padLength);
+	if (tssUtilsVerbose) TSS_PrintAll("padData: padded data", *buffer, (uint32_t)*padLength);
     }
     return rc;
 }

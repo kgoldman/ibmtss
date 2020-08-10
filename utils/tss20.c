@@ -1295,16 +1295,16 @@ static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
 	/* if the flag is set, decrypt the session state before unmarshal */
 	if (tssContext->tssEncryptSessions) {
 	    rc = TSS_AES_Decrypt(tssContext->tssSessionDecKey,
-				 &inData,   	/* output, freed @2 */
-				 &inLength,	/* output */
-				 buffer,	/* input */
-				 length);	/* input */
+				 &inData,   		/* output, freed @2 */
+				 &inLength,		/* output */
+				 buffer,		/* input */
+				 (uint32_t)length);	/* input */
 	}
 	/* else the session was loaded in plaintext */
 	else {
 #endif	/* TPM_TSS_NOCRYPTO */
 	    inData = buffer;
-	    inLength = length;
+	    inLength = (uint32_t)length;
 #ifndef TPM_TSS_NOCRYPTO
 	}
 #endif	/* TPM_TSS_NOCRYPTO */
@@ -2239,7 +2239,7 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 	nameAlgNbo = htons(tpmtPublic->nameAlg);
 	memcpy(name->t.name, (uint8_t *)&nameAlgNbo, sizeof(TPMI_ALG_HASH));
 	/* set the size */
-	name->t.size = sizeInBytes + sizeof(TPMI_ALG_HASH);
+	name->t.size = sizeInBytes + (uint16_t)sizeof(TPMI_ALG_HASH);
     }
     free(buffer);	/* @1 */
     return rc;
@@ -2476,7 +2476,7 @@ static TPM_RC TSS_NVPublic_GetName(TPM2B_NAME *name,
 	nameAlgNbo = htons(nvPublic->nameAlg);
 	memcpy(name->t.name, (uint8_t *)&nameAlgNbo, sizeof(TPMI_ALG_HASH));
 	/* set the size */
-	name->t.size = sizeInBytes + sizeof(TPMI_ALG_HASH);
+	name->t.size = sizeInBytes + (uint16_t)sizeof(TPMI_ALG_HASH);
     }
     free(buffer);	/* @1 */
     return rc;

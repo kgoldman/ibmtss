@@ -119,7 +119,7 @@ TPM_RC TSS_File_ReadBinaryFile(unsigned char **data,     /* must be freed by cal
     }
     /* allocate a buffer for the actual data */
     if ((rc == 0) && (*length != 0)) {
-	rc = TSS_Malloc(data, *length);
+	rc = TSS_Malloc(data, (uint32_t)*length);
     }
     /* read the contents of the file into the data buffer */
     if ((rc == 0) && *length != 0) {
@@ -204,7 +204,7 @@ TPM_RC TSS_File_ReadStructure(void 			*structure,
 				     filename);
     }
     if (rc == 0) {
-	uint32_t ilength = length;
+	uint32_t ilength = (uint32_t)length;
 	buffer1 = buffer;
 	rc = unmarshalFunction(structure, &buffer1, &ilength);
     }
@@ -236,7 +236,7 @@ TPM_RC TSS_File_ReadStructureFlag(void 				*structure,
 				     filename);
     }
     if (rc == 0) {
-	uint32_t ilength = length;
+	uint32_t ilength = (uint32_t)length;
 	buffer1 = buffer;
 	rc = unmarshalFunction(structure, &buffer1, &ilength, allowNull);
     }
