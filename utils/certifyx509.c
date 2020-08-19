@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
     TPMI_DH_OBJECT		objectHandle = 0;
     TPMI_DH_OBJECT		signHandle = 0;
     unsigned int		algCount = 0;
-    TPMI_ALG_SIG_SCHEME    	scheme;
+    TPMI_ALG_SIG_SCHEME    	scheme = TPM_ALG_ERROR;
     TPMI_RSA_KEY_BITS 		keyBits = 0;
     TPMI_ECC_CURVE		curveID = 0;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
