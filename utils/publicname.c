@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
 		break;
 #endif	/* TPM_TSS_NOECC */
 	      default:
-		printf("-rsa algorithm %04x not supported\n", algPublic);
+		printf("algorithm %04x not supported\n", algPublic);
 		rc = TPM_RC_ASYMMETRIC;
 	    }
 	}
@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
 		break;
 #endif	/* TPM_TSS_NOECC */
 	      default:
-		printf("-rsa algorithm %04x not supported\n", algPublic);
+		printf("algorithm %04x not supported\n", algPublic);
 		rc = TPM_RC_ASYMMETRIC;
 	    }
 	}
