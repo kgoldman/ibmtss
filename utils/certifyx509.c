@@ -93,6 +93,7 @@ TPM_RC addPubKeyRsa(X509 		*x509Certificate,
 TPM_RC addSignatureRsa(X509 		*x509Certificate,
 		       TPMI_ALG_HASH	halg,
 		       TPMT_SIGNATURE 	*tSignature);
+#ifndef TPM_TSS_NOECC
 TPM_RC addSignatureEcc(X509 		*x509Certificate,
 		       TPMI_ALG_HASH	halg,
 		       TPMT_SIGNATURE 	*signature);
@@ -100,6 +101,7 @@ TPM_RC addPubKeyEcc(X509 		*x509Certificate,
 		    unsigned char 	*tmpAddedToCert,
 		    uint16_t 		*tmpAddedToCertIndex,
 		    TPMI_ECC_CURVE	curveID);
+#endif	/* TPM_TSS_NOECC */
 TPM_RC addCertExtensionTpmaOid(X509 *x509Certificate,
 			       uint32_t tpmaObject);
 
@@ -242,6 +244,7 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+#ifndef TPM_TSS_NOECC
 	else if (strcmp(argv[i], "-ecc") == 0) {
 	    scheme = TPM_ALG_ECDSA;
 	    algCount++;
@@ -263,6 +266,7 @@ int main(int argc, char *argv[])
 		printUsage();
 	    }
 	}
+#endif	/* TPM_TSS_NOECC */
 	else if (strcmp(argv[i],"-ku") == 0) {
 	    i++;
 	    if (i < argc) {
@@ -932,6 +936,7 @@ TPM_RC reformCertificate(X509 			*x509Certificate,
 	    rc = addSignatureRsa(x509Certificate, halg, tSignature);
 	}
     }
+#ifndef TPM_TSS_NOECC
     else {	/* scheme == TPM_ALG_ECDSA */
 	/* add public key  */
 	if (rc == 0) {
@@ -945,6 +950,7 @@ TPM_RC reformCertificate(X509 			*x509Certificate,
 	    rc = addSignatureEcc(x509Certificate, halg, tSignature);
 	}
     }
+#endif	/* TPM_TSS_NOECC */
     return rc;
 }
 
@@ -1058,6 +1064,7 @@ TPM_RC addPubKeyRsa(X509 		*x509Certificate,
     return rc;
 }
 
+#ifndef TPM_TSS_NOECC
 /* addPubKeyEcc() adds the public key to the certificate. tmpAddedToCertIndex must point to the
    public key.
 
@@ -1126,6 +1133,7 @@ TPM_RC addPubKeyEcc(X509 		*x509Certificate,
     }
     return rc;
 }
+#endif	/* TPM_TSS_NOECC */
 
 /* addSignatureRsa() copies the TPMT_SIGNATURE output of the TPM2_CertifyX509 command to the X509
    certificate.
@@ -1185,6 +1193,7 @@ TPM_RC addSignatureRsa(X509 		*x509Certificate,
     return rc;
 }
 
+#ifndef TPM_TSS_NOECC
 /* addSignatureEcc() copies the TPMT_SIGNATURE output of the TPM2_CertifyX509 command to the X509
    certificate.
 */
@@ -1308,6 +1317,7 @@ TPM_RC addSignatureEcc(X509 		*x509Certificate,
     OPENSSL_free(ecdsaSigBin);		/* @2 */
     return rc;
 }
+#endif	/* TPM_TSS_NOECC */
 
 /* getDataLength() checks the type, gets the length of the wrapper and following data */
 
