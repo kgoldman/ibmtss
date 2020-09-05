@@ -52,6 +52,11 @@
 
 #include "eventlib.h"
 
+#include <config.h>
+#ifdef HAVE_EFIBOOT_H
+#include <efiboot.h>
+#endif
+
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
 static uint16_t Uint16_Convert(uint16_t in);
@@ -827,6 +832,132 @@ UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size)
     return TPM_RC_SUCCESS;
 }
 
+#ifdef HAVE_EFIBOOT_H
+/* this section contains parsers for boot options requiring efiboot.h */
+static void load_option_printf(void *o, int lo_len)
+{
+    efi_load_option *lo = o;
+    efidp efidp;
+    const unsigned char *desc;
+    int pathlen;
+    unsigned char *text_path;
+    int text_path_len;
+    int rc;
+    unsigned char *c = o;
+
+    if (!efi_loadopt_is_valid(lo, lo_len)) {
+	printf("\n  <Invalid load option>\n");
+	return;
+    }
+    printf("\n  Enabled: %s", (efi_loadopt_attrs(lo) & 1)
+	   ? "Yes" : "No");
+
+    desc = efi_loadopt_desc(lo, lo_len);
+    printf("\n  Description: ");
+    if (!desc)
+	printf("<invalid description> ");
+    else if (desc[0])
+	printf("\"%s\" ", desc);
+
+    efidp = efi_loadopt_path(lo, lo_len);
+    pathlen = efi_loadopt_pathlen(lo, lo_len);
+
+    printf("\n  Path: ");
+    rc = efidp_format_device_path(NULL, 0, efidp, pathlen);
+    if (rc < 0) {
+	printf("<bad device path>");
+	return;
+    }
+    text_path_len = rc + 1;
+    text_path = alloca(text_path_len);
+    if (!text_path) {
+	fprintf(stderr, "MEMORY ALLOCATION FAILURE");
+	return;
+    }
+    rc = efidp_format_device_path((unsigned char *)text_path,
+				  text_path_len, efidp, pathlen);
+    if (rc < 0) {
+	printf("<bad device path>");
+	return;
+    }
+    if (text_path && text_path_len >= 1)
+	printf("%s", text_path);
+
+}
+
+static void guid_printf(void *v_guid)
+{
+    efi_guid_t *guid = v_guid;
+    char *guid_str = NULL;
+    int rc;
+
+    rc = efi_guid_to_str(guid, &guid_str);
+    if (rc < 0) {
+	printf("<invalid guid>");
+	return;
+    }
+
+    printf("%s", guid_str);
+    free(guid_str);
+}
+
+static void wchar_printf(int len, void *wchar)
+{
+    int i;
+    uint16_t *ptr = wchar;
+
+    for (i = 0; i < len; i++) {
+	wchar_t c = (wchar_t)ptr[i];
+	printf("%lc", c);
+    }
+}
+
+static void boot_order_printf(unsigned char *ev, int len)
+{
+    int olen = *((uint16_t *)ev);
+    int i;
+
+    ev += 2;
+
+    printf("\n  Boot Order: ");
+
+    if (olen*2 + 2 != len) {
+	printf("<invalid boot order>");
+	return;
+    }
+
+    for (i = 0; i < olen; i++) {
+	int b = *((uint16_t *)ev);
+
+	ev += 2;
+	printf("Boot%04x ", b);
+    }
+}
+
+static void boot_variable_printf(unsigned char *ev)
+{
+    /* UC-16 BootOrder. Note only one terminating zero
+     * because string termination adds an extra one */
+    const unsigned char bootorder[] =
+	"\x42\x00\x6f\x00\x6f\x00\x74\x00\x4f\x00\x72\x00"
+	"\x64\x00\x65\x00\x72";
+    int vlen, len;
+    vlen = *((int64_t *)ev) * 2;
+    int is_boot_order;
+
+    ev += 8;
+    len = *((int64_t *)ev);
+    ev += 8;
+    is_boot_order = (vlen == sizeof(bootorder) &&
+		     memcmp(ev, bootorder, sizeof(bootorder)) == 0);
+    ev += vlen;
+
+    if (is_boot_order)
+	boot_order_printf(ev, len);
+    else
+	load_option_printf(ev, len);
+}
+#endif
 
 void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
 {
@@ -844,6 +975,39 @@ void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
     }
     TSS_PrintAll("TSS_EVENT2_Line_Trace: event",
 		 event->event, event->eventSize);
+    switch (event->eventType) {
+    case EV_IPL:
+	printf("  \"%.*s\"\n", event->eventSize, event->event);
+	break;
+    case EV_EFI_PLATFORM_FIRMWARE_BLOB:
+	if (event->eventSize != 16)
+	    break;
+	printf("  Base: 0x%lx\n  Length: 0x%lx\n",
+	       *((unsigned long *)event->event),
+	       *((unsigned long *)(event->event + 8)));
+	break;
+#ifdef HAVE_EFIBOOT_H
+    case EV_EFI_VARIABLE_DRIVER_CONFIG:
+    case EV_EFI_VARIABLE_BOOT: {
+	int len;
+
+	printf("  GUID: ");
+	guid_printf(event->event);
+
+	printf("\n  VAR: ");
+	len = *((int64_t *)(event->event + 16));
+	wchar_printf(len, event->event + 16 + 8 + 8);
+
+	if (event->eventType == EV_EFI_VARIABLE_BOOT)
+	    boot_variable_printf(event->event + 16);
+
+	printf("\n");
+	break;
+    }
+#endif
+    default:
+	break;
+    }
     return;
 }
 

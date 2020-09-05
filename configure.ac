@@ -38,6 +38,11 @@ LT_INIT([disable-static])
 PKG_CHECK_MODULES(LIBCRYPTO, [libcrypto >= 1.0.1 ])
 AC_CHECK_HEADERS(openssl/conf.h)
 
+# check for optional efiboot library for boot log pretty printing
+PKG_CHECK_MODULES(EFIBOOT, [efiboot efivar],,[true])
+CPPFLAGS="$CPPFLAGS $EFIBOOT_CFLAGS"
+AC_CHECK_HEADERS([efiboot.h])
+
 # Checks for header files.
 AC_HEADER_STDC
 
