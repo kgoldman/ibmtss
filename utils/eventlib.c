@@ -52,8 +52,19 @@
 
 #include "eventlib.h"
 
+#ifdef HAVE_CONFIG_H
+/*
+  * config.h is only present if autoconf was used, which is only the
+  * linux builds
+  */
 #include <config.h>
+#endif
 #ifdef HAVE_EFIBOOT_H
+/* This is set by the autoconf checks for the efiboot/efivar packages
+
+   On Ubuntu, the packages are libefivar-dev libefiboot-dev and possibly efivar efitools
+*/
+
 #include <efiboot.h>
 #endif
 
@@ -891,6 +902,7 @@ static void guid_printf(void *v_guid)
     char *guid_str = NULL;
     int rc;
 
+    /* allocates a suitable string and populates it with string representation of a UEFI GUID. */
     rc = efi_guid_to_str(guid, &guid_str);
     if (rc < 0) {
 	printf("<invalid guid>");
@@ -906,6 +918,12 @@ static void wchar_printf(int len, void *wchar)
     int i;
     uint16_t *ptr = wchar;
 
+    /*
+     * this is necessary because UEFI uses UC16, which is a two byte
+     * wide char.  Most linux tools use UC32, which is a four byte
+     * wide char, so we can't simply treat UEFI strings as arrays of
+     * wchar_t
+     */
     for (i = 0; i < len; i++) {
 	wchar_t c = (wchar_t)ptr[i];
 	printf("%lc", c);
@@ -936,8 +954,10 @@ static void boot_order_printf(unsigned char *ev, int len)
 
 static void boot_variable_printf(unsigned char *ev)
 {
-    /* UC-16 BootOrder. Note only one terminating zero
-     * because string termination adds an extra one */
+    /*
+     * UC16 string for "BootOrder". Note only one terminating zero
+     * because string termination adds an extra one
+     */
     const unsigned char bootorder[] =
 	"\x42\x00\x6f\x00\x6f\x00\x74\x00\x4f\x00\x72\x00"
 	"\x64\x00\x65\x00\x72";
@@ -977,6 +997,10 @@ void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
 		 event->event, event->eventSize);
     switch (event->eventType) {
     case EV_IPL:
+      /*
+       * Grub places standard ASCII strings for the boot log in
+       * EV_IPL events, so print them here
+       */
 	printf("  \"%.*s\"\n", event->eventSize, event->event);
 	break;
     case EV_EFI_PLATFORM_FIRMWARE_BLOB:
