@@ -179,31 +179,28 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i], "-rsa") == 0) {
 	    algPublic = TPM_ALG_RSA;
 	    algCount++;
-	    i++;
-	    if (i < argc) {
+	    /* if next argument is keysize */
+	    if (((i + 1) < argc) && (argv[i+1][0] != '-')) {
+		i++;
 		sscanf(argv[i],"%hu", &keyBits);
-		switch (keyBits) {
-		  case 2048:
-		    if (range == LowRange) {
-			ekCertIndex = EK_CERT_RSA_INDEX;
-		    }
-		    else {	/* high range */
-			ekCertIndex = EK_CERT_RSA_2048_INDEX_H1;
-		    }
-		    break;
-		  case 3072:
-		    ekCertIndex = EK_CERT_RSA_3072_INDEX_H6;
-		    break;
-		  case 4096:
-		    ekCertIndex = EK_CERT_RSA_4096_INDEX_H7;
-		    break;
-		  default:
-		    printf("Bad key size %s for -rsa\n", argv[i]);
-		    printUsage();
-		}
 	    }
-	    else {
-		printf("Missing keysize parameter for -rsa\n");
+	    switch (keyBits) {
+	    case 2048:
+		if (range == LowRange) {
+		    ekCertIndex = EK_CERT_RSA_INDEX;
+		}
+		else {	/* high range */
+		    ekCertIndex = EK_CERT_RSA_2048_INDEX_H1;
+		}
+		break;
+	    case 3072:
+		ekCertIndex = EK_CERT_RSA_3072_INDEX_H6;
+		break;
+	    case 4096:
+		ekCertIndex = EK_CERT_RSA_4096_INDEX_H7;
+		break;
+	    default:
+		printf("Bad key size %s for -rsa\n", argv[i]);
 		printUsage();
 	    }
 	}

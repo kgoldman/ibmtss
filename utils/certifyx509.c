@@ -235,13 +235,9 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i], "-rsa") == 0) {
 	    scheme = TPM_ALG_RSASSA;
 	    algCount++;
-	    i++;
-	    if (i < argc) {
+	    if (((i + 1) < argc) && (argv[i+1][0] != '-')) {
+		i++;
 		sscanf(argv[i],"%hu", &keyBits);
-	    }
-	    else {
-		printf("Missing keysize parameter for -rsa\n");
-		printUsage();
 	    }
 	}
 #ifndef TPM_TSS_NOECC

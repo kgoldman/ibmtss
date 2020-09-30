@@ -179,14 +179,11 @@ int main(int argc, char *argv[])
 	    rev116 = TRUE;
 	}
 	else if (strcmp(argv[i], "-rsa") == 0) {
+	    /* if next argument is keysize */
 	    algPublic = TPM_ALG_RSA;
-	    i++;
-	    if (i < argc) {
+	    if (((i + 1) < argc) && (argv[i+1][0] != '-')) {
+		i++;
 		sscanf(argv[i],"%hu", &keyBits);
-	    }
-	    else {
-		printf("Missing parameter for -rsa\n");
-		printUsage();
 	    }
 	}
 	else if (strcmp(argv[i], "-ecc") == 0) {

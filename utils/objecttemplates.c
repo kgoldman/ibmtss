@@ -538,7 +538,7 @@ void printUsageTemplate(void)
 {
     printf("\t[Asymmetric Key Algorithm]\n");
     printf("\n");
-    printf("\t-rsa keybits (default)\n");
+    printf("\t-rsa [keybits] (default)\n");
     printf("\t\t(2048 default)\n");
     printf("\t-ecc curve\n");
     printf("\t\tbnp256\n");
