@@ -46,6 +46,13 @@
 
 #include <ibmtss/TPM_Types.h>
 
+/* From PC Client PFP 10.2.2 For software parsing the event log, the parser can choose an arbitrary
+   maximum size, but this specification recommends a maximum value for the TCG_PCR_EVENT2.eventSize
+   field of 1MB.
+
+   Indications are that they are 64K maximum in practice.
+*/
+
 #define TCG_EVENT_LEN_MAX	0x10000
 
 #define EV_PREBOOT_CERT	  			0x00
@@ -144,6 +151,10 @@ typedef struct tdTCG_EfiSpecIdEvent {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+    TPM_RC TSS_UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size);
+    TPM_RC TSS_UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size);
+    TPM_RC TSS_UINT64LE_Unmarshal(uint64_t *target, BYTE **buffer, uint32_t *size);
 
 #ifndef TPM_TSS_NOFILE
     int TSS_EVENT_Line_Read(TCG_PCR_EVENT *event,

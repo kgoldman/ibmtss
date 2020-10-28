@@ -39,6 +39,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include <ibmtss/tssprint.h>
 #include <ibmtss/Unmarshal_fp.h>
@@ -51,6 +52,7 @@
 #include <ibmtss/tssutils.h>
 
 #include "eventlib.h"
+#include "efilib.h"
 
 #ifdef HAVE_CONFIG_H
 /*
@@ -65,7 +67,7 @@
    On Ubuntu, the packages are libefivar-dev libefiboot-dev and possibly efivar efitools
 */
 
-#include <efiboot.h>
+#include <efivar/efiboot.h>
 #endif
 
 #ifndef TPM_TSS_NOFILE
@@ -74,9 +76,6 @@ static uint16_t Uint16_Convert(uint16_t in);
 #endif
 static uint32_t Uint32_Convert(uint32_t in);
 #endif /* TPM_TSS_NOFILE */
-static TPM_RC UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size);
-static TPM_RC UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size);
-
 static void TSS_EVENT_EventType_Trace(uint32_t eventType);
 static TPM_RC TSS_SpecIdEventAlgorithmSize_Unmarshal(TCG_EfiSpecIdEventAlgorithmSize *algSize,
 						     uint8_t **buffer,
@@ -256,16 +255,16 @@ TPM_RC TSS_EVENT_Line_LE_Unmarshal(TCG_PCR_EVENT *target, BYTE **buffer, uint32_
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = UINT32LE_Unmarshal(&target->pcrIndex, buffer, size);
+	rc = TSS_UINT32LE_Unmarshal(&target->pcrIndex, buffer, size);
     }
     if (rc == 0) {
-	rc = UINT32LE_Unmarshal(&target->eventType, buffer, size);
+	rc = TSS_UINT32LE_Unmarshal(&target->eventType, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_Array_Unmarshalu((uint8_t *)target->digest, SHA1_DIGEST_SIZE, buffer, size);
     }
     if (rc == 0) {
-	rc = UINT32LE_Unmarshal(&target->eventDataSize, buffer, size);
+	rc = TSS_UINT32LE_Unmarshal(&target->eventDataSize, buffer, size);
     }
     if (rc == 0) {
 	if (target->eventDataSize > sizeof(target->event)) {
@@ -342,7 +341,7 @@ TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
 			     &buffer, &size);
     }
     if (rc == 0) {
-	rc = UINT32LE_Unmarshal(&(specIdEvent->platformClass), &buffer, &size);
+	rc = TSS_UINT32LE_Unmarshal(&(specIdEvent->platformClass), &buffer, &size);
     }
     if (rc == 0) {
 	rc = TSS_UINT8_Unmarshalu(&(specIdEvent->specVersionMinor), &buffer, &size);
@@ -357,7 +356,7 @@ TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
 	rc = TSS_UINT8_Unmarshalu(&(specIdEvent->uintnSize), &buffer, &size);
     }
     if (rc == 0) {
-	rc = UINT32LE_Unmarshal(&(specIdEvent->numberOfAlgorithms), &buffer, &size);
+	rc = TSS_UINT32LE_Unmarshal(&(specIdEvent->numberOfAlgorithms), &buffer, &size);
     }
     for (i = 0 ; (rc == 0) && (i < specIdEvent->numberOfAlgorithms) ; i++) {
 	rc = TSS_SpecIdEventAlgorithmSize_Unmarshal(&(specIdEvent->digestSizes[i]),
@@ -390,10 +389,10 @@ static TPM_RC TSS_SpecIdEventAlgorithmSize_Unmarshal(TCG_EfiSpecIdEventAlgorithm
     TPM_RC	rc = 0;
 
     if (rc == 0) {
-	rc = UINT16LE_Unmarshal(&(algSize->algorithmId), buffer, size);
+	rc = TSS_UINT16LE_Unmarshal(&(algSize->algorithmId), buffer, size);
     }
     if (rc == 0) {
-	rc = UINT16LE_Unmarshal(&(algSize->digestSize), buffer, size);
+	rc = TSS_UINT16LE_Unmarshal(&(algSize->digestSize), buffer, size);
     } 
     if (rc == 0) {
 	uint16_t mappedDigestSize = TSS_GetDigestSize(algSize->algorithmId);
@@ -432,8 +431,10 @@ void TSS_SpecIdEvent_Trace(TCG_EfiSpecIDEvent *specIdEvent)
 	TSS_SpecIdEventAlgorithmSize_Trace(&(specIdEvent->digestSizes[i]));
     }
     /* try for a printable string */
-    if (specIdEvent->vendorInfo[specIdEvent->vendorInfoSize-1] == '\0')  {
-	printf("TSS_SpecIdEvent_Trace: vendorInfo: %s\n", specIdEvent->vendorInfo);
+    if (specIdEvent->vendorInfoSize > 0) {
+	if (specIdEvent->vendorInfo[specIdEvent->vendorInfoSize-1] == '\0')  {
+	    printf("TSS_SpecIdEvent_Trace: vendorInfo: %s\n", specIdEvent->vendorInfo);
+	}
     }
     /* if not, trace the bytes */
     else {
@@ -694,16 +695,16 @@ TPM_RC TSS_EVENT2_Line_LE_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint3
     TPM_RC rc = 0;
 
     if (rc == 0) {
-	rc = UINT32LE_Unmarshal(&target->pcrIndex, buffer, size);
+	rc = TSS_UINT32LE_Unmarshal(&target->pcrIndex, buffer, size);
     }
     if (rc == 0) {
-	rc = UINT32LE_Unmarshal(&target->eventType, buffer, size);
+	rc = TSS_UINT32LE_Unmarshal(&target->eventType, buffer, size);
     }
     if (rc == 0) {
 	rc = TSS_TPML_DIGEST_VALUES_LE_Unmarshalu(&target->digests, buffer, size);
     }
     if (rc == 0) {
-	rc = UINT32LE_Unmarshal(&target->eventSize, buffer, size);
+	rc = TSS_UINT32LE_Unmarshal(&target->eventSize, buffer, size);
     }
     if (rc == 0) {
 	if (target->eventSize > sizeof(target->event)) {
@@ -811,10 +812,9 @@ static uint32_t Uint32_Convert(uint32_t in)
 }
 #endif /* TPM_TSS_NOFILE */
 
-/* UINT16LE_Unmarshal() unmarshals a little endian 2-byte array from buffer into a HBO uint16_t */
+/* TSS_UINT16LE_Unmarshal() unmarshals a little endian 2-byte array from buffer into a HBO uint16_t */
 
-static TPM_RC
-UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size)
+TPM_RC TSS_UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size)
 {
     if (*size < sizeof(uint16_t)) {
 	return TPM_RC_INSUFFICIENT;
@@ -826,10 +826,9 @@ UINT16LE_Unmarshal(uint16_t *target, BYTE **buffer, uint32_t *size)
     return TPM_RC_SUCCESS;
 }
 
-/* UINT32LE_Unmarshal() unmarshals a little endian 4-byte array from buffer into a HBO uint32_t */
+/* TSS_UINT32LE_Unmarshal() unmarshals a little endian 4-byte array from buffer into a HBO uint32_t */
 
-static TPM_RC
-UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size)
+TPM_RC TSS_UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size)
 {
     if (*size < sizeof(uint32_t)) {
 	return TPM_RC_INSUFFICIENT;
@@ -843,9 +842,29 @@ UINT32LE_Unmarshal(uint32_t *target, BYTE **buffer, uint32_t *size)
     return TPM_RC_SUCCESS;
 }
 
+/* TSS_UINT64LE_Unmarshal() unmarshals a little endian 8-byte array from buffer into a HBO uint64_t */
+
+TPM_RC TSS_UINT64LE_Unmarshal(uint64_t *target, BYTE **buffer, uint32_t *size)
+{
+    if (*size < sizeof(uint64_t)) {
+	return TPM_RC_INSUFFICIENT;
+    }
+    *target = ((uint64_t)((*buffer)[0]) <<  0) |
+	      ((uint64_t)((*buffer)[1]) <<  8) |
+	      ((uint64_t)((*buffer)[2]) << 16) |
+	      ((uint64_t)((*buffer)[3]) << 24) |
+	      ((uint64_t)((*buffer)[4]) << 32) |
+	      ((uint64_t)((*buffer)[5]) << 40) |
+	      ((uint64_t)((*buffer)[6]) << 48) |
+	      ((uint64_t)((*buffer)[7]) << 56);
+    *buffer += sizeof(uint64_t);
+    *size -= sizeof(uint64_t);
+    return TPM_RC_SUCCESS;
+}
+
 #ifdef HAVE_EFIBOOT_H
-/* this section contains parsers for boot options requiring efiboot.h */
-static void load_option_printf(void *o, int lo_len)
+/* This section contains parsers for boot options requiring efiboot.h */
+static void load_option_printf(void *o, uint64_t lo_len)
 {
     efi_load_option *lo = o;
     efidp efidp;
@@ -854,7 +873,7 @@ static void load_option_printf(void *o, int lo_len)
     unsigned char *text_path;
     int text_path_len;
     int rc;
-    unsigned char *c = o;
+    //unsigned char *c = o;
 
     if (!efi_loadopt_is_valid(lo, lo_len)) {
 	printf("\n  <Invalid load option>\n");
@@ -885,7 +904,7 @@ static void load_option_printf(void *o, int lo_len)
 	fprintf(stderr, "MEMORY ALLOCATION FAILURE");
 	return;
     }
-    rc = efidp_format_device_path((unsigned char *)text_path,
+    rc = efidp_format_device_path((char *)text_path,
 				  text_path_len, efidp, pathlen);
     if (rc < 0) {
 	printf("<bad device path>");
@@ -896,6 +915,9 @@ static void load_option_printf(void *o, int lo_len)
 
 }
 
+/*
+ * Print GUID using efivar library
+ */
 static void guid_printf(void *v_guid)
 {
     efi_guid_t *guid = v_guid;
@@ -905,14 +927,17 @@ static void guid_printf(void *v_guid)
     /* allocates a suitable string and populates it with string representation of a UEFI GUID. */
     rc = efi_guid_to_str(guid, &guid_str);
     if (rc < 0) {
-	printf("<invalid guid>");
-	return;
+        printf("<invalid guid>");
+        return;
     }
 
     printf("%s", guid_str);
     free(guid_str);
 }
 
+/*
+ * Print UC16 character string
+ */
 static void wchar_printf(int len, void *wchar)
 {
     int i;
@@ -925,64 +950,351 @@ static void wchar_printf(int len, void *wchar)
      * wchar_t
      */
     for (i = 0; i < len; i++) {
-	wchar_t c = (wchar_t)ptr[i];
-	printf("%lc", c);
+        wchar_t c = (wchar_t)ptr[i];
+        printf("%lc", c);
     }
 }
 
-static void boot_order_printf(unsigned char *ev, int len)
+/*
+ * Print the boot variable BootOrder to show a priority list of boot targets
+ * From the UEFI spec: "The BootOrder variable contains an array of UINT16's
+ * that make up an ordered list of the Boot####options."
+ */
+static void boot_order_printf(void *ev, uint64_t len)	/* FIXME make these all u32 */
 {
-    int olen = *((uint16_t *)ev);
-    int i;
+    BYTE *buffer = ev;
+    uint64_t l = len;
+    uint64_t i;
 
-    ev += 2;
+    if (len % 2 != 0) {
+        printf("<invalid boot order>");
+        return;
+    }
 
     printf("\n  Boot Order: ");
 
-    if (olen*2 + 2 != len) {
-	printf("<invalid boot order>");
-	return;
-    }
+    for (i = 0; i < l; i+=2) {
+        TPM_RC rc;
+        uint16_t b;
 
-    for (i = 0; i < olen; i++) {
-	int b = *((uint16_t *)ev);
-
-	ev += 2;
-	printf("Boot%04x ", b);
+        rc = TSS_UINT16LE_Unmarshal(&b, &buffer, (uint32_t*)&len);
+        if (rc == TPM_RC_SUCCESS) {
+            printf("Boot%04x ", b);
+        } else {
+            printf("<invalid data>");
+            return;
+        }
     }
 }
 
-static void boot_variable_printf(unsigned char *ev)
+/*
+ * Print the boot variable SecureBoot as enabled or disabled
+ * Caller function ensures there is at least 'len' bytes that are accessable
+ * starting from 'ev'
+ */
+static void secure_boot_printf(uint8_t *ev, uint64_t len)
 {
+    printf("\n  Enabled: ");
+
+    // Only len == 0 or 1 is valid
+    if (len == 0) {
+        printf("no");
+    } else if (len > 1) {
+        printf("<invalid secure boot>");
+    } else {
+        if (*ev == 0) {
+            printf("no");
+        }
+        else {
+            printf("yes");
+        }
+    }
+}
+
+/* This structure is used to designate the measurement of UEFI variables. The
+   structure is defined in the TGC PC Client Platform Firmware Profile Specification
+   Revision 1.04 Section 9.2.6.
+
+   typedef struct tdUEFI_VARIABLE_DATA {
+       uint8_t VariableName[16];
+       uint64_t UnicodeNameLength;
+       uint64_t VariableDataLength;
+       uint8_t UnicodeName[];
+       //uint8_t VariableData[]; // starts at UnicodeName + UnicodeNameLength*2
+   } UEFI_VARIABLE_DATA;
+
+   There are many types of UEFI variables - see UEFI spec for all different
+   types. This only handles the BOOT####, SecureBoot, and BootOrder.
+ */
+static void variable_printf(void* ev, uint32_t eventSize, uint32_t eventType)	/* FIXME change frpm void */
+{
+    BYTE *buffer = ev;
     /*
      * UC16 string for "BootOrder". Note only one terminating zero
      * because string termination adds an extra one
      */
     const unsigned char bootorder[] =
-	"\x42\x00\x6f\x00\x6f\x00\x74\x00\x4f\x00\x72\x00"
-	"\x64\x00\x65\x00\x72";
-    int vlen, len;
-    vlen = *((int64_t *)ev) * 2;
+        "\x42\x00\x6f\x00\x6f\x00\x74\x00\x4f\x00\x72\x00"
+        "\x64\x00\x65\x00\x72";
+
+    // UC16 string for "SecureBoot"
+    const unsigned char secureboot[] =
+        "\x53\x00\x65\x00\x63\x00\x75\x00\x72\x00\x65\x00"
+        "\x42\x00\x6f\x00\x6f\x00\x74";
+
     int is_boot_order;
+    int is_secure_boot;
+    BYTE guid[16];
+    TPM_RC rc;
+    uint64_t unicodeNameLength;
+    uint64_t variableDataLength;
 
-    ev += 8;
-    len = *((int64_t *)ev);
-    ev += 8;
-    is_boot_order = (vlen == sizeof(bootorder) &&
-		     memcmp(ev, bootorder, sizeof(bootorder)) == 0);
-    ev += vlen;
+    printf("  GUID: ");
+    rc = TSS_Array_Unmarshalu(guid, sizeof(guid), &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+        guid_printf(guid);
+    } else {
+        printf("<invalid data>");
+    }
+    /* FIXME falls through on error */
+    printf("\n  VAR: ");
+    rc = TSS_UINT64LE_Unmarshal(&unicodeNameLength, &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+        wchar_printf(unicodeNameLength, buffer+8);
+    } else {
+        printf("<invalid data>");
+    }
 
-    if (is_boot_order)
-	boot_order_printf(ev, len);
-    else
-	load_option_printf(ev, len);
+    rc = TSS_UINT64LE_Unmarshal(&variableDataLength, &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+        is_boot_order = (unicodeNameLength*2 == sizeof(bootorder) &&
+                         memcmp(buffer, bootorder, sizeof(bootorder)) == 0);
+        is_secure_boot = (unicodeNameLength*2 == sizeof(secureboot) &&
+                         memcmp(buffer, secureboot, sizeof(secureboot)) == 0);
+
+        // Skip to UEFI_VARIABLE_DATA.VariableData
+        buffer += unicodeNameLength*2;
+        eventSize -= unicodeNameLength*2;
+
+        if (variableDataLength > eventSize) {
+            printf("<invalid data size>");
+        } else {
+            if (is_boot_order)
+		/* FIXME cast safe because of above length check */
+		boot_order_printf(buffer, (uint32_t)variableDataLength);
+            else if (is_secure_boot)
+                secure_boot_printf(buffer, variableDataLength);
+            else if (eventType == EV_EFI_VARIABLE_BOOT)
+                load_option_printf(buffer, variableDataLength);
+        }
+    }
+
+    printf("\n");
+}
+
+/* This structure is used in measuring a PE/COFF image. It's defined in the TGC
+   PC Client Platform Firmware Profile Specification Revision 1.04 Section 9.2.3.
+
+   typedef uint64_t UEFI_PHYSICAL_ADDRESS;
+   typedef struct tdUEFI_IMAGE_LOAD_EVENT {
+       UEFI_PHYSICAL_ADDRESS ImageLocationInMemory;
+       uint64_t ImageLengthInMemory;
+       uint64_t ImageLinkTimeAddress;
+       uint64_t LengthOfDevicePath;
+       uint8_t DevicePath[];
+   } UEFI_IMAGE_LOAD_EVENT;
+
+ * Print loaded UEFI image information
+ */
+static void image_load_printf(void *ev, uint32_t eventSize)
+{
+    BYTE *buffer = ev;
+    uint64_t imageLocationInMemory;
+    uint64_t imageLengthInMemory;
+    uint64_t imageLinkTimeAddress;
+    uint64_t lengthOfDevicePath;
+    int text_path_len, ret;
+    unsigned char *text_path;
+    TPM_RC rc;
+
+    printf("  Image location in memory: ");
+    rc = TSS_UINT64LE_Unmarshal(&imageLocationInMemory, &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+        printf("0x%" PRIx64 "\n", imageLocationInMemory);
+    } else {
+        printf("<invalid data>\n");
+    }
+    /* FIXME fall throyugh issue */
+    printf("  Image length in memory: ");
+    rc = TSS_UINT64LE_Unmarshal(&imageLengthInMemory, &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+        printf("%" PRIu64 "\n", imageLengthInMemory);
+    } else {
+        printf("<invalid data>\n");
+    }
+
+    printf("  Image link time address: ");
+    rc = TSS_UINT64LE_Unmarshal(&imageLinkTimeAddress, &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+        printf("0x%" PRIx64 "\n", imageLinkTimeAddress);
+    } else {
+        printf("<invalid data>\n");
+    }
+
+    printf("  Path: ");
+    rc = TSS_UINT64LE_Unmarshal(&lengthOfDevicePath, &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+	/* FIXME check eventSize vs lengthOfDevicePath */
+	/* FIXME comment return meaning */
+	/* NULL to get get length */
+        ret = efidp_format_device_path(NULL, 0, (const_efidp)buffer,
+                                       lengthOfDevicePath);
+        if (ret < 0) {
+            printf("<bad device path>\n");
+            return;
+        }
+        text_path_len = ret + 1;	/* FIXME add nul terminator */
+        text_path = alloca(text_path_len);
+        if (!text_path) {		/* FIXME if text_path == NULL */
+            printf("<alloca() failed\n>");
+            return;
+        }
+	ret = efidp_format_device_path((char *)text_path,
+                                       text_path_len,
+                                       (const_efidp)buffer,
+                                       lengthOfDevicePath);
+        if (ret < 0) {
+            printf("<bad device path>\n");
+            return;
+        }
+	/* FIXME isnt text_path_len always >= 1 ? */
+        if (text_path && text_path_len >= 1)	/* FIXME text_path != NULL */
+            printf("%s\n", text_path);
+    } else {
+        printf("<bad device length>\n");
+    }
+}
+
+/* This structure contains a GUID Partition Table, and is defined in the TGC PC
+   Client Platform Firmware Profile Specification Revision 1.04 Section 9.4.
+   Its structure members are defined in the UEFI Specification Version 2.8
+   Section 5.3
+
+   typedef struct tdUEFI_PARTITION_TABLE_HEADER {
+       uint64_t Signature;
+       uint32_t Revision;
+       uint32_t HeaderSize;
+       uint32_t HeaderCRD32;
+       uint32_t Reserved;
+       uint64_t MyLBA;
+       uint64_t AlternateLBA;
+       uint64_t FirstUsableLBA;
+       uint64_t LastUsableLBA;
+       uint8_t DiskGUID[16];
+       uint64_t PartitionEntryLBA;
+       uint32_t NumberOfPartitionEntries;
+       uint32_t SizeOfPartitionEntry;
+       uint32_t PartitionEntryArrayCRC32;
+   } UEFI_PARTITION_TABLE_HEADER;
+   
+   typedef struct tdUEFI_PARTITION_ENTRY {
+       uint8_t PartitionTypeGUID[16];
+       uint8_t UniquePartitionGUID[16];
+       uint64_t StartingLBA;
+       uint64_t EndingLBA;
+       uint64_t Attributes;
+       uint8_t PartitionName[72];
+   } UEFI_PARTITION_ENTRY;
+   
+   typedef struct tdUEFI_GPT_DATA {
+       UEFI_PARTITION_TABLE_HEADER UEFIPartitionHeader;
+       uint64_t NumberOfPartitions;
+       UEFI_PARTITION_ENTRY Partitions[];
+   } UEFI_GPT_DATA;
+
+   Print Guid Partition Table (GPT) information
+ */
+static void gpt_printf(void *ev, uint32_t eventSize) {
+    BYTE *buffer = ev;
+    BYTE guid[16];
+    uint64_t firstUsableLBA, lastUsableLBA, numberOfPartitions;
+    uint64_t i, startingLBA, endingLBA;
+    TPM_RC rc;
+
+    // Skip to UEFI_PARTITION_TABLE_HEADER.FirstUsableLBA
+    buffer += 40;
+    eventSize -= 40;		/* FIXME test for safety before subtract */
+
+    printf("  Starting LBA: ");
+    rc = TSS_UINT64LE_Unmarshal(&firstUsableLBA, &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+        printf("0x%016" PRIx64 "\n", firstUsableLBA);
+    } else {
+        printf("<invalid data>\n");
+    }
+    /* FIXME fall through on error */
+    printf("  Ending LBA: ");
+    rc = TSS_UINT64LE_Unmarshal(&lastUsableLBA, &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+        printf("0x%016" PRIx64 "\n", lastUsableLBA);
+    } else {
+        printf("<invalid data>\n");
+    }
+
+    // Skip to UEFI_GPT_DATA.NumberOfPartitions
+    buffer += 36;	/* FIXME comment */
+    eventSize -= 36;	/* FIXME range check */
+
+    printf("  Number of Partitions: ");
+    rc = TSS_UINT64LE_Unmarshal(&numberOfPartitions, &buffer, &eventSize);
+    if (rc == TPM_RC_SUCCESS) {
+        printf("%" PRIx64 "\n", numberOfPartitions);
+    } else {
+        printf("<invalid data>\n");
+    }
+    /* FIXME fall through */
+    for (i = 0; i < numberOfPartitions; i++) {
+        // Skip to UEFI_PARTITION_ENTRY.UniquePartitionGUID
+        buffer += 16;	/* FIXME range check */
+        eventSize -= 16;
+
+        printf("    ");
+        rc = TSS_Array_Unmarshalu(guid, sizeof(guid), &buffer, &eventSize);
+        if (rc == TPM_RC_SUCCESS) {
+            guid_printf(guid);
+        } else {
+            printf("<invalid data>");
+        }
+
+        printf(": Starting LBA: ");
+        rc = TSS_UINT64LE_Unmarshal(&startingLBA, &buffer, &eventSize);
+        if (rc == TPM_RC_SUCCESS) {
+            printf("0x%016" PRIx64 , startingLBA);
+        } else {
+            printf("<invalid data>");
+        }
+
+        printf(", Ending LBA: ");
+        rc = TSS_UINT64LE_Unmarshal(&endingLBA, &buffer, &eventSize);
+        if (rc == TPM_RC_SUCCESS) {
+            printf("0x%016" PRIx64 "\n", endingLBA);
+        } else {
+            printf("<invalid data>\n");
+        }
+
+        // Skip to the next UEFI_PARTITION_ENTRY
+        buffer += 80;	/* FIXME range check ??? */
+        eventSize -= 16;
+    }
 }
 #endif
 
 void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
 {
+    uint32_t rc = 0;
     uint32_t count;
     uint16_t digestSize;
+    TSST_EFIData *efiData = NULL;
     printf("TSS_EVENT2_Line_Trace: PCR index %u\n", event->pcrIndex);
     TSS_EVENT_EventType_Trace(event->eventType);
     printf("TSS_EVENT2_Line_Trace: digest count %u\n", event->digests.count);
@@ -995,14 +1307,30 @@ void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
     }
     TSS_PrintAll("TSS_EVENT2_Line_Trace: event",
 		 event->event, event->eventSize);
+
+    /* FIXME this will eventually replace all the hard coded events */
+    if (rc == 0) {
+	rc = TSS_EFIData_Init(&efiData, event->eventType);
+    }
+    if (rc == 0) {
+	rc = TSS_EFIData_ReadBuffer(efiData, event->event, event->eventSize, event->pcrIndex);
+    }
+    if (rc == 0) {
+       TSS_EFIData_Trace(efiData);
+    }
+    TSS_EFIData_Free(efiData);
+    /* FIXME end new code */
+#if 0	/* obsolete code, to be  removed */
     switch (event->eventType) {
     case EV_IPL:
+    case EV_EFI_ACTION: {
       /*
        * Grub places standard ASCII strings for the boot log in
-       * EV_IPL events, so print them here
+       * EV_IPL and EV_ACTION events, so print them here
        */
-	printf("  \"%.*s\"\n", event->eventSize, event->event);
+	printf("  Event: \"%.*s\"\n", event->eventSize, event->event);
 	break;
+    }
     case EV_EFI_PLATFORM_FIRMWARE_BLOB:
 	if (event->eventSize != 16)
 	    break;
@@ -1013,25 +1341,24 @@ void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
 #ifdef HAVE_EFIBOOT_H
     case EV_EFI_VARIABLE_DRIVER_CONFIG:
     case EV_EFI_VARIABLE_BOOT: {
-	int len;
-
-	printf("  GUID: ");
-	guid_printf(event->event);
-
-	printf("\n  VAR: ");
-	len = *((int64_t *)(event->event + 16));
-	wchar_printf(len, event->event + 16 + 8 + 8);
-
-	if (event->eventType == EV_EFI_VARIABLE_BOOT)
-	    boot_variable_printf(event->event + 16);
-
-	printf("\n");
-	break;
+        variable_printf(event->event, event->eventSize, event->eventType);
+        break;
+    }
+    case EV_EFI_BOOT_SERVICES_APPLICATION:
+    case EV_EFI_BOOT_SERVICES_DRIVER:
+    case EV_EFI_RUNTIME_SERVICES_DRIVER: {
+        image_load_printf(event->event, event->eventSize);
+        break;
+    }
+    case EV_EFI_GPT_EVENT: {
+        gpt_printf(event->event, event->eventSize);
+        break;
     }
 #endif
     default:
 	break;
     }
+#endif
     return;
 }
 
@@ -1121,7 +1448,7 @@ TSS_TPML_DIGEST_VALUES_LE_Unmarshalu(TPML_DIGEST_VALUES *target, BYTE **buffer, 
 
     uint32_t i;
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT32LE_Unmarshal(&target->count, buffer, size);
+	rc = TSS_UINT32LE_Unmarshal(&target->count, buffer, size);
     }
     if (rc == TPM_RC_SUCCESS) {
 	if (target->count > HASH_COUNT) {
@@ -1181,7 +1508,7 @@ TSS_TPM_ALG_ID_LE_Unmarshalu(TPM_ALG_ID *target, BYTE **buffer,
     TPM_RC rc = TPM_RC_SUCCESS;
 
     if (rc == TPM_RC_SUCCESS) {
-	rc = UINT16LE_Unmarshal(target, buffer, size);
+	rc = TSS_UINT16LE_Unmarshal(target, buffer, size);
     }
     return rc;
 }

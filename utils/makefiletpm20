@@ -145,7 +145,8 @@ TSS_OBJS = 	tssfile.o 		\
 TSSUTILS_OBJS = cryptoutils.o	\
 		ekutils.o	\
 		imalib.o	\
-		eventlib.o
+		eventlib.o	\
+		efilib.o
 
 # common to all builds
 
@@ -215,7 +216,9 @@ ekutils.o: 	$(TSS_HEADERS) ekutils.c
 imalib.o: 	$(TSS_HEADERS) imalib.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) imalib.c
 eventlib.o: 	$(TSS_HEADERS) eventlib.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) eventlib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) -DHAVE_EFIBOOT_H eventlib.c
+efilib.o: 	$(TSS_HEADERS) efilib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) -DHAVE_EFIBOOT_H efilib.c
 
 # TSS shared library build
 
@@ -251,7 +254,7 @@ clean:
 activatecredential:	ibmtss/tss.h activatecredential.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) activatecredential.o $(LNALIBS) -o activatecredential
 eventextend:		eventextend.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o $(LNALIBS) -o eventextend
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o $(LNALIBS) -lefivar -lefiboot -o eventextend
 imaextend:		imaextend.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o $(LNALIBS) -o imaextend
 certify:		ibmtss/tss.h certify.o $(LIBTSS) $(LIBTSSUTILS)
