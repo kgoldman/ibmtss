@@ -54,6 +54,480 @@
 #include "eventlib.h"
 #include "efilib.h"
 
+extern int tssUtilsVerbose;
+
+/* NOTE: PFP is the TCG PC Client Platform Firmware Profile Specification
+*/
+
+/* function prototypes for event callback table */
+
+typedef uint32_t (*TSS_Event2_CheckHash_t)(TCG_PCR_EVENT2 *event2);
+
+/* function callbacks */
+
+static uint32_t TSS_Event2_Checkhash_Unused(TCG_PCR_EVENT2 *event2);
+static uint32_t TSS_Event2_Checkhash_EventHash(TCG_PCR_EVENT2 *event2);
+static uint32_t TSS_Event2_Checkhash_Success(TCG_PCR_EVENT2 *event2);
+static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2);
+static uint32_t TSS_Event2_Checkhash_VariableDataAuthority(TCG_PCR_EVENT2 *event2);
+
+#if 0	/* currently unused */
+static uint32_t TSS_Event2_Checkhash_SignatureDataHash(TCG_PCR_EVENT2 *event2);
+#endif
+
+/* Tables to map eventType to hash check function callbacks.  NULL or missing entries return
+   TSS_RC_NOT_IMPLEMENTED.
+
+   The second check function, if not NULL, handles platforms that don't quite conform to the PTP.
+
+   EV_EFI_VARIABLE_BOOT: Dell and Lenovo hash the variabledata, HP hashes the entire event.
+*/
+
+typedef struct {
+    uint32_t 			eventType;
+    TSS_Event2_CheckHash_t	checkHashFunction1;
+    TSS_Event2_CheckHash_t	checkHashFunction2;
+} TSS_EVENT2_CHECKHASH_TABLE;
+
+const TSS_EVENT2_CHECKHASH_TABLE event2CheckHashTable [] =
+    {
+     {EV_PREBOOT_CERT,
+      TSS_Event2_Checkhash_Unused,		/* reserved */
+      NULL},
+     {EV_POST_CODE,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_UNUSED,
+      TSS_Event2_Checkhash_Unused,		/* deprecated */
+      NULL},
+     {EV_NO_ACTION,
+      TSS_Event2_Checkhash_Success,		/* does not extend PCRs */
+      NULL},
+     {EV_SEPARATOR,
+      TSS_Event2_Checkhash_EventHash,
+      NULL},
+     {EV_ACTION,
+      TSS_Event2_Checkhash_EventHash,
+      NULL},
+     {EV_EVENT_TAG,
+      TSS_Event2_Checkhash_EventHash,
+      NULL},
+     {EV_S_CRTM_CONTENTS,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_S_CRTM_VERSION,
+      TSS_Event2_Checkhash_EventHash,
+      NULL},
+     {EV_CPU_MICROCODE,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_PLATFORM_CONFIG_FLAGS,
+      TSS_Event2_Checkhash_EventHash,
+      NULL},
+     {EV_TABLE_OF_DEVICES,
+      TSS_Event2_Checkhash_Success,		/* FIXME cannot be verified due to UEFI bug */
+      NULL},
+     {EV_COMPACT_HASH,
+      TSS_Event2_Checkhash_Success,		/* FIXME PFP ambiguous */
+      NULL},
+     {EV_IPL,
+      TSS_Event2_Checkhash_Success,		/* FIXME PFP ambiguous */
+      NULL},
+     {EV_IPL_PARTITION_DATA,
+      TSS_Event2_Checkhash_Unused,		/* deprecated */
+      NULL},
+     {EV_NONHOST_CODE,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_NONHOST_CONFIG,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_NONHOST_INFO,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_OMIT_BOOT_DEVICE_EVENTS,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_EFI_VARIABLE_DRIVER_CONFIG,
+      TSS_Event2_Checkhash_EventHash,
+      NULL},
+     {EV_EFI_VARIABLE_BOOT,
+      TSS_Event2_Checkhash_VariableDataHash,	/* PCR is hash of variable data */
+      TSS_Event2_Checkhash_EventHash},		/* HP hashes entire event */
+     {EV_EFI_BOOT_SERVICES_APPLICATION,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_EFI_BOOT_SERVICES_DRIVER,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_EFI_RUNTIME_SERVICES_DRIVER,
+      NULL,
+      NULL},
+     {EV_EFI_GPT_EVENT,
+      TSS_Event2_Checkhash_EventHash,		/* guess, PTP unclear */
+      NULL},
+     {EV_EFI_ACTION,
+      TSS_Event2_Checkhash_EventHash,
+      NULL},
+     {EV_EFI_PLATFORM_FIRMWARE_BLOB,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_EFI_HANDOFF_TABLES,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_EFI_HCRTM_EVENT,
+      NULL,
+      NULL},
+     {EV_EFI_VARIABLE_AUTHORITY,
+      TSS_Event2_Checkhash_EventHash,			/* this is what vendors seem to do */
+      TSS_Event2_Checkhash_VariableDataAuthority},	/* Supermicro quirk */
+     {EV_EFI_SUPERMICRO_1,
+      TSS_Event2_Checkhash_Success,		/* unknown event Supermicro quirk */
+      NULL},
+    };
+
+static uint32_t TSS_Event2_Checkhash_GetTableIndex(size_t *index, uint32_t eventType);
+
+/* TSS_Event2_Checkhash_GetTableIndex() searches the event type table for the event handlers.
+
+   Returns TSS_RC_NOT_IMPLEMENTED if the event type is unknown.
+*/
+
+static uint32_t TSS_Event2_Checkhash_GetTableIndex(size_t *index, uint32_t eventType)
+{
+    for (*index = 0 ;
+	 *index < sizeof(event2CheckHashTable) / sizeof(TSS_EVENT2_CHECKHASH_TABLE) ;
+	 (*index)++) {
+	if (event2CheckHashTable [*index].eventType == eventType) {
+	    return 0;	/* match */
+	}
+    }
+    return TSS_RC_NOT_IMPLEMENTED;		/* no match */
+}
+
+/*
+  Check Hash callbacks
+*/
+
+/* TSS_Event2_Checkhash_Unused() is used for events that are reserved, deprecated, or otherwise
+   unexpected and not handled */
+
+static uint32_t TSS_Event2_Checkhash_Unused(TCG_PCR_EVENT2 *event2)
+{
+    event2 = event2;
+    return TSS_RC_NOT_IMPLEMENTED;
+}
+
+/* TSS_Event2_Checkhash_Success() is used for events that do not extend PCRs.  An example is
+   EV_NO_ACTION.
+
+   Normally Checkhash would not be called for these events, but returning success may simplfy
+   application code.
+*/
+
+static uint32_t TSS_Event2_Checkhash_Success(TCG_PCR_EVENT2 *event2)
+{
+    event2 = event2;
+    return 0;
+}
+
+static uint32_t TSS_Event2_Checkhash_EventHash(TCG_PCR_EVENT2 *event2)
+{
+    uint32_t rc = 0;
+    int irc;
+    uint32_t count;
+    TPML_DIGEST_VALUES *digestValues = &event2->digests;
+
+    for (count = 0 ; (rc == 0) && (count < digestValues ->count) ; count++) {
+
+	TPMT_HA *pcrDigest = &(digestValues->digests[count]);	/* value extended */
+	TPMI_ALG_HASH hashAlg = pcrDigest->hashAlg;
+	TPMT_HA eventDigest;				/* value from event */
+
+	if (rc == 0) {
+	    eventDigest.hashAlg = hashAlg;
+	    rc = TSS_Hash_Generate(&eventDigest,
+				   event2->eventSize, event2->event,
+				   0, NULL);
+	}
+	if (rc == 0) {
+	    uint32_t sizeInBytes = TSS_GetDigestSize(hashAlg);
+#if 0
+	    printf("TSS_Event2_Checkhash_EventHash: bytes to hash %u\n",
+		   event2->eventSize);
+	    printf("TSS_Event2_Checkhash_EventHash: first byte %02x\n", event2->event[0]);
+	    printf("TSS_Event2_Checkhash_EventHash: last byte %02x\n",
+		   event2->event[event2->eventSize-1]);
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_EventHash: PCR",
+					      (uint8_t *)&pcrDigest->digest, sizeInBytes);
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_EventHash: event",
+					      (uint8_t *)&eventDigest.digest, sizeInBytes);
+#endif
+	    irc = memcmp((uint8_t *)&pcrDigest->digest,
+			 (uint8_t *)&eventDigest.digest,
+			 sizeInBytes);
+	    if (irc != 0) {
+#if 0
+		printf("TSS_Event2_Checkhash_EventHash: "
+		       "ERROR: hash mismatch PCR %08x, event type %08x hash alg %08x\n",
+		       event2->pcrIndex, event2->eventType, hashAlg);
+#endif
+		rc = TSS_RC_HASH;
+	    }
+	}
+    }
+    return rc;
+}
+
+/* TSS_Event2_Checkhash_VariableDataHash() events extend just the VariableData, not the entire
+   event
+*/
+
+static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2)
+{
+    uint32_t rc = 0;
+    int irc;
+    uint32_t count;
+    TPML_DIGEST_VALUES *digestValues = &event2->digests;
+    TSST_EFIData *efiData = NULL;
+    uint8_t *VariableData;
+    uint64_t VariableDataLength;
+
+    /* Parse the event and get the VariableData */
+    if (rc == 0) {
+	rc = TSS_EFIData_Init(&efiData, event2->eventType);
+    }
+    if (rc == 0) {
+	rc = TSS_EFIData_ReadBuffer(efiData, event2->event, event2->eventSize, event2->pcrIndex);
+    }
+    /* get the VariableData and its length from the structure */
+    if (rc == 0) {
+	VariableData = efiData->efiData.uefiVariableData.VariableData;
+	VariableDataLength = efiData->efiData.uefiVariableData.VariableDataLength;
+    }
+    for (count = 0 ; (rc == 0) && (count < digestValues ->count) ; count++) {
+
+	TPMT_HA *pcrDigest = &(digestValues->digests[count]);	/* value extended */
+	TPMI_ALG_HASH hashAlg = pcrDigest->hashAlg;
+	TPMT_HA variableDataDigest;				/* value from event */
+
+	if (rc == 0) {
+	    variableDataDigest.hashAlg = hashAlg;
+	    rc = TSS_Hash_Generate(&variableDataDigest,
+				   (uint32_t)VariableDataLength, VariableData,
+				   0, NULL);
+	}
+	if (rc == 0) {
+	    uint32_t sizeInBytes = TSS_GetDigestSize(hashAlg);
+#if 0
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_VariableDataHash: PCR",
+					      (uint8_t *)&pcrDigest->digest, sizeInBytes);
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_VariableDataHash: VariableData",
+					      (uint8_t *)&variableDataDigest.digest, sizeInBytes);
+#endif
+	    irc = memcmp((uint8_t *)&pcrDigest->digest,
+			 (uint8_t *)&variableDataDigest.digest,
+			 sizeInBytes);
+	    if (irc != 0) {
+#if 0
+		printf("TSS_Event2_Checkhash_VariableDataHash:\n"
+		       "\tERROR: hash mismatch PCR %08x, event type %08x hash alg %08x\n",
+		       event2->pcrIndex, event2->eventType, hashAlg);
+#endif
+		rc = TSS_RC_HASH;
+	    }
+	}
+    }
+    TSS_EFIData_Free(efiData);
+    return rc;
+}
+
+/* TSS_Event2_Checkhash_VariableDataAuthority() handles a Supermicro EV_EFI_VARIABLE_AUTHORITY event
+   that has an off by one error.  The last byte of the event is not hashed.
+*/
+
+static uint32_t TSS_Event2_Checkhash_VariableDataAuthority(TCG_PCR_EVENT2 *event2)
+{
+    uint32_t rc = 0;
+    int irc;
+    uint32_t count;
+    TPML_DIGEST_VALUES *digestValues = &event2->digests;
+    uint32_t offByOne = 1;	/* Supermicro bug */
+
+    for (count = 0 ; (rc == 0) && (count < digestValues ->count) ; count++) {
+
+	TPMT_HA *pcrDigest = &(digestValues->digests[count]);	/* value extended */
+	TPMI_ALG_HASH hashAlg = pcrDigest->hashAlg;
+	TPMT_HA eventDigest;				/* value from event */
+
+	if (rc == 0) {
+	    eventDigest.hashAlg = hashAlg;
+	    rc = TSS_Hash_Generate(&eventDigest,
+				   (uint32_t)event2->eventSize-offByOne, event2->event,
+				   0, NULL);
+	}
+	if (rc == 0) {
+	    uint32_t sizeInBytes = TSS_GetDigestSize(hashAlg);
+#if 0
+	    printf("TSS_Event2_Checkhash_VariableDataAuthority: bytes to hash %u\n",
+		   (uint32_t)event2->eventSize-offByOne);
+	    printf("TSS_Event2_Checkhash_VariableDataAuthority: first byte %02x\n",
+		   event2->event[0]);
+	    printf("TSS_Event2_Checkhash_VariableDataAuthority: last byte %02x\n",
+		   event2->event[event2->eventSize-1-offByOne]);
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_VariableDataAuthority: PCR",
+					      (uint8_t *)&pcrDigest->digest, sizeInBytes);
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_VariableDataAuthority: event",
+					      (uint8_t *)&eventDigest.digest, sizeInBytes);
+#endif
+	    irc = memcmp((uint8_t *)&pcrDigest->digest,
+			 (uint8_t *)&eventDigest.digest,
+			 sizeInBytes);
+	    if (irc != 0) {
+		printf("TSS_Event2_Checkhash_VariableDataAuthority: "
+		       "ERROR: hash mismatch PCR %08x, event type %08x hash alg %08x\n",
+		       event2->pcrIndex, event2->eventType, hashAlg);
+		rc = TSS_RC_HASH;
+	    }
+	}
+    }
+    return rc;
+}
+
+#if 0	/* Not used, OEMs seem to not follow the PFP */
+
+/* TSS_Event2_Checkhash_SignatureDataHash() events extend just the UEFI signature data, not the
+   entire event.
+
+   This function (untested) agrees with the PFP, although OEMs seem to do it differently.
+
+*/
+
+static uint32_t TSS_Event2_Checkhash_SignatureDataHash(TCG_PCR_EVENT2 *event2)
+{
+    uint32_t rc = 0;
+    int irc;
+    uint32_t count;
+    TPML_DIGEST_VALUES *digestValues = &event2->digests;
+    TSST_EFIData *efiData = NULL;
+    UEFI_VARIABLE_DATA *uefiVariableData;
+    uint8_t *hashData;
+    uint64_t hashDataLength;
+    uint32_t offset;
+
+    /* Parse the event and get the VariableData */
+    if (rc == 0) {
+	rc = TSS_EFIData_Init(&efiData, event2->eventType);
+    }
+    if (rc == 0) {
+	rc = TSS_EFIData_ReadBuffer(efiData, event2->event, event2->eventSize, event2->pcrIndex);
+    }
+    /* get the hashed data and its length from the structure */
+    if (rc == 0) {
+	uefiVariableData = &efiData->efiData.uefiVariableData;
+	/* DB has a signature length */
+	if (uefiVariableData->variableDataTag == VAR_DB) {
+	    /* offset into event is variable GUID + 2 uint64_t lengths + UC16 "DB" */
+	    offset = sizeof(efi_guid_t) + sizeof(uint64_t) + sizeof(uint64_t) + 4;
+	}
+	else if (uefiVariableData->variableDataTag == VAR_SHIM) {
+	    /* offset into event is variable GUID + 2 uint64_t lengths + UC16 "Shim" */
+	    offset = sizeof(efi_guid_t) + sizeof(uint64_t) + sizeof(uint64_t) + 8;
+	}
+	else if (uefiVariableData->variableDataTag == VAR_MOKLIST) {
+	    /* offset into event is variable GUID + 2 uint64_t lengths + UC16 "Moklist" */
+	    offset = sizeof(efi_guid_t) + sizeof(uint64_t) + sizeof(uint64_t) + 14;
+	}
+	else {
+	    rc = TSS_RC_NOT_IMPLEMENTED;
+	}
+	hashData = event2->event + offset;
+	hashDataLength = event2->eventSize - offset;
+    }
+   for (count = 0 ; (rc == 0) && (count < digestValues ->count) ; count++) {
+
+	TPMT_HA *pcrDigest = &(digestValues->digests[count]);	/* value extended */
+	TPMI_ALG_HASH hashAlg = pcrDigest->hashAlg;
+	TPMT_HA signatureDataDigest;				/* value from event */
+
+	if (rc == 0) {
+	    signatureDataDigest.hashAlg = hashAlg;
+	    rc = TSS_Hash_Generate(&signatureDataDigest,
+				   (uint32_t)hashDataLength, hashData,
+				   0, NULL);
+	}
+	if (rc == 0) {
+	    uint32_t sizeInBytes = TSS_GetDigestSize(hashAlg);
+#if 0
+	    printf("TSS_Event2_Checkhash_SignatureDataHash: bytes to hash %u\n",
+		   (uint32_t)hashDataLength);
+	    printf("TSS_Event2_Checkhash_SignatureDataHash: first byte %02x\n", hashData[0]);
+	    printf("TSS_Event2_Checkhash_SignatureDataHash: last byte %02x\n",
+		   hashData[hashDataLength-1]);
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_SignatureDataHash: PCR",
+					      (uint8_t *)&pcrDigest->digest, sizeInBytes);
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_SignatureDataHash: event",
+					      (uint8_t *)&signatureDataDigest.digest, sizeInBytes);
+#endif
+	    irc = memcmp((uint8_t *)&pcrDigest->digest,
+			 (uint8_t *)&signatureDataDigest.digest,
+			 sizeInBytes);
+	    if (irc != 0) {
+		printf("TSS_Event2_Checkhash_SignatureDataHash: "
+		       "ERROR: hash mismatch PCR %08x, event type %08x hash alg %08x\n",
+		       event2->pcrIndex, event2->eventType, hashAlg);
+		rc = TSS_RC_HASH;
+	    }
+	}
+    }
+    TSS_EFIData_Free(efiData);
+    return rc;
+}
+
+#endif	/* function currently unused */
+
+/* TSS_EVENT2_Line_CheckHash() checks the event against the PCR hash.
+
+   A not implemented check returns TSS_RC_NOT_IMPLEMENTED.
+   A NULL entry in the table primary method returns TSS_RC_NOT_IMPLEMENTED.
+   A NULL entry in the table second method returns the error from the primary method.
+*/
+
+TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event)
+{
+    uint32_t rc = 0;
+    size_t index;
+
+    /* if the eventType is not supported, returns TSS_RC_NOT_IMPLEMENTED */
+    if (rc == 0) {
+	rc = TSS_Event2_Checkhash_GetTableIndex(&index, event->eventType);
+    }
+    if (rc == 0) {
+	/* if there is a primary method */
+	if (event2CheckHashTable[index].checkHashFunction1 != NULL) {
+	    /* try the primary method */
+	    rc = event2CheckHashTable[index].checkHashFunction1(event);
+	    /* if the primary method failed, try the second, alternate */
+	    if (rc != 0) {
+		/* if there is a second method */
+		if (event2CheckHashTable[index].checkHashFunction2 != NULL) {
+		    /* try the second method */
+		    rc = event2CheckHashTable[index].checkHashFunction2(event);
+		}
+		/* else use the rc from the primary method */
+	    }
+	}
+	/* no checkHashFunction1, not implemented */
+	else {
+	    rc = TSS_RC_NOT_IMPLEMENTED;
+	}
+    }
+    if (rc != 0) {
+	printf("TSS_EVENT2_Line_CheckHash: Error: rc %08x\n", rc);
+    }
+    return rc;
+}
+
 #ifdef HAVE_CONFIG_H
 /*
   * config.h is only present if autoconf was used, which is only the
@@ -773,6 +1247,7 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
     }
     return rc;
 }
+
 #endif /* TPM_TSS_NOCRYPTO */
 #endif	/* TPM_TPM20 */
 
@@ -863,6 +1338,8 @@ TPM_RC TSS_UINT64LE_Unmarshal(uint64_t *target, BYTE **buffer, uint32_t *size)
 }
 
 #ifdef HAVE_EFIBOOT_H
+/* FIXME remove */
+#if 0
 /* This section contains parsers for boot options requiring efiboot.h */
 static void load_option_printf(void *o, uint64_t lo_len)
 {
@@ -1175,6 +1652,7 @@ static void image_load_printf(void *ev, uint32_t eventSize)
     }
 }
 
+
 /* This structure contains a GUID Partition Table, and is defined in the TGC PC
    Client Platform Firmware Profile Specification Revision 1.04 Section 9.4.
    Its structure members are defined in the UEFI Specification Version 2.8
@@ -1288,6 +1766,7 @@ static void gpt_printf(void *ev, uint32_t eventSize) {
     }
 }
 #endif
+#endif
 
 void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
 {
@@ -1400,7 +1879,8 @@ const EVENT_TYPE_TABLE eventTypeTable [] = {
     {EV_EFI_PLATFORM_FIRMWARE_BLOB, "EV_EFI_PLATFORM_FIRMWARE_BLOB"},
     {EV_EFI_HANDOFF_TABLES, "EV_EFI_HANDOFF_TABLES"},
     {EV_EFI_HCRTM_EVENT, "EV_EFI_HCRTM_EVENT"},
-    {EV_EFI_VARIABLE_AUTHORITY, "EV_EFI_VARIABLE_AUTHORITY"}
+    {EV_EFI_VARIABLE_AUTHORITY, "EV_EFI_VARIABLE_AUTHORITY"},
+    {EV_EFI_SUPERMICRO_1, "EV_EFI_SUPERMICRO_1"}
 };
 
 static void TSS_EVENT_EventType_Trace(uint32_t eventType)

@@ -53,7 +53,7 @@ typedef struct {
 typedef struct {
     uint8_t   SignatureOwner[sizeof(efi_guid_t)];
     uint8_t  *SignatureData;
-    /* since EV_EFI_VARIABLE_AUTHORITY doesn't have an exlicit length */
+    /* since EV_EFI_VARIABLE_AUTHORITY doesn't have an explicit length */
     uint32_t  SignatureLength;
 } TSS_AUTHORITY_SIGNATURE_DATA;
 
@@ -145,6 +145,20 @@ typedef struct  {
     char *bootDescription;
     char *bootPath;
 } TSS_VARIABLE_BOOT;
+
+/* UEFI_VARIABLE_DATA structure tags, for this implementation */
+
+#define VAR_UNKNOWN	0
+#define VAR_SECUREBOOT	1
+#define VAR_PK		2
+#define VAR_KEK		3
+#define VAR_DB		4
+#define VAR_DBX		5
+#define VAR_DBT		6
+#define VAR_DBR		7
+#define VAR_BOOTORDER	8
+#define VAR_SHIM	9
+#define VAR_MOKLIST	10
 
 /* This structure is used to designate the measurement of UEFI variables. The
    structure is defined in the TGC PC Client Platform Firmware Profile Specification

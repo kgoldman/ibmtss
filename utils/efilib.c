@@ -97,7 +97,9 @@
 #define SHA256_GUID						\
     {0x26, 0x16, 0xc4, 0xc1, 0x4c, 0x50, 0x92, 0x40,		\
 	0xac, 0xa9, 0x41, 0xf9, 0x36, 0x93, 0x43, 0x28}
-
+#define EFI_MP_SERVICES_PROTOCOL_GUID				\
+    {0x05, 0xa6, 0xdd, 0x3f, 0x6e, 0xa7, 0x46, 0x4f, 		\
+     0xad, 0x29, 0x12, 0xf4, 0x53, 0x1b, 0x3d, 0x08}
 
 #if 0	/* future GUIDs to be supported */
 #define SMBIOS_TABLE_GUID    			"eb9d2d31-2d88-11d3-9a16-0090273fc14d"
@@ -150,6 +152,9 @@ const GUID_TABLE guidTable [] =
      {SHA256_GUID,
       GUID_TYPE_SHA256,
       "SHA256_GUID"},
+     {EFI_MP_SERVICES_PROTOCOL_GUID,
+      GUID_TYPE_UNSUPPORTED,
+      "EFI_MP_SERVICES_PROTOCOL_GUID"},
 #if 0
      {EFI_ACPI_20_TABLE_GUID,
       GUID_TYPE_UNSUPPORTED,
@@ -197,20 +202,6 @@ const unsigned char bootorder[] =
     "\x64\x00\x65\x00\x72";
 const unsigned char Shim[] = "\x53\x00\x68\x00\x69\x00\x6d";
 const unsigned char MokList[] = "\x4d\x00\x6f\x00\x6b\x00\x4c\x00\x69\x00\x73\x00\x74";
-
-/* UEFI_VARIABLE_DATA structure tags, for this implementation */
-
-#define VAR_UNKNOWN	0
-#define VAR_SECUREBOOT	1
-#define VAR_PK		2
-#define VAR_KEK		3
-#define VAR_DB		4
-#define VAR_DBX		5
-#define VAR_DBT		6
-#define VAR_DBR		7
-#define VAR_BOOTORDER	8
-#define VAR_SHIM	9
-#define VAR_MOKLIST	10
 
 /* This table maps UC16 Variable names to this implementation structure tags */
 
@@ -431,12 +422,6 @@ static void     TSS_Efi4bBufferFree(TSST_EFIData *efiData);
 static uint32_t TSS_Efi4bBufferReadBuffer(TSST_EFIData *efiData,
 					  uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
 
-/* EV_TABLE_OF_DEVICES */
-
-static void     TSS_EfiTableOfDevicesTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiTableOfDevicesToJson(TSST_EFIData *efiData);
-
-
 /* EV_COMPACT_HASH */
 
 static void     TSS_EfiCompactHashTrace(TSST_EFIData *efiData);
@@ -457,6 +442,11 @@ static uint32_t TSS_EfiCrtmVersionToJson(TSST_EFIData *efiData);
 static void     TSS_EfiCrtmContentsTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiCrtmContentsToJson(TSST_EFIData *efiData);
 
+/* EV_EFI_ACTION */
+
+static void     TSS_EfiActionTrace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiActionToJson(TSST_EFIData *efiData);
+
 /* EV_POST_CODE */
 
 static uint32_t TSS_EfiCharReadBuffer(TSST_EFIData *efiData,
@@ -464,7 +454,9 @@ static uint32_t TSS_EfiCharReadBuffer(TSST_EFIData *efiData,
 static void     TSS_EfiCharTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiCharToJson(TSST_EFIData *efiData);
 
-/* EV_EFI_HANDOFF_TABLES */
+/* EV_EFI_HANDOFF_TABLES
+   EV_TABLE_OF_DEVICES
+*/
 
 static void     TSS_EfiHandoffTablesInit(TSST_EFIData *efiData);
 static void     TSS_EfiHandoffTablesFree(TSST_EFIData *efiData);
@@ -481,10 +473,10 @@ static uint32_t TSS_EfiFormatDevicePath(char **path,
 static void guid_printf(const char *msg, uint8_t *v_guid);
 static void wchar_printf(const char *msg, void *wchar, uint64_t length);
 
-/* tables to map eventType to handling function callbacks.  NULL entries   */
+/* tables to map eventType to handling function callbacks.  NULL entries become NOOPs. */
 
 typedef struct {
-    uint32_t eventType;					/* PC CLient event */
+    uint32_t eventType;					/* PC Client event */
     TSS_EFIDAta_Init_Function_t		initFunction;
     TSS_EFIDAta_Free_Function_t		freeFunction;
     TSS_EFIDAta_ReadBuffer_Function_t	readBufferFunction;
@@ -561,11 +553,11 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL},
      {EV_TABLE_OF_DEVICES,
-      TSS_Efi4bBufferInit,
-      TSS_Efi4bBufferFree,
-      TSS_Efi4bBufferReadBuffer,
-      TSS_EfiTableOfDevicesTrace,
-      TSS_EfiTableOfDevicesToJson},
+      TSS_EfiHandoffTablesInit,
+      TSS_EfiHandoffTablesFree,
+      TSS_EfiHandoffTablesReadBuffer,
+      TSS_EfiHandoffTablesTrace,
+      TSS_EfiHandoffTablesToJson},
      {EV_COMPACT_HASH,
       TSS_Efi4bBufferInit,
       TSS_Efi4bBufferFree,
@@ -608,12 +600,6 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL,
       NULL},
-     {EV_EFI_EVENT_BASE,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL},
      {EV_EFI_VARIABLE_DRIVER_CONFIG,
       TSS_EfiVariableDriverConfigInit,
       TSS_EfiVariableDriverConfigFree,
@@ -651,11 +637,11 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       TSS_EfiGptEventTrace,
       TSS_EfiGptEventToJson},
      {EV_EFI_ACTION,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL},
+      TSS_Efi4bBufferInit,
+      TSS_Efi4bBufferFree,
+      TSS_Efi4bBufferReadBuffer,
+      TSS_EfiActionTrace,
+      TSS_EfiActionToJson},
      {EV_EFI_PLATFORM_FIRMWARE_BLOB,
       NULL,
       NULL,
@@ -680,6 +666,12 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       TSS_EfiVariableAuthorityReadBuffer,
       TSS_EfiVariableAuthorityTrace,
       TSS_EfiVariableAuthorityToJson},
+     {EV_EFI_SUPERMICRO_1,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL},
     };
 
 
@@ -847,8 +839,8 @@ static uint32_t TSS_EFI_GetTableIndex(size_t *index, uint32_t eventType)
 /* EV_EFI_PLATFORM_FIRMWARE_BLOB handlers */
 
 static uint32_t TSS_EfiPlatformFirmwareBlobReadBuffer(TSST_EFIData *efiData,
-					       uint8_t *event, uint32_t eventSize,
-					       uint32_t pcrIndex)
+						      uint8_t *event, uint32_t eventSize,
+						      uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     UEFI_PLATFORM_FIRMWARE_BLOB *uefiPlatformFirmwareBlob =
@@ -1166,7 +1158,7 @@ static void     TSS_EfiSignatureListFree(EFI_SIGNATURE_LIST *signatureList)
  */
 
 static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList,
-					uint8_t **event, uint32_t *eventSize)
+					       uint8_t **event, uint32_t *eventSize)
 {
     uint32_t rc = 0;
     void *tmpptr;			/* for realloc */
@@ -1655,6 +1647,7 @@ static uint32_t TSS_EfiVariableAuthorityReadBuffer(TSST_EFIData *efiData,
 					  &tmpVarData, &tmpVarDataLength);
 	    }
 	}
+	/* intentional fall through for DB */
 	if ((uefiVariableData->variableDataTag == VAR_DB) ||
 	    (uefiVariableData->variableDataTag == VAR_SHIM) ||
 	    (uefiVariableData->variableDataTag == VAR_MOKLIST)) {
@@ -1700,7 +1693,8 @@ static void TSS_EfiVariableAuthorityTrace(TSST_EFIData *efiData)
 
     /* common UEFI_VARIABLE_DATA trace */
     TSS_EfiVariableDataTrace(efiData);
-
+    /* not part of UEFI structure */
+    printf("  SignatureLength: %u\n", authoritySignatureData->SignatureLength);
     /* db has an owner, shim does not */
     if (uefiVariableData->variableDataTag == VAR_DB) {
 	guid_printf("SignatureOwner GUID", authoritySignatureData->SignatureOwner);
@@ -2122,27 +2116,6 @@ static uint32_t TSS_Efi4bBufferReadBuffer(TSST_EFIData *efiData,
     return rc;
 }
 
-/* EV_TABLE_OF_DEVICES */
-
-static void     TSS_EfiTableOfDevicesTrace(TSST_EFIData *efiData)
-{
-    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
-    TSS_PrintAll("    Table of devices",
-		 tss4bBuffer->buffer, tss4bBuffer->size);
-    return;
-}
-
-static uint32_t TSS_EfiTableOfDevicesToJson(TSST_EFIData *efiData)
-{
-    uint32_t rc = 0;
-    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
-    tss4bBuffer = tss4bBuffer;
-
-    if (rc == 0) {
-    }
-    return rc;
-}
-
 /* EV_COMPACT_HASH */
 
 static void     TSS_EfiCompactHashTrace(TSST_EFIData *efiData)
@@ -2239,7 +2212,30 @@ static uint32_t TSS_EfiCrtmContentsToJson(TSST_EFIData *efiData)
     return rc;
 }
 
+/* EV_EFI_ACTION */
 
+static void TSS_EfiActionTrace(TSST_EFIData *efiData)
+{
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+    printf("  EFI Action: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
+    return;
+}
+
+static uint32_t TSS_EfiActionToJson(TSST_EFIData *efiData)
+{
+    uint32_t rc = 0;
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+    tss4bBuffer = tss4bBuffer;
+    if (rc == 0) {
+    }
+    if (rc == 0) {
+    }
+    if (rc == 0) {
+    }
+    if (rc == 0) {
+    }
+    return rc;
+}
 
 /* EV_POST_CODE
 
@@ -2291,6 +2287,7 @@ static void TSS_EfiHandoffTablesInit(TSST_EFIData *efiData)
     uefiHandoffTablePointers->TableEntry = NULL;
     return;
 }
+
 static void TSS_EfiHandoffTablesFree(TSST_EFIData *efiData)
 {
     UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
@@ -2298,8 +2295,9 @@ static void TSS_EfiHandoffTablesFree(TSST_EFIData *efiData)
     free(uefiHandoffTablePointers->TableEntry);
     return;
 }
+
 static uint32_t TSS_EfiHandoffTablesReadBuffer(TSST_EFIData *efiData,
-					uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
+					       uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     uint64_t tableCount;
@@ -2320,7 +2318,7 @@ static uint32_t TSS_EfiHandoffTablesReadBuffer(TSST_EFIData *efiData,
 	    rc = TSS_RC_MALLOC_SIZE;
 	}
     }
-    /* allocate the UnicodeName array, unicode means byte array is length * 2 */
+    /* allocate the EFI_CONFIGURATION_TABLE list */
     if (rc == 0) {
 	if (uefiHandoffTablePointers->NumberOfTables > 0) {
 	    /* freed by TSS_EfiHandoffTablesFree */

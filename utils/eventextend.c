@@ -65,6 +65,7 @@ int main(int argc, char * argv[])
     FILE 			*infile = NULL;
     int				tpm = FALSE;	/* extend into TPM */
     int				sim = FALSE;	/* extend into simulated PCRs */
+    int				checkHash = FALSE;	/* verify event log hashes */
     int				nospec = FALSE;	/* event log does not start with spec file */
     int				noSpace = FALSE;
     uint32_t 			bankNum = 0;	/* PCR hash bank */
@@ -102,6 +103,9 @@ int main(int argc, char * argv[])
 	}
 	else if (strcmp(argv[i],"-sim") == 0) {
 	    sim = TRUE;
+	}
+	else if (strcmp(argv[i],"-checkhash") == 0) {
+	    checkHash = TRUE;
 	}
 	else if (strcmp(argv[i],"-ns") == 0) {
 	    noSpace = TRUE;
@@ -215,6 +219,10 @@ int main(int argc, char * argv[])
 	    if (event2.eventType == EV_NO_ACTION) {
 		continue;
 	    }
+	}
+	/* verify the event PCR digest against the event data */
+	if ((rc == 0) && checkHash) {
+	    rc = TSS_EVENT2_Line_CheckHash(&event2);
 	}
 	if ((rc == 0) && !endOfFile && tpm) {	/* extend TPM */
 	    PCR_Extend_In 		in;
@@ -381,6 +389,7 @@ static void printUsage(void)
     printf("\t[-nospec\tfile does not contain spec ID header (useful for incremental test)]\n");
     printf("\t[-tpm\textend TPM PCRs]\n");
     printf("\t[-sim\tcalculate simulated PCRs and boot aggregate]\n");
+    printf("\t[-checkhash\tverify event log hashes]\n");
     printf("\t[-pcrmax\twith -sim, sets the highest PCR number to be used to calculate the\n"
 	   "\t\tboot aggregate (default 7)]\n");
     printf("\t[-ns\tno space, no text, no newlines]\n");

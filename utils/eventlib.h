@@ -87,6 +87,9 @@
 #define EV_EFI_HCRTM_EVENT			0x80000010 
 #define EV_EFI_VARIABLE_AUTHORITY		0x800000E0
 
+/* unknown Supermicro event type */
+#define EV_EFI_SUPERMICRO_1			0x0000040e
+
 /* PCR 0-7 are the BIOS / UEFI / firmware / pre-OS PCRs, set to 10 because a Lenovo TPM 1.2 firmware
    extends PCR 0-9 */
 #define TPM_BIOS_PCR	10
@@ -193,6 +196,7 @@ extern "C" {
     TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t *size);
 
     TPM_RC TSS_EVENT2_Line_LE_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t *size);
+    TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event);
 
 
 #ifndef TPM_TSS_NOCRYPTO
