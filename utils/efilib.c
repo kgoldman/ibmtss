@@ -66,40 +66,69 @@
 /* standard GUID values */
 
 /* a5c059a1-94e4-4aa7-87b5-ab155c2bf072 */
-#define EFI_CERT_X509_GUID					\
-    {0xa1, 0x59, 0xc0, 0xa5, 0xe4, 0x94, 0xa7, 0x4a,		\
-	    0x87, 0xb5, 0xab, 0x15, 0x5c, 0x2b, 0xf0, 0x72}
+#define EFI_CERT_X509_GUID				\
+    {0xa1, 0x59, 0xc0, 0xa5, 0xe4, 0x94, 0xa7, 0x4a,	\
+     0x87, 0xb5, 0xab, 0x15, 0x5c, 0x2b, 0xf0, 0x72}
 /* 8be4df61-93ca-11d2-aa0d-00e098032b8c */
-#define EFI_GLOBAL_VARIABLE					\
-    {0x61, 0xdf, 0xe4, 0x8b, 0xca, 0x93, 0xd2, 0x11,		\
-	    0xaa, 0x0d, 0x00, 0xe0, 0x98, 0x03, 0x2b, 0x8c}
+#define EFI_GLOBAL_VARIABLE				\
+    {0x61, 0xdf, 0xe4, 0x8b, 0xca, 0x93, 0xd2, 0x11,	\
+     0xaa, 0x0d, 0x00, 0xe0, 0x98, 0x03, 0x2b, 0x8c}
 /* d719b2cb-3d3a-4596-a3bc-dad00e67656f */
-#define EFI_IMAGE_SECURITY_DATABASE_GUID			\
-    {0xcb, 0xb2, 0x19, 0xd7, 0x3a, 0x3d, 0x96, 0x45,		\
-	    0xa3, 0xbc, 0xda, 0xd0, 0x0e, 0x67, 0x65, 0x6f}
+#define EFI_IMAGE_SECURITY_DATABASE_GUID		\
+    {0xcb, 0xb2, 0x19, 0xd7, 0x3a, 0x3d, 0x96, 0x45,	\
+     0xa3, 0xbc, 0xda, 0xd0, 0x0e, 0x67, 0x65, 0x6f}
 /* f2fd1544-9794-4a2c-992e-e5bbcf20e394 */
-#define SMBIOS3_TABLE_GUID					\
-    {0x44, 0x15, 0xfd, 0xf2, 0x94, 0x97, 0x2c, 0x4a,		\
-	    0x99, 0x2e, 0xe5, 0xbb, 0xcf, 0x20, 0xe3, 0x94}
+#define SMBIOS3_TABLE_GUID				\
+    {0x44, 0x15, 0xfd, 0xf2, 0x94, 0x97, 0x2c, 0x4a,	\
+     0x99, 0x2e, 0xe5, 0xbb, 0xcf, 0x20, 0xe3, 0x94}
 /* 7facc7b6-127f-4e9c-9c5d-080f98994345 */
-#define LENOVO2_GUID						\
-    {0xb6, 0xc7, 0xac, 0x7f, 0x7f, 0x12, 0x9c, 0x4e,		\
-	    0x9c, 0x5d, 0x08, 0x0f, 0x98, 0x99, 0x43, 0x45}
+#define LENOVO2_GUID					\
+    {0xb6, 0xc7, 0xac, 0x7f, 0x7f, 0x12, 0x9c, 0x4e,	\
+     0x9c, 0x5d, 0x08, 0x0f, 0x98, 0x99, 0x43, 0x45}
 /* 77fa9abd-0359-4d32-bd60-28f4e78f784b */
-#define MICROSOFT_GUID						\
-    {0xbd, 0x9a, 0xfa, 0x77, 0x59, 0x03, 0x32, 0x4d, 		\
-	    0xbd, 0x60, 0x28, 0xf4, 0xe7, 0x8f, 0x78, 0x4b}
+#define MICROSOFT_GUID					\
+    {0xbd, 0x9a, 0xfa, 0x77, 0x59, 0x03, 0x32, 0x4d, 	\
+     0xbd, 0x60, 0x28, 0xf4, 0xe7, 0x8f, 0x78, 0x4b}
 /* 3cc24e96-22c7-41d8-8863-8e39dcdcc2cf */
-#define LENOVO_GUID						\
-    {0x96, 0x4e, 0xc2, 0x3c, 0xc7, 0x22, 0xd8, 0x41, 		\
-	    0x88, 0x63, 0x8e, 0x39, 0xdc, 0xdc, 0xc2, 0xcf}
+#define LENOVO_GUID					\
+    {0x96, 0x4e, 0xc2, 0x3c, 0xc7, 0x22, 0xd8, 0x41, 	\
+     0x88, 0x63, 0x8e, 0x39, 0xdc, 0xdc, 0xc2, 0xcf}
+/* 70564dce-9afc-4ee3-85fc-949649d7e45c */
+#define DELL_PK_SIGNING_KEY				\
+    {0xce, 0x4d, 0x56, 0x70, 0xfc, 0x9a, 0xe3, 0x4e,	\
+     0x85, 0xfc, 0x94, 0x96, 0x49, 0xd7, 0xe4, 0x5c}
 /* c1c41626-504c-4092-aca9-41f936934328	*/
-#define SHA256_GUID						\
-    {0x26, 0x16, 0xc4, 0xc1, 0x4c, 0x50, 0x92, 0x40,		\
-	0xac, 0xa9, 0x41, 0xf9, 0x36, 0x93, 0x43, 0x28}
-#define EFI_MP_SERVICES_PROTOCOL_GUID				\
-    {0x05, 0xa6, 0xdd, 0x3f, 0x6e, 0xa7, 0x46, 0x4f, 		\
+#define SHA256_GUID					\
+    {0x26, 0x16, 0xc4, 0xc1, 0x4c, 0x50, 0x92, 0x40,	\
+     0xac, 0xa9, 0x41, 0xf9, 0x36, 0x93, 0x43, 0x28}
+#define EFI_MP_SERVICES_PROTOCOL_GUID			\
+    {0x05, 0xa6, 0xdd, 0x3f, 0x6e, 0xa7, 0x46, 0x4f,	\
      0xad, 0x29, 0x12, 0xf4, 0x53, 0x1b, 0x3d, 0x08}
+/* c12a7328-f81f-11d2-ba4b-00a0c93ec93b */
+#define EFI_SYSTEM_PARTITION_GUID			\
+    {0x28, 0x73, 0x2a, 0xc1, 0x1f, 0xf8, 0xd2, 0x11,	\
+     0xba, 0x4b, 0x00, 0xa0, 0xc9, 0x3e, 0xc9, 0x3b} 
+/* e3c9e316-0b5c-4db8-817d-f92df00215ae */
+#define MICROSOFT_RESERVED_PARTITION_GUID		\
+    {0x16, 0xe3, 0xc9, 0xe3, 0x5c, 0x0b, 0xb8, 0x4d,	\
+     0x81, 0x7d, 0xf9, 0x2d, 0xf0, 0x02, 0x15, 0xae}
+/* ebd0a0a2-b9e5-4433-87c0-68b6b72699c7 */
+#define BASIC_DATA_PARTITION_GUID			\
+    {0xa2, 0xa0, 0xd0, 0xeb, 0xe5, 0xb9, 0x33, 0x44,	\
+     0x87, 0xc0, 0x68, 0xb6, 0xb7, 0x26, 0x99, 0xc7}
+/* de94bba4-06d1-4d40-a16a-bfd50179d6ac */
+#define WINDOWS_RECOVERY_ENVIRONMENT_GUID		\
+    {0xa4, 0xbb, 0x94, 0xde, 0xd1, 0x06, 0x40, 0x4d,	\
+     0xa1, 0x6a, 0xbf, 0xd5, 0x01, 0x79, 0xd6, 0xac}
+/* 0fc63daf-8483-4772-8e79-3d69d8477de4 */
+#define LINUX_FILESYSTEM_DATA_GUID			\
+    {0xaf, 0x3d, 0xc6, 0x0f, 0x83, 0x84, 0x72, 0x47,	\
+     0x8e, 0x79, 0x3d, 0x69, 0xd8, 0x47, 0x7d, 0xe4}
+/* 21686148-6449-6e6f-744e-656564454649 */
+#define BIOS_BOOT_PARTITION_GUID			\
+    {0x48, 0x61, 0x68, 0x21, 0x49, 0x64, 0x6f, 0x6e,	\
+	    0x74, 0x4e, 0x65, 0x65, 0x64, 0x45, 0x46, 0x49}
+
 
 #if 0	/* future GUIDs to be supported */
 #define SMBIOS_TABLE_GUID    			"eb9d2d31-2d88-11d3-9a16-0090273fc14d"
@@ -133,7 +162,7 @@ const GUID_TABLE guidTable [] =
       "EFI_CERT_X509_GUID"},
      {EFI_GLOBAL_VARIABLE,
       GUID_TYPE_UNSUPPORTED,
-      "EFI_GLOBAL_VARIABLE"},
+      "EFI_GLOBAL_VARIABLE_GUID"},
      {EFI_IMAGE_SECURITY_DATABASE_GUID,
       GUID_TYPE_X509_CERT,
       "EFI_IMAGE_SECURITY_DATABASE_GUID"},
@@ -149,12 +178,34 @@ const GUID_TABLE guidTable [] =
      {LENOVO_GUID,
       GUID_TYPE_UNSUPPORTED,
       "LENOVO_GUID"},
+     {DELL_PK_SIGNING_KEY,
+      GUID_TYPE_UNSUPPORTED,
+      "DELL_PK_SIGNING_KEY_GUID"},
      {SHA256_GUID,
       GUID_TYPE_SHA256,
       "SHA256_GUID"},
      {EFI_MP_SERVICES_PROTOCOL_GUID,
       GUID_TYPE_UNSUPPORTED,
       "EFI_MP_SERVICES_PROTOCOL_GUID"},
+     {EFI_SYSTEM_PARTITION_GUID,
+      GUID_TYPE_UNSUPPORTED,
+      "EFI_SYSTEM_PARTITION_GUID"},
+     {MICROSOFT_RESERVED_PARTITION_GUID,
+      GUID_TYPE_UNSUPPORTED,
+      "MICROSOFT_RESERVED_PARTITION_GUID"},
+     {BASIC_DATA_PARTITION_GUID,
+      GUID_TYPE_UNSUPPORTED,
+      "BASIC_DATA_PARTITION_GUID"},
+     {WINDOWS_RECOVERY_ENVIRONMENT_GUID,
+     GUID_TYPE_UNSUPPORTED,
+     "WINDOWS_RECOVERY_ENVIRONMENT_GUID"},
+     {LINUX_FILESYSTEM_DATA_GUID,
+     GUID_TYPE_UNSUPPORTED,
+     "LINUX_FILESYSTEM_DATA_GUID"},
+     {BIOS_BOOT_PARTITION_GUID,
+     GUID_TYPE_UNSUPPORTED,
+     "BIOS_BOOT_PARTITION_GUID"},
+
 #if 0
      {EFI_ACPI_20_TABLE_GUID,
       GUID_TYPE_UNSUPPORTED,
@@ -293,21 +344,6 @@ static uint32_t TSS_EfiVariableDriverConfigReadBuffer(TSST_EFIData *efiData,
 static void     TSS_EfiVariableDriverConfigTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiVariableDriverConfigToJson(TSST_EFIData *efiData);
 
-/* EFI_SIGNATURE_LIST within UEFI_VARIABLE_DATA */
-
-static void     TSS_EfiSignatureListInit(EFI_SIGNATURE_LIST *signatureList);
-static void     TSS_EfiSignatureListFree(EFI_SIGNATURE_LIST *signatureList);
-static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList,
-					       uint8_t **event, uint32_t *eventSize);
-static void     TSS_EfiSignatureListTrace(EFI_SIGNATURE_LIST *signatureList);
-
-/* UEFI_VARIABLE_DATA for PK, KEK, db, dbx, dbr, dbt */
-  
-static uint32_t TSS_EfiSignatureDatabaseReadBuffer(EFI_SIGNATURE_LIST **signatureList,
-						   uint32_t *signatureListCount,
-						   uint8_t *VariableData,
-						   uint32_t VariableDataLength);
-
 /* EV_EFI_VARIABLE_BOOT */
 
 static void     TSS_EfiVariableBootInit(TSST_EFIData *efiData);
@@ -329,27 +365,6 @@ static uint32_t TSS_EfiPlatformFirmwareBlobReadBuffer(TSST_EFIData *efiData,
 static void     TSS_EfiPlatformFirmwareBlobTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiPlatformFirmwareBlobToJson(TSST_EFIData *efiData);
 
-/* EV_EFI_VARIABLE_DRIVER_CONFIG
-   EV_EFI_VARIABLE_BOOT
-   EV_EFI_VARIABLE_AUTHORITY
-*/
-
-static void     TSS_EfiVariableDataInit(TSST_EFIData *efiData);
-static void     TSS_EfiVariableDataFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableDataReadBuffer(TSST_EFIData *efiData,
-					      uint8_t **event, uint32_t *eventSize);
-static void     TSS_EfiVariableDataTrace(TSST_EFIData *efiData);
-
-/* EV_EFI_VARIABLE_DRIVER_CONFIG */
-
-static void     TSS_EfiVariableDriverConfigInit(TSST_EFIData *efiData);
-static void     TSS_EfiVariableDriverConfigFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableDriverConfigReadBuffer(TSST_EFIData *efiData,
-						      uint8_t *event, uint32_t eventSize,
-						      uint32_t pcrIndex);
-static void     TSS_EfiVariableDriverConfigTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableDriverConfigToJson(TSST_EFIData *efiData);
-
 /* EFI_SIGNATURE_LIST within UEFI_VARIABLE_DATA */
 
 static void     TSS_EfiSignatureListInit(EFI_SIGNATURE_LIST *signatureList);
@@ -358,9 +373,9 @@ static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList
 					       uint8_t **event, uint32_t *eventSize);
 static void     TSS_EfiSignatureListTrace(EFI_SIGNATURE_LIST *signatureList);
 
-/* UEFI_VARIABLE_DATA for PK, KEK, db, dbx, dbr, dbt */
+/* UEFI_VARIABLE_DATA for PK, KEK, db, dbx, dbr, dbt, etc. */
   
-static uint32_t TSS_EfiSignatureDatabaseReadBuffer(EFI_SIGNATURE_LIST **signatureList,
+static uint32_t TSS_EfiSignatureAllListsReadBuffer(EFI_SIGNATURE_LIST **signatureList,
 						   uint32_t *signatureListCount,
 						   uint8_t *VariableData,
 						   uint32_t VariableDataLength);
@@ -473,7 +488,15 @@ static uint32_t TSS_EfiFormatDevicePath(char **path,
 static void guid_printf(const char *msg, uint8_t *v_guid);
 static void wchar_printf(const char *msg, void *wchar, uint64_t length);
 
-/* tables to map eventType to handling function callbacks.  NULL entries become NOOPs. */
+/* Table to map eventType to handling function callbacks.
+
+   Missing events return an error.
+
+   Events with NULL for initFunction or freeFunction are legal, meaning that the readBufferFunction
+   will not malloc memory that needs pointers to be initialized to NULL and freed,
+
+   NULL entries for readBufferFunction, traceFunction, or toJsonFunction are errors.
+*/
 
 typedef struct {
     uint32_t eventType;					/* PC Client event */
@@ -717,6 +740,7 @@ uint32_t TSS_EFIData_Init(TSST_EFIData **efiData,	/* freed by TSS_EFIData_Free *
 	if (efiEventTypeTable[index].initFunction != NULL) {
 	    efiEventTypeTable[index].initFunction(*efiData);
 	}
+	/* NULL is not an error, means that no read malloc will occur */
     }
     return rc;
 }
@@ -738,6 +762,7 @@ void TSS_EFIData_Free(TSST_EFIData *efiData)
 	    if (efiEventTypeTable[index].freeFunction != NULL) {
 		efiEventTypeTable[index].freeFunction(efiData);
 	    }
+	    /* NULL is not an error, means that no read malloc occured */
 	}
 	free(efiData);
     }
@@ -766,11 +791,15 @@ uint32_t TSS_EFIData_ReadBuffer(TSST_EFIData *efiData,
 	rc = TSS_EFI_GetTableIndex(&index, efiData->eventType);
     }
     if (rc == 0) {
-	/* eventType specific read buffer, FIXME error */
+	/* eventType specific read buffer */
 	if (efiEventTypeTable[index].readBufferFunction != NULL) {
 	    rc = efiEventTypeTable[index].readBufferFunction(efiData,
 							     event, eventSize,
 							     pcrIndex);
+	}
+	/* this should never occur, there should be no NULLs in the table */
+	else {
+	    rc = TSS_RC_NOT_IMPLEMENTED;
 	}
     }
     return rc;
@@ -786,7 +815,7 @@ void TSS_EFIData_Trace(TSST_EFIData *efiData)
     uint32_t rc = 0;
     size_t index;
 
-    /* FIXME a failure here is a call sequence error */
+    /* a failure here is a call sequence error */
     if (rc == 0) {
 	rc = TSS_EFI_GetTableIndex(&index, efiData->eventType);
     }
@@ -794,6 +823,10 @@ void TSS_EFIData_Trace(TSST_EFIData *efiData)
 	/* eventType specific traceFunction */
 	if (efiEventTypeTable[index].traceFunction != NULL) {
 	    efiEventTypeTable[index].traceFunction (efiData);
+	}
+	/* this should never occur, there should be no NULLs in the table */
+	else {
+	    rc = TSS_RC_NOT_IMPLEMENTED;
 	}
     }
     return;
@@ -806,7 +839,7 @@ uint32_t TSS_EFIData_ToJson(TSST_EFIData *efiData)
     uint32_t rc = 0;
     size_t index;
 
-    /* FIXME  a failure here is a call sequence error */
+    /* a failure here is a call sequence error */
     if (rc == 0) {
 	rc = TSS_EFI_GetTableIndex(&index, efiData->eventType);
     }
@@ -814,6 +847,10 @@ uint32_t TSS_EFIData_ToJson(TSST_EFIData *efiData)
 	/* eventType specific toJsonFunction */
 	if (efiEventTypeTable[index].toJsonFunction != NULL) {
 	    rc = efiEventTypeTable[index].toJsonFunction(efiData);
+	}
+	/* this should never occur, there should be no NULLs in the table */
+	else {
+	    rc = TSS_RC_NOT_IMPLEMENTED;
 	}
     }
     return rc;
@@ -870,7 +907,7 @@ static uint32_t TSS_EfiPlatformFirmwareBlobToJson(TSST_EFIData *efiData)
     uint32_t rc = 0;
     UEFI_PLATFORM_FIRMWARE_BLOB *uefiPlatformFirmwareBlob =
 	&efiData->efiData.uefiPlatformFirmwareBlob;
-    uefiPlatformFirmwareBlob = uefiPlatformFirmwareBlob; /* FIXME temp to silence compiler */
+    uefiPlatformFirmwareBlob = uefiPlatformFirmwareBlob; /* to silence compiler */
     if (rc == 0) {
     }
     if (rc == 0) {
@@ -909,7 +946,7 @@ static void TSS_EfiVariableDataFree(TSST_EFIData *efiData)
 */
 
 static uint32_t TSS_EfiVariableDataReadBuffer(TSST_EFIData *efiData,
-				       uint8_t **event, uint32_t *eventSize)
+					      uint8_t **event, uint32_t *eventSize)
 {
     uint32_t rc = 0;
     UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
@@ -1029,8 +1066,8 @@ static void TSS_EfiVariableDriverConfigFree(TSST_EFIData *efiData)
 }
 
 static uint32_t TSS_EfiVariableDriverConfigReadBuffer(TSST_EFIData *efiData,
-					       uint8_t *event, uint32_t eventSize,
-					       uint32_t pcrIndex)
+						      uint8_t *event, uint32_t eventSize,
+						      uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
@@ -1075,7 +1112,7 @@ static uint32_t TSS_EfiVariableDriverConfigReadBuffer(TSST_EFIData *efiData,
 	    (uefiVariableData->variableDataTag == VAR_DBT) ||
 	    (uefiVariableData->variableDataTag == VAR_DBX) 
 	    ) {
-	    rc = TSS_EfiSignatureDatabaseReadBuffer
+	    rc = TSS_EfiSignatureAllListsReadBuffer
 		 (&uefiVariableData->variableDriverConfig.signatureList,
 		  &uefiVariableData->variableDriverConfig.signatureListCount,
 		  uefiVariableData->VariableData,
@@ -1091,15 +1128,13 @@ static uint32_t TSS_EfiVariableDriverConfigReadBuffer(TSST_EFIData *efiData,
     return rc;
 }
 
-/* FIXME needs better name */
-
-/* TSS_EfiSignatureDatabaseReadBuffer() reads a signature database, containing zero or more
+/* TSS_EfiSignatureAllListsReadBuffer() reads a VariableData containing zero or more
    signature lists.
 */
 
-static uint32_t TSS_EfiSignatureDatabaseReadBuffer(EFI_SIGNATURE_LIST **signatureList,
-					    uint32_t *signatureListCount,
-					    uint8_t *VariableData, uint32_t VariableDataLength)
+static uint32_t TSS_EfiSignatureAllListsReadBuffer(EFI_SIGNATURE_LIST **signatureList,
+						   uint32_t *signatureListCount,
+						   uint8_t *VariableData, uint32_t VariableDataLength)
 {
     uint32_t rc = 0;
 
@@ -1117,7 +1152,7 @@ static uint32_t TSS_EfiSignatureDatabaseReadBuffer(EFI_SIGNATURE_LIST **signatur
 		*signatureList = tmpptr;
 	    }
 	    else {
-		printf("TSS_EfiSignatureDatabaseReadBuffer: Error allocating %u bytes\n",
+		printf("TSS_EfiSignatureAllListsReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)sizeof(EFI_SIGNATURE_LIST) * *signatureListCount);
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
@@ -1179,7 +1214,6 @@ static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList
     if (rc == 0) {
 	rc = TSS_UINT32LE_Unmarshal(&signatureList->SignatureSize, event, eventSize);
     }
-    /* FIXME factor for TSS_EfiVariableAuthorityReadBuffer */
     /* the SignatureSize must have at least the mandatory SignatureOwner GUID */
     if (rc == 0) {
 	if (signatureList->SignatureSize >= sizeof(signatureList->Signatures->SignatureOwner)) {
@@ -1287,12 +1321,13 @@ static void     TSS_EfiSignatureListTrace(EFI_SIGNATURE_LIST *signatureList)
 
     /* trace based on the guid type */
     rc = TSS_EFI_GetGuidIndex(&guidIndex, signatureList->SignatureType);
-
+    if (rc != 0) {
+	printf("  GUID unknown\n");
+    }
     for (count = 0 ; (rc == 0) && (count < signatureList->signaturesCount) ; count++) {
 	guid_printf("SignatureOwner GUID", (signatureList->Signatures + count)->SignatureOwner);
 	switch (guidTable[guidIndex].type) {
 	  case GUID_TYPE_X509_CERT:
-	    /* FIXME factor for EV_EFI_VARIABLE_AUTHORITY */
 	    /* tmp pointer because d2i moves the pointer */
 	    tmpData = (signatureList->Signatures + count)->SignatureData;
 	    x509 = d2i_X509(NULL,			/* freed by caller */
@@ -1302,7 +1337,7 @@ static void     TSS_EfiSignatureListTrace(EFI_SIGNATURE_LIST *signatureList)
 		X509_print_fp(stdout, x509);
 	    }
 	    else {
-		rc = TPM_RC_INTEGRITY;
+		printf("  X509 Certificate invalid\n");
 	    }
 	    X509_free(x509);
 	    x509 = NULL;	/* for next time through loop */
@@ -1408,7 +1443,7 @@ static void TSS_EfiVariableBootFree(TSST_EFIData *efiData)
 }
 
 static uint32_t TSS_EfiVariableBootReadBuffer(TSST_EFIData *efiData,
-				       uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
+					      uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
@@ -1457,8 +1492,8 @@ static uint32_t TSS_EfiVariableBootReadBuffer(TSST_EFIData *efiData,
 */
 
 static uint32_t TSS_EfiBootOrderListReadBuffer(uint16_t **bootOrderList,
-					uint32_t *bootOrderListCount,
-					uint8_t *VariableData, uint32_t VariableDataLength)
+					       uint32_t *bootOrderListCount,
+					       uint8_t *VariableData, uint32_t VariableDataLength)
 {
     uint32_t rc = 0;
     uint32_t count;
@@ -1493,9 +1528,9 @@ static uint32_t TSS_EfiBootOrderListReadBuffer(uint16_t **bootOrderList,
 }
 
 static uint32_t TSS_EfiVariableBootPathReadBuffer(uint32_t *isBootEnabled,
-					   char **bootDescription,
-					   char **bootPath,
-					   void *VariableData, uint64_t VariableDataLength)
+						  char **bootDescription,
+						  char **bootPath,
+						  void *VariableData, uint64_t VariableDataLength)
 {
     uint32_t rc = 0;
     int isValid;
@@ -1613,7 +1648,8 @@ static void     TSS_EfiVariableAuthorityFree(TSST_EFIData *efiData)
 }
 
 static uint32_t TSS_EfiVariableAuthorityReadBuffer(TSST_EFIData *efiData,
-					    uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
+						   uint8_t *event, uint32_t eventSize,
+						   uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
@@ -1630,7 +1666,6 @@ static uint32_t TSS_EfiVariableAuthorityReadBuffer(TSST_EFIData *efiData,
 			     uefiVariableData->UnicodeNameLength);
 	uefiVariableData->variableDataTag = tagTable[index].tag;
     }
-    /* FIXME factor */
     if (rc == 0) {
 	TSS_AUTHORITY_SIGNATURE_DATA *authoritySignatureData =
 	    &uefiVariableData->authoritySignatureData;
@@ -1711,7 +1746,7 @@ static void TSS_EfiVariableAuthorityTrace(TSST_EFIData *efiData)
 	    X509_print_fp(stdout, x509);
 	}
 	else {
-	    /* FIXME */;
+	    printf("  X509 Certificate invalid\n");
 	}
 	X509_free(x509);
 	x509 = NULL;
@@ -1752,8 +1787,8 @@ static void TSS_EfiBootServicesFree(TSST_EFIData *efiData)
 }
 
 static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
-				       uint8_t *event, uint32_t eventSize,
-				       uint32_t pcrIndex)
+					      uint8_t *event, uint32_t eventSize,
+					      uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
@@ -1853,8 +1888,8 @@ static void TSS_EfiGptEventFree(TSST_EFIData *efiData)
 }
 
 static uint32_t TSS_EfiGptEventReadBuffer(TSST_EFIData *efiData,
-				   uint8_t *event, uint32_t eventSize,
-				   uint32_t pcrIndex)
+					  uint8_t *event, uint32_t eventSize,
+					  uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     uint64_t partitionCount;
@@ -1902,7 +1937,7 @@ static uint32_t TSS_EfiGptEventReadBuffer(TSST_EFIData *efiData,
 }
 
 static uint32_t TSS_EfiPartitionHeaderReadBuffer(UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader,
-					  uint8_t **event, uint32_t *eventSize)
+						 uint8_t **event, uint32_t *eventSize)
 {
     uint32_t rc = 0;
     uint32_t startEventSize = *eventSize; /* track what was unmarshaled, excluding reserved */
@@ -1969,7 +2004,7 @@ static uint32_t TSS_EfiPartitionHeaderReadBuffer(UEFI_PARTITION_TABLE_HEADER *ef
 }
 
 static uint32_t TSS_EfiPartitionEntryReadBuffer(UEFI_PARTITION_ENTRY *entry,
-					 uint8_t **event, uint32_t *eventSize)
+						uint8_t **event, uint32_t *eventSize)
 {
     uint32_t rc = 0;
     if (rc == 0) {
@@ -2084,7 +2119,7 @@ static void TSS_Efi4bBufferFree(TSST_EFIData *efiData)
 }
 
 static uint32_t TSS_Efi4bBufferReadBuffer(TSST_EFIData *efiData,
-				   uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
+					  uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
@@ -2243,7 +2278,7 @@ static uint32_t TSS_EfiActionToJson(TSST_EFIData *efiData)
 */
 
 static uint32_t TSS_EfiCharReadBuffer(TSST_EFIData *efiData,
-			       uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
+				      uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     pcrIndex = pcrIndex;
@@ -2379,6 +2414,7 @@ static uint32_t TSS_EfiHandoffTablesToJson(TSST_EFIData *efiData)
 
 /* TSS_EFI_GetGuidIndex() gets the index into the GUID table for the GUID array guidBin
 
+   Returns TSS_RC_NOT_IMPLEMENTED for an unimplemeted GUID.
 */
 
 static uint32_t TSS_EFI_GetGuidIndex(size_t *index, const uint8_t *guidBin)
@@ -2441,6 +2477,7 @@ static void guid_printf(const char *msg, uint8_t *v_guid)
     if (rc == 0) {
 	printf("    %s\n", guidTable[index].guidText);
     }
+    /* if the GUID is unknown, don't print any text, just the hexascii guid */
     free(guid_str);	/* @1 */
     return;
 }
