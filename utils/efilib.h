@@ -41,17 +41,39 @@
 
 #include <inttypes.h>
 
+#define TSS_EFI_GUID_SIZE 16
+
+#ifdef HAVE_CONFIG_H
+/*
+  config.h is only present if autoconf was used, which is only for the linux builds.  This will
+  define HAVE_EFIBOOT_H if the EFI libraries are present.
+
+  Use HAVE_EFIBOOT_H to conditionally compile other code.
+
+  Potential packages are:
+  
+  Ubuntu: efivar, libefiboot-dev, libefiboot1, libefivar-dev, libefivar1
+
+  RHEL, the packages may be efivar-libs efivar
+*/
+
+#include <config.h>
+#endif
+
+#ifdef HAVE_EFIBOOT_H
+#include <efivar/efivar.h>
 #include <efivar/efiboot.h>
+#endif
 
 /* EFI_SIGNATURE_DATA from UEFI spec */
 
 typedef struct {
-    uint8_t   SignatureOwner[sizeof(efi_guid_t)];
+    uint8_t   SignatureOwner[TSS_EFI_GUID_SIZE];
     uint8_t  *SignatureData;
 } EFI_SIGNATURE_DATA;
 
 typedef struct {
-    uint8_t   SignatureOwner[sizeof(efi_guid_t)];
+    uint8_t   SignatureOwner[TSS_EFI_GUID_SIZE];
     uint8_t  *SignatureData;
     /* since EV_EFI_VARIABLE_AUTHORITY doesn't have an explicit length */
     uint32_t  SignatureLength;
@@ -61,7 +83,7 @@ typedef struct {
    dbx dbt dbr */
 
 typedef struct {
-    uint8_t  SignatureType[sizeof(efi_guid_t)];
+    uint8_t  SignatureType[TSS_EFI_GUID_SIZE];
     uint32_t SignatureListSize;		/* includes the header */
     uint32_t SignatureHeaderSize;
     uint32_t SignatureSize;		/* size of each signature */
@@ -99,7 +121,7 @@ typedef struct {
     uint64_t AlternateLBA;
     uint64_t FirstUsableLBA;
     uint64_t LastUsableLBA;
-    uint8_t  DiskGUID[sizeof(efi_guid_t)];
+    uint8_t  DiskGUID[TSS_EFI_GUID_SIZE];
     uint64_t PartitionEntryLBA;
     uint32_t NumberOfPartitionEntries;
     uint32_t SizeOfPartitionEntry;
@@ -116,8 +138,8 @@ typedef struct {
 /* UEFI Specification Version 2.8 Section 5.3 Table 22 */
 
 typedef struct {
-    uint8_t PartitionTypeGUID[sizeof(efi_guid_t)];
-    uint8_t UniquePartitionGUID[sizeof(efi_guid_t)];
+    uint8_t PartitionTypeGUID[TSS_EFI_GUID_SIZE];
+    uint8_t UniquePartitionGUID[TSS_EFI_GUID_SIZE];
     uint64_t StartingLBA;
     uint64_t EndingLBA;
     uint64_t Attributes;	/* UEFI Table 24 */
@@ -165,7 +187,7 @@ typedef struct  {
    Revision 1.04 Section 9.2.6. */
 
 typedef struct {
-    uint8_t VariableName[sizeof(efi_guid_t)];	/* FIXME from UEFI spec, efi_guid_t, 128 bits */
+    uint8_t VariableName[TSS_EFI_GUID_SIZE];
     uint64_t UnicodeNameLength;
     uint64_t VariableDataLength;
     uint8_t *UnicodeName;
@@ -212,7 +234,7 @@ typedef struct {
 } TSS4B_BUFFER;
 
 typedef struct {
-    uint8_t                           VendorGuid[sizeof(efi_guid_t)];
+    uint8_t                           VendorGuid[TSS_EFI_GUID_SIZE];
     UINT64                            VendorTable;
 } EFI_CONFIGURATION_TABLE;
 

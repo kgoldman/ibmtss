@@ -476,16 +476,21 @@ static uint32_t TSS_EfiCharToJson(TSST_EFIData *efiData);
 static void     TSS_EfiHandoffTablesInit(TSST_EFIData *efiData);
 static void     TSS_EfiHandoffTablesFree(TSST_EFIData *efiData);
 static uint32_t TSS_EfiHandoffTablesReadBuffer(TSST_EFIData *efiData,
-					       uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
+					       uint8_t *event, uint32_t eventSize,
+					       uint32_t pcrIndex);
 static void     TSS_EfiHandoffTablesTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiHandoffTablesToJson(TSST_EFIData *efiData);
 
 /* helper functions */
 
+#if HAVE_EFIBOOT_H
 static uint32_t TSS_EfiFormatDevicePath(char **path,
-					efidp efidp,
+					uint8_t *devicePath,	/* efidp structure */
 					uint16_t pathlen);
+#endif /* HAVE_EFIBOOT_H */
+
 static void guid_printf(const char *msg, uint8_t *v_guid);
+
 static void wchar_printf(const char *msg, void *wchar, uint64_t length);
 
 /* Table to map eventType to handling function callbacks.
@@ -1332,7 +1337,7 @@ static void     TSS_EfiSignatureListTrace(EFI_SIGNATURE_LIST *signatureList)
 	    tmpData = (signatureList->Signatures + count)->SignatureData;
 	    x509 = d2i_X509(NULL,			/* freed by caller */
 			    (const unsigned char **)&tmpData,
-			    signatureList->SignatureSize - sizeof(efi_guid_t));
+			    signatureList->SignatureSize - TSS_EFI_GUID_SIZE);
 	    if (x509 != NULL) {
 		X509_print_fp(stdout, x509);
 	    }
@@ -1345,7 +1350,7 @@ static void     TSS_EfiSignatureListTrace(EFI_SIGNATURE_LIST *signatureList)
 	  case  GUID_TYPE_SHA256:
 	    TSS_PrintAll("    SHA-256",
 			 (signatureList->Signatures + count)->SignatureData,
-			 signatureList->SignatureSize - sizeof(efi_guid_t));
+			 signatureList->SignatureSize - TSS_EFI_GUID_SIZE);
 	    break;
 	  case GUID_TYPE_UNSUPPORTED:
 	  default:
@@ -1533,6 +1538,7 @@ static uint32_t TSS_EfiVariableBootPathReadBuffer(uint32_t *isBootEnabled,
 						  void *VariableData, uint64_t VariableDataLength)
 {
     uint32_t rc = 0;
+#ifdef HAVE_EFIBOOT_H
     int isValid;
     efi_load_option *loadOption = VariableData;
     const char *description = NULL;
@@ -1583,9 +1589,10 @@ static uint32_t TSS_EfiVariableBootPathReadBuffer(uint32_t *isBootEnabled,
     }
     if (rc == 0) {
 	rc = TSS_EfiFormatDevicePath(bootPath,
-				     efidp,
+				     (uint8_t *)efidp,
 				     pathlen);
     }
+#endif	/* HAVE_EFIBOOT_H */
     return rc;
 }
 
@@ -1842,12 +1849,14 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
 	    /* FIXME is LengthOfDevicePath zero an error ? */
 	}
     }
+#if HAVE_EFIBOOT_H
     /* format path */
     if (rc == 0) {
 	rc = TSS_EfiFormatDevicePath(&uefiImageLoadEvent->Path,
-				     (efidp)uefiImageLoadEvent->DevicePath,
+				     uefiImageLoadEvent->DevicePath,
 				     uefiImageLoadEvent->LengthOfDevicePath);
     }
+#endif /* HAVE_EFIBOOT_H */
     return rc;
 }
 
@@ -2460,6 +2469,7 @@ static void TSS_EFI_GetNameIndex(size_t *index,
 
 static void guid_printf(const char *msg, uint8_t *v_guid)
 {
+#if HAVE_EFIBOOT_H
     int rc;
     efi_guid_t *guid = (efi_guid_t *)v_guid;
     char *guid_str = NULL;
@@ -2479,8 +2489,13 @@ static void guid_printf(const char *msg, uint8_t *v_guid)
     }
     /* if the GUID is unknown, don't print any text, just the hexascii guid */
     free(guid_str);	/* @1 */
+#else	/* if EFI package is not installed, trace as hex */
+    printf("  %s: ", msg);
+    TSS_PrintAll("", v_guid, TSS_EFI_GUID_SIZE);
+#endif /* HAVE_EFIBOOT_H */
     return;
 }
+
 
 /* Print UC16 character string.
 
@@ -2510,6 +2525,8 @@ static void wchar_printf(const char *msg, void *wchar, uint64_t length)
     return;
 }
 
+#ifdef HAVE_EFIBOOT_H
+
 /* ssize_t efidp_format_device_path(char *buf, size_t size, const_efidp dp, ssize_t limit); */
 
 /* TSS_EfiFormatDevicePath() runs efidp_format_device_path twice, first to get the size, then to get
@@ -2519,12 +2536,13 @@ static void wchar_printf(const char *msg, void *wchar, uint64_t length)
 */
 
 static uint32_t TSS_EfiFormatDevicePath(char **path,
-					efidp efidp,
+					uint8_t *devicePath,
 					uint16_t pathlen)
 {
     uint32_t rc = 0;
     ssize_t ssrc;	/* return code */
     size_t pathLength;
+    efidp efiDevicePath = (efidp)devicePath;
 
     if (pathlen > 0) {
 	/* ssize_t efidp_format_device_path(char *buf, size_t size, const_efidp dp, ssize_t
@@ -2532,9 +2550,9 @@ static uint32_t TSS_EfiFormatDevicePath(char **path,
 	if (rc == 0) {
 	    /* returns the length, negative is error */
 	    ssrc = efidp_format_device_path(NULL,		/* buffer */
-					    0,		/* length */
-					    efidp,		/* const_efidp */
-					    pathlen);	/* length */
+					    0,			/* length */
+					    efiDevicePath,	/* const_efidp */
+					    pathlen);		/* length */
 	    if (ssrc < 0) {
 		printf("TSS_EfiVariableBootPathReadBuffer: Error in efidp_format_device_path\n");
 		rc = TSS_RC_BAD_PROPERTY;
@@ -2551,7 +2569,7 @@ static uint32_t TSS_EfiFormatDevicePath(char **path,
 	}
 	if (rc == 0) {
 	    ssrc = efidp_format_device_path(*path, pathLength,
-					    efidp, pathlen);
+					    efiDevicePath, pathlen);
 	    if (ssrc < 0) {
 		printf("TSS_EfiVariableBootPathReadBuffer: Error in efidp_format_device_path\n");
 		rc = TSS_RC_BAD_PROPERTY;
@@ -2573,3 +2591,5 @@ static uint32_t TSS_EfiFormatDevicePath(char **path,
     }
     return rc;
 }
+
+#endif	/*  HAVE_EFIBOOT_H */

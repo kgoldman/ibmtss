@@ -528,22 +528,6 @@ TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event)
     return rc;
 }
 
-#ifdef HAVE_CONFIG_H
-/*
-  * config.h is only present if autoconf was used, which is only the
-  * linux builds
-  */
-#include <config.h>
-#endif
-#ifdef HAVE_EFIBOOT_H
-/* This is set by the autoconf checks for the efiboot/efivar packages
-
-   On Ubuntu, the packages are libefivar-dev libefiboot-dev and possibly efivar efitools
-*/
-
-#include <efivar/efiboot.h>
-#endif
-
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
 static uint16_t Uint16_Convert(uint16_t in);

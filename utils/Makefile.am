@@ -59,7 +59,7 @@ endif
 libibmtss_la_CCFLAGS = -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
 libibmtss_la_LDFLAGS = -version-info @TSSLIB_VERSION_INFO@
 
-libibmtssutils_la_SOURCES = cryptoutils.c ekutils.c imalib.c eventlib.c
+libibmtssutils_la_SOURCES = cryptoutils.c ekutils.c imalib.c eventlib.c efilib.c
 libibmtssutils_la_CFLAGS = -fPIC $(EFIBOOT_CFLAGS)
 
 if CONFIG_TPM20
@@ -79,7 +79,7 @@ endif
 libibmtssutils_la_LDFLAGS = -version-info @TSSLIB_VERSION_INFO@
 libibmtssutils_la_LIBADD = libibmtss.la $(LIBCRYPTO_LIBS) $(EFIBOOT_LIBS)
 
-noinst_HEADERS = CommandAttributes.h imalib.h tssdev.h ntc2lib.h tssntc.h Commands_fp.h objecttemplates.h tssproperties.h cryptoutils.h Platform.h tssauth.h tsssocket.h ekutils.h eventlib.h tssccattributes.h
+noinst_HEADERS = CommandAttributes.h imalib.h tssdev.h ntc2lib.h tssntc.h Commands_fp.h objecttemplates.h tssproperties.h cryptoutils.h Platform.h tssauth.h tsssocket.h ekutils.h eventlib.h efilib.h tssccattributes.h
 # install every header in ibmtss
 nobase_include_HEADERS = ibmtss/*.h
 
