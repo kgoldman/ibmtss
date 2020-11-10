@@ -469,6 +469,11 @@ static uint32_t TSS_EfiCharReadBuffer(TSST_EFIData *efiData,
 static void     TSS_EfiCharTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiCharToJson(TSST_EFIData *efiData);
 
+/* EV_SEPARATOR */
+
+static void     TSS_EfiSeparatorTrace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiSeparatorToJson(TSST_EFIData *efiData);
+
 /* EV_EFI_HANDOFF_TABLES
    EV_TABLE_OF_DEVICES
 */
@@ -539,11 +544,11 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL},
      {EV_SEPARATOR,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL},
+      TSS_Efi4bBufferInit,
+      TSS_Efi4bBufferFree,
+      TSS_Efi4bBufferReadBuffer,
+      TSS_EfiSeparatorTrace,
+      TSS_EfiSeparatorToJson},
      {EV_ACTION,
       NULL,
       NULL,
@@ -2327,6 +2332,41 @@ static void TSS_EfiCharTrace(TSST_EFIData *efiData)
 }
 
 static uint32_t TSS_EfiCharToJson(TSST_EFIData *efiData)
+{
+    uint32_t rc = 0;
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+    tss4bBuffer = tss4bBuffer;
+    if (rc == 0) {
+    }
+    if (rc == 0) {
+    }
+    if (rc == 0) {
+    }
+    if (rc == 0) {
+    }
+    return rc;
+}
+
+/* EV_SEPARATOR */
+
+static void TSS_EfiSeparatorTrace(TSST_EFIData *efiData)
+{
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+
+    /* By observation, the separator for thses PCRs seem to be ascii */
+    if ((efiData->pcrIndex == 12) ||
+	(efiData->pcrIndex == 13) ||
+	(efiData->pcrIndex == 14)) {
+	printf("  Separator: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
+    }
+    else {
+	TSS_PrintAll("  Separator",
+		     tss4bBuffer->buffer, tss4bBuffer->size);
+    }
+    return;
+}
+
+static uint32_t TSS_EfiSeparatorToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
