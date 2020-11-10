@@ -447,7 +447,7 @@ static uint32_t TSS_EfiCompactHashToJson(TSST_EFIData *efiData);
 static void     TSS_EfiIplTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiIplToJson(TSST_EFIData *efiData);
 
-/* EV_S_CRTM_VERSION */
+/* EV_S_CRTM_VERSIONz */
 
 static void     TSS_EfiCrtmVersionTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiCrtmVersionToJson(TSST_EFIData *efiData);
@@ -2208,10 +2208,30 @@ static uint32_t TSS_EfiIplToJson(TSST_EFIData *efiData)
     return rc;
 }
 
+/* EV_S_CRTM_VERSION can be either a UCS-2 or a GUID. */
+
 static void TSS_EfiCrtmVersionTrace(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
-    wchar_printf("CRTM Version: ", tss4bBuffer->buffer, ((tss4bBuffer->size) / 2) -1);
+    int isUCS2 = 1;
+    uint32_t i;
+
+    /* non-deterministic, guess whether this is a UCS-2 string or a GUID */
+    /* GUID is always 16 bytes */
+    if (tss4bBuffer->size == TSS_EFI_GUID_SIZE) {
+	for (i = 1 ; (i < tss4bBuffer->size) && (isUCS2) ; i+-2) {
+	    if (tss4bBuffer->buffer[i] != 0x00) {
+		isUCS2 = 0;	/* UCS-2 typically has all odd bytes 0 */
+	    }
+	}
+    }
+    /* not 16 bytes falls through to isUCS2 true */
+    if (isUCS2) {
+	wchar_printf("CRTM Version: ", tss4bBuffer->buffer, ((tss4bBuffer->size) / 2) -1);
+    }
+    else {
+	guid_printf("CRTM Version GUID", tss4bBuffer->buffer);
+    }
     return;
 }
 
@@ -2497,9 +2517,9 @@ static void guid_printf(const char *msg, uint8_t *v_guid)
 }
 
 
-/* Print UC16 character string.
+/* Print UCS-2 character string.
 
-   length is number of character, which is half the number of bytes in wchar
+   length is number of characters, which is half the number of bytes in wchar
    wchar is a uc16 array to be printed, not including an extra nul terminator
 
    It prepends msg to ther hexascii trace.  msg must not be NULL but can be "".
@@ -2511,7 +2531,7 @@ static void wchar_printf(const char *msg, void *wchar, uint64_t length)
     uint16_t *ptr = wchar;
 
     /*
-     * this is necessary because UEFI uses UC16, which is a two byte
+     * this is necessary because UEFI uses UCS-2, which is a two byte
      * wide char.  Most linux tools use UC32, which is a four byte
      * wide char, so we can't simply treat UEFI strings as arrays of
      * wchar_t
