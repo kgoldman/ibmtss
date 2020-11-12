@@ -140,10 +140,10 @@ makeekblob_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 makeekblob_LDFLAGS = -L$(top_srcdir)/utils
 makeekblob_LDADD = libibmtssutils12.la ../utils/libibmtss.la
 
-eventextend_SOURCES = eventextend.c ../utils/eventlib.c
+eventextend_SOURCES = eventextend.c ../utils/eventlib.c ../utils/efilib.c
 eventextend_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12 $(EFIBOOT_CFLAGS)
 eventextend_LDFLAGS = -L$(top_srcdir)/utils
-eventextend_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(EFIBOOT_LIBS)
+eventextend_LDADD = libibmtssutils12.la ../utils/libibmtss.la  $(LIBCRYPTO_LIBS) $(EFIBOOT_LIBS)
 
 imaextend_SOURCES = imaextend.c ../utils/imalib.c
 imaextend_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12

@@ -447,7 +447,7 @@ static uint32_t TSS_EfiCompactHashToJson(TSST_EFIData *efiData);
 static void     TSS_EfiIplTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiIplToJson(TSST_EFIData *efiData);
 
-/* EV_S_CRTM_VERSIONz */
+/* EV_S_CRTM_VERSION */
 
 static void     TSS_EfiCrtmVersionTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiCrtmVersionToJson(TSST_EFIData *efiData);
