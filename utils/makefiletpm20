@@ -100,6 +100,9 @@ LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 
 LNALIBS +=  -libmtssutils -libmtss
 
+# Add these on Linux platforms that support EFI packages
+#LNALIBS +=  -lefivar -lefiboot 
+
 # shared library
 
 # versioned shared library
@@ -216,9 +219,9 @@ ekutils.o: 	$(TSS_HEADERS) ekutils.c
 imalib.o: 	$(TSS_HEADERS) imalib.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) imalib.c
 eventlib.o: 	$(TSS_HEADERS) eventlib.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -DHAVE_EFIBOOT_H eventlib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) eventlib.c
 efilib.o: 	$(TSS_HEADERS) efilib.c
-		$(CC) $(CCFLAGS) $(CCLFLAGS) -DHAVE_EFIBOOT_H efilib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) efilib.c
 
 # TSS shared library build
 
@@ -254,7 +257,7 @@ clean:
 activatecredential:	ibmtss/tss.h activatecredential.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) activatecredential.o $(LNALIBS) -o activatecredential
 eventextend:		eventextend.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o $(LNALIBS) -lefivar -lefiboot -o eventextend
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o $(LNALIBS) -o eventextend
 imaextend:		imaextend.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o $(LNALIBS) -o imaextend
 certify:		ibmtss/tss.h certify.o $(LIBTSS) $(LIBTSSUTILS)

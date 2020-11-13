@@ -102,6 +102,9 @@ LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 
 LNALIBS +=  -libmtssutils -libmtss
 
+# Add these on Linux platforms that support EFI packages
+#LNALIBS +=  -lefivar -lefiboot 
+
 # shared library
 
 # versioned shared library
@@ -147,7 +150,8 @@ TSS_OBJS = 	tssfile.o 		\
 TSSUTILS_OBJS = cryptoutils.o	\
 		ekutils.o	\
 		imalib.o	\
-		eventlib.o
+		eventlib.o	\
+		efilib.o
 
 # common to all builds
 
@@ -235,6 +239,8 @@ imalib.o: 	$(TSS_HEADERS) imalib.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) imalib.c
 eventlib.o: 	$(TSS_HEADERS) eventlib.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) eventlib.c
+efilib.o: 	$(TSS_HEADERS) efilib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) efilib.c
 
 # TSS shared library build
 

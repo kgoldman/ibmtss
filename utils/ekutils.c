@@ -83,10 +83,12 @@
 
 /* local functions */
 
+#ifdef TPM_TPM20
 static TPM_RC processAlgorithmSize(uint16_t *algorithmSize,
 				   unsigned char *nonce,
 				   uint16_t nonceSize,
 				   TPMI_RH_NV_INDEX ekCertIndex);
+#endif 	/* TPM_TPM20 */
 
 /* The print flag is set by the caller, depending on whether it wants information displayed.
 
@@ -1660,6 +1662,8 @@ AlgorithmList algorithmList[] = {
     {EK_CERT_RSA_4096_INDEX_H7, 4096/8}, 	/* RSA 4096 EK Certificate (H-7) */
 };
 
+#ifdef TPM_TPM20
+
 /* processAlgorithmSize() validates the nonce size to be copied to the unique field against the EK
    algorithm.
 
@@ -1693,6 +1697,8 @@ static TPM_RC processAlgorithmSize(uint16_t *algorithmSize,
     }
     return rc;
 }
+
+#endif	/* TPM_TPM20 */
 
 /* createCertificate() constructs a certificate from the issuer and subject.  The public key to be
    certified is tpmtPublic.

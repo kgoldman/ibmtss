@@ -4,7 +4,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2018						#
+# (c) Copyright IBM Corporation 2018 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -199,15 +199,14 @@ takeownership:		../utils/ibmtss/tss.h takeownership.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) takeownership.o $(LNALIBS) -o takeownership
 tpminit:		../utils/ibmtss/tss.h tpminit.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) tpminit.o $(LNALIBS) -o tpminit
-
 createekcert:		../utils/ibmtss/tss.h createekcert.o ekutils12.o \
 				../utils/ekutils.o ../utils/cryptoutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createekcert.o ekutils12.o \
 				../utils/ekutils.o ../utils/cryptoutils.o $(LNALIBS) -o createekcert
 makeekblob:		../utils/ibmtss/tss.h makeekblob.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) makeekblob.o $(LNALIBS) -o makeekblob
-eventextend:		../utils/ibmtss/tss.h eventextend.o ../utils/eventlib.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o ../utils/eventlib.o \
+eventextend:		../utils/ibmtss/tss.h eventextend.o ../utils/eventlib.o ../utils/efilib.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eventextend.o ../utils/eventlib.o ../utils/efilib.o \
 				$(LNALIBS) -o eventextend
 imaextend:		../utils/ibmtss/tss.h imaextend.o ../utils/imalib.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) imaextend.o ../utils/imalib.o \

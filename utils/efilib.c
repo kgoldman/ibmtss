@@ -1597,6 +1597,12 @@ static uint32_t TSS_EfiVariableBootPathReadBuffer(uint32_t *isBootEnabled,
 				     (uint8_t *)efidp,
 				     pathlen);
     }
+#else
+    isBootEnabled = isBootEnabled;
+    bootDescription = bootDescription;
+    bootPath = bootPath;
+    VariableData = VariableData;
+    VariableDataLength = VariableDataLength;
 #endif	/* HAVE_EFIBOOT_H */
     return rc;
 }
@@ -2224,7 +2230,7 @@ static void TSS_EfiCrtmVersionTrace(TSST_EFIData *efiData)
     /* non-deterministic, guess whether this is a UCS-2 string or a GUID */
     /* GUID is always 16 bytes */
     if (tss4bBuffer->size == TSS_EFI_GUID_SIZE) {
-	for (i = 1 ; (i < tss4bBuffer->size) && (isUCS2) ; i+-2) {
+	for (i = 1 ; (i < tss4bBuffer->size) && (isUCS2) ; i+=2) {
 	    if (tss4bBuffer->buffer[i] != 0x00) {
 		isUCS2 = 0;	/* UCS-2 typically has all odd bytes 0 */
 	    }

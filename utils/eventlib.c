@@ -531,7 +531,7 @@ TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event)
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
 static uint16_t Uint16_Convert(uint16_t in);
-#endif
+#endif /* TPM_TPM20 */
 static uint32_t Uint32_Convert(uint32_t in);
 #endif /* TPM_TSS_NOFILE */
 static void TSS_EVENT_EventType_Trace(uint32_t eventType);
@@ -539,6 +539,7 @@ static TPM_RC TSS_SpecIdEventAlgorithmSize_Unmarshal(TCG_EfiSpecIdEventAlgorithm
 						     uint8_t **buffer,
 						     uint32_t *size);
 static void TSS_SpecIdEventAlgorithmSize_Trace(TCG_EfiSpecIdEventAlgorithmSize *algSize);
+#ifdef TPM_TPM20
 static TPM_RC TSS_TPML_DIGEST_VALUES_LE_Unmarshalu(TPML_DIGEST_VALUES *target,
 						   BYTE **buffer,
 						   uint32_t *size);
@@ -547,13 +548,14 @@ static TPM_RC TSS_TPMT_HA_LE_Unmarshalu(TPMT_HA *target, BYTE **buffer,
 static TPM_RC TSS_TPMI_ALG_HASH_LE_Unmarshalu(TPMI_ALG_HASH *target,
 					      BYTE **buffer, uint32_t *size,
 					      BOOL allowNull);
+static TPM_RC TSS_TPML_DIGEST_VALUES_LE_Marshalu(const TPML_DIGEST_VALUES *source,
+						 uint16_t *written, BYTE **buffer,
+						 uint32_t *size);
 static TPM_RC TSS_TPM_ALG_ID_LE_Unmarshalu(TPM_ALG_ID *target,
 					   BYTE **buffer, uint32_t *size);
 static TPM_RC TSS_TPMT_HA_LE_Marshalu(const TPMT_HA *source, uint16_t *written,
 				      BYTE **buffer, uint32_t *size);
-static TPM_RC TSS_TPML_DIGEST_VALUES_LE_Marshalu(const TPML_DIGEST_VALUES *source,
-						 uint16_t *written, BYTE **buffer,
-						 uint32_t *size);
+#endif /* TPM_TPM20 */
 
 /* TSS_EVENT_Line_Read() reads a TPM 1.2 SHA-1 event line from a binary file inFile.
 
@@ -1426,6 +1428,8 @@ const char *TSS_EVENT_EventTypeToString(uint32_t eventType)
     return crc;
 }
 
+#ifdef TPM_TPM20
+
 /*
  * TSS_TPML_DIGEST_VALUES_LE_Unmarshalu() Unmarshals TPML_DIGEST_VALUES struct
  * from a LE buffer into HBO data structure. This is similar to
@@ -1544,6 +1548,8 @@ TSS_TPMT_HA_LE_Marshalu(const TPMT_HA *source, uint16_t *written,
     }
     return rc;
 }
+
+#endif /* TPM_TPM20 */
 
 /*
  * TSS_UINT32LE_Marshal() Marshals uint32_t from HBO into LE in the given buffer.
