@@ -109,9 +109,10 @@ printUsage ()
     echo "-27 Duplication"
     echo "-28 ECC"
     echo "-29 Credential"
-    echo "-30 Attestation - rev 155" 
-    echo "-31 X509 - rev 155" 
+    echo "-30 Attestation - rev 155"
+    echo "-31 X509 - rev 155"
     echo "-32 Get Capability"
+    echo "-33 Events"
     echo "-35 Shutdown (only run for simulator)"
     echo "-40 Tests under development (not part of all)"
     echo ""
@@ -541,6 +542,14 @@ main ()
     fi
     if [ "$1" == "-a" ] || [ "$1" == "-32" ]; then
     	./regtests/testgetcap.sh
+    	RC=$?
+	if [ $RC -ne 0 ]; then
+	    exit 255
+	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-33" ]; then
+    	./regtests/testevent.sh
     	RC=$?
 	if [ $RC -ne 0 ]; then
 	    exit 255
