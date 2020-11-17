@@ -474,6 +474,16 @@ static uint32_t TSS_EfiCharToJson(TSST_EFIData *efiData);
 static void     TSS_EfiSeparatorTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiSeparatorToJson(TSST_EFIData *efiData);
 
+/* EV_EVENT_TAG */
+
+static void     TSS_EfiEventTagInit(TSST_EFIData *efiData);
+static void     TSS_EfiEventTagFree(TSST_EFIData *efiData);
+static uint32_t TSS_EfiEventReadBuffer(TSST_EFIData *efiData,
+				       uint8_t *event, uint32_t eventSize,
+				       uint32_t pcrIndex);
+static void     TSS_EfiEventTagTrace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiEventTagToJson(TSST_EFIData *efiData);
+
 /* EV_EFI_HANDOFF_TABLES
    EV_TABLE_OF_DEVICES
 */
@@ -556,11 +566,11 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL},
      {EV_EVENT_TAG,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL},
+      TSS_EfiEventTagInit,
+      TSS_EfiEventTagFree,
+      TSS_EfiEventReadBuffer,
+      TSS_EfiEventTagTrace,
+      TSS_EfiEventTagToJson},
      {EV_S_CRTM_CONTENTS,
       TSS_Efi4bBufferInit,
       TSS_Efi4bBufferFree,
@@ -2383,6 +2393,79 @@ static uint32_t TSS_EfiSeparatorToJson(TSST_EFIData *efiData)
     }
     if (rc == 0) {
     }
+    if (rc == 0) {
+    }
+    return rc;
+}
+
+/* EV_EVENT_TAG */
+
+static void     TSS_EfiEventTagInit(TSST_EFIData *efiData)
+{
+    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    taggedEvent->taggedEventData = NULL;
+    return;
+}
+
+static void     TSS_EfiEventTagFree(TSST_EFIData *efiData)
+{
+    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    free(taggedEvent->taggedEventData);
+    return;
+}
+
+static uint32_t TSS_EfiEventReadBuffer(TSST_EFIData *efiData,
+				       uint8_t *event, uint32_t eventSize,
+				       uint32_t pcrIndex)
+{
+    uint32_t rc = 0;
+    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    pcrIndex = pcrIndex;
+
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Unmarshal(&taggedEvent->taggedEventID, &event, &eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Unmarshal(&taggedEvent->taggedEventDataSize, &event, &eventSize);
+    }
+    /* consistency check taggedEventDataSize */
+    if (rc == 0) {
+	if (taggedEvent->taggedEventDataSize != eventSize) {
+	    printf("TSS_EfiEventReadBuffer: Error in taggedEventDataSize %u\n",
+		   (unsigned int)(taggedEvent->taggedEventDataSize));
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    /* allocate the taggedEventData */
+    if ((rc == 0) && (eventSize > 0)) {
+	taggedEvent->taggedEventData = malloc(taggedEvent->taggedEventDataSize);
+	if (taggedEvent->taggedEventData == NULL) {
+	    printf("TSS_EfiEventReadBuffer: Error allocating %u bytes\n",
+		   (unsigned int)taggedEvent->taggedEventDataSize);
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if ((rc == 0) && (eventSize > 0)) {
+	rc = TSS_Array_Unmarshalu(taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize,
+				  &event, &eventSize);
+    }
+    return rc;
+}
+
+static void     TSS_EfiEventTagTrace(TSST_EFIData *efiData)
+{
+    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    printf("  taggedEventID %08x\n", taggedEvent->taggedEventID);
+    TSS_PrintAll("  taggedEvent",
+		 taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
+    return;
+}
+
+static uint32_t TSS_EfiEventTagToJson(TSST_EFIData *efiData)
+{
+    uint32_t rc = 0;
+    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    taggedEvent = taggedEvent;
     if (rc == 0) {
     }
     return rc;

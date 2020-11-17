@@ -235,7 +235,7 @@ typedef struct {
 
 typedef struct {
     uint8_t                           VendorGuid[TSS_EFI_GUID_SIZE];
-    UINT64                            VendorTable;
+    uint64_t                          VendorTable;
 } EFI_CONFIGURATION_TABLE;
 
 /*
@@ -246,9 +246,17 @@ typedef struct {
 */
 
 typedef struct {
-    UINT64                            NumberOfTables;
+    uint64_t                          NumberOfTables;
     EFI_CONFIGURATION_TABLE           *TableEntry;
 } UEFI_HANDOFF_TABLE_POINTERS;
+
+/* EV_EVENT_TAG */
+
+typedef struct {
+    uint32_t	taggedEventID;
+    uint32_t	taggedEventDataSize;
+    uint8_t	*taggedEventData;
+} TCG_PCClientTaggedEvent;
 
 /* union of all event types */
 
@@ -259,6 +267,7 @@ typedef union {
     TSS4B_BUFFER		tss4bBuffer;
     UEFI_HANDOFF_TABLE_POINTERS uefiHandoffTablePointers;
     UEFI_GPT_DATA		uefiGptData;
+    TCG_PCClientTaggedEvent	taggedEvent;
 } TSSU_EFIData;
 
 /* Externally visible API interface structure */
