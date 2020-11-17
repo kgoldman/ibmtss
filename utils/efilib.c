@@ -506,6 +506,10 @@ static uint32_t TSS_EfiCharReadBuffer(TSST_EFIData *efiData,
 static void     TSS_EfiCharTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiCharToJson(TSST_EFIData *efiData);
 
+/* EV_NO_ACTION */
+
+static void     TSS_EvNoActionTrace(TSST_EFIData *efiData);
+
 /* EV_SEPARATOR */
 
 static void     TSS_EfiSeparatorTrace(TSST_EFIData *efiData);
@@ -585,10 +589,10 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL},
      {EV_NO_ACTION,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
+      TSS_Efi4bBufferInit,
+      TSS_Efi4bBufferFree,
+      TSS_Efi4bBufferReadBuffer,
+      TSS_EvNoActionTrace,
       NULL},
      {EV_SEPARATOR,
       TSS_Efi4bBufferInit,
@@ -2410,6 +2414,27 @@ static uint32_t TSS_EfiCharToJson(TSST_EFIData *efiData)
     if (rc == 0) {
     }
     return rc;
+}
+
+/* EV_NO_ACTION */
+
+/* This is purely from guesses and decompiling the events, not from any spec */
+
+static void     TSS_EvNoActionTrace(TSST_EFIData *efiData)
+{
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+    if (efiData->pcrIndex == 0) {
+	printf("  PCR 0: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
+	printf("  Locality %u\n", tss4bBuffer->buffer[tss4bBuffer->size-1]);
+    }
+    else if (efiData->pcrIndex == 0xffffffff) {
+	wchar_printf("  No Action: ", tss4bBuffer->buffer+16, 11);
+    }
+    else {
+	TSS_PrintAll("  No Action",
+		     tss4bBuffer->buffer, tss4bBuffer->size);
+    }
+    return;
 }
 
 /* EV_SEPARATOR */
