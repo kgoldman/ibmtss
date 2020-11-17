@@ -299,8 +299,45 @@ const TAG_TABLE tagTable [] =
       VAR_MOKLIST},
     };
 
+/* EV_COMPACT_HASH post-OS (PCR 11) Values */
+
+#define EV_COMPACT_HASH_PRE10_SUCCESS		\
+    {0x00, 0x00, 0x00, 0x00}
+#define EV_COMPACT_HASH_PRE10_DEBUG		\
+    {0x01, 0x00, 0x00, 0x00}
+#define EV_COMPACT_HASH_PRE10_ERROR		\
+    {0x02, 0x00, 0x00, 0x00}
+#define EV_COMPACT_HASH_WIN10_SUCCESS		\
+    {0x10, 0x00, 0x00, 0x00}
+#define EV_COMPACT_HASH_WIN10_UNSAFE		\
+    {0xff, 0xff, 0x00, 0x00}
+
+/* This table maps the EV_COMPACT_HASH values to text */
+
+typedef struct {
+    uint8_t value[4];
+    const char *text;
+} EV_COMPACT_HASH_TABLE;
+
+const EV_COMPACT_HASH_TABLE compactHashTable [] =
+    {
+     {EV_COMPACT_HASH_PRE10_SUCCESS,
+      "Pre-Windows 10 Bitlocker success"},
+     {EV_COMPACT_HASH_PRE10_DEBUG,
+      "Pre-Windows 10 Bitlocker detected debugger"},
+     {EV_COMPACT_HASH_PRE10_ERROR,
+      "Pre-Windows 10 Error"},
+     {EV_COMPACT_HASH_WIN10_SUCCESS,
+      "Windows 10 Bitlocker success"},
+     {EV_COMPACT_HASH_WIN10_UNSAFE,
+      "Windows 10 Unsafe Windows launch"},
+    };
+
+
 static void TSS_EFI_GetNameIndex(size_t *index,
 				 const uint8_t *name, uint64_t nameLength);
+static void TSS_EFI_GetCompactHashIndex(size_t *index,
+					const uint8_t *value);
 
 /* function prototypes for event callback table */
 
@@ -2190,9 +2227,21 @@ static void     TSS_EfiCompactHashTrace(TSST_EFIData *efiData)
     if (efiData->pcrIndex == 6) {
 	printf("  Compact Hash: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
     }
+    /* PCR 11 holds MS Bitlocker status */
     else {
-	TSS_PrintAll("    Compact Hash",
-		     tss4bBuffer->buffer, tss4bBuffer->size);
+	size_t index = 0;
+	if (tss4bBuffer->size == sizeof(((EV_COMPACT_HASH_TABLE *)NULL)->value)) {
+	    TSS_EFI_GetCompactHashIndex(&index, tss4bBuffer->buffer);
+	}
+	if (index != 0) {
+	    const char *text= compactHashTable[index].text;
+	    printf("  Compact Hash: %s\n", text);
+	}
+	/* bad size or unknown value */
+	else {
+	    TSS_PrintAll("    Compact Hash unsupported",
+			 tss4bBuffer->buffer, tss4bBuffer->size);
+	}
     }
     return;
 }
@@ -2610,6 +2659,26 @@ static void TSS_EFI_GetNameIndex(size_t *index,
     *index = 0;		/* no match, unknown */
     return;
 }
+
+static void TSS_EFI_GetCompactHashIndex(size_t *index,
+					const uint8_t *value)
+{
+    int m1;
+    for (*index = 0 ;
+	 *index < sizeof(compactHashTable) / sizeof(EV_COMPACT_HASH_TABLE)  ;
+	 (*index)++) {
+
+	m1 = memcmp(value,
+		    compactHashTable[*index].value,
+		    sizeof(((EV_COMPACT_HASH_TABLE *)NULL)->value)) == 0;
+	if (m1) {
+	    return;
+	}
+    }
+    *index = 0;		/* no match, unknown */
+    return;
+}
+
 
 /* guid_printf() traces the input GUID, first as hexacsii and then as text.
 
