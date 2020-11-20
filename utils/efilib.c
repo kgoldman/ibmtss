@@ -445,6 +445,15 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
 static void     TSS_EfiBootServicesTrace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiBootServicesToJson(TSST_EFIData *efiData);
 
+/* UEFI_DEVICE_PATH  */
+
+static void     TSS_UefiDevicePathInit(UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_UefiDevicePathFree(UEFI_DEVICE_PATH *uefiDevicePath);
+static uint32_t TSS_UefiDevicePathReadBuffer(UEFI_DEVICE_PATH *uefiDevicePath,
+					     uint8_t **event, uint32_t *eventSize);
+static void     TSS_UefiDevicePathTrace(UEFI_DEVICE_PATH *uefiDevicePath);
+static uint32_t TSS_UefiDevicePathToJson(UEFI_DEVICE_PATH *uefiDevicePath);
+
 /* EV_EFI_GPT_EVENT */
 
 static void     TSS_EfiGptEventInit(TSST_EFIData *efiData);
@@ -1842,16 +1851,26 @@ static uint32_t TSS_EfiVariableAuthorityToJson(TSST_EFIData *efiData)
 static void TSS_EfiBootServicesInit(TSST_EFIData *efiData)
 {
     UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
+    printf("TSS_EfiBootServicesInit\n");
     uefiImageLoadEvent->DevicePath = NULL;
     uefiImageLoadEvent->Path = NULL;
+    uefiImageLoadEvent->UefiDevicePathCount = 0;
+    uefiImageLoadEvent->UefiDevicePath = NULL;
     return;
 }
 
 static void TSS_EfiBootServicesFree(TSST_EFIData *efiData)
 {
+    uint32_t count;
     UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
+    printf("TSS_EfiBootServicesFree\n");
     free(uefiImageLoadEvent->DevicePath);
     free(uefiImageLoadEvent->Path);
+    for (count = 0 ; count < uefiImageLoadEvent->UefiDevicePathCount ; count++) {
+	UEFI_DEVICE_PATH *uefiDevicePath = uefiImageLoadEvent->UefiDevicePath + count;
+	TSS_UefiDevicePathFree(uefiDevicePath);
+    }
+    free(uefiImageLoadEvent->UefiDevicePath);
     return;
 }
 
@@ -1861,7 +1880,10 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
 {
     uint32_t rc = 0;
     UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
+    uint32_t lengthOfDevicePath;
+    uint8_t *devicePath;
     pcrIndex = pcrIndex;
+    printf("TSS_EfiBootServicesReadBuffer\n");
 
     if (rc == 0) {
 	rc = TSS_UINT64LE_Unmarshal(&uefiImageLoadEvent->ImageLocationInMemory,
@@ -1900,7 +1922,7 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
 	    }
 	}
     }
-    /* unmarshal DevicePath */
+    /* unmarshal DevicePath to byte stream */
     if (rc == 0) {
 	if (uefiImageLoadEvent->LengthOfDevicePath > 0) {
 	    rc = TSS_Array_Unmarshalu(uefiImageLoadEvent->DevicePath,
@@ -1911,8 +1933,41 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
 	    /* FIXME is LengthOfDevicePath zero an error ? */
 	}
     }
+    /* assign temporary variables sincce the unmarshal moves them */
+    if (rc == 0) {
+	lengthOfDevicePath = uefiImageLoadEvent->LengthOfDevicePath;
+	devicePath = uefiImageLoadEvent->DevicePath;
+    }
+    /* FIXME factor this? */
+    /* FIXME init count and pointers to NULL */
+    while ((rc == 0) && (lengthOfDevicePath > 0)) {
+	if (rc == 0) {
+	    void *tmpptr;
+	    uefiImageLoadEvent->UefiDevicePathCount++;	/* FIXME move increment after realloc
+							   several places in code */
+	    /* freed by TSS_EfiBootServicesFree() */
+	    tmpptr = realloc(uefiImageLoadEvent->UefiDevicePath,
+			     sizeof(UEFI_DEVICE_PATH) * uefiImageLoadEvent->UefiDevicePathCount);
+	    if (tmpptr != NULL) {
+		uefiImageLoadEvent->UefiDevicePath = tmpptr;
+	    }
+	    else {
+		printf("TSS_EfiBootServicesReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)sizeof(UEFI_DEVICE_PATH) *
+		       uefiImageLoadEvent->UefiDevicePathCount);
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if (rc == 0) {
+	    UEFI_DEVICE_PATH *nextDevicePath =
+		uefiImageLoadEvent->UefiDevicePath + uefiImageLoadEvent->UefiDevicePathCount -1;
+	    TSS_UefiDevicePathInit(nextDevicePath);	/* for safe free */
+	    rc = TSS_UefiDevicePathReadBuffer(nextDevicePath,
+					      &devicePath, &lengthOfDevicePath);
+	}
+    }
 #if HAVE_EFIBOOT_H
-    /* format path */
+    /* format path (based on external package) */
     if (rc == 0) {
 	rc = TSS_EfiFormatDevicePath(&uefiImageLoadEvent->Path,
 				     uefiImageLoadEvent->DevicePath,
@@ -1925,10 +1980,22 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
 static void TSS_EfiBootServicesTrace(TSST_EFIData *efiData)
 {
     UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
+    uint32_t count;
+
     printf("  Image location in memory: %016" PRIx64 "\n", uefiImageLoadEvent->ImageLocationInMemory);
     printf("  Image length in memory: %" PRIu64 "\n", uefiImageLoadEvent->ImageLengthInMemory);
     printf("  Image link time address: %016" PRIx64 "\n", uefiImageLoadEvent->ImageLinkTimeAddress);
-    printf("  Path: %s\n", uefiImageLoadEvent->Path);
+#if HAVE_EFIBOOT_H
+    printf("  DevicePath: %s\n", uefiImageLoadEvent->Path);
+#else
+    TSS_PrintAll("  DevicePath:",
+		 uefiImageLoadEvent->DevicePath, uefiImageLoadEvent->LengthOfDevicePath);
+#endif /* HAVE_EFIBOOT_H */
+    printf("  UefiDevicePathCount: %u\n", uefiImageLoadEvent->UefiDevicePathCount);
+
+    for (count = 0 ; count < uefiImageLoadEvent->UefiDevicePathCount ; count++) {
+	TSS_UefiDevicePathTrace(uefiImageLoadEvent->UefiDevicePath + count);
+    }
     return;
 }
 
@@ -1936,7 +2003,79 @@ static uint32_t TSS_EfiBootServicesToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
-    uefiImageLoadEvent  = uefiImageLoadEvent;
+    /* needs iterator over count */
+    rc = TSS_UefiDevicePathToJson(uefiImageLoadEvent->UefiDevicePath);
+    return rc;
+}
+
+/* UEFI_DEVICE_PATH  */
+
+
+static void TSS_UefiDevicePathInit(UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    uefiDevicePath->data = NULL;
+    return;
+}
+
+static void TSS_UefiDevicePathFree(UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    free(uefiDevicePath->data);
+    return;
+}
+
+static uint32_t TSS_UefiDevicePathReadBuffer(UEFI_DEVICE_PATH *uefiDevicePath,
+					     uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&uefiDevicePath->protocol.Type,
+				  event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&uefiDevicePath->protocol.SubType,
+				  event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&uefiDevicePath->protocol.Length,
+				    event, eventSize);
+    }
+    /* allocate the data array */
+    if (rc == 0) {
+	if (uefiDevicePath->protocol.Length > 0) {
+	    /* freed by TSS_EfiVariableDataFree, length is total, subtract the
+	       EFI_DEVICE_PATH_PROTOCOL */
+	    uefiDevicePath->data = malloc(uefiDevicePath->protocol.Length -
+					  sizeof(EFI_DEVICE_PATH_PROTOCOL));
+	    if (uefiDevicePath->data == NULL) {
+		printf("TSS_UefiDevicePathReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)(uefiDevicePath->protocol.Length));
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(uefiDevicePath->data,
+				  uefiDevicePath->protocol.Length -
+				  sizeof(EFI_DEVICE_PATH_PROTOCOL),
+				  event, eventSize);
+    }
+    return rc;
+}
+
+static void TSS_UefiDevicePathTrace(UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("    Type    %02x\n", uefiDevicePath->protocol.Type);
+    printf("    SubType %02x\n", uefiDevicePath->protocol.SubType);
+    TSS_PrintAll("   Data:",
+		 uefiDevicePath->data, uefiDevicePath->protocol.Length - 
+		 sizeof(EFI_DEVICE_PATH_PROTOCOL));
+    return;
+}
+
+static uint32_t TSS_UefiDevicePathToJson(UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    uint32_t rc = 0;
+    uefiDevicePath = uefiDevicePath;
     return rc;
 }
 

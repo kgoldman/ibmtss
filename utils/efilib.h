@@ -217,13 +217,28 @@ typedef struct {
 
 /* EV_EFI_BOOT_SERVICES_APPLICATION, EV_EFI_BOOT_SERVICES_DRIVER */
 
+/* from UEFI specification */
+typedef struct {
+    uint8_t Type;
+    uint8_t SubType;
+    uint16_t Length;
+} EFI_DEVICE_PATH_PROTOCOL;
+
+typedef struct {
+    EFI_DEVICE_PATH_PROTOCOL protocol;
+    uint8_t 	*data;		/* FIXME should be union */
+} UEFI_DEVICE_PATH;
+
 typedef struct {
     UEFI_PHYSICAL_ADDRESS	ImageLocationInMemory; 	/* PE/COFF image */
     uint64_t 			ImageLengthInMemory;
     uint64_t 			ImageLinkTimeAddress;
-    uint64_t 			LengthOfDevicePath; 
+    uint64_t 			LengthOfDevicePath;
     uint8_t 			*DevicePath; 		/* UEFI_DEVICE_PATH */
+    /* NOTE Below are not part of the PFP structure */
     char 			*Path;			/* formatted path */
+    uint32_t			UefiDevicePathCount;
+    UEFI_DEVICE_PATH		*UefiDevicePath;	/* array of UEFI_DEVICE_PATH structures */
 } UEFI_IMAGE_LOAD_EVENT;
 
 /* General malloced buffer and uint32_t size */
