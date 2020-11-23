@@ -55,6 +55,7 @@ CCFLAGS += 	-DTPM_POSIX
 
 CCLFLAGS += 	-I. 		\
 		-fPIC		\
+		-DTPM_TPM20	\
 		-I/usr/local/Cellar/openssl/1.0.2m/include/
 
 # to compile out printf's.  Regression test will fail because it tries
@@ -69,6 +70,7 @@ CCLFLAGS += 	-I. 		\
 # static linking
 
 CCAFLAGS += 	-I.	\
+		-DTPM_TPM20	\
 		-fPIE	\
 		-I/usr/local/Cellar/openssl/1.0.2m/include/
 

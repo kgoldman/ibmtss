@@ -25,7 +25,7 @@ This builds a TSS
 Refer to the "Advanced options", below, for additional compiler options.
 
 
-Autotools
+Autotools - Linux
 ---------
 
 On Linux (and probably other Unix systems), open source projects expect that
@@ -81,7 +81,7 @@ CFLAGS='<options>'
 options:
 -O0					- change compiler optimization (default: 02)
 -DTPM_DEVICE_DEFAULT="\"/dev/tpmrm0\""	- change hardware TPM (default: /dev/tpm0)
--DTPM_DATA_DIR_DEFAULT="\"<pathname>\""	- specify directory for TSS state files
+z-DTPM_DATA_DIR_DEFAULT="\"<pathname>\""	- specify directory for TSS state files
 -DTPM_TRACE_LEVEL_DEFAULT="\"<level>""	- change level of tracing (default: 0)
 	0 - no tracing
 	1 - trace errors
@@ -107,6 +107,46 @@ $ libtool --mode=execute gdb <.lib/utility>
 [1] For an explanation, refer to the GNU documentation
 https://www.gnu.org/software/libtool/manual/libtool.html#Debugging-executables.
 
+Mac Build - Mac
+---------
+
+These are two sets of contributed instructions for a Mac autotools
+build.  There is also a contributed utils/makefile.mac.
+
+brew install openssl
+brew install gawk
+brew install automake
+brew install autconf
+brew install libtool
+brew link libtool
+brew install pkg-config
+
+1) 
+
+PATH=/usr/local/Cellar/openssl\@1.1/1.1.1h/bin/:$PATH
+PATH=/usr/local/Cellar/gawk/5.1.0/bin/:$PATH
+LD_LIBRARY_PATH=/usr/local/Cellar/openssl\@1.1/1.1.1h
+
+autoreconf -i
+./configure \
+	CPPFLAGS="-I/usr/local/Cellar/openssl@1.1/1.1.1h/include -DTPM_POSIX" \
+	LDFLAGS=-L/usr/local/Cellar/openssl@1.1/1.1.1h/lib \
+	PKG_CONFIG_PATH=/usr/local/Cellar/openssl@1.1/1.1.1h/lib/pkgconfig
+make clean
+make
+sudo make install
+
+
+2)
+
+autoreconf -i
+./configure \
+	    CPPFLAGS="-I/usr/local/opt/openssl/include -DTPM_POSIX" \
+	    LDFLAGS=-L/usr/local/opt/openssl/lib \
+	    PKG_CONFIG_PATH=/usr/local/opt/openssl/lib/pkgconfig
+make clean
+make
+sudo make install
 
 Advanced options
 ----------------
