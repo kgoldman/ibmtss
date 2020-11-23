@@ -56,7 +56,7 @@
 #include "cryptoutils.h"
 #include "ekutils12.h"
 
-int tssUtilsVerbose;
+extern int tssUtilsVerbose;
 
 /* readNvBufferMax() determines the maximum NV read/write block size.  The limit is typically set by
    the TPM property TPM_CAP_PROP_INPUT_BUFFER, munus the header and other read overhead. */

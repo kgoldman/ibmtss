@@ -53,7 +53,7 @@
 
 static void printUsage(void);
 
-int tssUtilsVerbose;
+extern int tssUtilsVerbose;
 
 int main(int argc, char * argv[])
 {

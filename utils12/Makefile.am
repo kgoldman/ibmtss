@@ -64,7 +64,7 @@ nvreadvalueauth_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 nvreadvalueauth_LDFLAGS = -L$(top_srcdir)/utils
 nvreadvalueauth_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)
 
-nvreadvalue_SOURCES = nvreadvalue.c
+nvreadvalue_SOURCES = nvreadvalue.c ../utils/cryptoutils.c
 nvreadvalue_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 nvreadvalue_LDFLAGS = -L$(top_srcdir)/utils
 nvreadvalue_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)

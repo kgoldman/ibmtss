@@ -89,7 +89,7 @@ static TPM_RC startOIAP(TSS_CONTEXT *tssContext,
 static TPM_RC flushSpecific(TSS_CONTEXT *tssContext,
 			    TPM_AUTHHANDLE sessionHandle);
 
-int tssUtilsVerbose;
+extern int tssUtilsVerbose;
 
 int main(int argc, char *argv[])
 {
