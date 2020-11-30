@@ -211,3 +211,25 @@ Add to CCFLAGS
 Add to CCFLAGS
 
 	-DTPM_TSS_NOECC
+
+
+UEFI
+----
+
+eventextend can do detailed UEFI event tracing.  For the most detailed
+tracing, these packages are potentially needed, depending on the distro
+and version:
+
+Ubuntu, Debian: 
+
+efivar
+libefivar1
+libefiboot1
+libefiboot-dev
+libefivar-dev
+
+RHEL, Suse:
+
+efivar
+libefivar1
+efivar-libs
