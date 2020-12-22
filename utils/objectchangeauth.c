@@ -319,7 +319,7 @@ static void printUsage(void)
     printf("\t-ho\tobject handle\n");
     printf("\t[-pwdo\tpassword for object (default empty)]\n");
     printf("\t[-pwdn\tnew password for object (default empty)]\n");
-    printf("\t[-pwdni\tnew password file for object, nul terminated (default empty)]\n");
+    printf("\t[-pwdni\t new password file for object, nul terminated (default empty)]\n");
     printf("\t[-opr\tprivate key file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
