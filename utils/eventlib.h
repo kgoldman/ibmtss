@@ -55,6 +55,8 @@
 
 #define TCG_EVENT_LEN_MAX	0x10000
 
+/* defines directly from the PFP */
+
 #define EV_PREBOOT_CERT	  			0x00
 #define EV_POST_CODE				0x01
 #define	EV_UNUSED				0x02
@@ -84,15 +86,12 @@
 #define EV_EFI_ACTION				0x80000007
 #define EV_EFI_PLATFORM_FIRMWARE_BLOB		0x80000008
 #define EV_EFI_HANDOFF_TABLES			0x80000009
-#define EV_EFI_HCRTM_EVENT			0x80000010 
+#define EV_EFI_PLATFORM_FIRMWARE_BLOB2		0x8000000A
+#define EV_EFI_HCRTM_EVENT			0x80000010
 #define EV_EFI_VARIABLE_AUTHORITY		0x800000E0
 
 /* unknown Supermicro event type */
 #define EV_EFI_SUPERMICRO_1			0x0000040e
-
-/* PCR 0-7 are the BIOS / UEFI / firmware / pre-OS PCRs, set to 10 because a Lenovo TPM 1.2 firmware
-   extends PCR 0-9 */
-#define TPM_BIOS_PCR	10
 
 /* TCG_PCR_EVENT is the TPM 1.2 SHA-1 event log entry format.  It is defined in the TCG PC Client
    Specific Implementation Specification for Conventional BIOS, where it is called
@@ -196,7 +195,8 @@ extern "C" {
     TPM_RC TSS_EVENT2_Line_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t *size);
 
     TPM_RC TSS_EVENT2_Line_LE_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint32_t *size);
-    TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event);
+    TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event,
+				     const TCG_EfiSpecIDEvent *specIdEvent);
 
 
 #ifndef TPM_TSS_NOCRYPTO
@@ -205,6 +205,8 @@ extern "C" {
 #endif
 
     void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event);
+    void TSS_EVENT2_Line_Trace2(TCG_PCR_EVENT2 *event,
+				const TCG_EfiSpecIDEvent *specIdEvent);
 
     TPM_RC TSS_SpecIdEvent_Unmarshal(TCG_EfiSpecIDEvent *specIdEvent,
 				     uint32_t eventSize,

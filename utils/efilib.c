@@ -28,7 +28,7 @@
 /* LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR	*/
 /* A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT		*/
 /* HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,	*/
-/* SPECIAL, EXEzMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT		*/
+/* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT		*/
 /* LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,	*/
 /* DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY	*/
 /* THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT		*/
@@ -44,15 +44,18 @@
    TSS_EFIData_ReadBuffer() - unmarshal an event into the structure
    TSS_EFIData_Free() - free the structure
 
-   After TSS_EFIData_ReadBuffer, the structure can be called with
+   After TSS_EFIData_ReadBuffer(), the structure can be called with:
 
    TSS_EFIData_Trace() to pretty print the structure to stdout
 
    TSS_EFIData_ToJson() to output json in some TBD format and destination.  This has not been
-   mplemented.  There are placeholders.
+   implemented.  There are some placeholders.
+
+   See TCG PC Client Platform Firmware Profile Specification (PFP)
 */
 
 #include <stddef.h>
+#include <ctype.h>
 
 #include <openssl/x509.h>
 
@@ -62,6 +65,19 @@
 
 #include "eventlib.h"
 #include "efilib.h"
+
+/* Used for input sanity check.  Keep below ffff_ffff so that cast to uint32_t is safe */
+#define EFI_LENGTH_MAX 0x100000
+
+/* Some PFP event contents are not completely specified.  Use these functions to guess at the
+   contents. */
+
+static void isUCS2String(int *isUCS2, uint8_t *buffer, uint32_t length);
+static void isAsciiString(int *isAscii, uint8_t *buffer, uint32_t length);
+
+/*
+  GUID Handling
+*/
 
 /* standard GUID values */
 
@@ -129,7 +145,6 @@
     {0x48, 0x61, 0x68, 0x21, 0x49, 0x64, 0x6f, 0x6e,	\
 	    0x74, 0x4e, 0x65, 0x65, 0x64, 0x45, 0x46, 0x49}
 
-
 #if 0	/* future GUIDs to be supported */
 #define SMBIOS_TABLE_GUID    			"eb9d2d31-2d88-11d3-9a16-0090273fc14d"
 #define EFI_ACPI_20_TABLE_GUID 			"8868e871-e4f1-11d3-bc22-0080c73c8881"
@@ -141,7 +156,7 @@
 #define EFI_JSON_CAPSULE_RESULT_TABLE_GUID    	"dbc461c3-b3de-422a-b9b4-9886fd49a1e5"
 #endif
 
-/* GUID data types */
+/* GUID data types - used to map content type */
 
 #define GUID_TYPE_UNSUPPORTED	0
 #define GUID_TYPE_X509_CERT 	1
@@ -236,23 +251,82 @@ const GUID_TABLE guidTable [] =
 
 static uint32_t TSS_EFI_GetGuidIndex(size_t *index, const uint8_t *guidBin);
 
-/* Standard UC16 Variable Name strings */
+static void guid_printf(const char *msg, uint8_t *guid);
+
+/* guid_printf() traces the input GUID, first as hexacsii and then as text.
+
+   It prepends msg to ther hexascii trace.  msg must not be NULL but can be "".
+   guid must be 16 bytes;
+*/
+
+static void guid_printf(const char *msg, uint8_t *guid)
+{
+    int rc;
+    size_t index;
+
+    printf("  %s: %02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x\n",
+	   msg,
+	   guid[3],guid[2],guid[1],guid[0],
+	   guid[5],guid[4],
+	   guid[7],guid[6],
+	   guid[8],guid[9],
+	   guid[10],guid[11],guid[12],guid[13],guid[14],guid[15]);
+    /* if the GUID is known, trace the GUID as text */
+    rc = TSS_EFI_GetGuidIndex(&index, guid);
+    if (rc == 0) {
+	printf("    %s\n", guidTable[index].guidText);
+    }
+    return;
+}
+
+/* TSS_EFI_GetGuidIndex() gets the index into the GUID table for the GUID array guidBin
+
+   Returns TSS_RC_NOT_IMPLEMENTED for an unimplemeted GUID.
+*/
+
+static uint32_t TSS_EFI_GetGuidIndex(size_t *index, const uint8_t *guidBin)
+{
+    for (*index = 0 ;
+	 *index < sizeof(guidTable) / sizeof(GUID_TABLE) ;
+	 (*index)++) {
+	if (memcmp(guidTable[*index].guidBin, guidBin, 16) == 0) {
+	    return 0;	/* match */
+	}
+    }
+    return TSS_RC_NOT_IMPLEMENTED;		/* no match */
+}
+
+/*
+  UC16 String handling
+*/
+
+/* Standard UEFI UC16 Variable Name strings */
 
 const unsigned char unknown[] = "\x00";
-const unsigned char secureboot[] =
+const unsigned char SecureBoot[] =
     "\x53\x00\x65\x00\x63\x00\x75\x00\x72\x00\x65\x00"
     "\x42\x00\x6f\x00\x6f\x00\x74";
+const unsigned char AuditMode[] =
+    "\x41\x00\x75\x00\x64\x00\x69\x00\x74\x00\x4d\x00"
+    "\x6f\x00\x64\x00\x65";
+const unsigned char DeployedMode[] =
+    "\x44\x00\x65\x00\x70\x00\x6c\x00\x6f\x00\x79\x00"
+    "\x65\x00\x64\x00\x4d\x00\x6f\x00\x64\x00\x65";
+const unsigned char setupmode[] =
+    "\x53\x00\x65\x00\x74\x00\x75\x00\x70\x00\x4d\x00"
+    "\x6f\x00\x64\x00\x65";
 const unsigned char PK[]  = "\x50\x00\x4b"; 
 const unsigned char KEK[] = "\x4b\x00\x45\x00\x4b";
 const unsigned char db[]  = "\x64\x00\x62";
 const unsigned char dbr[] = "\x64\x00\x62\x00\x72";
 const unsigned char dbt[] = "\x64\x00\x62\x00\x74";
 const unsigned char dbx[] = "\x64\x00\x62\x00\x78";
-const unsigned char bootorder[] =
+const unsigned char BootOrder[] =
     "\x42\x00\x6f\x00\x6f\x00\x74\x00\x4f\x00\x72\x00"
     "\x64\x00\x65\x00\x72";
 const unsigned char Shim[] = "\x53\x00\x68\x00\x69\x00\x6d";
 const unsigned char MokList[] = "\x4d\x00\x6f\x00\x6b\x00\x4c\x00\x69\x00\x73\x00\x74";
+const unsigned char MokListX[] = "\x4d\x00\x6f\x00\x6b\x00\x4c\x00\x69\x00\x73\x00\x74\x00\x58";
 
 /* This table maps UC16 Variable names to this implementation structure tags */
 
@@ -266,40 +340,204 @@ const TAG_TABLE tagTable [] =
     {
      {unknown,
       sizeof(unknown),
-      VAR_UNKNOWN},
-     {secureboot,
-      sizeof(secureboot),
-      VAR_SECUREBOOT},
+      TSS_VAR_UNKNOWN},
+     {SecureBoot,
+      sizeof(SecureBoot),
+      TSS_VAR_SECUREBOOT},
+     {AuditMode,
+      sizeof(AuditMode),
+      TSS_VAR_AUDITMODE},
+     {DeployedMode,
+      sizeof(DeployedMode),
+      TSS_VAR_DEPLOYEDMODE},
+     {setupmode,
+      sizeof(setupmode),
+      TSS_VAR_SETUPMODE},
      {PK,
       sizeof(PK),
-      VAR_PK},
+      TSS_VAR_PK},
      {KEK,
       sizeof(KEK),
-      VAR_KEK},
+      TSS_VAR_KEK},
      {db,
       sizeof(db),
-      VAR_DB},
+      TSS_VAR_DB},
      {dbx,
       sizeof(dbx),
-      VAR_DBX},
+      TSS_VAR_DBX},
      {dbt,
       sizeof(dbt),
-      VAR_DBT},
+      TSS_VAR_DBT},
      {dbr,
       sizeof(dbr),
-      VAR_DBR},
-     {bootorder,
-      sizeof(bootorder),
-      VAR_BOOTORDER},
+      TSS_VAR_DBR},
+     {BootOrder,
+      sizeof(BootOrder),
+      TSS_VAR_BOOTORDER},
      {Shim,
       sizeof(Shim),
-      VAR_SHIM},
+      TSS_VAR_SHIM},
      {MokList,
       sizeof(MokList),
-      VAR_MOKLIST},
-    };
+      TSS_VAR_MOKLIST},
+     {MokListX,
+      sizeof(MokListX),
+      TSS_VAR_MOKLISTX},
+     };
 
-/* EV_COMPACT_HASH post-OS (PCR 11) Values */
+static void TSS_EFI_GetNameIndex(size_t *index,
+				 const uint8_t *name, uint64_t nameLength);
+
+/* TSS_EFI_GetTagIndex() gets the index into the tag table for the name.
+
+   If the name does't match, returns index 0, which is the unknown name.
+*/
+
+static void TSS_EFI_GetNameIndex(size_t *index,
+				 const uint8_t *name,
+				 uint64_t nameLength)	/* half the total bytes in array */
+{
+    int m1,m2;
+    for (*index = 0 ;
+	 *index < sizeof(tagTable) / sizeof(TAG_TABLE)  ;
+	 (*index)++) {
+
+	m1 = (nameLength * 2) == tagTable[*index].nameLength;			/* length match */
+	m2 = memcmp(name, tagTable[*index].name, (nameLength * 2)) == 0;	/* string match */
+	if (m1 & m2) {
+	    return;
+	}
+    }
+    *index = 0;		/* no match, unknown */
+    return;
+}
+
+static void wchar_printf(const char *msg, void *wchar, uint64_t length);
+
+/* Print UCS-2 character string.
+
+   length is number of characters, which is half the number of bytes in wchar
+   wchar is a uc16 array to be printed, not including an extra nul terminator
+
+   It prepends msg to ther hexascii trace.  msg must not be NULL but can be "".
+*/
+
+static void wchar_printf(const char *msg, void *wchar, uint64_t length)
+{
+    uint32_t i;
+    uint16_t *ptr = wchar;	/* endian issue */
+
+    /*
+     * this is necessary because UEFI uses UCS-2, which is a two byte
+     * wide char.  Most linux tools use UC32, which is a four byte
+     * wide char, so we can't simply treat UEFI strings as arrays of
+     * wchar_t
+     */
+    printf("  %s", msg);
+    for (i = 0; i < length ; i++) {
+        wchar_t c = (wchar_t)ptr[i];	/* FIXME alignment and endian issues */
+        printf("%lc", c);
+    }
+    printf("\n");
+    return;
+}
+
+/* isUCS2String() guesses whether the buffer is printable UCS-2.  Checks for an even number of bytes
+   and every odd byte 0x00.
+ */
+
+static void isUCS2String(int *isUCS2, uint8_t *buffer, uint32_t length)
+{
+    uint32_t i;
+
+    if ((length % 2) != 0) {
+	*isUCS2 = 0;
+	return;
+    }
+    for (i = 1 ; i < length ; i+=2) {
+	if (buffer[i] != 0x00) {
+	    *isUCS2 = 0;	/* UCS-2 typically has all odd bytes 0 */
+	    return;
+	}
+    }
+    *isUCS2 = 1;
+    return;
+}
+
+/* isAsciiString() checks whether all bytes in the buffer are printable.
+
+   length does not include a nul terminator
+*/
+
+static void isAsciiString(int *isAscii, uint8_t *buffer, uint32_t length)
+{
+    uint32_t i;
+    for (i = 1 ; i < length ; i++) {
+	if (!isprint((int)buffer[i])) {
+	    *isAscii = 0;
+	    return;
+	}
+    }
+    *isAscii = 1;
+    return;
+}
+
+
+uint32_t TSS_UCS2_Unmarshal(char **ucs2,
+			    uint32_t *DescriptionUcs2Length,
+			    uint8_t **event, uint32_t *eventSize);
+
+/* TSS_UCS2_Unmarshal() copies the event to a malloc'ed ucs2, not including the NUL terminator.
+
+   It returns the length, which is half the number of bytes in ucs2
+*/
+
+uint32_t TSS_UCS2_Unmarshal(char **ucs2,		/* freed by caller */
+			    uint32_t *DescriptionUcs2Length,
+			    uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t i;
+    uint32_t bytes;	/* bytes to malloc and store from event */
+    int foundNul = 0;
+
+    *DescriptionUcs2Length = 0;
+    /* count the number of UCS2 bytes */
+    for (i = 0 ; i < *eventSize ; i+= 2) {
+	if ((i+1) > *eventSize) {
+	    return TSS_RC_INSUFFICIENT_BUFFER;	/* handle odd number of event bytes case */
+	}
+	if (((*event)[i] == 0) && ((*event)[i+1] == 0)) {
+	    foundNul = 1;
+	    break;
+	}
+    }
+    if (!foundNul) {
+	return TSS_RC_INSUFFICIENT_BUFFER;
+    }
+    bytes = i;
+    *DescriptionUcs2Length = i/2;
+    *ucs2 = malloc(bytes);
+    if (*ucs2 == NULL) {
+	return TSS_RC_OUT_OF_MEMORY;
+    }
+    for (i = 0 ; i < bytes ; i++) {
+	(*ucs2)[i] = **event;
+	*event += 1;
+	*eventSize -= 1;
+    }
+    /* index past the NUL */
+    *event += 2;
+    *eventSize -= 2;
+    return 0;
+}
+
+/*
+  EV_COMPACT_HASH Handler
+*/
+
+/* EV_COMPACT_HASH post-OS (PCR 11) Values, from Microsoft
+ 
+ */
 
 #define EV_COMPACT_HASH_PRE10_SUCCESS		\
     {0x00, 0x00, 0x00, 0x00}
@@ -333,218 +571,1834 @@ const EV_COMPACT_HASH_TABLE compactHashTable [] =
       "Windows 10 Unsafe Windows launch"},
     };
 
+static uint32_t TSS_EFI_GetCompactHashIndex(size_t *index,
+					    const uint8_t *value);
 
-static void TSS_EFI_GetNameIndex(size_t *index,
-				 const uint8_t *name, uint64_t nameLength);
-static void TSS_EFI_GetCompactHashIndex(size_t *index,
-					const uint8_t *value);
+/* TSS_EFI_GetCompactHashIndex() matches the value to the EV_COMPACT_HASH_TABLE.
 
-/* function prototypes for event callback table */
+   Returns TSS_RC_NOT_IMPLEMENTED on no match,
+*/
 
-typedef void     (*TSS_EFIDAta_Init_Function_t)(TSST_EFIData *efiData);
-typedef void     (*TSS_EFIDAta_Free_Function_t)(TSST_EFIData *efiData);
-typedef uint32_t (*TSS_EFIDAta_ReadBuffer_Function_t)(TSST_EFIData *efiData,
-						      uint8_t *event,
-						      uint32_t eventSize,
-						      uint32_t pcrIndex);
-typedef void     (*TSS_EFIDAta_Trace_Function_t)(TSST_EFIData *efiData);
-typedef uint32_t (*TSS_EFIDAta_ToJson_Function_t)(TSST_EFIData *efiData);
+static uint32_t TSS_EFI_GetCompactHashIndex(size_t *index,
+					    const uint8_t *value)
+{
+    int m1;
+    for (*index = 0 ;
+	 *index < sizeof(compactHashTable) / sizeof(EV_COMPACT_HASH_TABLE)  ;
+	 (*index)++) {
 
-/* callback function prototypes */
+	m1 = memcmp(value,
+		    compactHashTable[*index].value,
+		    sizeof(((EV_COMPACT_HASH_TABLE *)NULL)->value)) == 0;
+	if (m1) {
+	    return 0;
+	}
+    }
+    /* no match */
+    return TSS_RC_NOT_IMPLEMENTED;
+}
+
+/*
+  Device Path Handler
+*/
+
+/* Used for EV_EFI_BOOT_SERVICES_DRIVER, EV_EFI_BOOT_SERVICES_APPLICATION, EV_EFI_VARIABLE_BOOT */
+
+/* EFI_DEVICE_PATH_PROTOCOL Type Table - mapping from Type to SubType Handler */
+
+typedef uint32_t (*TSS_EFIDevicePath_ReadBuffer_Function_t)(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							    uint8_t **event,
+							    uint32_t *eventSize);
+typedef void     (*TSS_EFIDevicePath_Trace_Function_t)(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+
+typedef struct {
+    uint8_t type;
+    const char *text;
+    TSS_EFIDevicePath_ReadBuffer_Function_t 	readBufferFunction;
+    TSS_EFIDevicePath_Trace_Function_t		traceFunction;
+} EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE;
+
+static uint32_t TSS_EFI_GetDevicePathIndex(size_t *index, const uint8_t type,
+					   size_t tableSize,
+					   const EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE *table);
+
+/* TSS_EFI_GetDevicePathIndex() returns an index into several tables containing
+   EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE entries.
+
+   The 'type' parameter is the key.  It is sometimes the Device Path Type, sometimes the SubType;
+
+   Returns TSS_RC_NOT_IMPLEMENTED if 'type' is not found.
+*/
+
+static uint32_t TSS_EFI_GetDevicePathIndex(size_t *index, const uint8_t type,
+					   size_t tableSize,
+					   const EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE *table)
+{
+    int m1;
+#if 0
+    printf("TSS_EFI_GetDevicePathIndex: type %02x tableSize %lu iterate %lu\n",
+	   type, tableSize, tableSize / sizeof(EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE));
+#endif
+    for (*index = 0 ;
+	 *index < tableSize / sizeof(EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE) ;
+	 (*index)++) {
+#if 0
+	printf("TSS_EFI_GetDevicePathIndex: type %02x index %lu table type %02x\n",
+	       type, *index, table[*index].type);
+#endif
+	m1 = (type == table[*index].type);
+	if (m1) {
+	    return 0;	/* match */
+	}
+    }
+    return TSS_RC_NOT_IMPLEMENTED;		/* no match */
+}
+
+/* From UEFI 10.3.1 Table 44 Generic Device Path Structures */
+
+#define EFI_DEVICE_PATH_TYPE_HW  	0x01
+#define EFI_DEVICE_PATH_TYPE_ACPI 	0x02
+#define EFI_DEVICE_PATH_TYPE_MSG  	0x03
+#define EFI_DEVICE_PATH_TYPE_MEDIA 	0x04
+#define EFI_DEVICE_PATH_TYPE_BIOS 	0x05
+#define EFI_DEVICE_PATH_TYPE_END 	0x7F
+
+static uint32_t TSS_EfiDevicePathHw_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+					       uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathAcpi_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						 uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsg_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMedia_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						  uint8_t **event, uint32_t *eventSize);
+#if 0
+static uint32_t TSS_EfiDevicePathBios_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						 uint8_t **event, uint32_t *eventSize);
+#endif
+static uint32_t TSS_EfiDevicePathEnd_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						uint8_t **event, uint32_t *eventSize);
+
+static void TSS_EfiDevicePathHw_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathAcpi_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathMsg_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathMedia_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#if 0
+static void TSS_EfiDevicePathBios_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#endif
+static void TSS_EfiDevicePathEnd_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+
+const EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE efiDevicePathProtocolTypeTable [] =
+    {
+     {EFI_DEVICE_PATH_TYPE_HW,
+      "Hardware Device Path",
+      TSS_EfiDevicePathHw_ReadBuffer,
+      TSS_EfiDevicePathHw_Trace},
+     {EFI_DEVICE_PATH_TYPE_ACPI,
+      "ACPI Device Path",
+      TSS_EfiDevicePathAcpi_ReadBuffer,
+      TSS_EfiDevicePathAcpi_Trace},
+     {EFI_DEVICE_PATH_TYPE_MSG,
+      "Messaging Device Path",
+      TSS_EfiDevicePathMsg_ReadBuffer,
+      TSS_EfiDevicePathMsg_Trace},
+     {EFI_DEVICE_PATH_TYPE_MEDIA,
+      "Media Device Path",
+      TSS_EfiDevicePathMedia_ReadBuffer,
+      TSS_EfiDevicePathMedia_Trace},
+#if 0
+     {EFI_DEVICE_PATH_TYPE_BIOS,
+      "BIOS Boot Specification Device Path",
+      TSS_EfiDevicePathBios_ReadBuffer,
+      TSS_EfiDevicePathBios_Trace},
+#endif
+     {EFI_DEVICE_PATH_TYPE_END,
+      "End of Hardware Device Path",
+      TSS_EfiDevicePathEnd_ReadBuffer,
+      TSS_EfiDevicePathEnd_Trace},
+    };
+
+/* From UEFI 10.3.2 Hardware Device Path - Type 1 SubTypes */
+
+#define EFI_DEVICE_PATH_HW_SUBTYPE_PCI		1
+#define EFI_DEVICE_PATH_HW_SUBTYPE_PCCARD	2
+#define EFI_DEVICE_PATH_HW_SUBTYPE_MMAP		3
+#define EFI_DEVICE_PATH_HW_SUBTYPE_VENDOR	4
+#define EFI_DEVICE_PATH_HW_SUBTYPE_CTRLR	5
+#define EFI_DEVICE_PATH_HW_SUBTYPE_BMC		6
+
+static uint32_t TSS_UefiDevicePathList_ReadBuffer(TSS_UEFI_DEVICE_PATH **UefiDevicePath,
+						  uint32_t *UefiDevicePathCount,
+						  uint8_t *devicePath,
+						  uint32_t lengthOfDevicePath);
+
+static uint32_t TSS_EfiDevicePathHwPCI_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						  uint8_t **event, uint32_t *eventSize);
+#if 0
+static uint32_t TSS_EfiDevicePathHwPCCARD_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						     uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathHwMMAP_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						   uint8_t **event, uint32_t *eventSize);
+#endif
+static uint32_t TSS_EfiDevicePathHwVENDOR_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						     uint8_t **event, uint32_t *eventSize);
+#if 0
+static uint32_t TSS_EfiDevicePathHwCTRLR_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathHwBMC_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						  uint8_t **event, uint32_t *eventSize);
+#endif
+
+static void TSS_EfiDevicePathHwPCI_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#if 0
+static void TSS_EfiDevicePathHwPCCARD_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathHwMMAP_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#endif
+static void TSS_EfiDevicePathHwVENDOR_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#if 0
+static void TSS_EfiDevicePatHwCTRLR_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathHwBMC_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#endif
+
+const EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE efiDevicePathProtocolHwTypeTable [] =
+    {
+     {EFI_DEVICE_PATH_HW_SUBTYPE_PCI,
+      "PCI",
+      TSS_EfiDevicePathHwPCI_ReadBuffer,
+      TSS_EfiDevicePathHwPCI_Trace},
+#if 0
+     {EFI_DEVICE_PATH_HW_SUBTYPE_PCCARD,
+      "PCCARD",
+      TSS_EfiDevicePathHwPCCARD_ReadBuffer,
+      TSS_EfiDevicePathHwPCCARD_Trace},
+     {EFI_DEVICE_PATH_HW_SUBTYPE_MMAP,
+      "Memory Mapped",
+      TSS_EfiDevicePathHwMMAP_ReadBuffer,
+      TSS_EfiDevicePathHwMMAP_Trace},
+#endif
+     {EFI_DEVICE_PATH_HW_SUBTYPE_VENDOR,
+      "Vendor",
+      TSS_EfiDevicePathHwVENDOR_ReadBuffer,
+      TSS_EfiDevicePathHwVENDOR_Trace},
+#if 0
+     {EFI_DEVICE_PATH_HW_SUBTYPE_CTRLR,
+      "Controller",
+      TSS_EfiDevicePathHwCTRLR_ReadBuffer,
+      TSS_EfiDevicePathHwCTRLR_Trace},
+     {EFI_DEVICE_PATH_HW_SUBTYPE_BMC,
+      "BMC",
+      TSS_EfiDevicePathHwBMC_ReadBuffer,
+      TSS_EfiDevicePathHwBMC_Trace},
+#endif
+    };
+
+/* From UEFI 10.3.3 ACPI Device Path  - Type 2 SubTypes */
+
+#define EFI_DEVICE_PATH_ACPI_SUBTYPE_ACPI	0x01
+#define EFI_DEVICE_PATH_ACPI_SUBTYPE_EXPACPI	0x02
+#define EFI_DEVICE_PATH_ACPI_SUBTYPE_ADR	0x03
+#define EFI_DEVICE_PATH_ACPI_SUBTYPE_NVDIMM	0x04
+
+static uint32_t TSS_EfiDevicePathAcpiSubAcpi_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize);
+#if 0
+static uint32_t TSS_EfiDevicePathAcpiExpAcpi_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathAcpiAdr_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathAcpiNvdimm_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						       uint8_t **event, uint32_t *eventSize);
+#endif
+
+static void TSS_EfiDevicePathAcpiSubAcpi_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#if 0
+static void TSS_EfiDevicePathAcpiExpAcpi_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathAcpiAdr_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathAcpiNvdimm_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#endif
+
+const EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE efiDevicePathProtocolAcpiTypeTable [] =
+    {
+     {EFI_DEVICE_PATH_ACPI_SUBTYPE_ACPI,
+      "ACPI Device Path",
+      TSS_EfiDevicePathAcpiSubAcpi_ReadBuffer,
+      TSS_EfiDevicePathAcpiSubAcpi_Trace},
+#if 0
+     {EFI_DEVICE_PATH_ACPI_SUBTYPE_EXPACPI,
+      "Expanded ACPI Device Path",
+      TSS_EfiDevicePathAcpiExpAcpi_ReadBuffer,
+      TSS_EfiDevicePathAcpiExpAcpi_Trace},
+     {EFI_DEVICE_PATH_ACPI_SUBTYPE_ADR,
+      "_ADR Device Path",
+      TSS_EfiDevicePathAcpiAdr_ReadBuffer,
+      TSS_EfiDevicePathAcpiAdr_Trace},
+     {EFI_DEVICE_PATH_ACPI_SUBTYPE_NVDIMM,
+      "NVDIMM Device",
+      TSS_EfiDevicePathAcpiNvdimm_ReadBuffer,
+      TSS_EfiDevicePathAcpiNvdimm_Trace},
+#endif
+    };
+
+/* From UEFI 10.3.4 Messaging Device Path  - Type 3 SubTypes */
+
+/* UEFI code uses the prefix MSG_ */
+
+#define EFI_DEVICE_PATH_MSG_ATAPI_DP              	0x01
+#define EFI_DEVICE_PATH_MSG_SCSI_DP               	0x02
+#define EFI_DEVICE_PATH_MSG_FIBRECHANNEL_DP       	0x03
+#define EFI_DEVICE_PATH_MSG_1394_DP               	0x04
+#define EFI_DEVICE_PATH_MSG_USB_DP                	0x05
+#define EFI_DEVICE_PATH_MSG_I2O_DP                	0x06
+#define EFI_DEVICE_PATH_MSG_INFINIBAND_DP         	0x09
+#define EFI_DEVICE_PATH_MSG_VENDOR_DP             	0x0a
+#define EFI_DEVICE_PATH_MSG_MAC_ADDR_DP           	0x0b
+#define EFI_DEVICE_PATH_MSG_IPv4_DP               	0x0c
+#define EFI_DEVICE_PATH_MSG_IPv6_DP               	0x0d
+#define EFI_DEVICE_PATH_MSG_UART_DP               	0x0e
+#define EFI_DEVICE_PATH_MSG_USB_CLASS_DP          	0x0f
+#define EFI_DEVICE_PATH_MSG_USB_WWID_DP           	0x10
+#define EFI_DEVICE_PATH_MSG_DEVICE_LOGICAL_UNIT_DP  	0x11
+#define EFI_DEVICE_PATH_MSG_SATA_DP               	0x12
+#define EFI_DEVICE_PATH_MSG_ISCSI_DP              	0x13
+#define EFI_DEVICE_PATH_MSG_VLAN_DP               	0x14
+#define EFI_DEVICE_PATH_MSG_FIBRECHANNELEX_DP     	0x15
+#define EFI_DEVICE_PATH_MSG_SASEX_DP              	0x16
+#define EFI_DEVICE_PATH_MSG_NVME_NAMESPACE_DP     	0x17
+#define EFI_DEVICE_PATH_MSG_URI_DP                	0x18
+#define EFI_DEVICE_PATH_MSG_UFS_DP                	0x19
+#define EFI_DEVICE_PATH_MSG_SD_DP                 	0x1A
+#define EFI_DEVICE_PATH_MSG_BLUETOOTH_DP     		0x1b
+#define EFI_DEVICE_PATH_MSG_WIFI_DP               	0x1C
+#define EFI_DEVICE_PATH_MSG_EMMC_DP                 	0x1D
+#define EFI_DEVICE_PATH_MSG_BLUETOOTH_LE_DP       	0x1E
+#define EFI_DEVICE_PATH_MSG_DNS_DP                	0x1F
+#define EFI_DEVICE_PATH_MSG_NVDIMM_NAMESPACE_DP        	0x20
+
+static uint32_t TSS_EfiDevicePathMsgScsi_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsgUsb_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						   uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsgUsbClass_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsgSata_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsgNvme_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsgMac_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						   uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsgIpv4_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsgIpv6_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsgUri_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMsgVendor_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						      uint8_t **event, uint32_t *eventSize);
+
+static void     TSS_EfiDevicePathMsgScsi_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_EfiDevicePathMsgUsb_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_EfiDevicePathMsgUsbClass_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_EfiDevicePathMsgSata_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_EfiDevicePathMsgNvme_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void 	TSS_EfiDevicePathMsgMac_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_EfiDevicePathMsgIpv4_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_EfiDevicePathMsgIpv6_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_EfiDevicePathMsgUri_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_EfiDevicePathMsgVendor_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+
+const EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE efiDevicePathProtocolMsgTypeTable [] =
+    {
+     {EFI_DEVICE_PATH_MSG_SCSI_DP,
+      "Message Device Path SCSI ",
+      TSS_EfiDevicePathMsgScsi_ReadBuffer,
+      TSS_EfiDevicePathMsgScsi_Trace},
+     {EFI_DEVICE_PATH_MSG_USB_DP,
+      "Message Device Path USB",
+      TSS_EfiDevicePathMsgUsb_ReadBuffer,
+      TSS_EfiDevicePathMsgUsb_Trace},
+     {EFI_DEVICE_PATH_MSG_USB_CLASS_DP,
+      "Message Device Path USB Class",
+      TSS_EfiDevicePathMsgUsbClass_ReadBuffer,
+      TSS_EfiDevicePathMsgUsbClass_Trace},
+     {EFI_DEVICE_PATH_MSG_NVME_NAMESPACE_DP,
+      "Message Device Path NVME",
+      TSS_EfiDevicePathMsgNvme_ReadBuffer,
+      TSS_EfiDevicePathMsgNvme_Trace},
+     {EFI_DEVICE_PATH_MSG_SATA_DP,
+      "Message Device Path SATA ",
+      TSS_EfiDevicePathMsgSata_ReadBuffer,
+      TSS_EfiDevicePathMsgSata_Trace},
+     {EFI_DEVICE_PATH_MSG_MAC_ADDR_DP,
+      "Message Device Path MAC Address",
+      TSS_EfiDevicePathMsgMac_ReadBuffer,
+      TSS_EfiDevicePathMsgMac_Trace},
+     {EFI_DEVICE_PATH_MSG_IPv4_DP,
+      "Message Device Path IPv4",
+      TSS_EfiDevicePathMsgIpv4_ReadBuffer,
+      TSS_EfiDevicePathMsgIpv4_Trace},
+     {EFI_DEVICE_PATH_MSG_IPv6_DP,
+      "Message Device Path IPv6",
+      TSS_EfiDevicePathMsgIpv6_ReadBuffer,
+      TSS_EfiDevicePathMsgIpv6_Trace},
+     {EFI_DEVICE_PATH_MSG_URI_DP,
+      "Message Device Path URI",
+      TSS_EfiDevicePathMsgUri_ReadBuffer,
+      TSS_EfiDevicePathMsgUri_Trace},
+     {EFI_DEVICE_PATH_MSG_VENDOR_DP,
+      "Message Device Path Vendor",
+      TSS_EfiDevicePathMsgVendor_ReadBuffer,
+      TSS_EfiDevicePathMsgVendor_Trace},
+   };
+
+/* From UEFI 10.3.5 Media Device Path  - Type 4 SubTypes */
+
+#define EFI_DEVICE_PATH_MEDIA_SUBTYPE_HD	0x01
+#define EFI_DEVICE_PATH_MEDIA_SUBTYPE_CDROM	0x02
+#define EFI_DEVICE_PATH_MEDIA_SUBTYPE_VENDOR	0x03
+#define EFI_DEVICE_PATH_MEDIA_SUBTYPE_FILE	0x04
+#define EFI_DEVICE_PATH_MEDIA_SUBTYPE_MEDIA	0x05
+#define EFI_DEVICE_PATH_MEDIA_SUBTYPE_PIWG_FILE	0x06
+#define EFI_DEVICE_PATH_MEDIA_SUBTYPE_PIWG_FW	0x07
+#define EFI_DEVICE_PATH_MEDIA_SUBTYPE_OFFSET	0x08
+#define EFI_DEVICE_PATH_MEDIA_SUBTYPE_RAMDISK	0x09
+
+static uint32_t TSS_EfiDevicePathMediaHd_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize);
+#if 0
+static uint32_t TSS_EfiDevicePathMediaCdrom_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						       uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMediaVendor_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize);
+#endif
+static uint32_t TSS_EfiDevicePathMediaFile_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						       uint8_t **event, uint32_t *eventSize);
+#if 0
+static uint32_t TSS_EfiDevicePathMediaMedia_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						       uint8_t **event, uint32_t *eventSize);
+#endif
+static uint32_t TSS_EfiDevicePathMediaPiwgFile_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							  uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMediaPiwgFw_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiDevicePathMediaOffset_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize);
+#if 0
+static uint32_t TSS_EfiDevicePathMediaRamdisk_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							 uint8_t **event, uint32_t *eventSize);
+#endif
+
+static void TSS_EfiDevicePathMediaHd_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#if 0
+static void TSS_EfiDevicePathMediaCdrom_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathMediaVendor_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#endif
+static void TSS_EfiDevicePathMediaFile_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#if 0
+static void TSS_EfiDevicePathMediaMedia_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#endif
+static void TSS_EfiDevicePathMediaPiwgFile_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathMediaPiwgFw_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void TSS_EfiDevicePathMediaOffset_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#if 0
+static void TSS_EfiDevicePathMediaRamdisk_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+#endif
+
+const EFI_DEVICE_PATH_PROTOCOL_TYPE_TABLE efiDevicePathProtocolMediaTypeTable [] =
+    {
+     {EFI_DEVICE_PATH_MEDIA_SUBTYPE_HD,
+      "Media Device Path HD",
+      TSS_EfiDevicePathMediaHd_ReadBuffer,
+      TSS_EfiDevicePathMediaHd_Trace},
+#if 0
+     {EFI_DEVICE_PATH_MEDIA_SUBTYPE_CDROM,
+      "Media Device Path CDROM",
+      TSS_EfiDevicePathMediaCdrom_ReadBuffer,
+      TSS_EfiDevicePathMediaCdrom_Trace},z
+     {EFI_DEVICE_PATH_MEDIA_SUBTYPE_VENDOR,
+      "Media Device Path Vendor",
+      TSS_EfiDevicePathMediaVendor_ReadBuffer,
+      TSS_EfiDevicePathMediaVendor_Trace},
+#endif
+     {EFI_DEVICE_PATH_MEDIA_SUBTYPE_FILE,
+      "Media Device Path File",
+      TSS_EfiDevicePathMediaFile_ReadBuffer,
+      TSS_EfiDevicePathMediaFile_Trace},
+#if 0
+     {EFI_DEVICE_PATH_MEDIA_SUBTYPE_MEDIA,
+      "Media Device Path Media",
+      TSS_EfiDevicePathMediaMedia_ReadBuffer,
+      TSS_EfiDevicePathMediaMedia_Trace},
+#endif
+     {EFI_DEVICE_PATH_MEDIA_SUBTYPE_PIWG_FILE,
+      "Media Device Path PIWG File",
+      TSS_EfiDevicePathMediaPiwgFile_ReadBuffer,
+      TSS_EfiDevicePathMediaPiwgFile_Trace},
+     {EFI_DEVICE_PATH_MEDIA_SUBTYPE_PIWG_FW,
+      "Media Device Path PIWG FW",
+      TSS_EfiDevicePathMediaPiwgFw_ReadBuffer,
+      TSS_EfiDevicePathMediaPiwgFw_Trace},
+     {EFI_DEVICE_PATH_MEDIA_SUBTYPE_OFFSET,
+      "Media Device Path Offset",
+      TSS_EfiDevicePathMediaOffset_ReadBuffer,
+      TSS_EfiDevicePathMediaOffset_Trace},
+#if 0
+     {EFI_DEVICE_PATH_MEDIA_SUBTYPE_RAMDISK,
+      "Media Device Path Ramdisk",
+      TSS_EfiDevicePathMediaRamdisk_ReadBuffer,
+      TSS_EfiDevicePathMediaRamdisk_Trace},
+#endif
+    };
+
+
+/* From UEFI 10.3.1 Generic Device Path Structures */
+
+static uint32_t TSS_EfiDevicePathHw_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+					       uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    size_t index;
+
+    if (rc == 0) {
+	rc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.SubType,
+					sizeof(efiDevicePathProtocolHwTypeTable) ,
+					efiDevicePathProtocolHwTypeTable);
+    }
+    if (rc == 0) {
+	rc = efiDevicePathProtocolHwTypeTable[index].readBufferFunction(uefiDevicePath,
+									event, eventSize);
+    }
+    else {
+	/* SubType unknown / unsupported */
+	rc = TSS_Array_Unmarshalu(uefiDevicePath->data,
+				  uefiDevicePath->protocol.Length -
+				  sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL),
+				  event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathAcpi_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						 uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    size_t index;
+
+    if (rc == 0) {
+	rc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.SubType,
+					sizeof(efiDevicePathProtocolAcpiTypeTable) ,
+					efiDevicePathProtocolAcpiTypeTable);
+    }
+    if (rc == 0) {
+	rc = efiDevicePathProtocolAcpiTypeTable[index].readBufferFunction(uefiDevicePath,
+									  event, eventSize);
+    }
+    else {
+	/* SubType unknown / unsupported */
+	rc = TSS_Array_Unmarshalu(uefiDevicePath->data,
+				  uefiDevicePath->protocol.Length -
+				  sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL),
+				  event, eventSize);
+    }
+    return rc;
+}
+static uint32_t TSS_EfiDevicePathMsg_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    size_t index;
+
+    if (rc == 0) {
+	rc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.SubType,
+					sizeof(efiDevicePathProtocolMsgTypeTable) ,
+					efiDevicePathProtocolMsgTypeTable);
+    }
+    if (rc == 0) {
+	rc = efiDevicePathProtocolMsgTypeTable[index].readBufferFunction(uefiDevicePath,
+									 event, eventSize);
+    }
+    else {
+	/* SubType unknown / unsupported */
+	rc = TSS_Array_Unmarshalu(uefiDevicePath->data,
+				  uefiDevicePath->protocol.Length -
+				  sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL),
+				  event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMedia_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						  uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    size_t index;
+
+    if (rc == 0) {
+	rc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.SubType,
+					sizeof(efiDevicePathProtocolMediaTypeTable) ,
+					efiDevicePathProtocolMediaTypeTable);
+    }
+    if (rc == 0) {
+	rc = efiDevicePathProtocolMediaTypeTable[index].readBufferFunction(uefiDevicePath,
+									   event, eventSize);
+    }
+    else {
+	/* SubType unknown / unsupported */
+	rc = TSS_Array_Unmarshalu(uefiDevicePath->data,
+				  uefiDevicePath->protocol.Length -
+				  sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL),
+				  event, eventSize);
+    }
+    return rc;
+}
+
+#if 0
+static uint32_t TSS_EfiDevicePathBios_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						 uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    return rc;
+}
+#endif
+
+static uint32_t TSS_EfiDevicePathEnd_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    /* End has no data */
+    uefiDevicePath = uefiDevicePath;
+    event = event;
+    eventSize = eventSize;
+    return rc;
+}
+
+static void TSS_EfiDevicePathHw_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    uint32_t rc = 0;
+    size_t index;
+
+    if (rc == 0) {
+	rc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.SubType,
+					sizeof(efiDevicePathProtocolHwTypeTable) ,
+					efiDevicePathProtocolHwTypeTable);
+    }
+    if (rc == 0) {
+	efiDevicePathProtocolHwTypeTable[index].traceFunction(uefiDevicePath);
+    }
+    else {
+	printf("Type %02x SubType %02x HW trace not implemented\n",
+	       uefiDevicePath->protocol.Type,
+	       uefiDevicePath->protocol.SubType);
+    }
+    return;
+}
+
+static void TSS_EfiDevicePathAcpi_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    uint32_t rc = 0;
+    size_t index;
+
+    if (rc == 0) {
+	rc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.SubType,
+					sizeof(efiDevicePathProtocolAcpiTypeTable) ,
+					efiDevicePathProtocolAcpiTypeTable);
+    }
+    if (rc == 0) {
+	efiDevicePathProtocolAcpiTypeTable[index].traceFunction(uefiDevicePath);
+    }
+    else {
+	printf("Type %02x SubType %02x ACPI trace not implemented\n",
+	       uefiDevicePath->protocol.Type,
+	       uefiDevicePath->protocol.SubType);
+    }
+    return;
+}
+static void TSS_EfiDevicePathMsg_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    uint32_t rc = 0;
+    size_t index;
+
+    if (rc == 0) {
+	rc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.SubType,
+					sizeof(efiDevicePathProtocolMsgTypeTable) ,
+					efiDevicePathProtocolMsgTypeTable);
+    }
+    if (rc == 0) {
+	efiDevicePathProtocolMsgTypeTable[index].traceFunction(uefiDevicePath);
+    }
+    else {
+	printf("Type %02x SubType %02x Message trace not implemented\n",
+	       uefiDevicePath->protocol.Type,
+	       uefiDevicePath->protocol.SubType);
+    }
+    return;
+}
+
+static void TSS_EfiDevicePathMedia_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    uint32_t rc = 0;
+    size_t index;
+
+    if (rc == 0) {
+	rc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.SubType,
+					sizeof(efiDevicePathProtocolMediaTypeTable) ,
+					efiDevicePathProtocolMediaTypeTable);
+    }
+    if (rc == 0) {
+	efiDevicePathProtocolMediaTypeTable[index].traceFunction(uefiDevicePath);
+    }
+    else {
+	printf("Type %02x SubType %02x Media trace not implemented\n",
+	       uefiDevicePath->protocol.Type,
+	       uefiDevicePath->protocol.SubType);
+    }
+    return;
+}
+
+#if 0
+static void TSS_EfiDevicePathBios_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x BIOS trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+#endif
+
+static void TSS_EfiDevicePathEnd_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    if (uefiDevicePath->protocol.SubType == 0xff) {
+	printf("    SubType %02x End Entire Device Path\n", uefiDevicePath->protocol.SubType);
+    }
+    else if (uefiDevicePath->protocol.SubType == 0x01) {
+	printf("    SubType %02x End This Device Path\n", uefiDevicePath->protocol.SubType);
+    }
+    else {
+	printf("    SubType %02x\n", uefiDevicePath->protocol.SubType);
+    }
+    return;
+}
+
+/* From UEFI 10.3.2 Hardware Device Path - Type 1 SubTypes */
+
+static uint32_t TSS_EfiDevicePathHwPCI_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						  uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_HW0101 *hw0101 = &uefiDevicePath->hw0101;
+
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&hw0101->Function, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&hw0101->Device, event, eventSize);
+    }
+    return rc;
+}
+
+#if 0
+static uint32_t TSS_EfiDevicePathHwPCCARD_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						     uint8_t **event, uint32_t *eventSize)
+{
+}
+static uint32_t TSS_EfiDevicePathHwMMAP_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						   uint8_t **event, uint32_t *eventSize)
+{
+}
+#endif
+
+static uint32_t TSS_EfiDevicePathHwVENDOR_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						     uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_HW0104 *hw0104 = &uefiDevicePath->hw0104;
+
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(hw0104->Vendor_GUID,
+				  sizeof(hw0104->Vendor_GUID),
+				  event, eventSize);
+    }
+    /* if there is a URI */
+    if (uefiDevicePath->protocol.Length >
+	(sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL) + sizeof(hw0104->Vendor_GUID))) {
+
+	uefiDevicePath->unionBufferLength = uefiDevicePath->protocol.Length -
+					    sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL) -
+					    sizeof(hw0104->Vendor_GUID);
+	if (rc == 0) {
+	    uefiDevicePath->unionBuffer =
+		malloc(uefiDevicePath->unionBufferLength);
+	    if (uefiDevicePath->unionBuffer == NULL) {
+		printf("TSS_EfiDevicePathHwVENDOR_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)(uefiDevicePath->unionBufferLength))	;
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if (rc == 0) {
+	    rc = TSS_Array_Unmarshalu(uefiDevicePath->unionBuffer,
+				      uefiDevicePath->unionBufferLength,
+				      event, eventSize);
+	}
+    }
+    return rc;
+}
+
+#if 0
+static uint32_t TSS_EfiDevicePathHwCTRLR_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize)
+{
+}
+static uint32_t TSS_EfiDevicePathHwBMC_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						  uint8_t **event, uint32_t *eventSize)
+{
+}
+#endif
+
+static void TSS_EfiDevicePathHwPCI_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_HW0101 *hw0101 = &uefiDevicePath->hw0101;
+
+    printf("    SubType %02x PCI\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      Function %02x\n",  hw0101->Function);
+    printf("      Device %02x\n",  hw0101->Device);
+    return;
+}
+
+#if 0
+static void TSS_EfiDevicePathHwPCCARD_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+
+static void TSS_EfiDevicePathhHwMMAP_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x Hw MMAP trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+#endif
+
+static void TSS_EfiDevicePathHwVENDOR_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_HW0104 *hw0104 = &uefiDevicePath->hw0104;
+    int isUCS2;
+
+    printf("    SubType %02x Vendor\n",
+	   uefiDevicePath->protocol.SubType);
+    guid_printf("    Vendor GUID", hw0104->Vendor_GUID);
+    /* some Vendor data appears to be UCS-2 NUL terminated */
+    if (uefiDevicePath->unionBufferLength > 0) {
+	isUCS2String(&isUCS2, uefiDevicePath->unionBuffer, uefiDevicePath->unionBufferLength);
+	if (isUCS2) {
+	    wchar_printf("    Vendor ", uefiDevicePath->unionBuffer,
+			 (uint64_t)(uefiDevicePath->unionBufferLength -2)/ 2);
+	}
+	else {
+	    TSS_PrintAll("     Vendor",
+			 uefiDevicePath->unionBuffer,
+			 uefiDevicePath->unionBufferLength);
+	}
+    }
+    return;
+}
+
+#if 0
+static void TSS_EfiDevicePathHwCTRLR_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x Hw CTRLR trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+static void TSS_EfiDevicePathHwBMC_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x Hw BMC trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+#endif
+
+/* From UEFI 10.3.3 ACPI Device Path  - Type 2 SubTypes */
+
+static uint32_t TSS_EfiDevicePathAcpiSubAcpi_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_ACPI0201 *acpi0201 = &uefiDevicePath->acpi0201;
+
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Unmarshal(&acpi0201->HID, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Unmarshal(&acpi0201->UID, event, eventSize);
+    }
+    return rc;
+}
+
+#if 0
+static uint32_t TSS_EfiDevicePathAcpiExpAcpi_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize)
+{
+}
+
+static uint32_t TSS_EfiDevicePathAcpiAdr_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize)
+{
+}
+
+static uint32_t TSS_EfiDevicePathAcpiNvdimm_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						       uint8_t **event, uint32_t *eventSize)
+{
+}
+#endif
+
+static void TSS_EfiDevicePathAcpiSubAcpi_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_ACPI0201 *acpi0201 = &uefiDevicePath->acpi0201;
+
+    printf("    SubType %02x ACPI Device Path\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      HID %08x\n",  acpi0201->HID);
+    printf("      UID %08x\n",  acpi0201->UID);
+    return;
+}
+
+#if 0
+static void TSS_EfiDevicePathAcpiExpAcpi_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+
+static void TSS_EfiDevicePathAcpiAdr_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+
+static void TSS_EfiDevicePathAcpiNvdimm_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+#endif
+
+/* From UEFI 10.3.4 Messaging Device Path - Type 3 SubTypes */
+
+static uint32_t TSS_EfiDevicePathMsgScsi_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MSG0302 *msg0302 = &uefiDevicePath->msg0302;
+
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg0302->TargetID, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg0302->LogicalUnitNumber, event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMsgUsb_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						   uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MSG0305 *msg0305 = &uefiDevicePath->msg0305;
+
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&msg0305->USBParentPort, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&msg0305->Interface, event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMsgUsbClass_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MSG030F *msg030f = &uefiDevicePath->msg030f;
+
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg030f->VendorID, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg030f->ProductID, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&msg030f->DeviceClass, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&msg030f->DeviceSubclass, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&msg030f->DeviceProtocol, event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMsgSata_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MSG0312 *msg0312 = &uefiDevicePath->msg0312;
+
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg0312->HBAPortNumber, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg0312->PortMultiplierPort, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg0312->LogicalUnitNumber, event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMsgNvme_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MSG0317 *msg0317 = &uefiDevicePath->msg0317;
+
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Unmarshal(&msg0317->NamespaceId, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT64LE_Unmarshal(&msg0317->NamespaceUuid, event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMsgMac_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						   uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MSG030B *msg030b = &uefiDevicePath->msg030b;
+
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(msg030b->Mac, sizeof(msg030b->Mac),
+				  event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&msg030b->IfType, event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMsgIpv4_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MSG030C *msg030c = &uefiDevicePath->msg030c;
+
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(msg030c->LocalIPAddress, sizeof(msg030c->LocalIPAddress),
+				  event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(msg030c->RemoteIPAddress, sizeof(msg030c->RemoteIPAddress),
+				  event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg030c->LocalPort, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg030c->RemotePort, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg030c->Protocol, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&msg030c->StaticIPAddress, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(msg030c->GatewayIPAddress, sizeof(msg030c->GatewayIPAddress),
+				  event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(msg030c->SubnetMask, sizeof(msg030c->SubnetMask),
+				  event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMsgIpv6_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MSG030D *msg030d = &uefiDevicePath->msg030d;
+
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(msg030d->LocalIPAddress, sizeof(msg030d->LocalIPAddress),
+				  event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(msg030d->RemoteIPAddress, sizeof(msg030d->RemoteIPAddress),
+				  event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg030d->LocalPort, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg030d->RemotePort, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&msg030d->Protocol, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&msg030d->IPAddressOrigin, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&msg030d->PrefixLength, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(msg030d->GatewayIPAddress, sizeof(msg030d->GatewayIPAddress),
+				  event, eventSize);
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMsgUri_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						   uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+
+    /* if there is a URI */
+    if (uefiDevicePath->protocol.Length > sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL)) {
+	if (rc == 0) {
+	    uefiDevicePath->unionBuffer =
+		malloc(uefiDevicePath->protocol.Length - sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL));
+	    if (uefiDevicePath->unionBuffer == NULL) {
+		printf("TSS_EfiDevicePathMsgUri_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)(uefiDevicePath->protocol.Length -
+				      sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL)));
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if (rc == 0) {
+	    uefiDevicePath->unionBufferLength = uefiDevicePath->protocol.Length -
+						sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL);
+	    rc = TSS_Array_Unmarshalu(uefiDevicePath->unionBuffer,
+				      uefiDevicePath->unionBufferLength,
+				      event, eventSize);
+	}
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMsgVendor_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						      uint8_t **event, uint32_t *eventSize)
+
+{
+    uint32_t rc = 0;
+    TSS_MSG030A *msg030a = &uefiDevicePath->msg030a;
+
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(msg030a->VendorGUID, sizeof(msg030a->VendorGUID),
+				  event, eventSize);
+    }
+    if (uefiDevicePath->protocol.Length >
+	(sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL) + sizeof(msg030a->VendorGUID))) {
+
+	uefiDevicePath->unionBufferLength = uefiDevicePath->protocol.Length -
+					    sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL) -
+					    sizeof(msg030a->VendorGUID);
+	if (rc == 0) {
+	    uefiDevicePath->unionBuffer = malloc(uefiDevicePath->unionBufferLength);
+	    if (uefiDevicePath->unionBuffer == NULL) {
+		printf("TSS_EfiDevicePathMsgVendor_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)(uefiDevicePath->unionBufferLength))	;
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if (rc == 0) {
+	    rc = TSS_Array_Unmarshalu(uefiDevicePath->unionBuffer,
+				      uefiDevicePath->unionBufferLength,
+				      event, eventSize);
+	}
+    }
+    return rc;
+}
+
+static void     TSS_EfiDevicePathMsgScsi_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MSG0302 *msg0302 = &uefiDevicePath->msg0302;
+
+    printf("    SubType %02x SCSI\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      Target ID %hu\n", msg0302->TargetID);
+    printf("      Logical Unit Number %hu\n", msg0302->LogicalUnitNumber);
+    return;
+}
+
+static void     TSS_EfiDevicePathMsgUsb_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MSG0305 *msg0305 = &uefiDevicePath->msg0305;
+
+    printf("    SubType %02x USB\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      USB Parent Port %u\n", msg0305->USBParentPort);
+    printf("      Interface %u\n", msg0305->Interface);
+    return;
+}
+
+static void     TSS_EfiDevicePathMsgUsbClass_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MSG030F *msg030f = &uefiDevicePath->msg030f;
+
+    printf("    SubType %02x USB Class\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      VendorID %04x\n", msg030f->VendorID);
+    printf("      Product ID %04x\n", msg030f->ProductID);
+    printf("      Device Class %02x\n", msg030f->DeviceClass);
+    printf("      Device Subclass %02x\n", msg030f->DeviceSubclass);
+    printf("      Device Protocol %02x\n", msg030f->DeviceProtocol);
+    return;
+}
+
+static void     TSS_EfiDevicePathMsgNvme_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MSG0317 *msg0317 = &uefiDevicePath->msg0317;
+
+    printf("    SubType %02x NVME\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      NamespaceId %08x\n",  msg0317->NamespaceId);
+    printf("      NamespaceUuid %016" PRIx64 "\n", msg0317->NamespaceUuid);
+    return;
+}
+
+static void     TSS_EfiDevicePathMsgSata_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MSG0312 *msg0312 = &uefiDevicePath->msg0312;
+
+    printf("    SubType %02x Sata\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      HBA Port Number %hu\n", msg0312->HBAPortNumber);
+    printf("      Port Multiplier Port %hu\n", msg0312->PortMultiplierPort);
+    printf("      Logical Unit Number %hu\n", msg0312->LogicalUnitNumber);
+    return;
+}
+
+static void 	TSS_EfiDevicePathMsgMac_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MSG030B *msg030b = &uefiDevicePath->msg030b;
+
+    printf("    SubType %02x MAC\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      MAC %02x:%02x:%02x:%02x:%02x:%02x\n",
+	   msg030b->Mac[0], msg030b->Mac[1], msg030b->Mac[2],
+	   msg030b->Mac[3], msg030b->Mac[4], msg030b->Mac[5]);
+    printf("      IF Type %u\n", msg030b->IfType);
+    return;
+}
+
+static void     TSS_EfiDevicePathMsgIpv4_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MSG030C *msg030c = &uefiDevicePath->msg030c;
+
+    printf("    SubType %02x Ipv4\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      Local IP Address %u.%u.%u.%u\n",
+	   msg030c->LocalIPAddress[0], msg030c->LocalIPAddress[1],
+	   msg030c->LocalIPAddress[2], msg030c->LocalIPAddress[3]);
+    printf("      Remote IP Address %u.%u.%u.%u\n",
+	   msg030c->RemoteIPAddress[0], msg030c->RemoteIPAddress[1],
+	   msg030c->RemoteIPAddress[2], msg030c->RemoteIPAddress[3]);
+    printf("      Local Port %hu\n", msg030c->LocalPort);
+    printf("      Remote Port %hu\n", msg030c->RemotePort);
+    printf("      Protocol %hu\n", msg030c->Protocol);
+    printf("      Static IP Address (bool) %u\n", msg030c->StaticIPAddress);
+    printf("      Local IP Address %u.%u.%u.%u\n",
+	   msg030c->GatewayIPAddress[0], msg030c->GatewayIPAddress[1],
+	   msg030c->GatewayIPAddress[2], msg030c->GatewayIPAddress[3]);
+    printf("      Subnet Mask %u.%u.%u.%u\n",
+	   msg030c->SubnetMask[0], msg030c->SubnetMask[1],
+	   msg030c->SubnetMask[2], msg030c->SubnetMask[3]);
+    return;
+}
+
+/* TSS_EfiDevicePathMsgIpv6_Trace() does not trace in https://tools.ietf.org/html/rfc5952 format */
+
+static void     TSS_EfiDevicePathMsgIpv6_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MSG030D *msg030d = &uefiDevicePath->msg030d;
+
+    printf("    SubType %02x Ipv6\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      Local IP Address "
+	   "%02x%02x:%02x%02x:%02x%02x:%02x%02x:"
+	   "%02x%02x:%02x%02x:%02x%02x:%02x%02x"
+	   "\n",
+	   msg030d->LocalIPAddress[ 0], msg030d->LocalIPAddress[ 1],
+	   msg030d->LocalIPAddress[ 2], msg030d->LocalIPAddress[ 3],
+	   msg030d->LocalIPAddress[ 4], msg030d->LocalIPAddress[ 5],
+	   msg030d->LocalIPAddress[ 6], msg030d->LocalIPAddress[ 7],
+	   msg030d->LocalIPAddress[ 8], msg030d->LocalIPAddress[ 9],
+	   msg030d->LocalIPAddress[10], msg030d->LocalIPAddress[11],
+	   msg030d->LocalIPAddress[12], msg030d->LocalIPAddress[13],
+	   msg030d->LocalIPAddress[14], msg030d->LocalIPAddress[15]);
+    printf("      Remote IP Address "
+	   "%02x%02x:%02x%02x:%02x%02x:%02x%02x:"
+	   "%02x%02x:%02x%02x:%02x%02x:%02x%02x"
+	   "\n",
+	   msg030d->RemoteIPAddress[ 0], msg030d->RemoteIPAddress[ 1],
+	   msg030d->RemoteIPAddress[ 2], msg030d->RemoteIPAddress[ 3],
+	   msg030d->RemoteIPAddress[ 4], msg030d->RemoteIPAddress[ 5],
+	   msg030d->RemoteIPAddress[ 6], msg030d->RemoteIPAddress[ 7],
+	   msg030d->RemoteIPAddress[ 8], msg030d->RemoteIPAddress[ 9],
+	   msg030d->RemoteIPAddress[10], msg030d->RemoteIPAddress[11],
+	   msg030d->RemoteIPAddress[12], msg030d->RemoteIPAddress[13],
+	   msg030d->RemoteIPAddress[14], msg030d->RemoteIPAddress[15]);
+    printf("      Local Port %hu\n", msg030d->LocalPort);
+    printf("      Remote Port %hu\n", msg030d->RemotePort);
+    printf("      Protocol %hu\n", msg030d->Protocol);
+    printf("      IP Address Origin %u\n", msg030d->IPAddressOrigin);
+    printf("      Prefix Length %u\n", msg030d->PrefixLength);
+    printf("      Gateway IP Address "
+	   "%02x%02x:%02x%02x:%02x%02x:%02x%02x:"
+	   "%02x%02x:%02x%02x:%02x%02x:%02x%02x"
+	   "\n",
+	   msg030d->GatewayIPAddress[ 0], msg030d->GatewayIPAddress[ 1],
+	   msg030d->GatewayIPAddress[ 2], msg030d->GatewayIPAddress[ 3],
+	   msg030d->GatewayIPAddress[ 4], msg030d->GatewayIPAddress[ 5],
+	   msg030d->GatewayIPAddress[ 6], msg030d->GatewayIPAddress[ 7],
+	   msg030d->GatewayIPAddress[ 8], msg030d->GatewayIPAddress[ 9],
+	   msg030d->GatewayIPAddress[10], msg030d->GatewayIPAddress[11],
+	   msg030d->GatewayIPAddress[12], msg030d->GatewayIPAddress[13],
+	   msg030d->GatewayIPAddress[14], msg030d->GatewayIPAddress[15]);
+    return;
+}
+
+static void     TSS_EfiDevicePathMsgUri_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("    SubType %02x URI\n",
+	   uefiDevicePath->protocol.SubType);
+    TSS_PrintAll("     URI",
+		 uefiDevicePath->unionBuffer,
+		 uefiDevicePath->unionBufferLength);
+}
+
+static void     TSS_EfiDevicePathMsgVendor_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MSG030A *msg030a = &uefiDevicePath->msg030a;
+
+    printf("    SubType %02x Vendor\n",
+	   uefiDevicePath->protocol.SubType);
+    guid_printf("    Vendor GUID", msg030a->VendorGUID);
+    TSS_PrintAll("     Vendor",
+		 uefiDevicePath->unionBuffer,
+		 uefiDevicePath->unionBufferLength);
+    return;
+}
+
+/* From UEFI 10.3.3 Media Device Path - Type 4 SubTypes */
+
+static uint32_t TSS_EfiDevicePathMediaHd_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						    uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MEDIA0401 *media0401 = &uefiDevicePath->media0401;
+
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Unmarshal(&media0401->PartitionNumber, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT64LE_Unmarshal(&media0401->PartitionStart, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT64LE_Unmarshal(&media0401->PartitionSize, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(media0401->PartitionSignature,
+				  sizeof(media0401->PartitionSignature),
+				  event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&media0401->PartitionFormat, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&media0401->SignatureType, event, eventSize);
+    }
+    return rc;
+}
+
+#if 0
+static uint32_t TSS_EfiDevicePathMediaCdrom_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						       uint8_t **event, uint32_t *eventSize)
+{
+}
+
+static uint32_t TSS_EfiDevicePathMediaVendor_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize)
+{
+}
+#endif
+
+static uint32_t TSS_EfiDevicePathMediaFile_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						      uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+
+    /* if there is a path.  Zero should be an error because of the NUL termination */
+    if (uefiDevicePath->protocol.Length > sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL)) {
+	if (rc == 0) {
+	    uefiDevicePath->buffer =
+		malloc(uefiDevicePath->protocol.Length - sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL));
+	    if (uefiDevicePath->buffer == NULL) {
+		printf("TSS_EfiDevicePathMediaFile_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)(uefiDevicePath->protocol.Length -
+				      sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL)));
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if (rc == 0) {
+	    uefiDevicePath->bufferLength = uefiDevicePath->protocol.Length -
+					   sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL);
+	    rc = TSS_Array_Unmarshalu(uefiDevicePath->buffer,
+				      uefiDevicePath->bufferLength,
+				      event, eventSize);
+	}
+    }
+    return rc;
+}
+
+#if 0
+static uint32_t TSS_EfiDevicePathMediaMedia_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+						       uint8_t **event, uint32_t *eventSize)
+{
+}
+#endif
+
+/* Contents are defined in the UEFI PI Specification, seems to be a GUID. */
+
+static uint32_t TSS_EfiDevicePathMediaPiwgFile_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							  uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+
+    if (uefiDevicePath->protocol.Length > sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL)) {
+	if (rc == 0) {
+	    uefiDevicePath->buffer =
+		malloc(uefiDevicePath->protocol.Length - sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL));
+	    if (uefiDevicePath->buffer == NULL) {
+		printf("TSS_EfiDevicePathMediaPiwgFile_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)(uefiDevicePath->protocol.Length -
+				      sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL)));
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if (rc == 0) {
+	    uefiDevicePath->bufferLength = uefiDevicePath->protocol.Length -
+					   sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL);
+	    rc = TSS_Array_Unmarshalu(uefiDevicePath->buffer,
+				      uefiDevicePath->bufferLength,
+				      event, eventSize);
+	}
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMediaPiwgFw_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+
+    /* if there is a path.  Zero should be an error because of the NUL termination */
+    if (uefiDevicePath->protocol.Length > sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL)) {
+	if (rc == 0) {
+	    uefiDevicePath->buffer =
+		malloc(uefiDevicePath->protocol.Length - sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL));
+	    if (uefiDevicePath->buffer == NULL) {
+		printf("TSS_EfiDevicePathMediaPiwgFw_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)(uefiDevicePath->protocol.Length -
+				      sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL)));
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if (rc == 0) {
+	    uefiDevicePath->bufferLength = uefiDevicePath->protocol.Length -
+					   sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL);
+	    rc = TSS_Array_Unmarshalu(uefiDevicePath->buffer,
+				      uefiDevicePath->bufferLength,
+				      event, eventSize);
+	}
+    }
+    return rc;
+}
+
+static uint32_t TSS_EfiDevicePathMediaOffset_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    TSS_MEDIA0408 *media0408 = &uefiDevicePath->media0408;
+
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Unmarshal(&media0408->Reserved, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT64LE_Unmarshal(&media0408->StartingOffset, event, eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT64LE_Unmarshal(&media0408->EndingOffset, event, eventSize);
+    }
+    return rc;
+}
+
+#if 0
+static uint32_t TSS_EfiDevicePathMediaRamdisk_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+							 uint8_t **event, uint32_t *eventSize)
+{
+}
+#endif
+
+static void TSS_EfiDevicePathMediaHd_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MEDIA0401 *media0401 = &uefiDevicePath->media0401;
+
+    printf("    SubType %02x Media HD\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      Partition Number %u\n",  media0401->PartitionNumber);
+    printf("      Partition Start %016" PRIx64 "\n", media0401->PartitionStart);
+    printf("      Partition Size %016" PRIx64 "\n", media0401->PartitionSize);
+    if (media0401->PartitionFormat == 0x01) {
+	printf("      Partition Format PC AT MBR\n");
+    }
+    else if (media0401->PartitionFormat == 0x02) {
+	printf("      Partition Format GUID Partition Table\n");
+    }
+    else {
+	printf("      Partition Format %u unknown\n", media0401->PartitionFormat);
+    }
+    printf("      Signature Type %u\n", media0401->SignatureType);
+    if (media0401->SignatureType == 0x00) {
+	printf("      No Disk Signature\n");
+    }
+    else if (media0401->SignatureType == 0x02) {
+	guid_printf("    Signature", media0401->PartitionSignature);
+    }
+    else {
+	TSS_PrintAll("    Signature",
+		     media0401->PartitionSignature,
+		     sizeof(media0401->PartitionSignature));
+    }
+    return;
+}
+
+#if 0
+static void TSS_EfiDevicePathMediaCdrom_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+
+static void TSS_EfiDevicePathMediaVendor_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+#endif
+
+static void TSS_EfiDevicePathMediaFile_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    /* subtract 2 because this field is NUL terminated */
+    printf("    SubType %02x File Path\n",
+	   uefiDevicePath->protocol.SubType);
+    wchar_printf("    Path Name ", uefiDevicePath->buffer,
+		 (uint64_t)(uefiDevicePath->bufferLength -2)/ 2);
+    return;
+}
+
+#if 0
+static void TSS_EfiDevicePathMediaMedia_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+#endif
+
+static void TSS_EfiDevicePathMediaPiwgFile_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("    SubType %02x Firmware File\n",
+	   uefiDevicePath->protocol.SubType);
+    /* apparently, this value is a GUID */
+    if (uefiDevicePath->bufferLength == TSS_EFI_GUID_SIZE) {
+	guid_printf("    Firmware File", uefiDevicePath->buffer);
+    }
+    else {
+	TSS_PrintAll("    Firmware File",
+		     uefiDevicePath->buffer,
+		     uefiDevicePath->bufferLength);
+    }
+    return;
+}
+
+static void TSS_EfiDevicePathMediaPiwgFw_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("    SubType %02x Firmware Volume\n",
+	   uefiDevicePath->protocol.SubType);
+    /* apparently, this value is a GUID */
+    if (uefiDevicePath->bufferLength == TSS_EFI_GUID_SIZE) {
+	guid_printf("    Firmware Volume", uefiDevicePath->buffer);
+    }
+    else {
+	TSS_PrintAll("    Firmware Volume",
+		     uefiDevicePath->buffer,
+		     uefiDevicePath->bufferLength);
+    }
+    return;
+}
+
+static void TSS_EfiDevicePathMediaOffset_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    TSS_MEDIA0408 *media0408 = &uefiDevicePath->media0408;
+
+    printf("    SubType %02x Media Offset\n",
+	   uefiDevicePath->protocol.SubType);
+    printf("      Starting Offset %016" PRIx64 "\n", media0408->StartingOffset);
+    printf("      Ending Offset %016" PRIx64 "\n", media0408->EndingOffset);
+
+    return;
+}
+
+#if 0
+static void TSS_EfiDevicePathMediaRamdisk_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    printf("Type %02x SubType %02x trace not implemented\n",
+	   uefiDevicePath->protocol.Type,
+	   uefiDevicePath->protocol.SubType);
+    return;
+}
+#endif
 
 /* EV_EFI_PLATFORM_FIRMWARE_BLOB */
 
-static uint32_t TSS_EfiPlatformFirmwareBlobReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiPlatformFirmwareBlob_ReadBuffer(TSST_EFIData *efiData,
 						      uint8_t *event, uint32_t eventSize,
 						      uint32_t pcrIndex);
-static void     TSS_EfiPlatformFirmwareBlobTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiPlatformFirmwareBlobToJson(TSST_EFIData *efiData);
+static void     TSS_EfiPlatformFirmwareBlob_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiPlatformFirmwareBlob_ToJson(TSST_EFIData *efiData);
 
 /* EV_EFI_VARIABLE_DRIVER_CONFIG
    EV_EFI_VARIABLE_BOOT
    EV_EFI_VARIABLE_AUTHORITY
 */
 
-static void     TSS_EfiVariableDataInit(TSST_EFIData *efiData);
-static void     TSS_EfiVariableDataFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableDataReadBuffer(TSST_EFIData *efiData,
+static void     TSS_EfiVariableData_Init(TSST_EFIData *efiData);
+static void     TSS_EfiVariableData_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiVariableData_ReadBuffer(TSST_EFIData *efiData,
 					      uint8_t **event, uint32_t *eventSize);
-static void     TSS_EfiVariableDataTrace(TSST_EFIData *efiData);
+static void     TSS_EfiVariableData_Trace(TSST_EFIData *efiData);
 
 /* EV_EFI_VARIABLE_DRIVER_CONFIG */
 
-static void     TSS_EfiVariableDriverConfigInit(TSST_EFIData *efiData);
-static void     TSS_EfiVariableDriverConfigFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableDriverConfigReadBuffer(TSST_EFIData *efiData,
+static void     TSS_EfiVariableDriverConfig_Init(TSST_EFIData *efiData);
+static void     TSS_EfiVariableDriverConfig_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiVariableDriverConfig_ReadBuffer(TSST_EFIData *efiData,
 						      uint8_t *event, uint32_t eventSize,
 						      uint32_t pcrIndex);
-static void     TSS_EfiVariableDriverConfigTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableDriverConfigToJson(TSST_EFIData *efiData);
+static void     TSS_EfiVariableDriverConfig_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiVariableDriverConfig_ToJson(TSST_EFIData *efiData);
 
 /* EV_EFI_VARIABLE_BOOT */
 
-static void     TSS_EfiVariableBootInit(TSST_EFIData *efiData);
-static void     TSS_EfiVariableBootFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableBootReadBuffer(TSST_EFIData *efiData,
-				       uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
-static void     TSS_EfiVariableBootTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableBootToJson(TSST_EFIData *efiData);
+static void     TSS_EfiVariableBoot_Init(TSST_EFIData *efiData);
+static void     TSS_EfiVariableBoot_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiVariableBoot_ReadBuffer(TSST_EFIData *efiData,
+					      uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
+static void     TSS_EfiVariableBoot_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiVariableBoot_ToJson(TSST_EFIData *efiData);
 
-static uint32_t TSS_EfiBootOrderListReadBuffer(uint16_t **bootOrderList,
-					uint32_t *bootOrderListCount,
-					uint8_t *VariableData, uint32_t VariableDataLength);
+/* for BootOrder */
+static void     TSS_EfiVariableBootOrder_Init(TSS_VARIABLE_BOOT_ORDER *variableBootOrder);
+static void     TSS_EfiVariableBootOrder_Free(TSS_VARIABLE_BOOT_ORDER *variableBootOrder);
+static uint32_t TSS_EfiVariableBootOrder_ReadBuffer(TSS_VARIABLE_BOOT_ORDER *variableBootOrder,
+						    uint8_t *VariableData, uint32_t VariableDataLength);
+/* for not BootOrder */
+static void     TSS_EfiVariableBootPath_Init(TSS_VARIABLE_BOOT *variableBoot);
+static void     TSS_EfiVariableBootPath_Free(TSS_VARIABLE_BOOT *variableBoot);
+static uint32_t TSS_EfiVariableBootPath_ReadBuffer(TSS_VARIABLE_BOOT *variableBoot,
+						   void *VariableData, uint64_t VariableDataLength);
 
 /* EV_EFI_PLATFORM_FIRMWARE_BLOB */
 
-static uint32_t TSS_EfiPlatformFirmwareBlobReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiPlatformFirmwareBlob_ReadBuffer(TSST_EFIData *efiData,
 						      uint8_t *event, uint32_t eventSize,
 						      uint32_t pcrIndex);
-static void     TSS_EfiPlatformFirmwareBlobTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiPlatformFirmwareBlobToJson(TSST_EFIData *efiData);
+static void     TSS_EfiPlatformFirmwareBlob_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiPlatformFirmwareBlob_ToJson(TSST_EFIData *efiData);
 
-/* EFI_SIGNATURE_LIST within UEFI_VARIABLE_DATA */
+/* TSS_EFI_SIGNATURE_LIST within TSS_UEFI_VARIABLE_DATA */
 
-static void     TSS_EfiSignatureListInit(EFI_SIGNATURE_LIST *signatureList);
-static void     TSS_EfiSignatureListFree(EFI_SIGNATURE_LIST *signatureList);
-static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList,
-					       uint8_t **event, uint32_t *eventSize);
-static void     TSS_EfiSignatureListTrace(EFI_SIGNATURE_LIST *signatureList);
+static void     TSS_EfiSignatureList_Init(TSS_EFI_SIGNATURE_LIST *signatureList);
+static void     TSS_EfiSignatureList_Free(TSS_EFI_SIGNATURE_LIST *signatureList);
+static uint32_t TSS_EfiSignatureList_ReadBuffer(TSS_EFI_SIGNATURE_LIST *signatureList,
+						uint8_t **event, uint32_t *eventSize);
+static void     TSS_EfiSignatureList_Trace(TSS_EFI_SIGNATURE_LIST *signatureList);
 
-/* UEFI_VARIABLE_DATA for PK, KEK, db, dbx, dbr, dbt, etc. */
-  
-static uint32_t TSS_EfiSignatureAllListsReadBuffer(EFI_SIGNATURE_LIST **signatureList,
-						   uint32_t *signatureListCount,
-						   uint8_t *VariableData,
-						   uint32_t VariableDataLength);
+/* TSS_UEFI_VARIABLE_DATA for PK, KEK, db, dbx, dbr, dbt, etc. */
 
-/* EV_EFI_VARIABLE_BOOT */
-
-static uint32_t TSS_EfiVariableBootPathReadBuffer(uint32_t *isBootEnabled,
-						  char **bootDescription,
-						  char **bootPath,
-						  void *VariableData, uint64_t VariableDataLength);
+static uint32_t TSS_EfiSignatureAllLists_ReadBuffer(TSS_EFI_SIGNATURE_LIST **signatureList,
+						    uint32_t *signatureListCount,
+						    uint8_t *VariableData,
+						    uint32_t VariableDataLength);
 
 /* EV_EFI_VARIABLE_AUTHORITY */
 
-static void     TSS_EfiVariableAuthorityInit(TSST_EFIData *efiData);
-static void     TSS_EfiVariableAuthorityFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableAuthorityReadBuffer(TSST_EFIData *efiData,
+static void     TSS_EfiVariableAuthority_Init(TSST_EFIData *efiData);
+static void     TSS_EfiVariableAuthority_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiVariableAuthority_ReadBuffer(TSST_EFIData *efiData,
 						   uint8_t *event, uint32_t eventSize,
 						   uint32_t pcrIndex);
-static void     TSS_EfiVariableAuthorityTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiVariableAuthorityToJson(TSST_EFIData *efiData);
+static void     TSS_EfiVariableAuthority_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiVariableAuthority_ToJson(TSST_EFIData *efiData);
 
 /* EV_EFI_BOOT_SERVICES_APPLICATION
    EV_EFI_BOOT_SERVICES_DRIVER
 */
 
-static void     TSS_EfiBootServicesInit(TSST_EFIData *efiData);
-static void     TSS_EfiBootServicesFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
-					      uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
-static void     TSS_EfiBootServicesTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiBootServicesToJson(TSST_EFIData *efiData);
+static void     TSS_EfiBootServices_Init(TSST_EFIData *efiData);
+static void     TSS_EfiBootServices_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiBootServices_ReadBuffer(TSST_EFIData *efiData,
+					       uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
+static void     TSS_EfiBootServices_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiBootServices_ToJson(TSST_EFIData *efiData);
 
-/* UEFI_DEVICE_PATH  */
+/* TSS_UEFI_DEVICE_PATH  */
 
-static void     TSS_UefiDevicePathInit(UEFI_DEVICE_PATH *uefiDevicePath);
-static void     TSS_UefiDevicePathFree(UEFI_DEVICE_PATH *uefiDevicePath);
-static uint32_t TSS_UefiDevicePathReadBuffer(UEFI_DEVICE_PATH *uefiDevicePath,
+static void     TSS_UefiDevicePath_Init(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_UefiDevicePath_Free(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static uint32_t TSS_UefiDevicePath_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
 					     uint8_t **event, uint32_t *eventSize);
-static void     TSS_UefiDevicePathTrace(UEFI_DEVICE_PATH *uefiDevicePath);
-static uint32_t TSS_UefiDevicePathToJson(UEFI_DEVICE_PATH *uefiDevicePath);
+static void     TSS_UefiDevicePath_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
+static uint32_t TSS_UefiDevicePath_ToJson(TSS_UEFI_DEVICE_PATH *uefiDevicePath);
 
 /* EV_EFI_GPT_EVENT */
 
-static void     TSS_EfiGptEventInit(TSST_EFIData *efiData);
-static void     TSS_EfiGptEventFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiGptEventReadBuffer(TSST_EFIData *efiData,
+static void     TSS_EfiGptEvent_Init(TSST_EFIData *efiData);
+static void     TSS_EfiGptEvent_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiGptEvent_ReadBuffer(TSST_EFIData *efiData,
 					  uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
-static void     TSS_EfiGptEventTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiGptEventToJson(TSST_EFIData *efiData);
+static void     TSS_EfiGptEvent_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiGptEvent_ToJson(TSST_EFIData *efiData);
 
 /* EV_EFI_GPT_EVENT */
 
-static uint32_t TSS_EfiPartitionHeaderReadBuffer(UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader,
+static uint32_t TSS_EfiPartitionHeader_ReadBuffer(TSS_UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader,
+						  uint8_t **event, uint32_t *eventSize);
+static uint32_t TSS_EfiPartitionEntry_ReadBuffer(TSS_UEFI_PARTITION_ENTRY *entry,
 						 uint8_t **event, uint32_t *eventSize);
-static uint32_t TSS_EfiPartitionEntryReadBuffer(UEFI_PARTITION_ENTRY *entry,
-						uint8_t **event, uint32_t *eventSize);
-static void     TSS_EfiPartitionHeaderTrace(UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader);
-static void     TSS_EfiPartitionEntryTrace(UEFI_PARTITION_ENTRY *entry);
+static void     TSS_EfiPartitionHeader_Trace(TSS_UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader);
+static void     TSS_EfiPartitionEntry_Trace(TSS_UEFI_PARTITION_ENTRY *entry);
 
+/* EV_POST_CODE */
+
+static void     TSS_EfiPostCode_Init(TSST_EFIData *efiData);
+static void     TSS_EfiPostCode_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiPostCode_ReadBuffer(TSST_EFIData *efiData,
+					   uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
+static void     TSS_EfiPostCode_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiPostCode_ToJson(TSST_EFIData *efiData);
 
 /* EV_S_CRTM_VERSION
-   EV_POST_CODE
    EV_COMPACT_HASH
 */
 
-static void     TSS_Efi4bBufferInit(TSST_EFIData *efiData);
-static void     TSS_Efi4bBufferFree(TSST_EFIData *efiData);
-static uint32_t TSS_Efi4bBufferReadBuffer(TSST_EFIData *efiData,
+static void     TSS_Efi4bBuffer_Init(TSST_EFIData *efiData);
+static void     TSS_Efi4bBuffer_Free(TSST_EFIData *efiData);
+static uint32_t TSS_Efi4bBuffer_ReadBuffer(TSST_EFIData *efiData,
 					  uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
 
 /* EV_COMPACT_HASH */
 
-static void     TSS_EfiCompactHashTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiCompactHashToJson(TSST_EFIData *efiData);
+static void     TSS_EfiCompactHash_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiCompactHash_ToJson(TSST_EFIData *efiData);
 
 /* EV_IPL */
 
-static void     TSS_EfiIplTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiIplToJson(TSST_EFIData *efiData);
+static void     TSS_EfiIpl_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiIpl_ToJson(TSST_EFIData *efiData);
 
 /* EV_S_CRTM_VERSION */
 
-static void     TSS_EfiCrtmVersionTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiCrtmVersionToJson(TSST_EFIData *efiData);
+static void     TSS_EfiCrtmVersion_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiCrtmVersion_ToJson(TSST_EFIData *efiData);
 
 /* EV_S_CRTM_CONTENTS */
 
-static void     TSS_EfiCrtmContentsTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiCrtmContentsToJson(TSST_EFIData *efiData);
+static void     TSS_EfiCrtmContents_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiCrtmContents_ToJson(TSST_EFIData *efiData);
 
 /* EV_EFI_ACTION */
 
-static void     TSS_EfiActionTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiActionToJson(TSST_EFIData *efiData);
+static void     TSS_EfiAction_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiAction_ToJson(TSST_EFIData *efiData);
 
-/* EV_POST_CODE */
+/* Event that is only a printable string */
 
-static uint32_t TSS_EfiCharReadBuffer(TSST_EFIData *efiData,
+#if 0
+static uint32_t TSS_EfiChar_ReadBuffer(TSST_EFIData *efiData,
 				      uint8_t *event, uint32_t eventSize, uint32_t pcrIndex);
-static void     TSS_EfiCharTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiCharToJson(TSST_EFIData *efiData);
+static void     TSS_EfiChar_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiChar_ToJson(TSST_EFIData *efiData);
+
+#endif
 
 /* EV_NO_ACTION */
 
-static void     TSS_EvNoActionTrace(TSST_EFIData *efiData);
+static void     TSS_EvNoAction_Trace(TSST_EFIData *efiData);
 
 /* EV_SEPARATOR */
 
-static void     TSS_EfiSeparatorTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiSeparatorToJson(TSST_EFIData *efiData);
+static void     TSS_EfiSeparator_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiSeparator_ToJson(TSST_EFIData *efiData);
+
+/* EV_ACTION */
+
+#if 0
+static void     TSS_EfiAction_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiAction_ToJson(TSST_EFIData *efiData);
+#endif
 
 /* EV_EVENT_TAG */
 
-static void     TSS_EfiEventTagInit(TSST_EFIData *efiData);
-static void     TSS_EfiEventTagFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiEventReadBuffer(TSST_EFIData *efiData,
+static void     TSS_EfiEventTag_Init(TSST_EFIData *efiData);
+static void     TSS_EfiEventTag_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiEvent_ReadBuffer(TSST_EFIData *efiData,
 				       uint8_t *event, uint32_t eventSize,
 				       uint32_t pcrIndex);
-static void     TSS_EfiEventTagTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiEventTagToJson(TSST_EFIData *efiData);
+static void     TSS_EfiEventTag_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiEventTag_ToJson(TSST_EFIData *efiData);
 
 /* EV_EFI_HANDOFF_TABLES
    EV_TABLE_OF_DEVICES
 */
 
-static void     TSS_EfiHandoffTablesInit(TSST_EFIData *efiData);
-static void     TSS_EfiHandoffTablesFree(TSST_EFIData *efiData);
-static uint32_t TSS_EfiHandoffTablesReadBuffer(TSST_EFIData *efiData,
+static void     TSS_EfiHandoffTables_Init(TSST_EFIData *efiData);
+static void     TSS_EfiHandoffTables_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiHandoffTables_ReadBuffer(TSST_EFIData *efiData,
 					       uint8_t *event, uint32_t eventSize,
 					       uint32_t pcrIndex);
-static void     TSS_EfiHandoffTablesTrace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiHandoffTablesToJson(TSST_EFIData *efiData);
+static void     TSS_EfiHandoffTables_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiHandoffTables_ToJson(TSST_EFIData *efiData);
 
 /* helper functions */
 
@@ -554,85 +2408,99 @@ static uint32_t TSS_EfiFormatDevicePath(char **path,
 					uint16_t pathlen);
 #endif /* HAVE_EFIBOOT_H */
 
-static void guid_printf(const char *msg, uint8_t *v_guid);
-
-static void wchar_printf(const char *msg, void *wchar, uint64_t length);
-
 /* Table to map eventType to handling function callbacks.
 
-   Missing events return an error.
+   Missing events return an TSS_RC_NOT_IMPLEMENTED.
 
-   Events with NULL for initFunction or freeFunction are legal, meaning that the readBufferFunction
+   Events with NULL for initFunction and freeFunction are legal, meaning that the readBufferFunction
    will not malloc memory that needs pointers to be initialized to NULL and freed,
 
    NULL entries for readBufferFunction, traceFunction, or toJsonFunction are errors.
 */
 
+/* function prototypes for event callback table */
+
+typedef void     (*TSS_EFIData_Init_Function_t)(TSST_EFIData *efiData);
+typedef void     (*TSS_EFIData_Free_Function_t)(TSST_EFIData *efiData);
+typedef uint32_t (*TSS_EFIData_ReadBuffer_Function_t)(TSST_EFIData *efiData,
+						      uint8_t *event,
+						      uint32_t eventSize,
+						      uint32_t pcrIndex);
+typedef void     (*TSS_EFIData_Trace_Function_t)(TSST_EFIData *efiData);
+typedef uint32_t (*TSS_EFIData_ToJson_Function_t)(TSST_EFIData *efiData);
+
 typedef struct {
     uint32_t eventType;					/* PC Client event */
-    TSS_EFIDAta_Init_Function_t		initFunction;
-    TSS_EFIDAta_Free_Function_t		freeFunction;
-    TSS_EFIDAta_ReadBuffer_Function_t	readBufferFunction;
-    TSS_EFIDAta_Trace_Function_t	traceFunction;
-    TSS_EFIDAta_ToJson_Function_t	toJsonFunction;
+    TSS_EFIData_Init_Function_t		initFunction;
+    TSS_EFIData_Free_Function_t		freeFunction;
+    TSS_EFIData_ReadBuffer_Function_t	readBufferFunction;
+    TSS_EFIData_Trace_Function_t	traceFunction;
+    TSS_EFIData_ToJson_Function_t	toJsonFunction;
 } EFI_EVENT_TYPE_TABLE;
 
 const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
     {
+#if 0	/* reserved for future use */
      {EV_PREBOOT_CERT,
       NULL,
       NULL,
       NULL,
       NULL,
       NULL},
+#endif
      {EV_POST_CODE,
-      TSS_Efi4bBufferInit,
-      TSS_Efi4bBufferFree,
-      TSS_EfiCharReadBuffer,
-      TSS_EfiCharTrace,
-      TSS_EfiCharToJson},
+      TSS_EfiPostCode_Init,
+      TSS_EfiPostCode_Free,
+      TSS_EfiPostCode_ReadBuffer,
+      TSS_EfiPostCode_Trace,
+      TSS_EfiPostCode_ToJson},
+#if 0	/* deprecated */
      {EV_UNUSED,
       NULL,
       NULL,
       NULL,
       NULL,
       NULL},
+#endif
      {EV_NO_ACTION,
-      TSS_Efi4bBufferInit,
-      TSS_Efi4bBufferFree,
-      TSS_Efi4bBufferReadBuffer,
-      TSS_EvNoActionTrace,
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EvNoAction_Trace,
       NULL},
      {EV_SEPARATOR,
-      TSS_Efi4bBufferInit,
-      TSS_Efi4bBufferFree,
-      TSS_Efi4bBufferReadBuffer,
-      TSS_EfiSeparatorTrace,
-      TSS_EfiSeparatorToJson},
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiSeparator_Trace,
+      TSS_EfiSeparator_ToJson},
+#if 0	/* implemented but not tested, needs a test event log */
      {EV_ACTION,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL},
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiAction_Trace,
+      TSS_EfiAction_ToJson},
+#endif
      {EV_EVENT_TAG,
-      TSS_EfiEventTagInit,
-      TSS_EfiEventTagFree,
-      TSS_EfiEventReadBuffer,
-      TSS_EfiEventTagTrace,
-      TSS_EfiEventTagToJson},
+      TSS_EfiEventTag_Init,
+      TSS_EfiEventTag_Free,
+      TSS_EfiEvent_ReadBuffer,
+      TSS_EfiEventTag_Trace,
+      TSS_EfiEventTag_ToJson},
      {EV_S_CRTM_CONTENTS,
-      TSS_Efi4bBufferInit,
-      TSS_Efi4bBufferFree,
-      TSS_Efi4bBufferReadBuffer,
-      TSS_EfiCrtmContentsTrace,
-      TSS_EfiCrtmContentsToJson},
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiCrtmContents_Trace,
+      TSS_EfiCrtmContents_ToJson},
      {EV_S_CRTM_VERSION,
-      TSS_Efi4bBufferInit,
-      TSS_Efi4bBufferFree,
-      TSS_Efi4bBufferReadBuffer,
-      TSS_EfiCrtmVersionTrace,
-      TSS_EfiCrtmVersionToJson},
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiCrtmVersion_Trace,
+      TSS_EfiCrtmVersion_ToJson},
+#if 0	/* needs a test event log */
      {EV_CPU_MICROCODE,
       NULL,
       NULL,
@@ -645,30 +2513,34 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL,
       NULL},
+#endif
      {EV_TABLE_OF_DEVICES,
-      TSS_EfiHandoffTablesInit,
-      TSS_EfiHandoffTablesFree,
-      TSS_EfiHandoffTablesReadBuffer,
-      TSS_EfiHandoffTablesTrace,
-      TSS_EfiHandoffTablesToJson},
+      TSS_EfiHandoffTables_Init,
+      TSS_EfiHandoffTables_Free,
+      TSS_EfiHandoffTables_ReadBuffer,
+      TSS_EfiHandoffTables_Trace,
+      TSS_EfiHandoffTables_ToJson},
      {EV_COMPACT_HASH,
-      TSS_Efi4bBufferInit,
-      TSS_Efi4bBufferFree,
-      TSS_Efi4bBufferReadBuffer,
-      TSS_EfiCompactHashTrace,
-      TSS_EfiCompactHashToJson},
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiCompactHash_Trace,
+      TSS_EfiCompactHash_ToJson},
      {EV_IPL,
-      TSS_Efi4bBufferInit,
-      TSS_Efi4bBufferFree,
-      TSS_Efi4bBufferReadBuffer,
-      TSS_EfiIplTrace,
-      TSS_EfiIplToJson},
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiIpl_Trace,
+      TSS_EfiIpl_ToJson},
+#if 0	/* deprecated */
      {EV_IPL_PARTITION_DATA,
       NULL,
       NULL,
       NULL,
       NULL,
       NULL},
+#endif
+#if 0	/* needs a test event log */
      {EV_NONHOST_CODE,
       NULL,
       NULL,
@@ -693,60 +2565,69 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL,
       NULL},
-     {EV_EFI_VARIABLE_DRIVER_CONFIG,
-      TSS_EfiVariableDriverConfigInit,
-      TSS_EfiVariableDriverConfigFree,
-      TSS_EfiVariableDriverConfigReadBuffer,
-      TSS_EfiVariableDriverConfigTrace,
-      TSS_EfiVariableDriverConfigToJson},
+#endif
+    {EV_EFI_VARIABLE_DRIVER_CONFIG,
+      TSS_EfiVariableDriverConfig_Init,
+      TSS_EfiVariableDriverConfig_Free,
+      TSS_EfiVariableDriverConfig_ReadBuffer,
+      TSS_EfiVariableDriverConfig_Trace,
+      TSS_EfiVariableDriverConfig_ToJson},
      {EV_EFI_VARIABLE_BOOT,
-      TSS_EfiVariableBootInit,
-      TSS_EfiVariableBootFree,
-      TSS_EfiVariableBootReadBuffer,
-      TSS_EfiVariableBootTrace,
-      TSS_EfiVariableBootToJson},
+      TSS_EfiVariableBoot_Init,
+      TSS_EfiVariableBoot_Free,
+      TSS_EfiVariableBoot_ReadBuffer,
+      TSS_EfiVariableBoot_Trace,
+      TSS_EfiVariableBoot_ToJson},
      {EV_EFI_BOOT_SERVICES_APPLICATION,
-      TSS_EfiBootServicesInit,
-      TSS_EfiBootServicesFree,
-      TSS_EfiBootServicesReadBuffer,
-      TSS_EfiBootServicesTrace,
-      TSS_EfiBootServicesToJson},
+      TSS_EfiBootServices_Init,
+      TSS_EfiBootServices_Free,
+      TSS_EfiBootServices_ReadBuffer,
+      TSS_EfiBootServices_Trace,
+      TSS_EfiBootServices_ToJson},
      {EV_EFI_BOOT_SERVICES_DRIVER,
-      TSS_EfiBootServicesInit,
-      TSS_EfiBootServicesFree,
-      TSS_EfiBootServicesReadBuffer,
-      TSS_EfiBootServicesTrace,
-      TSS_EfiBootServicesToJson},
+      TSS_EfiBootServices_Init,
+      TSS_EfiBootServices_Free,
+      TSS_EfiBootServices_ReadBuffer,
+      TSS_EfiBootServices_Trace,
+      TSS_EfiBootServices_ToJson},
+#if 0	/* needs a test event log */
      {EV_EFI_RUNTIME_SERVICES_DRIVER,
       NULL,
       NULL,
       NULL,
       NULL,
       NULL},
+#endif
      {EV_EFI_GPT_EVENT,
-      TSS_EfiGptEventInit,
-      TSS_EfiGptEventFree,
-      TSS_EfiGptEventReadBuffer,
-      TSS_EfiGptEventTrace,
-      TSS_EfiGptEventToJson},
+      TSS_EfiGptEvent_Init,
+      TSS_EfiGptEvent_Free,
+      TSS_EfiGptEvent_ReadBuffer,
+      TSS_EfiGptEvent_Trace,
+      TSS_EfiGptEvent_ToJson},
      {EV_EFI_ACTION,
-      TSS_Efi4bBufferInit,
-      TSS_Efi4bBufferFree,
-      TSS_Efi4bBufferReadBuffer,
-      TSS_EfiActionTrace,
-      TSS_EfiActionToJson},
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiAction_Trace,
+      TSS_EfiAction_ToJson},
      {EV_EFI_PLATFORM_FIRMWARE_BLOB,
       NULL,
       NULL,
-      TSS_EfiPlatformFirmwareBlobReadBuffer,
-      TSS_EfiPlatformFirmwareBlobTrace,
-      TSS_EfiPlatformFirmwareBlobToJson},
+      TSS_EfiPlatformFirmwareBlob_ReadBuffer,
+      TSS_EfiPlatformFirmwareBlob_Trace,
+      TSS_EfiPlatformFirmwareBlob_ToJson},
      {EV_EFI_HANDOFF_TABLES,
-      TSS_EfiHandoffTablesInit,
-      TSS_EfiHandoffTablesFree,
-      TSS_EfiHandoffTablesReadBuffer,
-      TSS_EfiHandoffTablesTrace,
-      TSS_EfiHandoffTablesToJson},
+      TSS_EfiHandoffTables_Init,
+      TSS_EfiHandoffTables_Free,
+      TSS_EfiHandoffTables_ReadBuffer,
+      TSS_EfiHandoffTables_Trace,
+      TSS_EfiHandoffTables_ToJson},
+     {EV_EFI_PLATFORM_FIRMWARE_BLOB2,
+      NULL,
+      NULL,
+      NULL,
+      NULL,
+      NULL},
      {EV_EFI_HCRTM_EVENT,
       NULL,
       NULL,
@@ -754,11 +2635,11 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL},
      {EV_EFI_VARIABLE_AUTHORITY,
-      TSS_EfiVariableAuthorityInit,
-      TSS_EfiVariableAuthorityFree,
-      TSS_EfiVariableAuthorityReadBuffer,
-      TSS_EfiVariableAuthorityTrace,
-      TSS_EfiVariableAuthorityToJson},
+      TSS_EfiVariableAuthority_Init,
+      TSS_EfiVariableAuthority_Free,
+      TSS_EfiVariableAuthority_ReadBuffer,
+      TSS_EfiVariableAuthority_Trace,
+      TSS_EfiVariableAuthority_ToJson},
      {EV_EFI_SUPERMICRO_1,
       NULL,
       NULL,
@@ -767,13 +2648,28 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL},
     };
 
-
-/* local function prototypes */
-
 static uint32_t TSS_EFI_GetTableIndex(size_t *index, uint32_t eventType);
 
-/* Used for input sanity check.  Keep below ffffffff so that cast to uint32_t is safe */
-#define EFI_LENGTH_MAX 0x100000
+/* TSS_EFI_GetTableIndex() searches the event type table for the event handlers.
+
+   Returns TSS_RC_NOT_IMPLEMENTED if the event type is unknown.
+*/
+
+static uint32_t TSS_EFI_GetTableIndex(size_t *index, uint32_t eventType)
+{
+    for (*index = 0 ;
+	 *index < sizeof(efiEventTypeTable) / sizeof(EFI_EVENT_TYPE_TABLE) ;
+	 (*index)++) {
+	if (efiEventTypeTable[*index].eventType == eventType) {
+	    return 0;	/* match */
+	}
+    }
+    return TSS_RC_NOT_IMPLEMENTED;		/* no match */
+}
+
+/*
+  This is the library external interface
+*/
 
 /* TSS_EFIData_Init() initializes the efiData structure based on the EFI eventType so that
    TSS_EFIData_Free() is safe.
@@ -785,11 +2681,13 @@ static uint32_t TSS_EFI_GetTableIndex(size_t *index, uint32_t eventType);
 */
 
 uint32_t TSS_EFIData_Init(TSST_EFIData **efiData,	/* freed by TSS_EFIData_Free */
-			  uint32_t eventType)
+			  uint32_t eventType,
+			  const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     size_t index;
-
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
     /* if the eventType is supported */
     if (rc == 0) {
 	rc = TSS_EFI_GetTableIndex(&index, eventType);
@@ -817,10 +2715,13 @@ uint32_t TSS_EFIData_Init(TSST_EFIData **efiData,	/* freed by TSS_EFIData_Free *
 
 /* TSS_EFIData_Free() the efiData structure based on the EFI eventType. */
 
-void TSS_EFIData_Free(TSST_EFIData *efiData)
+void TSS_EFIData_Free(TSST_EFIData *efiData,
+		      const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     size_t index;
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
 
     if (efiData != NULL) {
 	/* a failure here is a call sequence error */
@@ -842,15 +2743,17 @@ void TSS_EFIData_Free(TSST_EFIData *efiData)
 /* TSS_EFIData_ReadBuffer() parses the event based on the EFI eventType.
 
    Returns TSS_RC_NOT_IMPLEMENTED if the eventType is not supported.
-
 */
 
 uint32_t TSS_EFIData_ReadBuffer(TSST_EFIData *efiData,
 				uint8_t *event, uint32_t eventSize,
-				uint32_t pcrIndex)
+				uint32_t pcrIndex,
+				const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     size_t index;
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
 
     /* save the PCR index because some subsequent functions depend on the PCR value */
     if (rc == 0) {
@@ -880,10 +2783,13 @@ uint32_t TSS_EFIData_ReadBuffer(TSST_EFIData *efiData,
    It assumes that the TSS_EFIData structure and eventType are valid.
 */
 
-void TSS_EFIData_Trace(TSST_EFIData *efiData)
+void TSS_EFIData_Trace(TSST_EFIData *efiData,
+		       const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     size_t index;
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
 
     /* a failure here is a call sequence error */
     if (rc == 0) {
@@ -904,10 +2810,13 @@ void TSS_EFIData_Trace(TSST_EFIData *efiData)
 
 /* TSS_EFIData_ToJson() outputs the efiData to stdout as json */
 
-uint32_t TSS_EFIData_ToJson(TSST_EFIData *efiData)
+uint32_t TSS_EFIData_ToJson(TSST_EFIData *efiData,
+			    const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     size_t index;
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
 
     /* a failure here is a call sequence error */
     if (rc == 0) {
@@ -926,31 +2835,169 @@ uint32_t TSS_EFIData_ToJson(TSST_EFIData *efiData)
     return rc;
 }
 
-/* TSS_EFI_GetTableIndex() searches the event type table for the event handlers.
+/* EV_POST_CODE handlers */
 
-   Returns TSS_RC_NOT_IMPLEMENTED if the event type is unknown.
-*/
-
-static uint32_t TSS_EFI_GetTableIndex(size_t *index, uint32_t eventType)
+static void     TSS_EfiPostCode_Init(TSST_EFIData *efiData)
 {
-    for (*index = 0 ;
-	 *index < sizeof(efiEventTypeTable) / sizeof(EFI_EVENT_TYPE_TABLE) ;
-	 (*index)++) {
-	if (efiEventTypeTable[*index].eventType == eventType) {
-	    return 0;	/* match */
+    TSS_POST_CODE_TAGGED_EVENT *taggedEvent = &efiData->efiData.postTaggedEvent;
+    taggedEvent->tag = TSS_EV_POST_CODE_UNKNOWN;
+    taggedEvent->unionBufferLength = 0;
+    taggedEvent->unionBuffer = NULL;
+    return;
+}
+
+static void     TSS_EfiPostCode_Free(TSST_EFIData *efiData)
+{
+    TSS_POST_CODE_TAGGED_EVENT *taggedEvent = &efiData->efiData.postTaggedEvent;
+    free(taggedEvent->unionBuffer);
+    return;
+}
+
+static uint32_t TSS_EfiPostCode_ReadBuffer(TSST_EFIData *efiData,
+					   uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
+{
+    uint32_t rc = 0;
+    TSS_POST_CODE_TAGGED_EVENT *taggedEvent = &efiData->efiData.postTaggedEvent;
+    pcrIndex = pcrIndex;
+
+    /* allocate the taggedEventData */
+    if (eventSize > 0) {
+	if (rc == 0) {
+	    taggedEvent->unionBufferLength = eventSize;
+	    taggedEvent->unionBuffer = malloc(eventSize);
+	    if (taggedEvent->unionBuffer == NULL) {
+		printf("TSS_EfiPostCode_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)(eventSize))	;
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if (rc == 0) {
+	    rc = TSS_Array_Unmarshalu(taggedEvent->unionBuffer,
+				      taggedEvent->unionBufferLength,
+				      &event, &eventSize);
+	}
+	/* guess at the meaning of the event */
+	if (rc == 0) {
+	    if (taggedEvent->unionBufferLength == sizeof(TSS_UEFI_PLATFORM_FIRMWARE_BLOB)) {
+
+		TSS_UEFI_PLATFORM_FIRMWARE_BLOB *firmwareBlob = &taggedEvent->postCode.firmwareBlob;
+		uint8_t *tmpEvent = taggedEvent->unionBuffer;
+		uint32_t tmpEventSize = taggedEvent->unionBufferLength;
+
+		taggedEvent->tag = TSS_EV_POST_CODE_BLOB;
+		if (rc == 0) {
+		    rc = TSS_UINT64LE_Unmarshal(&firmwareBlob->BlobBase, &tmpEvent , &tmpEventSize);
+		}
+		if (rc == 0) {
+		    rc = TSS_UINT64LE_Unmarshal(&firmwareBlob->BlobLength, &tmpEvent , &tmpEventSize);
+		}
+	    }
+	    else if ((taggedEvent->unionBufferLength > sizeof(TSS_UEFI_PLATFORM_FIRMWARE_BLOB) &&
+		      taggedEvent->unionBufferLength == ((sizeof(uint8_t) +
+							     sizeof(UEFI_PHYSICAL_ADDRESS) +
+							     sizeof(uint64_t) +
+							  taggedEvent->unionBuffer[0])))) {
+
+		TSS_UEFI_PLATFORM_FIRMWARE_BLOB2 *firmwareBlob2 =
+		    &taggedEvent->postCode.firmwareBlob2;
+		uint8_t *tmpEvent = taggedEvent->unionBuffer;
+		uint32_t tmpEventSize = taggedEvent->unionBufferLength;
+
+		taggedEvent->tag = TSS_EV_POST_CODE_BLOB2;
+		if (rc == 0) {
+		    rc = TSS_UINT8_Unmarshalu(&firmwareBlob2->BlobDescriptionSize,
+					      &tmpEvent , &tmpEventSize);
+		}
+		/* skip the BlobDescription, a variable length buffer in the middle of the
+		   structure */
+		if (rc == 0) {
+		    tmpEvent += taggedEvent->unionBuffer[0];
+		    tmpEventSize -= taggedEvent->unionBuffer[0];
+		}
+		if (rc == 0) {
+		    rc = TSS_UINT64LE_Unmarshal(&firmwareBlob2->BlobBase,
+						&tmpEvent , &tmpEventSize);
+		}
+		if (rc == 0) {
+		    rc = TSS_UINT64LE_Unmarshal(&firmwareBlob2->BlobLength,
+						&tmpEvent , &tmpEventSize);
+		}
+		/* then copy just the BlobDescription, overwriting the rest of the already
+		   unmarshaled event */
+		if (rc == 0) {
+		    memmove(taggedEvent->unionBuffer,
+			    taggedEvent->unionBuffer + sizeof(uint8_t),
+			    taggedEvent->unionBuffer[0]);
+		}
+	    }
+	    else {
+		int isAscii;
+		isAsciiString(&isAscii,
+			      taggedEvent->unionBuffer, taggedEvent->unionBufferLength);
+		if (isAscii) {
+		    taggedEvent->tag = TSS_EV_POST_CODE_ASCII;
+		    /* string remains in unionBuffer */
+		}
+		else {
+		    taggedEvent->tag = TSS_EV_POST_CODE_UNKNOWN;
+		    /* event remains in unionBuffer */
+		}
+	    }
 	}
     }
-    return TSS_RC_NOT_IMPLEMENTED;		/* no match */
+    else {
+	taggedEvent->tag = TSS_EV_POST_CODE_UNKNOWN;
+    }
+    return rc;
+}
+
+static void     TSS_EfiPostCode_Trace(TSST_EFIData *efiData)
+{
+    TSS_POST_CODE_TAGGED_EVENT *taggedEvent = &efiData->efiData.postTaggedEvent;
+
+    switch (taggedEvent->tag) {
+       case TSS_EV_POST_CODE_BLOB:
+	 printf("  BlobBase: %016" PRIx64 "\n", taggedEvent->postCode.firmwareBlob.BlobBase);
+	 printf("  BlobLength: %016" PRIx64 "\n", taggedEvent->postCode.firmwareBlob.BlobLength);
+	break;
+      case TSS_EV_POST_CODE_BLOB2:
+	printf("  BlobDescription: %.*s\n", 
+	       (int)taggedEvent->postCode.firmwareBlob2.BlobDescriptionSize,
+	       taggedEvent->unionBuffer);
+
+	printf("  BlobBase: %016" PRIx64 "\n", taggedEvent->postCode.firmwareBlob2.BlobBase);
+	printf("  BlobLength: %016" PRIx64 "\n", taggedEvent->postCode.firmwareBlob2.BlobLength);
+	break;
+      case TSS_EV_POST_CODE_ASCII:
+	printf("  Post Code: %.*s\n",
+	       (int)taggedEvent->unionBufferLength,
+	       taggedEvent->unionBuffer);
+	break;
+      case TSS_EV_POST_CODE_UNKNOWN:
+      default:
+	TSS_PrintAll("   Data:", taggedEvent->unionBuffer, taggedEvent->unionBufferLength);
+    }
+    return;
+}
+
+static uint32_t TSS_EfiPostCode_ToJson(TSST_EFIData *efiData)
+{
+    uint32_t rc = 0;
+    TSS_POST_CODE_TAGGED_EVENT *taggedEvent = &efiData->efiData.postTaggedEvent;
+    taggedEvent = taggedEvent;
+    if (rc == 0) {
+    }
+    return rc;
 }
 
 /* EV_EFI_PLATFORM_FIRMWARE_BLOB handlers */
 
-static uint32_t TSS_EfiPlatformFirmwareBlobReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiPlatformFirmwareBlob_ReadBuffer(TSST_EFIData *efiData,
 						      uint8_t *event, uint32_t eventSize,
 						      uint32_t pcrIndex)
 {
     uint32_t rc = 0;
-    UEFI_PLATFORM_FIRMWARE_BLOB *uefiPlatformFirmwareBlob =
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB *uefiPlatformFirmwareBlob =
 	&efiData->efiData.uefiPlatformFirmwareBlob;
     pcrIndex = pcrIndex;
 
@@ -963,27 +3010,21 @@ static uint32_t TSS_EfiPlatformFirmwareBlobReadBuffer(TSST_EFIData *efiData,
     return rc;
 }
 
-static void TSS_EfiPlatformFirmwareBlobTrace(TSST_EFIData *efiData)
+static void TSS_EfiPlatformFirmwareBlob_Trace(TSST_EFIData *efiData)
 {
-    UEFI_PLATFORM_FIRMWARE_BLOB *uefiPlatformFirmwareBlob =
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB *uefiPlatformFirmwareBlob =
 	&efiData->efiData.uefiPlatformFirmwareBlob;
     printf("  BlobBase: %016" PRIx64 "\n", uefiPlatformFirmwareBlob->BlobBase);
     printf("  BlobLength: %016" PRIx64 "\n", uefiPlatformFirmwareBlob->BlobLength);
     return;
 }
 
-static uint32_t TSS_EfiPlatformFirmwareBlobToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiPlatformFirmwareBlob_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
-    UEFI_PLATFORM_FIRMWARE_BLOB *uefiPlatformFirmwareBlob =
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB *uefiPlatformFirmwareBlob =
 	&efiData->efiData.uefiPlatformFirmwareBlob;
     uefiPlatformFirmwareBlob = uefiPlatformFirmwareBlob; /* to silence compiler */
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
     if (rc == 0) {
     }
     return rc;
@@ -991,35 +3032,35 @@ static uint32_t TSS_EfiPlatformFirmwareBlobToJson(TSST_EFIData *efiData)
 
 /* EV_EFI_VARIABLE_DRIVER_CONFIG handlers */
 
-static void TSS_EfiVariableDataInit(TSST_EFIData *efiData)
+static void TSS_EfiVariableData_Init(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     uefiVariableData->UnicodeName = NULL;
     uefiVariableData->VariableData = NULL;
-    uefiVariableData->variableDataTag = 0;
+    uefiVariableData->variableDataTag = TSS_VAR_UNKNOWN;
     return;
 }
 
-static void TSS_EfiVariableDataFree(TSST_EFIData *efiData)
+static void TSS_EfiVariableData_Free(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     free(uefiVariableData->UnicodeName);
     free(uefiVariableData->VariableData);
     return;
 }
 
-/* TSS_EfiVariableDataReadBuffer()
+/* TSS_EfiVariableData_ReadBuffer()
 
    Common code to several events.
 
    Validates that the event has sufficient bytes for VariableDataLength
 */
 
-static uint32_t TSS_EfiVariableDataReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiVariableData_ReadBuffer(TSST_EFIData *efiData,
 					      uint8_t **event, uint32_t *eventSize)
 {
     uint32_t rc = 0;
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
 
     if (rc == 0) {
 	rc = TSS_Array_Unmarshalu(uefiVariableData->VariableName,
@@ -1038,14 +3079,14 @@ static uint32_t TSS_EfiVariableDataReadBuffer(TSST_EFIData *efiData,
        uint32_t is safe. */
     if (rc == 0) {
 	if (uefiVariableData->UnicodeNameLength > EFI_LENGTH_MAX/2) {
-	    printf("TSS_EfiVariableDataReadBuffer: UnicodeNameLength %" PRIu64 " too large\n",
+	    printf("TSS_EfiVariableData_ReadBuffer: UnicodeNameLength %" PRIu64 " too large\n",
 		   uefiVariableData->UnicodeNameLength);
 	    rc = TSS_RC_MALLOC_SIZE;
 	}
     }
     if (rc == 0) {
 	if (uefiVariableData->VariableDataLength > EFI_LENGTH_MAX) {
-	    printf("TSS_EfiVariableDataReadBuffer: VariableDataLength %" PRIu64 " too large\n",
+	    printf("TSS_EfiVariableData_ReadBuffer: VariableDataLength %" PRIu64 " too large\n",
 		   uefiVariableData->VariableDataLength );
 	    rc = TSS_RC_MALLOC_SIZE;
 	}
@@ -1053,11 +3094,11 @@ static uint32_t TSS_EfiVariableDataReadBuffer(TSST_EFIData *efiData,
     /* allocate the UnicodeName array, unicode means byte array is length * 2 */
     if (rc == 0) {
 	if (uefiVariableData->UnicodeNameLength > 0) {
-	    /* freed by TSS_EfiVariableDataFree */
+	    /* freed by TSS_EfiVariableData_Free */
 	    uefiVariableData->UnicodeName =
 		malloc((uefiVariableData->UnicodeNameLength) *2);
 	    if (uefiVariableData->UnicodeName == NULL) {
-		printf("TSS_EfiVariableDataReadBuffer: Error allocating %u bytes\n",
+		printf("TSS_EfiVariableData_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)(uefiVariableData->UnicodeNameLength) *2);
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
@@ -1077,11 +3118,11 @@ static uint32_t TSS_EfiVariableDataReadBuffer(TSST_EFIData *efiData,
     /* allocate the VariableData array */
     if (rc == 0) {
 	if (uefiVariableData->VariableDataLength > 0) {
-	    /* freed by TSS_EfiVariableDataFree */
+	    /* freed by TSS_EfiVariableData_Free */
 	    uefiVariableData->VariableData =
 		malloc(uefiVariableData->VariableDataLength);
 	    if (uefiVariableData->VariableData == NULL) {
-		printf("TSS_EfiVariableDataReadBuffer: Error allocating %u bytes\n",
+		printf("TSS_EfiVariableData_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)uefiVariableData->VariableDataLength);
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
@@ -1101,11 +3142,11 @@ static uint32_t TSS_EfiVariableDataReadBuffer(TSST_EFIData *efiData,
     return rc;
 }
 
-/* common UEFI_VARIABLE_DATA trace */
+/* common TSS_UEFI_VARIABLE_DATA trace */
 
-static void TSS_EfiVariableDataTrace(TSST_EFIData *efiData)
+static void TSS_EfiVariableData_Trace(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     guid_printf("Variable GUID", uefiVariableData->VariableName);
     wchar_printf("Variable: ", uefiVariableData->UnicodeName, uefiVariableData->UnicodeNameLength);
     printf("  VariableDataLength: %" PRIu64 "\n", uefiVariableData->VariableDataLength);
@@ -1114,39 +3155,40 @@ static void TSS_EfiVariableDataTrace(TSST_EFIData *efiData)
 
 /* EV_EFI_VARIABLE_DRIVER_CONFIG */
 
-static void TSS_EfiVariableDriverConfigInit(TSST_EFIData *efiData)
+static void TSS_EfiVariableDriverConfig_Init(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
-    TSS_EfiVariableDataInit(efiData);
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_EfiVariableData_Init(efiData);
     uefiVariableData->variableDriverConfig.signatureListCount = 0;
     uefiVariableData->variableDriverConfig.signatureList = NULL;
     return;
 }
 
-static void TSS_EfiVariableDriverConfigFree(TSST_EFIData *efiData)
+static void TSS_EfiVariableDriverConfig_Free(TSST_EFIData *efiData)
 {
     uint32_t count;
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     for (count = 0 ; count < uefiVariableData->variableDriverConfig.signatureListCount ; count++) {
-	TSS_EfiSignatureListFree(uefiVariableData->variableDriverConfig.signatureList + count);
+	TSS_EfiSignatureList_Free(uefiVariableData->variableDriverConfig.signatureList + count);
     }
     free(uefiVariableData->variableDriverConfig.signatureList);
-    TSS_EfiVariableDataFree(efiData);
+    TSS_EfiVariableData_Free(efiData);
     return;
 }
 
-static uint32_t TSS_EfiVariableDriverConfigReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiVariableDriverConfig_ReadBuffer(TSST_EFIData *efiData,
 						      uint8_t *event, uint32_t eventSize,
 						      uint32_t pcrIndex)
 {
     uint32_t rc = 0;
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
-    size_t index; 
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    size_t index;
+    int enabled;	/* boolean */
     pcrIndex = pcrIndex;
 
-    /* common code for UEFI_VARIABLE_DATA */
+    /* common code for TSS_UEFI_VARIABLE_DATA */
     if (rc == 0) {
-	rc = TSS_EfiVariableDataReadBuffer(efiData, &event, &eventSize);
+	rc = TSS_EfiVariableData_ReadBuffer(efiData, &event, &eventSize);
     }
     /* map from UnicodeName to structure tag */
     if (rc == 0) {
@@ -1158,99 +3200,112 @@ static uint32_t TSS_EfiVariableDriverConfigReadBuffer(TSST_EFIData *efiData,
     /*
       Specific code for EV_EFI_VARIABLE_DRIVER_CONFIG
     */
-    /* UnicodeName = SecureBoot */
+    /* VariableDataLength 0 is treated as though its contents were zero.  Even though this
+       does not meet the UEFI spec, some platforms do this.  */
     if (rc == 0) {
-	if (uefiVariableData->variableDataTag == VAR_SECUREBOOT) {
-	    /* VariableDataLength 0 is treated as though its contents were zero.  Even though this
-	       does not meet the UEFI spec, some platforms do this.  */
-	    if ((uefiVariableData->VariableDataLength == 0) ||
-		((uefiVariableData->VariableDataLength == 1) &&
-		 (uefiVariableData->VariableData[0] == 0))) {
-		uefiVariableData->variableDriverConfig.secureBootEnabled = 0; /* false */
-	    }
-	    else {
-		uefiVariableData->variableDriverConfig.secureBootEnabled = 1; /* true */
-	    }
+	if ((uefiVariableData->VariableDataLength == 0) ||
+	    ((uefiVariableData->VariableDataLength == 1) &&
+	     (uefiVariableData->VariableData[0] == 0))) {
+	    enabled = 0;	/* false */
+	}
+	else {
+	    enabled = 1;
 	}
     }
     if (rc == 0) {
-	/* unmarshal EFI_SIGNATURE_LIST's */
-	if ((uefiVariableData->variableDataTag == VAR_PK)  ||
-	    (uefiVariableData->variableDataTag == VAR_KEK) ||
-	    (uefiVariableData->variableDataTag == VAR_DB)  ||
-	    (uefiVariableData->variableDataTag == VAR_DBR) ||
-	    (uefiVariableData->variableDataTag == VAR_DBT) ||
-	    (uefiVariableData->variableDataTag == VAR_DBX) 
-	    ) {
-	    rc = TSS_EfiSignatureAllListsReadBuffer
+	switch (uefiVariableData->variableDataTag) {
+	  case TSS_VAR_SECUREBOOT:
+	  case TSS_VAR_AUDITMODE:
+	  case TSS_VAR_DEPLOYEDMODE:
+	  case TSS_VAR_SETUPMODE:
+	    /* intentional fall through */
+	    uefiVariableData->variableDriverConfig.enabled = enabled;
+	    break;
+	/* unmarshal TSS_EFI_SIGNATURE_LIST's */
+	  case TSS_VAR_PK:
+	  case TSS_VAR_KEK:
+	  case TSS_VAR_DB:
+	  case TSS_VAR_DBR:
+	  case TSS_VAR_DBT:
+	  case TSS_VAR_DBX:
+	  case TSS_VAR_MOKLIST:
+	  case TSS_VAR_MOKLISTX:
+	    /* intentional fall through */
+	    rc = TSS_EfiSignatureAllLists_ReadBuffer
 		 (&uefiVariableData->variableDriverConfig.signatureList,
 		  &uefiVariableData->variableDriverConfig.signatureListCount,
 		  uefiVariableData->VariableData,
 		  uefiVariableData->VariableDataLength);
 	    /* trace the GUID and Var as errors */
 	    if (rc != 0) {
-		printf("TSS_EfiVariableDriverConfigReadBuffer: Error with tag %u\n",
+		printf("TSS_EfiVariableDriverConfig_ReadBuffer: "
+		       "Error TSS_UEFI_VARIABLE_DATA structure, tag %u\n",
 		       uefiVariableData->variableDataTag);
-		TSS_EfiVariableDataTrace(efiData);
+		TSS_EfiVariableData_Trace(efiData);
 	    }
+	    break;
+	  default:
+	    /* FIXME unknown Variable Name strings */
+	    ;
 	}
     }
     return rc;
 }
 
-/* TSS_EfiSignatureAllListsReadBuffer() reads a VariableData containing zero or more
+/* TSS_EfiSignatureAllLists_ReadBuffer() reads a VariableData containing zero or more
    signature lists.
 */
 
-static uint32_t TSS_EfiSignatureAllListsReadBuffer(EFI_SIGNATURE_LIST **signatureList,
-						   uint32_t *signatureListCount,
-						   uint8_t *VariableData, uint32_t VariableDataLength)
+static uint32_t TSS_EfiSignatureAllLists_ReadBuffer(TSS_EFI_SIGNATURE_LIST **signatureList,
+						    uint32_t *signatureListCount,
+						    uint8_t *VariableData,
+						    uint32_t VariableDataLength)
 {
     uint32_t rc = 0;
 
     /* parse all the VariableData */
     while ((rc == 0) && (VariableDataLength > 0)) {
-	/* malloc an additional *EFI_SIGNATURE_LIST */
+	/* malloc an additional *TSS_EFI_SIGNATURE_LIST */
 	if (rc == 0) {
-	    void *tmpptr;
+	    void *tmpptr;			/* for realloc */
 
-	    (*signatureListCount)++;
-	    /* freed by TSS_EfiVariableDataFree */
+	    /* freed by TSS_EfiVariableData_Free */
 	    tmpptr = realloc(*signatureList,
-			     sizeof(EFI_SIGNATURE_LIST) * *signatureListCount);
+			     sizeof(TSS_EFI_SIGNATURE_LIST) * (*signatureListCount+1));
 	    if (tmpptr != NULL) {
 		*signatureList = tmpptr;
+		(*signatureListCount)++;
 	    }
 	    else {
-		printf("TSS_EfiSignatureAllListsReadBuffer: Error allocating %u bytes\n",
-		       (unsigned int)sizeof(EFI_SIGNATURE_LIST) * *signatureListCount);
+		printf("TSS_EfiSignatureAllLists_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)sizeof(TSS_EFI_SIGNATURE_LIST) * *signatureListCount);
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
 	}
-	/* unmarshal this EFI_SIGNATURE_LIST */
+	/* unmarshal this TSS_EFI_SIGNATURE_LIST */
 	if (rc == 0) {
-	    EFI_SIGNATURE_LIST *nextSignatureList = (*signatureList) + *signatureListCount -1;
-	    TSS_EfiSignatureListInit(nextSignatureList);	/* for safe free */
-	    rc = TSS_EfiSignatureListReadBuffer(nextSignatureList,
+	    TSS_EFI_SIGNATURE_LIST *nextSignatureList = (*signatureList) + *signatureListCount -1;
+	    TSS_EfiSignatureList_Init(nextSignatureList);	/* for safe free */
+	    rc = TSS_EfiSignatureList_ReadBuffer(nextSignatureList,
 						&VariableData, &VariableDataLength);
 	}
     }
     return rc;
 }
 
-static void     TSS_EfiSignatureListInit(EFI_SIGNATURE_LIST *signatureList)
+static void     TSS_EfiSignatureList_Init(TSS_EFI_SIGNATURE_LIST *signatureList)
 {
     signatureList->SignatureHeader = NULL;
     signatureList->Signatures = NULL;
     signatureList->signaturesCount = 0;
 }
 
-static void     TSS_EfiSignatureListFree(EFI_SIGNATURE_LIST *signatureList)
+static void     TSS_EfiSignatureList_Free(TSS_EFI_SIGNATURE_LIST *signatureList)
 {
     uint32_t count;
 
     free(signatureList->SignatureHeader);
-    /* free all the EFI_SIGNATURE_DATA */
+    /* free all the TSS_EFI_SIGNATURE_DATA */
     for (count = 0 ; count < signatureList->signaturesCount ; count++) {
 	free((signatureList->Signatures + count)->SignatureData);
     }
@@ -1258,15 +3313,14 @@ static void     TSS_EfiSignatureListFree(EFI_SIGNATURE_LIST *signatureList)
     return;
 }
 
-/* TSS_EfiSignatureListReadBuffer() reads one EFI_SIGNATURE_LIST from the event VariableData.  It
-   moves the pointers since there can be more than one EFI_SIGNATURE_LIST event.
+/* TSS_EfiSignatureList_ReadBuffer() reads one TSS_EFI_SIGNATURE_LIST from the event VariableData.
+   It moves the pointers since there can be more than one TSS_EFI_SIGNATURE_LIST event.
  */
 
-static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList,
-					       uint8_t **event, uint32_t *eventSize)
+static uint32_t TSS_EfiSignatureList_ReadBuffer(TSS_EFI_SIGNATURE_LIST *signatureList,
+						uint8_t **event, uint32_t *eventSize)
 {
     uint32_t rc = 0;
-    void *tmpptr;			/* for realloc */
     uint32_t signatureDataLength;
     uint32_t tmpSignatureListSize;	/* because cannot change SignatureSize */
 
@@ -1291,8 +3345,8 @@ static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList
 		signatureList->SignatureSize - sizeof(signatureList->Signatures->SignatureOwner);
 	}
 	else {
-	    /* malformed EFI_SIGNATURE_LIST, needs at least GUID SignatureOwner */
-	    printf("TSS_EfiSignatureListReadBuffer: Error in SignatureSize %u\n",
+	    /* malformed TSS_EFI_SIGNATURE_LIST, needs at least GUID SignatureOwner */
+	    printf("TSS_EfiSignatureList_ReadBuffer: Error in SignatureSize %u\n",
 		   (unsigned int)(signatureList->SignatureSize));
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
@@ -1300,13 +3354,13 @@ static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList
     /* sanity check that the SignatureListSize is consistent with the SignatureSize.  Each signature
        must be the same length. */
     if (rc == 0) {
-	/*  array of EFI_SIGNATURE_DATA is SignatureListSize minus header */
+	/*  array of TSS_EFI_SIGNATURE_DATA is SignatureListSize minus header */
 	tmpSignatureListSize = signatureList->SignatureListSize -
 			       sizeof(signatureList->SignatureType)
 			       - (sizeof(uint32_t) * 3);
 	if ((tmpSignatureListSize % signatureList->SignatureSize) != 0) {
-	    /* malformed EFI_SIGNATURE_LIST */
-	    printf("TSS_EfiSignatureListReadBuffer: Error in SignatureSize %u\n",
+	    /* malformed TSS_EFI_SIGNATURE_LIST */
+	    printf("TSS_EfiSignatureList_ReadBuffer: Error in SignatureSize %u\n",
 		   (unsigned int)(signatureList->SignatureSize));
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
@@ -1314,28 +3368,30 @@ static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList
 
     /* FIXME handle SignatureHeaderSize, if not zero, this breaks, based on SignatureType GUID */
 
-    /* consume this EFI_SIGNATURE_LIST */
+    /* consume this TSS_EFI_SIGNATURE_LIST */
     for ( ; (rc == 0) && (tmpSignatureListSize > 0) ;
 	  tmpSignatureListSize-= signatureList->SignatureSize) {
 
-	EFI_SIGNATURE_DATA *nextSignatureData;
-	/* malloc an additional EFI_SIGNATURE_DATA */
+	TSS_EFI_SIGNATURE_DATA *nextSignatureData;
+	/* malloc an additional TSS_EFI_SIGNATURE_DATA */
 	if (rc == 0) {
+	    void *tmpptr;			/* for realloc */
 
-	    /* track the number of EFI_SIGNATURE_DATA in the EFI_SIGNATURE_LIST */
-	    (signatureList->signaturesCount)++;
+	    /* track the number of TSS_EFI_SIGNATURE_DATA in the TSS_EFI_SIGNATURE_LIST */
 	    /* expand the array */
-	    /* freed by TSS_EfiSignatureListFree */
+	    /* freed by TSS_EfiSignatureList_Free */
 	    tmpptr = realloc(signatureList->Signatures,
-			     sizeof(EFI_SIGNATURE_DATA) * signatureList->signaturesCount);
+			     sizeof(TSS_EFI_SIGNATURE_DATA) * (signatureList->signaturesCount+1));
 	    if (tmpptr != NULL) {
 		signatureList->Signatures = tmpptr;
-		/* point to next EFI_SIGNATURE_DATA in array */
+		(signatureList->signaturesCount)++;
+		/* point to next TSS_EFI_SIGNATURE_DATA in array */
 		nextSignatureData = signatureList->Signatures + signatureList->signaturesCount-1;
 	    }
 	    else {
-		printf("TSS_EfiSignatureListReadBuffer: Error allocating %u bytes\n",
-		       (unsigned int)(sizeof(EFI_SIGNATURE_DATA) * signatureList->signaturesCount));
+		printf("TSS_EfiSignatureList_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)(sizeof(TSS_EFI_SIGNATURE_DATA) *
+				      signatureList->signaturesCount));
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
 	}
@@ -1345,16 +3401,17 @@ static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList
 				      sizeof(signatureList->SignatureType),
 				      event, eventSize);
 	}
-	/* malloc an EFI_SIGNATURE_DATA SignatureData */
+	/* malloc an TSS_EFI_SIGNATURE_DATA SignatureData */
 	if (rc == 0) {
+	    void *tmpptr;			/* for realloc */
 	    /* SignatureData is SignatureSize less the GUID SignatureOwner */
-	    /* freed by TSS_EfiSignatureListFree */
+	    /* freed by TSS_EfiSignatureList_Free */
 	    tmpptr = malloc(signatureDataLength);
 	    if (tmpptr != NULL) {
 		nextSignatureData->SignatureData = tmpptr;
 	    }
 	    else {
-		printf("TSS_EfiSignatureListReadBuffer: Error allocating %u bytes\n",
+		printf("TSS_EfiSignatureList_ReadBuffer: Error allocating %u bytes\n",
 		       signatureDataLength);
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
@@ -1369,18 +3426,18 @@ static uint32_t TSS_EfiSignatureListReadBuffer(EFI_SIGNATURE_LIST *signatureList
     return rc;
 }
 
-/* TSS_EfiSignatureListTrace() traces one EFI_SIGNATURE_LIST.
+/* TSS_EfiSignatureList_Trace() traces one TSS_EFI_SIGNATURE_LIST.
 
-   There can be more than one EFI_SIGNATURE_LIST in a UEFI_VARIABLE_DATA
+   There can be more than one TSS_EFI_SIGNATURE_LIST in a TSS_UEFI_VARIABLE_DATA
 */
 
-static void     TSS_EfiSignatureListTrace(EFI_SIGNATURE_LIST *signatureList)
+static void     TSS_EfiSignatureList_Trace(TSS_EFI_SIGNATURE_LIST *signatureList)
 {
     int rc;
     size_t guidIndex;
     uint32_t count;
     X509 *x509 = NULL;
-    unsigned char *tmpData = NULL; 
+    unsigned char *tmpData = NULL;
 
     guid_printf("SignatureType GUID", signatureList->SignatureType);
     printf("  SignatureListSize %u\n", signatureList->SignatureListSize);
@@ -1428,101 +3485,100 @@ static void     TSS_EfiSignatureListTrace(EFI_SIGNATURE_LIST *signatureList)
 
 /* EV_EFI_VARIABLE_DRIVER_CONFIG */
 
-static void TSS_EfiVariableDriverConfigTrace(TSST_EFIData *efiData)
+static void TSS_EfiVariableDriverConfig_Trace(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    uint32_t count;
 
-    /* common UEFI_VARIABLE_DATA trace */
-    TSS_EfiVariableDataTrace(efiData);
+    /* common TSS_UEFI_VARIABLE_DATA trace */
+    TSS_EfiVariableData_Trace(efiData);
     /* EV_EFI_VARIABLE_DRIVER_CONFIG trace */
     /* if the variable was SecureBoot */
-    if (uefiVariableData->variableDataTag == VAR_SECUREBOOT) {
-	if (uefiVariableData->variableDriverConfig.secureBootEnabled) {
-	    printf("  Enabled: yes\n");
-	}
-	else {
-	    printf("  Enabled: no\n");
-	}
-    }
-    /* if the variable was PK, KEK, db, dbr, dbt, dbx */
-    else if ((uefiVariableData->variableDataTag == VAR_PK)  ||
-	     (uefiVariableData->variableDataTag == VAR_KEK) ||
-	     (uefiVariableData->variableDataTag == VAR_DB)  ||
-	     (uefiVariableData->variableDataTag == VAR_DBR) ||
-	     (uefiVariableData->variableDataTag == VAR_DBT) ||
-	     (uefiVariableData->variableDataTag == VAR_DBX)
-	     ) {
-	uint32_t count;
+    switch (uefiVariableData->variableDataTag) {
+      case TSS_VAR_SECUREBOOT:
+      case TSS_VAR_AUDITMODE:
+      case TSS_VAR_DEPLOYEDMODE:
+      case TSS_VAR_SETUPMODE:
+	printf("  Enabled: %s\n",
+	       uefiVariableData->variableDriverConfig.enabled ? "yes" : "no");
+	break;
+      case TSS_VAR_PK:
+      case TSS_VAR_KEK:
+      case TSS_VAR_DB:
+      case TSS_VAR_DBR:
+      case TSS_VAR_DBT:
+      case TSS_VAR_DBX:
+      case TSS_VAR_MOKLIST:
+      case TSS_VAR_MOKLISTX:
+	/* intentional fall through */
 	printf("  signatureListCount: %u\n",
 	       uefiVariableData->variableDriverConfig.signatureListCount);
 	for (count = 0 ; count < uefiVariableData->variableDriverConfig.signatureListCount ;
 	     count++) {
-	    TSS_EfiSignatureListTrace(uefiVariableData->variableDriverConfig.signatureList + count);
+	    TSS_EfiSignatureList_Trace(uefiVariableData->variableDriverConfig.signatureList + count);
 	}
-    }
-    /* for currently unsupported Variables, just trace the variable */
-    else {
+	break;
+      default:
 	TSS_PrintAll("    Variable unsupported:",
 		     uefiVariableData->VariableData,
 		     uefiVariableData->VariableDataLength);
+	break;
     }
     return;
 }
 
-static uint32_t TSS_EfiVariableDriverConfigToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiVariableDriverConfig_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     uefiVariableData = uefiVariableData;
 
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
     if (rc == 0) {
     }
     return rc;
 }
 
-/* UEFI_VARIABLE_DATA handler for event EV_EFI_VARIABLE_BOOT
+/* TSS_UEFI_VARIABLE_DATA handler for event EV_EFI_VARIABLE_BOOT
 
    The event can either be the BootOrder (uint16_t) or a boot variable description.
- */
+*/
 
-static void TSS_EfiVariableBootInit(TSST_EFIData *efiData)
+static void TSS_EfiVariableBoot_Init(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
-    TSS_EfiVariableDataInit(efiData);
-    uefiVariableData->variableBoot.bootOrderListCount = 0;
-    uefiVariableData->variableBoot.bootOrderList = NULL;
-    uefiVariableData->variableBoot.bootDescription = NULL;
-    uefiVariableData->variableBoot.bootPath = NULL;
+    TSS_EfiVariableData_Init(efiData);
+    /* the union members are initialized when the tag is set */
     return;
 }
 
-static void TSS_EfiVariableBootFree(TSST_EFIData *efiData)
+static void TSS_EfiVariableBoot_Free(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
-    free(uefiVariableData->variableBoot.bootOrderList);
-    free(uefiVariableData->variableBoot.bootDescription);
-    free(uefiVariableData->variableBoot.bootPath);
-    TSS_EfiVariableDataFree(efiData);
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    if (uefiVariableData->variableDataTag == TSS_VAR_BOOTORDER) {
+	TSS_EfiVariableBootOrder_Free(&uefiVariableData->variableBootOrder);
+    }
+    else if (uefiVariableData->variableDataTag == TSS_VAR_BOOTPATH) {
+	TSS_EfiVariableBootPath_Free(&uefiVariableData->variableBoot);
+    }
+    TSS_EfiVariableData_Free(efiData);
     return;
 }
 
-static uint32_t TSS_EfiVariableBootReadBuffer(TSST_EFIData *efiData,
-					      uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
+/* TSST_EFIData holds TSS_UEFI_VARIABLE_DATA.
+   TSS_UEFI_VARIABLE_DATA holds standard header, a tag, and a union.
+   The union here is either TSS_VARIABLE_BOOT_ORDER or TSS_VARIABLE_BOOT.
+*/
+
+static uint32_t TSS_EfiVariableBoot_ReadBuffer(TSST_EFIData *efiData,
+					       uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
 {
     uint32_t rc = 0;
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     size_t index; 
     pcrIndex = pcrIndex;
 
-    /* common code for UEFI_VARIABLE_DATA */
+    /* common code for TSS_UEFI_VARIABLE_DATA */
     if (rc == 0) {
-	rc = TSS_EfiVariableDataReadBuffer(efiData, &event, &eventSize);
+	rc = TSS_EfiVariableData_ReadBuffer(efiData, &event, &eventSize);
     }
     if (rc == 0) {
 	TSS_EFI_GetNameIndex(&index,
@@ -1534,78 +3590,122 @@ static uint32_t TSS_EfiVariableBootReadBuffer(TSST_EFIData *efiData,
     /* is the UnicodeName string BootOrder */
     if (rc == 0) {
 	/* unmarshal BootOrder - List of uint16_t */
-	if (uefiVariableData->variableDataTag == VAR_BOOTORDER) {
-	    rc = TSS_EfiBootOrderListReadBuffer(&uefiVariableData->variableBoot.bootOrderList,
-						&uefiVariableData->variableBoot.bootOrderListCount,
-						uefiVariableData->VariableData,
-						uefiVariableData->VariableDataLength);
+	if (uefiVariableData->variableDataTag == TSS_VAR_BOOTORDER) {
+	    TSS_VARIABLE_BOOT_ORDER *variableBootOrder = &uefiVariableData->variableBootOrder;
+	    TSS_EfiVariableBootOrder_Init(variableBootOrder);
+	    rc = TSS_EfiVariableBootOrder_ReadBuffer(variableBootOrder,
+						     uefiVariableData->VariableData,
+						     uefiVariableData->VariableDataLength);
 	}
 	/* unmarshal boot path */
 	else {
-	    rc = TSS_EfiVariableBootPathReadBuffer(&uefiVariableData->variableBoot.isBootEnabled,
-						   &uefiVariableData->variableBoot.bootDescription,
-						   &uefiVariableData->variableBoot.bootPath,
-						   uefiVariableData->VariableData,
-						   uefiVariableData->VariableDataLength);
+	    TSS_VARIABLE_BOOT *variableBoot = &uefiVariableData->variableBoot;
+	    /* default of not BootOrder, for the free */
+	    uefiVariableData->variableDataTag = TSS_VAR_BOOTPATH;
+	    TSS_EfiVariableBootPath_Init(variableBoot);		/* for the free */
+	    rc = TSS_EfiVariableBootPath_ReadBuffer(variableBoot,
+						    uefiVariableData->VariableData,
+						    uefiVariableData->VariableDataLength);
 	}
 	/* trace the GUID and Var as errors */
 	if (rc != 0) {
-	    printf("TSS_EfiVariableBootReadBuffer: Error with tag %u\n",
+	    printf("TSS_EfiVariableBoot_ReadBuffer: "
+		   "Error in TSS_UEFI_VARIABLE_DATA structure tag %u\n",
 		   uefiVariableData->variableDataTag);
-	    TSS_EfiVariableDataTrace(efiData);
+	    TSS_EfiVariableData_Trace(efiData);
 	}
     }
     return rc;
 }
 
-/* TSS_EfiBootOrderListReadBuffer() unmarshals the BootOrder variable data into an array of uint16_t
+static void     TSS_EfiVariableBootOrder_Init(TSS_VARIABLE_BOOT_ORDER *variableBootOrder)
+{
+    variableBootOrder->bootOrderListCount = 0;
+    variableBootOrder->bootOrderList = NULL;
+    return;
+}
+
+static void     TSS_EfiVariableBootOrder_Free(TSS_VARIABLE_BOOT_ORDER *variableBootOrder)
+{
+    free(variableBootOrder->bootOrderList);
+    return;
+}
+
+/* TSS_EfiVariableBootOrder_ReadBuffer() unmarshals the BootOrder variable data into an array of uint16_t
 */
 
-static uint32_t TSS_EfiBootOrderListReadBuffer(uint16_t **bootOrderList,
-					       uint32_t *bootOrderListCount,
-					       uint8_t *VariableData, uint32_t VariableDataLength)
+static uint32_t TSS_EfiVariableBootOrder_ReadBuffer(TSS_VARIABLE_BOOT_ORDER *variableBootOrder,
+						    uint8_t *VariableData, uint32_t VariableDataLength)
 {
     uint32_t rc = 0;
     uint32_t count;
 
     if (rc == 0) {
 	if ((VariableDataLength % 2) == 0) {
-	    *bootOrderListCount = VariableDataLength / 2;
+	    variableBootOrder->bootOrderListCount = VariableDataLength / 2;
 	}
 	else {
-	    printf("TSS_EfiBootOrderListReadBuffer: Error in VariableDataLength %u\n",
+	    printf("TSS_EfiVariableBootOrder_ReadBuffer: Error in VariableDataLength %u\n",
 		   VariableDataLength);
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     /* malloc the array of boot order uint16_t */
     if (rc == 0) {
-        /* freed by TSS_EfiVariableDataInit */
-	*bootOrderList = malloc(*bootOrderListCount * sizeof(uint16_t));
-	if (*bootOrderList == NULL) {
-	    printf("TSS_EfiBootOrderListReadBuffer: Error allocating %u bytes\n",
-		   (unsigned int)(*bootOrderListCount * sizeof(uint16_t)));
+        /* freed by TSS_EfiVariableData_Init */
+	variableBootOrder->bootOrderList =
+	    malloc(variableBootOrder->bootOrderListCount * sizeof(uint16_t));
+
+	if (variableBootOrder->bootOrderList == NULL) {
+	    printf("TSS_EfiVariableBootOrder_ReadBuffer: Error allocating %u bytes\n",
+		   (unsigned int)(variableBootOrder->bootOrderListCount * sizeof(uint16_t)));
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
     /* iterate and build the bootOrderList array of uint16_t */
-    for (count = 0 ; (rc == 0) && (count < *bootOrderListCount) ; count++) {
-	uint16_t *nextBootOrderList = *bootOrderList + count;
+    for (count = 0 ; (rc == 0) && (count < variableBootOrder->bootOrderListCount) ; count++) {
+	uint16_t *nextBootOrderList = variableBootOrder->bootOrderList + count;
 	rc = TSS_UINT16LE_Unmarshal(nextBootOrderList, 
 				    &VariableData, &VariableDataLength);
     }
     return rc;
 }
 
-static uint32_t TSS_EfiVariableBootPathReadBuffer(uint32_t *isBootEnabled,
-						  char **bootDescription,
-						  char **bootPath,
-						  void *VariableData, uint64_t VariableDataLength)
+static void     TSS_EfiVariableBootPath_Init(TSS_VARIABLE_BOOT *variableBoot)
+{
+    variableBoot->Description = NULL;
+    variableBoot->DescriptionUcs2 = NULL;
+    variableBoot->bootPath = NULL;
+    variableBoot->UefiDevicePathCount = 0;
+    variableBoot->UefiDevicePath = NULL;
+    return;
+}
+
+static void     TSS_EfiVariableBootPath_Free(TSS_VARIABLE_BOOT *variableBoot)
+{
+    uint32_t count;
+
+    free(variableBoot->Description);
+    free(variableBoot->DescriptionUcs2);
+    free(variableBoot->bootPath);
+    for (count = 0 ; count < variableBoot->UefiDevicePathCount ; count++) {
+	TSS_UEFI_DEVICE_PATH *uefiDevicePath = variableBoot->UefiDevicePath + count;
+	TSS_UefiDevicePath_Free(uefiDevicePath);
+    }
+    free(variableBoot->UefiDevicePath);
+    return;
+}
+
+static uint32_t TSS_EfiVariableBootPath_ReadBuffer(TSS_VARIABLE_BOOT *variableBoot,
+						   void *VariableData, uint64_t VariableDataLength)
 {
     uint32_t rc = 0;
-#ifdef HAVE_EFIBOOT_H
+    uint8_t *event = VariableData;
+    uint32_t eventSize = VariableDataLength;
+#if HAVE_EFIBOOT_H
+    /* this parser uses the efivar library */
     int isValid;
-    efi_load_option *loadOption = VariableData;
+    efi_load_option *loadOption = VariableData;	/* FIXME endian issue */
     const char *description = NULL;
     efidp efidp;
     uint16_t pathlen;
@@ -1614,13 +3714,9 @@ static uint32_t TSS_EfiVariableBootPathReadBuffer(uint32_t *isBootEnabled,
     if (rc == 0) {
 	/* This fails on Supermicro https://github.com/rhboot/efivar/issues/163 */
 	isValid = efi_loadopt_is_valid(loadOption, VariableDataLength);
-	if (isValid) {
-	    /* uint32_t efi_loadopt_attrs(efi_load_option *opt) */
-	    *isBootEnabled = efi_loadopt_attrs(loadOption) & 1;
-	}
-	else {
+	if (!isValid) {
 	    /* invalid load option */
-	    printf("TSS_EfiVariableBootPathReadBuffer: Error in efi_loadopt_is_valid\n");
+	    printf("TSS_EfiVariableBootPath_ReadBuffer: Error in efi_loadopt_is_valid\n");
 	    rc = TSS_RC_BAD_PROPERTY;
 	}
     }
@@ -1629,19 +3725,19 @@ static uint32_t TSS_EfiVariableBootPathReadBuffer(uint32_t *isBootEnabled,
     if (rc == 0) {
 	description = (const char *)efi_loadopt_desc(loadOption, VariableDataLength);
 	if (description == NULL) {
-	    printf("TSS_EfiVariableBootPathReadBuffer: Error in efi_loadopt_desc\n");
+	    printf("TSS_EfiVariableBootPath_ReadBuffer: Error in efi_loadopt_desc\n");
 	    rc = TSS_RC_BAD_PROPERTY;
 	}
     }
     if (rc == 0) {
 	size_t descriptionLength = strlen(description);
-	/* freed by TSS_EfiVariableDataFree */
-	*bootDescription = malloc(descriptionLength +1);
-	if (*bootDescription != NULL) {
-	    strcpy(*bootDescription, (char *)description);
+	/* freed by TSS_EfiVariableData_Free */
+	variableBoot->Description = malloc(descriptionLength +1);
+	if (variableBoot->Description != NULL) {
+	    strcpy(variableBoot->Description, (char *)description);
 	}
 	else {
-	    printf("TSS_EfiVariableBootPathReadBuffer: Error allocating %u bytes\n",
+	    printf("TSS_EfiVariableBootPath_ReadBuffer: Error allocating %u bytes\n",
 		   (unsigned int)descriptionLength +1);
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
@@ -1653,55 +3749,72 @@ static uint32_t TSS_EfiVariableBootPathReadBuffer(uint32_t *isBootEnabled,
 	pathlen = efi_loadopt_pathlen(loadOption, VariableDataLength);
     }
     if (rc == 0) {
-	rc = TSS_EfiFormatDevicePath(bootPath,
+	rc = TSS_EfiFormatDevicePath(&variableBoot->bootPath,	/* must be freed */
 				     (uint8_t *)efidp,
 				     pathlen);
     }
-#else
-    isBootEnabled = isBootEnabled;
-    bootDescription = bootDescription;
-    bootPath = bootPath;
-    VariableData = VariableData;
-    VariableDataLength = VariableDataLength;
 #endif	/* HAVE_EFIBOOT_H */
+    /* even if the efivar calls fail, continue with the local parsing */
+    rc = 0;
+    /* this parser is in-line, into the TSS_VARIABLE_BOOT structure */
+    if (rc == 0) {
+	rc = TSS_UINT32LE_Unmarshal(&variableBoot->Attributes,
+				    &event, &eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16LE_Unmarshal(&variableBoot->FilePathListLength,
+				    &event, &eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UCS2_Unmarshal(&variableBoot->DescriptionUcs2,	/* must be freed */
+				&variableBoot->DescriptionUcs2Length,
+				&event, &eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UefiDevicePathList_ReadBuffer(&variableBoot->UefiDevicePath,
+					       &variableBoot->UefiDevicePathCount,
+					       event, variableBoot->FilePathListLength);
+    }
     return rc;
 }
 
-static void TSS_EfiVariableBootTrace(TSST_EFIData *efiData)
+static void TSS_EfiVariableBoot_Trace(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     uint32_t count;
 
-    /* common UEFI_VARIABLE_DATA trace */
-    TSS_EfiVariableDataTrace(efiData);
+    /* common TSS_UEFI_VARIABLE_DATA trace */
+    TSS_EfiVariableData_Trace(efiData);
     /* is the UnicodeName string BootOrder */
-    if (uefiVariableData->variableDataTag == VAR_BOOTORDER) {
+    if (uefiVariableData->variableDataTag == TSS_VAR_BOOTORDER) {
+	TSS_VARIABLE_BOOT_ORDER *variableBootOrder = &uefiVariableData->variableBootOrder;
 	printf("  Boot Order: ");
-	for (count = 0 ; count < uefiVariableData->variableBoot.bootOrderListCount ; count++) {
-            printf("Boot%04x ", *(uefiVariableData->variableBoot.bootOrderList + count));
+	for (count = 0 ; count < variableBootOrder->bootOrderListCount ; count++) {
+            printf("Boot%04x ", *(variableBootOrder->bootOrderList + count));
 	}
 	printf("\n");
     }
-    else {
-	printf("  Enabled: %s\n", uefiVariableData->variableBoot.isBootEnabled ? "Yes" : "No");
-	printf("  Description: %s\n", uefiVariableData->variableBoot.bootDescription);
-	printf("  Path: %s\n", uefiVariableData->variableBoot.bootPath);
+    else if (uefiVariableData->variableDataTag == TSS_VAR_BOOTPATH) {
+	TSS_VARIABLE_BOOT *variableBoot = &uefiVariableData->variableBoot;
+	printf("  Attributes: %08x\n", variableBoot->Attributes);
+	printf("  FilePathListLength: %hu\n", variableBoot->FilePathListLength);
+	printf("  Description: %s\n", variableBoot->Description);
+	wchar_printf("DescriptionUcs2: ", variableBoot->DescriptionUcs2,
+		     (uint64_t)(variableBoot->DescriptionUcs2Length));
+	printf("  Path: %s\n", variableBoot->bootPath);
+	for (count = 0 ; count < variableBoot->UefiDevicePathCount ; count++) {
+	    TSS_UefiDevicePath_Trace(variableBoot->UefiDevicePath + count);
+	}
     }
     return;
 }
 
-static uint32_t TSS_EfiVariableBootToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiVariableBoot_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     uefiVariableData = uefiVariableData;
 
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
     if (rc == 0) {
     }
     return rc;
@@ -1709,33 +3822,33 @@ static uint32_t TSS_EfiVariableBootToJson(TSST_EFIData *efiData)
 
 /* EV_EFI_VARIABLE_AUTHORITY */
 
-static void     TSS_EfiVariableAuthorityInit(TSST_EFIData *efiData)
+static void     TSS_EfiVariableAuthority_Init(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
-    TSS_EfiVariableDataInit(efiData);
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_EfiVariableData_Init(efiData);
     uefiVariableData->authoritySignatureData.SignatureData = NULL;
     return;
 }
 
-static void     TSS_EfiVariableAuthorityFree(TSST_EFIData *efiData)
+static void     TSS_EfiVariableAuthority_Free(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     free(uefiVariableData->authoritySignatureData.SignatureData);
-    TSS_EfiVariableDataFree(efiData);
+    TSS_EfiVariableData_Free(efiData);
     return;
 }
 
-static uint32_t TSS_EfiVariableAuthorityReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiVariableAuthority_ReadBuffer(TSST_EFIData *efiData,
 						   uint8_t *event, uint32_t eventSize,
 						   uint32_t pcrIndex)
 {
     uint32_t rc = 0;
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     size_t index; 
     pcrIndex = pcrIndex;
 
     if (rc == 0) {
-	rc = TSS_EfiVariableDataReadBuffer(efiData,
+	rc = TSS_EfiVariableData_ReadBuffer(efiData,
 					   &event, &eventSize);
     }
     if (rc == 0) {
@@ -1752,7 +3865,7 @@ static uint32_t TSS_EfiVariableAuthorityReadBuffer(TSST_EFIData *efiData,
 	uint32_t tmpVarDataLength = uefiVariableData->VariableDataLength;
 
 	/* db has an owner, shim does not */
-	if (uefiVariableData->variableDataTag == VAR_DB) {
+	if (uefiVariableData->variableDataTag == TSS_VAR_DB) {
 	    /* unmarshal the signature owner */
 	    if (rc == 0) {
 		rc = TSS_Array_Unmarshalu(authoritySignatureData->SignatureOwner,
@@ -1761,9 +3874,9 @@ static uint32_t TSS_EfiVariableAuthorityReadBuffer(TSST_EFIData *efiData,
 	    }
 	}
 	/* intentional fall through for DB */
-	if ((uefiVariableData->variableDataTag == VAR_DB) ||
-	    (uefiVariableData->variableDataTag == VAR_SHIM) ||
-	    (uefiVariableData->variableDataTag == VAR_MOKLIST)) {
+	if ((uefiVariableData->variableDataTag == TSS_VAR_DB) ||
+	    (uefiVariableData->variableDataTag == TSS_VAR_SHIM) ||
+	    (uefiVariableData->variableDataTag == TSS_VAR_MOKLIST)) {
 
 	    /* assume the rest of the event is the certificate since there is no SignatureSize
 	       field */
@@ -1787,34 +3900,34 @@ static uint32_t TSS_EfiVariableAuthorityReadBuffer(TSST_EFIData *efiData,
 	    if (rc != 0) {
 		printf("TSS_EfiVariableAuthorityReadBuffer: Error with tag %u\n",
 		       uefiVariableData->variableDataTag);
-		TSS_EfiVariableDataTrace(efiData);
+		TSS_EfiVariableData_Trace(efiData);
 	    }
 	    /* FIXME sanity check for all consumed */
-	    /* tmpVarDataLength should be zero.  This is underspecified in PTP */
+	    /* tmpVarDataLength should be zero.  This is underspecified in PFP */
 	}
     }
     return rc;
 }
 
-static void TSS_EfiVariableAuthorityTrace(TSST_EFIData *efiData)
+static void TSS_EfiVariableAuthority_Trace(TSST_EFIData *efiData)
 {
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     TSS_AUTHORITY_SIGNATURE_DATA *authoritySignatureData =
 	&uefiVariableData->authoritySignatureData;
     X509 *x509 = NULL;
-    unsigned char *tmpData = NULL; 
+    unsigned char *tmpData = NULL;
 
-    /* common UEFI_VARIABLE_DATA trace */
-    TSS_EfiVariableDataTrace(efiData);
+    /* common TSS_UEFI_VARIABLE_DATA trace */
+    TSS_EfiVariableData_Trace(efiData);
     /* not part of UEFI structure */
     printf("  SignatureLength: %u\n", authoritySignatureData->SignatureLength);
     /* db has an owner, shim does not */
-    if (uefiVariableData->variableDataTag == VAR_DB) {
+    if (uefiVariableData->variableDataTag == TSS_VAR_DB) {
 	guid_printf("SignatureOwner GUID", authoritySignatureData->SignatureOwner);
     }
-    if ((uefiVariableData->variableDataTag == VAR_DB) ||
-	(uefiVariableData->variableDataTag == VAR_SHIM) ||
-	(uefiVariableData->variableDataTag == VAR_MOKLIST)) {
+    if ((uefiVariableData->variableDataTag == TSS_VAR_DB) ||
+	(uefiVariableData->variableDataTag == TSS_VAR_SHIM) ||
+	(uefiVariableData->variableDataTag == TSS_VAR_MOKLIST)) {
 
 	tmpData = authoritySignatureData->SignatureData;
 	x509 = d2i_X509(NULL,			/* freed by caller */
@@ -1832,10 +3945,10 @@ static void TSS_EfiVariableAuthorityTrace(TSST_EFIData *efiData)
     return;
 }
 
-static uint32_t TSS_EfiVariableAuthorityToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiVariableAuthority_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
-    UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     uefiVariableData = uefiVariableData ;
 
     if (rc == 0) {
@@ -1845,13 +3958,12 @@ static uint32_t TSS_EfiVariableAuthorityToJson(TSST_EFIData *efiData)
 
 /* EV_EFI_BOOT_SERVICES_APPLICATION, EV_EFI_BOOT_SERVICES_DRIVER handler
 
-   The event field MUST contain a UEFI_IMAGE_LOAD_EVENT structure.
+   The event field MUST contain a TSS_UEFI_IMAGE_LOAD_EVENT structure.
 */
 
-static void TSS_EfiBootServicesInit(TSST_EFIData *efiData)
+static void TSS_EfiBootServices_Init(TSST_EFIData *efiData)
 {
-    UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
-    printf("TSS_EfiBootServicesInit\n");
+    TSS_UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
     uefiImageLoadEvent->DevicePath = NULL;
     uefiImageLoadEvent->Path = NULL;
     uefiImageLoadEvent->UefiDevicePathCount = 0;
@@ -1859,31 +3971,27 @@ static void TSS_EfiBootServicesInit(TSST_EFIData *efiData)
     return;
 }
 
-static void TSS_EfiBootServicesFree(TSST_EFIData *efiData)
+static void TSS_EfiBootServices_Free(TSST_EFIData *efiData)
 {
     uint32_t count;
-    UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
-    printf("TSS_EfiBootServicesFree\n");
+    TSS_UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
     free(uefiImageLoadEvent->DevicePath);
     free(uefiImageLoadEvent->Path);
     for (count = 0 ; count < uefiImageLoadEvent->UefiDevicePathCount ; count++) {
-	UEFI_DEVICE_PATH *uefiDevicePath = uefiImageLoadEvent->UefiDevicePath + count;
-	TSS_UefiDevicePathFree(uefiDevicePath);
+	TSS_UEFI_DEVICE_PATH *uefiDevicePath = uefiImageLoadEvent->UefiDevicePath + count;
+	TSS_UefiDevicePath_Free(uefiDevicePath);
     }
     free(uefiImageLoadEvent->UefiDevicePath);
     return;
 }
 
-static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
-					      uint8_t *event, uint32_t eventSize,
-					      uint32_t pcrIndex)
+static uint32_t TSS_EfiBootServices_ReadBuffer(TSST_EFIData *efiData,
+					       uint8_t *event, uint32_t eventSize,
+					       uint32_t pcrIndex)
 {
     uint32_t rc = 0;
-    UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
-    uint32_t lengthOfDevicePath;
-    uint8_t *devicePath;
+    TSS_UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
     pcrIndex = pcrIndex;
-    printf("TSS_EfiBootServicesReadBuffer\n");
 
     if (rc == 0) {
 	rc = TSS_UINT64LE_Unmarshal(&uefiImageLoadEvent->ImageLocationInMemory,
@@ -1905,7 +4013,7 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
        uint32_t is safe. */
     if (rc == 0) {
 	if (uefiImageLoadEvent->LengthOfDevicePath > EFI_LENGTH_MAX) {
-	    printf("TSS_EfiBootServicesReadBuffer: LengthOfDevicePath %" PRIu64 " too large\n",
+	    printf("TSS_EfiBootServices_ReadBuffer: LengthOfDevicePath %" PRIu64 " too large\n",
 		   uefiImageLoadEvent->LengthOfDevicePath);
 	    rc = TSS_RC_MALLOC_SIZE;
 	}
@@ -1913,10 +4021,10 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
     /* allocate the DevicePath array */
     if (rc == 0) {
 	if (uefiImageLoadEvent->LengthOfDevicePath > 0) {
-	    /* freed by TSS_EfiBootServicesFree */
+	    /* freed by TSS_EfiBootServices_Free */
 	    uefiImageLoadEvent->DevicePath = malloc(uefiImageLoadEvent->LengthOfDevicePath);
 	    if (uefiImageLoadEvent->DevicePath == NULL) {
-		printf("TSS_EfiBootServicesReadBuffer: Error allocating %u bytes\n",
+		printf("TSS_EfiBootServices_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)(uefiImageLoadEvent->LengthOfDevicePath));
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
@@ -1933,38 +4041,12 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
 	    /* FIXME is LengthOfDevicePath zero an error ? */
 	}
     }
-    /* assign temporary variables sincce the unmarshal moves them */
+    /* unmarshal the device path array */
     if (rc == 0) {
-	lengthOfDevicePath = uefiImageLoadEvent->LengthOfDevicePath;
-	devicePath = uefiImageLoadEvent->DevicePath;
-    }
-    /* FIXME factor this? */
-    /* FIXME init count and pointers to NULL */
-    while ((rc == 0) && (lengthOfDevicePath > 0)) {
-	if (rc == 0) {
-	    void *tmpptr;
-	    uefiImageLoadEvent->UefiDevicePathCount++;	/* FIXME move increment after realloc
-							   several places in code */
-	    /* freed by TSS_EfiBootServicesFree() */
-	    tmpptr = realloc(uefiImageLoadEvent->UefiDevicePath,
-			     sizeof(UEFI_DEVICE_PATH) * uefiImageLoadEvent->UefiDevicePathCount);
-	    if (tmpptr != NULL) {
-		uefiImageLoadEvent->UefiDevicePath = tmpptr;
-	    }
-	    else {
-		printf("TSS_EfiBootServicesReadBuffer: Error allocating %u bytes\n",
-		       (unsigned int)sizeof(UEFI_DEVICE_PATH) *
-		       uefiImageLoadEvent->UefiDevicePathCount);
-		rc = TSS_RC_OUT_OF_MEMORY;
-	    }
-	}
-	if (rc == 0) {
-	    UEFI_DEVICE_PATH *nextDevicePath =
-		uefiImageLoadEvent->UefiDevicePath + uefiImageLoadEvent->UefiDevicePathCount -1;
-	    TSS_UefiDevicePathInit(nextDevicePath);	/* for safe free */
-	    rc = TSS_UefiDevicePathReadBuffer(nextDevicePath,
-					      &devicePath, &lengthOfDevicePath);
-	}
+	rc = TSS_UefiDevicePathList_ReadBuffer(&uefiImageLoadEvent->UefiDevicePath,
+					       &uefiImageLoadEvent->UefiDevicePathCount,
+					       uefiImageLoadEvent->DevicePath,
+					       uefiImageLoadEvent->LengthOfDevicePath);
     }
 #if HAVE_EFIBOOT_H
     /* format path (based on external package) */
@@ -1977,9 +4059,9 @@ static uint32_t TSS_EfiBootServicesReadBuffer(TSST_EFIData *efiData,
     return rc;
 }
 
-static void TSS_EfiBootServicesTrace(TSST_EFIData *efiData)
+static void TSS_EfiBootServices_Trace(TSST_EFIData *efiData)
 {
-    UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
+    TSS_UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
     uint32_t count;
 
     printf("  Image location in memory: %016" PRIx64 "\n", uefiImageLoadEvent->ImageLocationInMemory);
@@ -1994,39 +4076,88 @@ static void TSS_EfiBootServicesTrace(TSST_EFIData *efiData)
     printf("  UefiDevicePathCount: %u\n", uefiImageLoadEvent->UefiDevicePathCount);
 
     for (count = 0 ; count < uefiImageLoadEvent->UefiDevicePathCount ; count++) {
-	TSS_UefiDevicePathTrace(uefiImageLoadEvent->UefiDevicePath + count);
+	TSS_UefiDevicePath_Trace(uefiImageLoadEvent->UefiDevicePath + count);
     }
     return;
 }
 
-static uint32_t TSS_EfiBootServicesToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiBootServices_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
-    UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
+    TSS_UEFI_IMAGE_LOAD_EVENT *uefiImageLoadEvent = &efiData->efiData.uefiImageLoadEvent;
     /* needs iterator over count */
-    rc = TSS_UefiDevicePathToJson(uefiImageLoadEvent->UefiDevicePath);
+    rc = TSS_UefiDevicePath_ToJson(uefiImageLoadEvent->UefiDevicePath);
     return rc;
 }
 
-/* UEFI_DEVICE_PATH  */
+/* TSS_UEFI_DEVICE_PATH  */
 
+/* UefiDevicePath is an array of TSS_UEFI_DEVICE_PATH.  This is common code for
+   TSS_EfiBootServices_ReadBuffer() and TSS_EfiVariableBootPath_ReadBuffer(),
 
-static void TSS_UefiDevicePathInit(UEFI_DEVICE_PATH *uefiDevicePath)
-{
-    uefiDevicePath->data = NULL;
-    return;
-}
+   Loop through the event, realloc to grow the array, and unmarshal the next element.
+*/
 
-static void TSS_UefiDevicePathFree(UEFI_DEVICE_PATH *uefiDevicePath)
-{
-    free(uefiDevicePath->data);
-    return;
-}
-
-static uint32_t TSS_UefiDevicePathReadBuffer(UEFI_DEVICE_PATH *uefiDevicePath,
-					     uint8_t **event, uint32_t *eventSize)
+static uint32_t TSS_UefiDevicePathList_ReadBuffer(TSS_UEFI_DEVICE_PATH **UefiDevicePath,
+						  uint32_t *UefiDevicePathCount,
+						  uint8_t *devicePath,
+						  uint32_t lengthOfDevicePath)
 {
     uint32_t rc = 0;
+ 
+    while ((rc == 0) && (lengthOfDevicePath > 0)) {
+	TSS_UEFI_DEVICE_PATH *nextDevicePath;
+	if (rc == 0) {
+	    void *tmpptr;				/* for realloc */
+	    /* freed by TSS_EfiBootServices_Free() */
+	    tmpptr = realloc(*UefiDevicePath,
+			     sizeof(TSS_UEFI_DEVICE_PATH) * ((*UefiDevicePathCount)+1));
+	    if (tmpptr != NULL) {
+		*UefiDevicePath = tmpptr;
+		nextDevicePath =
+		    *UefiDevicePath + *UefiDevicePathCount;
+		(*UefiDevicePathCount)++;
+	    }
+	    else {
+		printf("TSS_UefiDevicePathList_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)sizeof(TSS_UEFI_DEVICE_PATH) *
+		       *UefiDevicePathCount);
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if (rc == 0) {
+	    TSS_UefiDevicePath_Init(nextDevicePath);	/* for safe free */
+	    rc = TSS_UefiDevicePath_ReadBuffer(nextDevicePath,
+					       &devicePath, &lengthOfDevicePath);
+	}
+    }
+    return rc;
+}
+
+static void TSS_UefiDevicePath_Init(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    uefiDevicePath->data = NULL;
+    uefiDevicePath->bufferLength = 0;
+    uefiDevicePath->buffer = NULL;
+    uefiDevicePath->unionBufferLength = 0;
+    uefiDevicePath->unionBuffer = NULL;
+   return;
+}
+
+static void TSS_UefiDevicePath_Free(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
+{
+    free(uefiDevicePath->data);
+    free(uefiDevicePath->buffer);
+    free(uefiDevicePath->unionBuffer);
+    return;
+}
+
+static uint32_t TSS_UefiDevicePath_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiDevicePath,
+					      uint8_t **event, uint32_t *eventSize)
+{
+    uint32_t rc = 0;
+    uint32_t trc = 0;
+
     if (rc == 0) {
 	rc = TSS_UINT8_Unmarshalu(&uefiDevicePath->protocol.Type,
 				  event, eventSize);
@@ -2039,40 +4170,79 @@ static uint32_t TSS_UefiDevicePathReadBuffer(UEFI_DEVICE_PATH *uefiDevicePath,
 	rc = TSS_UINT16LE_Unmarshal(&uefiDevicePath->protocol.Length,
 				    event, eventSize);
     }
+#if 0
+    printf("TSS_UefiDevicePath_ReadBuffer: Type %02x SubType %02x length %hu rc %08x\n",
+	   uefiDevicePath->protocol.Type, uefiDevicePath->protocol.SubType,
+	   uefiDevicePath->protocol.Length, rc);
+#endif
+    /* sanity check length, subtract because length includes protocol header  */
+    if (rc == 0) {
+	if (uefiDevicePath->protocol.Length > (*eventSize + sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL))) {
+	    printf("TSS_UefiDevicePath_ReadBuffer protocol.Length %u too large\n",
+		   uefiDevicePath->protocol.Length);
+	    rc = TSS_RC_MALLOC_SIZE;
+	}
+    }
     /* allocate the data array */
     if (rc == 0) {
-	if (uefiDevicePath->protocol.Length > 0) {
-	    /* freed by TSS_EfiVariableDataFree, length is total, subtract the
-	       EFI_DEVICE_PATH_PROTOCOL */
+	if (uefiDevicePath->protocol.Length > sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL)) {
+	    /* freed by TSS_EfiVariableData_Free, length is total, subtract the
+	       TSS_EFI_DEVICE_PATH_PROTOCOL */
 	    uefiDevicePath->data = malloc(uefiDevicePath->protocol.Length -
-					  sizeof(EFI_DEVICE_PATH_PROTOCOL));
+					  sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL));
 	    if (uefiDevicePath->data == NULL) {
-		printf("TSS_UefiDevicePathReadBuffer: Error allocating %u bytes\n",
+		printf("TSS_UefiDevicePath_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)(uefiDevicePath->protocol.Length));
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
 	}
     }
     if (rc == 0) {
-	rc = TSS_Array_Unmarshalu(uefiDevicePath->data,
-				  uefiDevicePath->protocol.Length -
-				  sizeof(EFI_DEVICE_PATH_PROTOCOL),
-				  event, eventSize);
+	size_t index;
+	trc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.Type,
+					 sizeof(efiDevicePathProtocolTypeTable),
+					 efiDevicePathProtocolTypeTable);
+	if (trc == 0) {
+	    rc = efiDevicePathProtocolTypeTable[index].readBufferFunction(uefiDevicePath,
+									  event, eventSize);
+	}
+	/* Type unknown / unsupported */
+	else {
+	    rc = TSS_Array_Unmarshalu(uefiDevicePath->data,
+				      uefiDevicePath->protocol.Length -
+				      sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL),
+				      event, eventSize);
+	}
     }
     return rc;
 }
 
-static void TSS_UefiDevicePathTrace(UEFI_DEVICE_PATH *uefiDevicePath)
+static void TSS_UefiDevicePath_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
 {
-    printf("    Type    %02x\n", uefiDevicePath->protocol.Type);
-    printf("    SubType %02x\n", uefiDevicePath->protocol.SubType);
-    TSS_PrintAll("   Data:",
-		 uefiDevicePath->data, uefiDevicePath->protocol.Length - 
-		 sizeof(EFI_DEVICE_PATH_PROTOCOL));
+    uint32_t 	rc;
+    size_t 	index;
+
+    /* index into the EFI_DEVICE_PATH_PROTOCOL Type table */
+    rc = TSS_EFI_GetDevicePathIndex(&index, uefiDevicePath->protocol.Type,
+				    sizeof(efiDevicePathProtocolTypeTable),
+				    efiDevicePathProtocolTypeTable);
+    if (rc == 0) {
+	printf("    Type %02x %s\n",
+	       uefiDevicePath->protocol.Type,
+	       efiDevicePathProtocolTypeTable[index].text);
+	efiDevicePathProtocolTypeTable[index].traceFunction(uefiDevicePath);
+    }
+    else {
+	printf("    Type    %02x\n", uefiDevicePath->protocol.Type);
+	printf("    SubType %02x\n", uefiDevicePath->protocol.SubType);
+	TSS_PrintAll("   Data:",
+		     uefiDevicePath->data, uefiDevicePath->protocol.Length - 
+		     sizeof(TSS_EFI_DEVICE_PATH_PROTOCOL));
+    }
     return;
 }
 
-static uint32_t TSS_UefiDevicePathToJson(UEFI_DEVICE_PATH *uefiDevicePath)
+static uint32_t TSS_UefiDevicePath_ToJson(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
 {
     uint32_t rc = 0;
     uefiDevicePath = uefiDevicePath;
@@ -2081,34 +4251,34 @@ static uint32_t TSS_UefiDevicePathToJson(UEFI_DEVICE_PATH *uefiDevicePath)
 
 /* EV_EFI_GPT_EVENT */
 
-static void TSS_EfiGptEventInit(TSST_EFIData *efiData)
+static void TSS_EfiGptEvent_Init(TSST_EFIData *efiData)
 {
-    UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
+    TSS_UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
     uefiGptData->Partitions = NULL;
     uefiGptData->UEFIPartitionHeader.Reserved2 = NULL;
     return;
 }
 
-static void TSS_EfiGptEventFree(TSST_EFIData *efiData)
+static void TSS_EfiGptEvent_Free(TSST_EFIData *efiData)
 {
-    UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
+    TSS_UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
     free(uefiGptData->Partitions);
     free(uefiGptData->UEFIPartitionHeader.Reserved2);
     return;
 }
 
-static uint32_t TSS_EfiGptEventReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiGptEvent_ReadBuffer(TSST_EFIData *efiData,
 					  uint8_t *event, uint32_t eventSize,
 					  uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     uint64_t partitionCount;
-    UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
-    UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader = &(uefiGptData->UEFIPartitionHeader);
+    TSS_UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
+    TSS_UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader = &(uefiGptData->UEFIPartitionHeader);
 
     pcrIndex = pcrIndex;
     if (rc == 0) {
-	rc = TSS_EfiPartitionHeaderReadBuffer(efiPartitionHeader,
+	rc = TSS_EfiPartitionHeader_ReadBuffer(efiPartitionHeader,
 					      &event, &eventSize);
     }
     if (rc == 0) {
@@ -2116,20 +4286,20 @@ static uint32_t TSS_EfiGptEventReadBuffer(TSST_EFIData *efiData,
     }
     if (rc == 0) {
 	if (uefiGptData->NumberOfPartitions > EFI_LENGTH_MAX) {
-	    printf("TSS_EfiVariableDataReadBuffer: VariableDataLength %" PRIu64 " too large\n",
+	    printf("TSS_EfiVariableData_ReadBuffer: VariableDataLength %" PRIu64 " too large\n",
 		   uefiGptData->NumberOfPartitions);
 	    rc = TSS_RC_MALLOC_SIZE;
 	}
     }
     if (rc == 0) {
 	if (uefiGptData->NumberOfPartitions > 0) {
-	    /* freed by TSS_EfiGptEventFree */
+	    /* freed by TSS_EfiGptEvent_Free */
 	    uefiGptData->Partitions =
-		malloc(uefiGptData->NumberOfPartitions * sizeof(UEFI_PARTITION_ENTRY));
+		malloc(uefiGptData->NumberOfPartitions * sizeof(TSS_UEFI_PARTITION_ENTRY));
 	    if (uefiGptData->Partitions == NULL) {
-		printf("TSS_EfiGptEventReadBuffer: Error allocating %u bytes\n",
+		printf("TSS_EfiGptEvent_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)
-		       (uefiGptData->NumberOfPartitions * sizeof(UEFI_PARTITION_ENTRY)));
+		       (uefiGptData->NumberOfPartitions * sizeof(TSS_UEFI_PARTITION_ENTRY)));
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
 	}
@@ -2138,16 +4308,16 @@ static uint32_t TSS_EfiGptEventReadBuffer(TSST_EFIData *efiData,
 	 (rc == 0) && (partitionCount < uefiGptData->NumberOfPartitions) ;
 	 partitionCount++) {
 
-	UEFI_PARTITION_ENTRY *entry = uefiGptData->Partitions + partitionCount;
+	TSS_UEFI_PARTITION_ENTRY *entry = uefiGptData->Partitions + partitionCount;
 	if (rc == 0) {
-	    rc = TSS_EfiPartitionEntryReadBuffer(entry, &event, &eventSize);
+	    rc = TSS_EfiPartitionEntry_ReadBuffer(entry, &event, &eventSize);
 	}
     }
     return rc;
 }
 
-static uint32_t TSS_EfiPartitionHeaderReadBuffer(UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader,
-						 uint8_t **event, uint32_t *eventSize)
+static uint32_t TSS_EfiPartitionHeader_ReadBuffer(TSS_UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader,
+						  uint8_t **event, uint32_t *eventSize)
 {
     uint32_t rc = 0;
     uint32_t startEventSize = *eventSize; /* track what was unmarshaled, excluding reserved */
@@ -2213,8 +4383,8 @@ static uint32_t TSS_EfiPartitionHeaderReadBuffer(UEFI_PARTITION_TABLE_HEADER *ef
     return rc;
 }
 
-static uint32_t TSS_EfiPartitionEntryReadBuffer(UEFI_PARTITION_ENTRY *entry,
-						uint8_t **event, uint32_t *eventSize)
+static uint32_t TSS_EfiPartitionEntry_ReadBuffer(TSS_UEFI_PARTITION_ENTRY *entry,
+						 uint8_t **event, uint32_t *eventSize)
 {
     uint32_t rc = 0;
     if (rc == 0) {
@@ -2244,25 +4414,25 @@ static uint32_t TSS_EfiPartitionEntryReadBuffer(UEFI_PARTITION_ENTRY *entry,
     return rc;
 }
 
-static void TSS_EfiGptEventTrace(TSST_EFIData *efiData)
+static void TSS_EfiGptEvent_Trace(TSST_EFIData *efiData)
 {
-    UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
-    UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader = &(uefiGptData->UEFIPartitionHeader);
+    TSS_UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
+    TSS_UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader = &(uefiGptData->UEFIPartitionHeader);
     uint64_t partitionCount;
 
-    TSS_EfiPartitionHeaderTrace(efiPartitionHeader);
+    TSS_EfiPartitionHeader_Trace(efiPartitionHeader);
     printf("  Number of Partitions: %" PRIu64 "\n\n", uefiGptData->NumberOfPartitions);
     for (partitionCount = 0 ;
 	 partitionCount < uefiGptData->NumberOfPartitions ;
 	 partitionCount++) {
 
-	UEFI_PARTITION_ENTRY *entry = uefiGptData->Partitions + partitionCount;
-	TSS_EfiPartitionEntryTrace(entry);
+	TSS_UEFI_PARTITION_ENTRY *entry = uefiGptData->Partitions + partitionCount;
+	TSS_EfiPartitionEntry_Trace(entry);
     }
     return;
 }
 
-static void TSS_EfiPartitionHeaderTrace(UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader)
+static void TSS_EfiPartitionHeader_Trace(TSS_UEFI_PARTITION_TABLE_HEADER *efiPartitionHeader)
 {
     printf("  Signature %016" PRIx64 "\n", efiPartitionHeader->Signature);
     printf("  Revision %08x\n", efiPartitionHeader->Revision);
@@ -2281,7 +4451,7 @@ static void TSS_EfiPartitionHeaderTrace(UEFI_PARTITION_TABLE_HEADER *efiPartitio
     return;
 }
 
-static void TSS_EfiPartitionEntryTrace(UEFI_PARTITION_ENTRY *entry)
+static void TSS_EfiPartitionEntry_Trace(TSS_UEFI_PARTITION_ENTRY *entry)
 {
     guid_printf("  PartitionTypeGUID", entry->PartitionTypeGUID);
     guid_printf("  UniquePartitionGUID", entry->UniquePartitionGUID);
@@ -2294,17 +4464,11 @@ static void TSS_EfiPartitionEntryTrace(UEFI_PARTITION_ENTRY *entry)
 }
 
 
-static uint32_t TSS_EfiGptEventToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiGptEvent_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
-    UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
+    TSS_UEFI_GPT_DATA *uefiGptData = &efiData->efiData.uefiGptData;
     uefiGptData = uefiGptData;
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
     if (rc == 0) {
     }
     return rc;
@@ -2314,21 +4478,22 @@ static uint32_t TSS_EfiGptEventToJson(TSST_EFIData *efiData)
    EV_POST_CODE
 */
 
-static void TSS_Efi4bBufferInit(TSST_EFIData *efiData)
+static void TSS_Efi4bBuffer_Init(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+    tss4bBuffer->size = 0;
     tss4bBuffer->buffer = NULL;
     return;
 }
 
-static void TSS_Efi4bBufferFree(TSST_EFIData *efiData)
+static void TSS_Efi4bBuffer_Free(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     free(tss4bBuffer->buffer);
     return;
 }
 
-static uint32_t TSS_Efi4bBufferReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_Efi4bBuffer_ReadBuffer(TSST_EFIData *efiData,
 					  uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
 {
     uint32_t rc = 0;
@@ -2339,10 +4504,10 @@ static uint32_t TSS_Efi4bBufferReadBuffer(TSST_EFIData *efiData,
 	tss4bBuffer->size = eventSize;
 	/* allocate the array*/
 	if (tss4bBuffer->size > 0) {
-	    /* freed by TSS_Efi4bBufferFree */
+	    /* freed by TSS_Efi4bBuffer_Free */
 	    tss4bBuffer->buffer = malloc(tss4bBuffer->size);
 	    if (tss4bBuffer->buffer == NULL) {
-		printf("TSS_Efi4bBufferReadBuffer: Error allocating %u bytes\n",
+		printf("TSS_Efi4bBuffer_ReadBuffer: Error allocating %u bytes\n",
 		       tss4bBuffer->size);
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
@@ -2363,33 +4528,37 @@ static uint32_t TSS_Efi4bBufferReadBuffer(TSST_EFIData *efiData,
 
 /* EV_COMPACT_HASH */
 
-static void     TSS_EfiCompactHashTrace(TSST_EFIData *efiData)
+static void     TSS_EfiCompactHash_Trace(TSST_EFIData *efiData)
 {
+    uint32_t rc = 0;
+    int done = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+
     /* PCR 6 event holds a string */
     if (efiData->pcrIndex == 6) {
+	done = 1;
 	printf("  Compact Hash: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
     }
-    /* PCR 11 holds MS Bitlocker status */
-    else {
+    /* PCR 11 holds MS Bitlocker status, see EV_COMPACT_HASH_TABLE */
+    else if (efiData->pcrIndex == 11) {
 	size_t index = 0;
 	if (tss4bBuffer->size == sizeof(((EV_COMPACT_HASH_TABLE *)NULL)->value)) {
-	    TSS_EFI_GetCompactHashIndex(&index, tss4bBuffer->buffer);
+	    rc = TSS_EFI_GetCompactHashIndex(&index, tss4bBuffer->buffer);
 	}
-	if (index != 0) {
-	    const char *text= compactHashTable[index].text;
+	if (rc == 0) {		/* found an entry */
+	    const char *text = compactHashTable[index].text;
+	    done = 1;
 	    printf("  Compact Hash: %s\n", text);
 	}
-	/* bad size or unknown value */
-	else {
-	    TSS_PrintAll("    Compact Hash unsupported",
-			 tss4bBuffer->buffer, tss4bBuffer->size);
-	}
+    }
+    if (!done) {
+	TSS_PrintAll("    Compact Hash unsupported",
+		     tss4bBuffer->buffer, tss4bBuffer->size);
     }
     return;
 }
 
-static uint32_t TSS_EfiCompactHashToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiCompactHash_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
@@ -2402,7 +4571,7 @@ static uint32_t TSS_EfiCompactHashToJson(TSST_EFIData *efiData)
 
 /* EV_IPL */
 
-static void     TSS_EfiIplTrace(TSST_EFIData *efiData)
+static void     TSS_EfiIpl_Trace(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     /* unspecified, apparently holds a string */
@@ -2410,7 +4579,7 @@ static void     TSS_EfiIplTrace(TSST_EFIData *efiData)
     return;
 }
 
-static uint32_t TSS_EfiIplToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiIpl_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
@@ -2423,32 +4592,32 @@ static uint32_t TSS_EfiIplToJson(TSST_EFIData *efiData)
 
 /* EV_S_CRTM_VERSION can be either a UCS-2 or a GUID. */
 
-static void TSS_EfiCrtmVersionTrace(TSST_EFIData *efiData)
+static void TSS_EfiCrtmVersion_Trace(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     int isUCS2 = 1;
-    uint32_t i;
+    int isGuid = 1;
 
-    /* non-deterministic, guess whether this is a UCS-2 string or a GUID */
-    /* GUID is always 16 bytes */
-    if (tss4bBuffer->size == TSS_EFI_GUID_SIZE) {
-	for (i = 1 ; (i < tss4bBuffer->size) && (isUCS2) ; i+=2) {
-	    if (tss4bBuffer->buffer[i] != 0x00) {
-		isUCS2 = 0;	/* UCS-2 typically has all odd bytes 0 */
-	    }
+    isUCS2String(&isUCS2, tss4bBuffer->buffer, tss4bBuffer->size);
+    /* if it's not UCS-2, it could be a GUID */
+    if (!isUCS2) {
+	if (tss4bBuffer->size != TSS_EFI_GUID_SIZE) {
+	    isGuid = 0;
 	}
     }
-    /* not 16 bytes falls through to isUCS2 true */
     if (isUCS2) {
 	wchar_printf("CRTM Version: ", tss4bBuffer->buffer, ((tss4bBuffer->size) / 2) -1);
     }
-    else {
+    else if (isGuid) {
 	guid_printf("CRTM Version GUID", tss4bBuffer->buffer);
+    }
+    else {	/* something else */
+	TSS_PrintAll("CRTM Version", tss4bBuffer->buffer, tss4bBuffer->size);
     }
     return;
 }
 
-static uint32_t TSS_EfiCrtmVersionToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiCrtmVersion_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
@@ -2466,14 +4635,14 @@ static uint32_t TSS_EfiCrtmVersionToJson(TSST_EFIData *efiData)
 
 /* EV_S_CRTM_CONTENTS */
 
-static void TSS_EfiCrtmContentsTrace(TSST_EFIData *efiData)
+static void TSS_EfiCrtmContents_Trace(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     printf("  CRTM Contents: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
     return;
 }
 
-static uint32_t TSS_EfiCrtmContentsToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiCrtmContents_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
@@ -2491,14 +4660,14 @@ static uint32_t TSS_EfiCrtmContentsToJson(TSST_EFIData *efiData)
 
 /* EV_EFI_ACTION */
 
-static void TSS_EfiActionTrace(TSST_EFIData *efiData)
+static void TSS_EfiAction_Trace(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     printf("  EFI Action: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
     return;
 }
 
-static uint32_t TSS_EfiActionToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiAction_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
@@ -2514,58 +4683,49 @@ static uint32_t TSS_EfiActionToJson(TSST_EFIData *efiData)
     return rc;
 }
 
-/* EV_POST_CODE
+/* Event that is only a printable string */
 
-   FIXME This event sometimes measures a 16 byte non-printable string.  What is is?
-*/
+#if 0
 
-static uint32_t TSS_EfiCharReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiChar_ReadBuffer(TSST_EFIData *efiData,
 				      uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     pcrIndex = pcrIndex;
     if (rc == 0) {
-	rc = TSS_Efi4bBufferReadBuffer(efiData, event, eventSize, pcrIndex);
-    }
-    /* FIXME is zero length an error ? */
-    /* TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer; */
-   return rc;
+	rc = TSS_Efi4bBuffer_ReadBuffer(efiData, event, eventSize, pcrIndex);
+    }a
+    return rc;
 }
 
-static void TSS_EfiCharTrace(TSST_EFIData *efiData)
+static void TSS_EfiChar_Trace(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     printf(" %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
     return;
 }
 
-static uint32_t TSS_EfiCharToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiChar_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     tss4bBuffer = tss4bBuffer;
     if (rc == 0) {
     }
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
     return rc;
 }
+#endif
 
 /* EV_NO_ACTION */
 
-/* This is purely from guesses and decompiling the events, not from any spec */
-
-static void     TSS_EvNoActionTrace(TSST_EFIData *efiData)
+static void     TSS_EvNoAction_Trace(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     if (efiData->pcrIndex == 0) {
 	printf("  PCR 0: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
 	printf("  Locality %u\n", tss4bBuffer->buffer[tss4bBuffer->size-1]);
     }
+    /* This is purely from guesses and decompiling the events, not from any spec */
     else if (efiData->pcrIndex == 0xffffffff) {
 	wchar_printf("  No Action: ", tss4bBuffer->buffer+16, 11);
     }
@@ -2578,7 +4738,7 @@ static void     TSS_EvNoActionTrace(TSST_EFIData *efiData)
 
 /* EV_SEPARATOR */
 
-static void TSS_EfiSeparatorTrace(TSST_EFIData *efiData)
+static void TSS_EfiSeparator_Trace(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
 
@@ -2595,44 +4755,62 @@ static void TSS_EfiSeparatorTrace(TSST_EFIData *efiData)
     return;
 }
 
-static uint32_t TSS_EfiSeparatorToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiSeparator_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     tss4bBuffer = tss4bBuffer;
     if (rc == 0) {
     }
-    if (rc == 0) {
-    }
-    if (rc == 0) {
-    }
+    return rc;
+}
+
+/* EV_ACTION */
+
+#if 0
+/* PFP says these are printable strings, not NUL terminated */
+
+static void     TSS_EfiAction_Trace(TSST_EFIData *efiData)
+{
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+
+    printf("  Action: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
+    return;
+}
+
+static uint32_t TSS_EfiAction_ToJson(TSST_EFIData *efiData)
+{
+    uint32_t rc = 0;
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+    tss4bBuffer = tss4bBuffer;
     if (rc == 0) {
     }
     return rc;
 }
+#endif
 
 /* EV_EVENT_TAG */
 
-static void     TSS_EfiEventTagInit(TSST_EFIData *efiData)
+static void     TSS_EfiEventTag_Init(TSST_EFIData *efiData)
 {
-    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
     taggedEvent->taggedEventData = NULL;
     return;
 }
 
-static void     TSS_EfiEventTagFree(TSST_EFIData *efiData)
+static void     TSS_EfiEventTag_Free(TSST_EFIData *efiData)
 {
-    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
     free(taggedEvent->taggedEventData);
     return;
 }
 
-static uint32_t TSS_EfiEventReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiEvent_ReadBuffer(TSST_EFIData *efiData,
 				       uint8_t *event, uint32_t eventSize,
 				       uint32_t pcrIndex)
 {
     uint32_t rc = 0;
-    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
     pcrIndex = pcrIndex;
 
     if (rc == 0) {
@@ -2644,7 +4822,7 @@ static uint32_t TSS_EfiEventReadBuffer(TSST_EFIData *efiData,
     /* consistency check taggedEventDataSize */
     if (rc == 0) {
 	if (taggedEvent->taggedEventDataSize != eventSize) {
-	    printf("TSS_EfiEventReadBuffer: Error in taggedEventDataSize %u\n",
+	    printf("TSS_EfiEvent_ReadBuffer: Error in taggedEventDataSize %u\n",
 		   (unsigned int)(taggedEvent->taggedEventDataSize));
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
@@ -2653,7 +4831,7 @@ static uint32_t TSS_EfiEventReadBuffer(TSST_EFIData *efiData,
     if ((rc == 0) && (eventSize > 0)) {
 	taggedEvent->taggedEventData = malloc(taggedEvent->taggedEventDataSize);
 	if (taggedEvent->taggedEventData == NULL) {
-	    printf("TSS_EfiEventReadBuffer: Error allocating %u bytes\n",
+	    printf("TSS_EfiEvent_ReadBuffer: Error allocating %u bytes\n",
 		   (unsigned int)taggedEvent->taggedEventDataSize);
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
@@ -2665,19 +4843,39 @@ static uint32_t TSS_EfiEventReadBuffer(TSST_EFIData *efiData,
     return rc;
 }
 
-static void     TSS_EfiEventTagTrace(TSST_EFIData *efiData)
+static void     TSS_EfiEventTag_Trace(TSST_EFIData *efiData)
 {
-    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    RSA 	*rsaKey = NULL;
+    const unsigned char *tmpData = NULL;
+    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+
     printf("  taggedEventID %08x\n", taggedEvent->taggedEventID);
-    TSS_PrintAll("  taggedEvent",
-		 taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
+    /* https://github.com/mattifestation/TCGLogTools/blob/master/TCGLogTools.psm1 */
+    /* by observation 0x00060002 appears to be a DER encoded public key */
+    if (taggedEvent->taggedEventID == 0x00060002) {
+	/* tmp pointer because d2i moves the pointer */
+	tmpData = taggedEvent->taggedEventData;
+	rsaKey = d2i_RSA_PUBKEY(NULL, &tmpData , taggedEvent->taggedEventDataSize);	/* freed @2 */
+	if (rsaKey != NULL) { 	/* success */
+	    RSA_print_fp(stdout, rsaKey, 2);
+	}
+	if (rsaKey != NULL) {
+	    RSA_free(rsaKey); 
+	}
+    }
+    /* if it's not 0x00060002 or if the d2i fails */
+    /* 0x40010001 = 'TrustBoundary' seems to be a common event.  Anyone have documentation? */
+    if ((taggedEvent->taggedEventID != 0x00060002) || (rsaKey == NULL)) {
+	TSS_PrintAll("  taggedEvent",
+		     taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
+    }
     return;
 }
 
-static uint32_t TSS_EfiEventTagToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiEventTag_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
-    TCG_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
     taggedEvent = taggedEvent;
     if (rc == 0) {
     }
@@ -2686,28 +4884,28 @@ static uint32_t TSS_EfiEventTagToJson(TSST_EFIData *efiData)
 
 /* EV_EFI_HANDOFF_TABLES */
 
-static void TSS_EfiHandoffTablesInit(TSST_EFIData *efiData)
+static void TSS_EfiHandoffTables_Init(TSST_EFIData *efiData)
 {
-    UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
+    TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
 	&efiData->efiData.uefiHandoffTablePointers;
     uefiHandoffTablePointers->TableEntry = NULL;
     return;
 }
 
-static void TSS_EfiHandoffTablesFree(TSST_EFIData *efiData)
+static void TSS_EfiHandoffTables_Free(TSST_EFIData *efiData)
 {
-    UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
+    TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
 	&efiData->efiData.uefiHandoffTablePointers;
     free(uefiHandoffTablePointers->TableEntry);
     return;
 }
 
-static uint32_t TSS_EfiHandoffTablesReadBuffer(TSST_EFIData *efiData,
+static uint32_t TSS_EfiHandoffTables_ReadBuffer(TSST_EFIData *efiData,
 					       uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
 {
     uint32_t rc = 0;
     uint64_t tableCount;
-    UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
+    TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
 	&efiData->efiData.uefiHandoffTablePointers;
     pcrIndex = pcrIndex;
 
@@ -2718,22 +4916,24 @@ static uint32_t TSS_EfiHandoffTablesReadBuffer(TSST_EFIData *efiData,
        uint32_t is safe. */
     if (rc == 0) {
 	if (uefiHandoffTablePointers->NumberOfTables >
-	    EFI_LENGTH_MAX/sizeof(EFI_CONFIGURATION_TABLE)) {
-	    printf("TSS_EfiHandoffTablesReadBuffer: NumberOfTables %" PRIu64 " too large\n",
+	    EFI_LENGTH_MAX/sizeof(TSS_EFI_CONFIGURATION_TABLE)) {
+	    printf("TSS_EfiHandoffTables_ReadBuffer: NumberOfTables %" PRIu64 " too large\n",
 		   uefiHandoffTablePointers->NumberOfTables);
 	    rc = TSS_RC_MALLOC_SIZE;
 	}
     }
-    /* allocate the EFI_CONFIGURATION_TABLE list */
+    /* allocate the TSS_EFI_CONFIGURATION_TABLE list */
     if (rc == 0) {
 	if (uefiHandoffTablePointers->NumberOfTables > 0) {
-	    /* freed by TSS_EfiHandoffTablesFree */
+	    /* freed by TSS_EfiHandoffTables_Free */
 	    uefiHandoffTablePointers->TableEntry =
-		malloc(uefiHandoffTablePointers->NumberOfTables * sizeof(EFI_CONFIGURATION_TABLE));
+		malloc(uefiHandoffTablePointers->NumberOfTables *
+		       sizeof(TSS_EFI_CONFIGURATION_TABLE));
 	    if (uefiHandoffTablePointers->TableEntry == NULL) {
-		printf("TSS_EfiHandoffTablesReadBuffer: Error allocating %u bytes\n",
+		printf("TSS_EfiHandoffTables_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)
-		       (uefiHandoffTablePointers->NumberOfTables * sizeof(EFI_CONFIGURATION_TABLE)));
+		       (uefiHandoffTablePointers->NumberOfTables *
+			sizeof(TSS_EFI_CONFIGURATION_TABLE)));
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
 	}
@@ -2743,7 +4943,7 @@ static uint32_t TSS_EfiHandoffTablesReadBuffer(TSST_EFIData *efiData,
 	 (rc == 0) && (tableCount < uefiHandoffTablePointers->NumberOfTables) ;
 	 tableCount++) {
 
-	EFI_CONFIGURATION_TABLE *table = uefiHandoffTablePointers->TableEntry + tableCount;
+	TSS_EFI_CONFIGURATION_TABLE *table = uefiHandoffTablePointers->TableEntry + tableCount;
 	if (rc == 0) {
 	    rc = TSS_Array_Unmarshalu(table->VendorGuid,
 				      sizeof(table->VendorGuid),
@@ -2756,25 +4956,25 @@ static uint32_t TSS_EfiHandoffTablesReadBuffer(TSST_EFIData *efiData,
     return rc;
 }
 
-static void     TSS_EfiHandoffTablesTrace(TSST_EFIData *efiData)
+static void     TSS_EfiHandoffTables_Trace(TSST_EFIData *efiData)
 {
     uint64_t tableCount;
-    UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
+    TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
 	&efiData->efiData.uefiHandoffTablePointers;
 
     printf("  NumberOfTables: %016" PRIx64 "\n", uefiHandoffTablePointers->NumberOfTables);
     for (tableCount = 0 ; tableCount < uefiHandoffTablePointers->NumberOfTables ; tableCount++) {
-	EFI_CONFIGURATION_TABLE *table = uefiHandoffTablePointers->TableEntry + tableCount;
+	TSS_EFI_CONFIGURATION_TABLE *table = uefiHandoffTablePointers->TableEntry + tableCount;
 	guid_printf("VendorGuid", table->VendorGuid);
 	printf("  VendorTable: %016" PRIx64 "\n", table->VendorTable);
     }
     return;
 }
 
-static uint32_t TSS_EfiHandoffTablesToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiHandoffTables_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
-    UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
+    TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
 	&efiData->efiData.uefiHandoffTablePointers;
     uefiHandoffTablePointers  =uefiHandoffTablePointers;
     if (rc == 0) {
@@ -2782,142 +4982,16 @@ static uint32_t TSS_EfiHandoffTablesToJson(TSST_EFIData *efiData)
     return rc;
 }
 
-
-/* TSS_EFI_GetGuidIndex() gets the index into the GUID table for the GUID array guidBin
-
-   Returns TSS_RC_NOT_IMPLEMENTED for an unimplemeted GUID.
-*/
-
-static uint32_t TSS_EFI_GetGuidIndex(size_t *index, const uint8_t *guidBin)
-{
-    for (*index = 0 ;
-	 *index < sizeof(guidTable) / sizeof(GUID_TABLE) ;
-	 (*index)++) {
-	if (memcmp(guidTable[*index].guidBin, guidBin, 16) == 0) {
-	    return 0;	/* match */
-	}
-    }
-    return TSS_RC_NOT_IMPLEMENTED;		/* no match */
-}
-
-/* TSS_EFI_GetTagIndex() gets the index into the tag table for the name.
-
-   If the name does't match, returns index 0, which is the unknown name.
-*/
-
-static void TSS_EFI_GetNameIndex(size_t *index,
-				 const uint8_t *name,
-				 uint64_t nameLength)	/* half the total bytes in array */
-{
-    int m1,m2;
-    for (*index = 0 ;
-	 *index < sizeof(tagTable) / sizeof(TAG_TABLE)  ;
-	 (*index)++) {
-
-	m1 = (nameLength * 2) == tagTable[*index].nameLength;			/* length match */
-	m2 = memcmp(name, tagTable[*index].name, (nameLength * 2)) == 0;	/* string match */
-	if (m1 & m2) {
-	    return;
-	}
-    }
-    *index = 0;		/* no match, unknown */
-    return;
-}
-
-static void TSS_EFI_GetCompactHashIndex(size_t *index,
-					const uint8_t *value)
-{
-    int m1;
-    for (*index = 0 ;
-	 *index < sizeof(compactHashTable) / sizeof(EV_COMPACT_HASH_TABLE)  ;
-	 (*index)++) {
-
-	m1 = memcmp(value,
-		    compactHashTable[*index].value,
-		    sizeof(((EV_COMPACT_HASH_TABLE *)NULL)->value)) == 0;
-	if (m1) {
-	    return;
-	}
-    }
-    *index = 0;		/* no match, unknown */
-    return;
-}
-
-
-/* guid_printf() traces the input GUID, first as hexacsii and then as text.
-
-   It prepends msg to ther hexascii trace.  msg must not be NULL but can be "".
-*/
-
-static void guid_printf(const char *msg, uint8_t *v_guid)
-{
 #if HAVE_EFIBOOT_H
-    int rc;
-    efi_guid_t *guid = (efi_guid_t *)v_guid;
-    char *guid_str = NULL;
-    size_t index;
-
-    /* allocates a suitable string and populates it with string representation of a UEFI GUID. */
-    rc = efi_guid_to_str(guid, &guid_str);	/* freed @1 */
-    if (rc < 0) {
-        printf("  %s: <invalid guid>", msg);
-        return;
-    }
-    printf("  %s: %s\n", msg, guid_str);
-    /* trace the GUID as text */
-    rc = TSS_EFI_GetGuidIndex(&index, v_guid);
-    if (rc == 0) {
-	printf("    %s\n", guidTable[index].guidText);
-    }
-    /* if the GUID is unknown, don't print any text, just the hexascii guid */
-    free(guid_str);	/* @1 */
-#else	/* if EFI package is not installed, trace as hex */
-    printf("  %s: ", msg);
-    TSS_PrintAll("", v_guid, TSS_EFI_GUID_SIZE);
-#endif /* HAVE_EFIBOOT_H */
-    return;
-}
-
-
-/* Print UCS-2 character string.
-
-   length is number of characters, which is half the number of bytes in wchar
-   wchar is a uc16 array to be printed, not including an extra nul terminator
-
-   It prepends msg to ther hexascii trace.  msg must not be NULL but can be "".
-*/
-
-static void wchar_printf(const char *msg, void *wchar, uint64_t length)
-{
-    uint32_t i;
-    uint16_t *ptr = wchar;
-
-    /*
-     * this is necessary because UEFI uses UCS-2, which is a two byte
-     * wide char.  Most linux tools use UC32, which is a four byte
-     * wide char, so we can't simply treat UEFI strings as arrays of
-     * wchar_t
-     */
-    printf("  %s", msg);
-    for (i = 0; i < length ; i++) {
-        wchar_t c = (wchar_t)ptr[i];	/* FIXME alignment issues */
-        printf("%lc", c);
-    }
-    printf("\n");
-    return;
-}
-
-#ifdef HAVE_EFIBOOT_H
 
 /* ssize_t efidp_format_device_path(char *buf, size_t size, const_efidp dp, ssize_t limit); */
 
 /* TSS_EfiFormatDevicePath() runs efidp_format_device_path twice, first to get the size, then to get
    the path
 
-   path must be freed by the caller
 */
 
-static uint32_t TSS_EfiFormatDevicePath(char **path,
+static uint32_t TSS_EfiFormatDevicePath(char **path,	/*path must be freed by the caller */
 					uint8_t *devicePath,
 					uint16_t pathlen)
 {
@@ -2936,7 +5010,7 @@ static uint32_t TSS_EfiFormatDevicePath(char **path,
 					    efiDevicePath,	/* const_efidp */
 					    pathlen);		/* length */
 	    if (ssrc < 0) {
-		printf("TSS_EfiVariableBootPathReadBuffer: Error in efidp_format_device_path\n");
+		printf("TSS_EfiFormatDevicePath: Error in efidp_format_device_path\n");
 		rc = TSS_RC_BAD_PROPERTY;
 	    }
 	}
@@ -2950,10 +5024,11 @@ static uint32_t TSS_EfiFormatDevicePath(char **path,
 	    }
 	}
 	if (rc == 0) {
+	    (*path)[pathLength-1] = '\0';	/* NUL terminate the string */
 	    ssrc = efidp_format_device_path(*path, pathLength,
 					    efiDevicePath, pathlen);
 	    if (ssrc < 0) {
-		printf("TSS_EfiVariableBootPathReadBuffer: Error in efidp_format_device_path\n");
+		printf("TSS_EfiVariableBootPath: Error in efidp_format_device_path\n");
 		rc = TSS_RC_BAD_PROPERTY;
 	    }
 	}
@@ -2968,7 +5043,7 @@ static uint32_t TSS_EfiFormatDevicePath(char **path,
 	}
 	/* return an empty path */
 	if (rc == 0) {
-	    *path[0] = '\0';
+	    (*path)[0] = '\0';
 	}
     }
     return rc;
