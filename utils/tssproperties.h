@@ -142,6 +142,8 @@ extern "C" {
 
 	/* interface type */
 	const char *tssInterfaceType;
+	/* locality, supported for socket */
+	uint8_t locality;
 
 	/* device driver interface */
 	const char *tssDevice;
