@@ -112,11 +112,11 @@ printUsage ()
     echo "-30 Attestation - rev 155"
     echo "-31 X509 - rev 155"
     echo "-32 Get Capability"
-    echo "-33 Events"
     echo "-35 Shutdown (only run for simulator)"
     echo "-40 Tests under development (not part of all)"
     echo ""
     echo "-50 Change seed"
+    echo "-51 Events"
 }
 
 checkSuccess()
@@ -548,14 +548,8 @@ main ()
 	fi
 	((I++))
     fi
-    if [ "$1" == "-a" ] || [ "$1" == "-33" ]; then
-    	./regtests/testevent.sh
-    	RC=$?
-	if [ $RC -ne 0 ]; then
-	    exit 255
-	fi
-	((I++))
-    fi
+    # these test may power cycle the TPM, erasing loaded keys */
+    # put them after other tests
     if [ "$1" == "-a" ] || [ "$1" == "-35" ]; then
 	# the MS simulator supports power cycling
 	if [ -z ${TPM_INTERFACE_TYPE} ] || [ ${TPM_INTERFACE_TYPE} == "socsim" ];  then
@@ -578,9 +572,16 @@ main ()
      	((I++))
      	((WARN=$RC))
     fi
-# this must be the last test
     if [ "$1" == "-a" ] || [ "$1" == "-50" ]; then
     	./regtests/testchangeseed.sh
+    	RC=$?
+	if [ $RC -ne 0 ]; then
+	    exit 255
+	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-51" ]; then
+    	./regtests/testevent.sh
     	RC=$?
 	if [ $RC -ne 0 ]; then
 	    exit 255
@@ -595,7 +596,7 @@ main ()
     else
 	# -0 is a debug mode that initializes and does not clean up
 	if [ "$1" != "-0" ]; then
-	    ${PREFIX}flushcontext -ha 80000000
+	    ${PREFIX}flushcontext -ha 80000000 > run.out
 	    cleanup
 	fi
 

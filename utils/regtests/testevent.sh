@@ -48,43 +48,43 @@ for MODE in "-sim" "-tpm"
 do
 
     echo "UEFI ${MODE} dell 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if dell1.log > dell1.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if dell1.log > run.out
     checkSuccess $?
 
     echo "UEFI ${MODE} hp 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if hp1.log > hp1.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if hp1.log > run.out 
     checkSuccess $?
 
     echo "UEFI ${MODE} ideapad 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if ideapad1.log  > ideapad1.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if ideapad1.log > run.out 
     checkSuccess $?
 
     echo "UEFI ${MODE} deb 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if deb1.log > deb1.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if deb1.log > run.out
     checkSuccess $?
 
     echo "UEFI ${MODE} deb 2"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if deb2.log > deb2.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if deb2.log > run.out
     checkSuccess $?
 
     echo "UEFI ${MODE} p51 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if p511.log > p511.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if p511.log > run.out
     checkSuccess $?
 
     echo "UEFI ${MODE} sm 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if sm1.log > sm1.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if sm1.log > run.out
     checkSuccess $?
 
     echo "UEFI ${MODE} sm 2"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if sm2.log > sm2.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if sm2.log > run.out
     checkSuccess $?
 
     echo "UEFI ${MODE} ubuntu 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if ubuntu1.log > ubuntu1.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if ubuntu1.log > run.out
     checkSuccess $?
 
     echo "UEFI ${MODE} ubuntu 2"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if ubuntu2.log > ubuntu2.txt
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if ubuntu2.log > run.out
     checkSuccess $?
 
 done
@@ -96,20 +96,8 @@ echo ""
 for MODE in "" "-sim" 
 do
     echo "IMA ${MODE} Test Log"
-    ${PREFIX}imaextend -if imatest.log ${MODE} -v -le > imatest.txt
+    ${PREFIX}imaextend -if imatest.log ${MODE} -v -le > run.out
     checkSuccess $?
 done
 
 # cleanup
-
-rm -f deb1.txt
-rm -f deb2.txt
-rm -f dell1.txt
-rm -f hp1.txt
-rm -f ideapad1.txt
-rm -f p511.txt
-rm -f sm1.txt
-rm -f sm2.txt
-rm -f ubuntu1.txt
-rm -f ubuntu2.txt
-rm -f imatest.txt
