@@ -403,7 +403,7 @@ static void TSS_EFI_GetNameIndex(size_t *index,
 	 (*index)++) {
 
 	m1 = (nameLength * 2) == tagTable[*index].nameLength;			/* length match */
-	m2 = memcmp(name, tagTable[*index].name, (nameLength * 2)) == 0;	/* string match */
+	m2 = memcmp(name, tagTable[*index].name, (size_t)(nameLength * 2)) == 0;	/* string match */
 	if (m1 & m2) {
 	    return;
 	}
@@ -3096,7 +3096,7 @@ static uint32_t TSS_EfiVariableData_ReadBuffer(TSST_EFIData *efiData,
 	if (uefiVariableData->UnicodeNameLength > 0) {
 	    /* freed by TSS_EfiVariableData_Free */
 	    uefiVariableData->UnicodeName =
-		malloc((uefiVariableData->UnicodeNameLength) *2);
+		malloc((size_t)(uefiVariableData->UnicodeNameLength) *2);
 	    if (uefiVariableData->UnicodeName == NULL) {
 		printf("TSS_EfiVariableData_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)(uefiVariableData->UnicodeNameLength) *2);
@@ -3108,7 +3108,7 @@ static uint32_t TSS_EfiVariableData_ReadBuffer(TSST_EFIData *efiData,
     if (rc == 0) {
 	if (uefiVariableData->UnicodeNameLength > 0) {
 	    rc = TSS_Array_Unmarshalu(uefiVariableData->UnicodeName,
-				      (uefiVariableData->UnicodeNameLength) *2,
+				      (uint16_t)(uefiVariableData->UnicodeNameLength) *2,
 				      event, eventSize);
 	}
 	else {
@@ -3120,7 +3120,7 @@ static uint32_t TSS_EfiVariableData_ReadBuffer(TSST_EFIData *efiData,
 	if (uefiVariableData->VariableDataLength > 0) {
 	    /* freed by TSS_EfiVariableData_Free */
 	    uefiVariableData->VariableData =
-		malloc(uefiVariableData->VariableDataLength);
+		malloc((size_t)uefiVariableData->VariableDataLength);
 	    if (uefiVariableData->VariableData == NULL) {
 		printf("TSS_EfiVariableData_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)uefiVariableData->VariableDataLength);
@@ -3132,7 +3132,7 @@ static uint32_t TSS_EfiVariableData_ReadBuffer(TSST_EFIData *efiData,
     if (rc == 0) {
 	if (uefiVariableData->VariableDataLength > 0) {
 	    rc = TSS_Array_Unmarshalu(uefiVariableData->VariableData,
-				      uefiVariableData->VariableDataLength,
+				      (uint16_t)uefiVariableData->VariableDataLength,
 				      event, eventSize);
 	}
 	else {
@@ -3235,7 +3235,7 @@ static uint32_t TSS_EfiVariableDriverConfig_ReadBuffer(TSST_EFIData *efiData,
 		 (&uefiVariableData->variableDriverConfig.signatureList,
 		  &uefiVariableData->variableDriverConfig.signatureListCount,
 		  uefiVariableData->VariableData,
-		  uefiVariableData->VariableDataLength);
+		  (uint32_t)uefiVariableData->VariableDataLength);
 	    /* trace the GUID and Var as errors */
 	    if (rc != 0) {
 		printf("TSS_EfiVariableDriverConfig_ReadBuffer: "
@@ -3271,7 +3271,7 @@ static uint32_t TSS_EfiSignatureAllLists_ReadBuffer(TSS_EFI_SIGNATURE_LIST **sig
 
 	    /* freed by TSS_EfiVariableData_Free */
 	    tmpptr = realloc(*signatureList,
-			     sizeof(TSS_EFI_SIGNATURE_LIST) * (*signatureListCount+1));
+			     sizeof(TSS_EFI_SIGNATURE_LIST) * ((size_t)(*signatureListCount)+1));
 	    if (tmpptr != NULL) {
 		*signatureList = tmpptr;
 		(*signatureListCount)++;
@@ -3381,12 +3381,13 @@ static uint32_t TSS_EfiSignatureList_ReadBuffer(TSS_EFI_SIGNATURE_LIST *signatur
 	    /* expand the array */
 	    /* freed by TSS_EfiSignatureList_Free */
 	    tmpptr = realloc(signatureList->Signatures,
-			     sizeof(TSS_EFI_SIGNATURE_DATA) * (signatureList->signaturesCount+1));
+			     sizeof(TSS_EFI_SIGNATURE_DATA) * ((size_t)(signatureList->signaturesCount)+1));
 	    if (tmpptr != NULL) {
 		signatureList->Signatures = tmpptr;
 		(signatureList->signaturesCount)++;
 		/* point to next TSS_EFI_SIGNATURE_DATA in array */
 		nextSignatureData = signatureList->Signatures + signatureList->signaturesCount-1;
+		nextSignatureData->SignatureData = NULL;	/* for free */
 	    }
 	    else {
 		printf("TSS_EfiSignatureList_ReadBuffer: Error allocating %u bytes\n",
@@ -3521,7 +3522,7 @@ static void TSS_EfiVariableDriverConfig_Trace(TSST_EFIData *efiData)
       default:
 	TSS_PrintAll("    Variable unsupported:",
 		     uefiVariableData->VariableData,
-		     uefiVariableData->VariableDataLength);
+		     (uint32_t)uefiVariableData->VariableDataLength);
 	break;
     }
     return;
@@ -3595,7 +3596,7 @@ static uint32_t TSS_EfiVariableBoot_ReadBuffer(TSST_EFIData *efiData,
 	    TSS_EfiVariableBootOrder_Init(variableBootOrder);
 	    rc = TSS_EfiVariableBootOrder_ReadBuffer(variableBootOrder,
 						     uefiVariableData->VariableData,
-						     uefiVariableData->VariableDataLength);
+						     (uint32_t)uefiVariableData->VariableDataLength);
 	}
 	/* unmarshal boot path */
 	else {
@@ -3701,7 +3702,7 @@ static uint32_t TSS_EfiVariableBootPath_ReadBuffer(TSS_VARIABLE_BOOT *variableBo
 {
     uint32_t rc = 0;
     uint8_t *event = VariableData;
-    uint32_t eventSize = VariableDataLength;
+    uint32_t eventSize = (uint32_t)VariableDataLength;
 #if HAVE_EFIBOOT_H
     /* this parser uses the efivar library */
     int isValid;
@@ -3862,7 +3863,7 @@ static uint32_t TSS_EfiVariableAuthority_ReadBuffer(TSST_EFIData *efiData,
 	    &uefiVariableData->authoritySignatureData;
 	/* tmp because unmarshal moves pointers */
 	uint8_t *tmpVarData = uefiVariableData->VariableData;
-	uint32_t tmpVarDataLength = uefiVariableData->VariableDataLength;
+	uint32_t tmpVarDataLength = (uint32_t)uefiVariableData->VariableDataLength;
 
 	/* db has an owner, shim does not */
 	if (uefiVariableData->variableDataTag == TSS_VAR_DB) {
@@ -4022,7 +4023,7 @@ static uint32_t TSS_EfiBootServices_ReadBuffer(TSST_EFIData *efiData,
     if (rc == 0) {
 	if (uefiImageLoadEvent->LengthOfDevicePath > 0) {
 	    /* freed by TSS_EfiBootServices_Free */
-	    uefiImageLoadEvent->DevicePath = malloc(uefiImageLoadEvent->LengthOfDevicePath);
+	    uefiImageLoadEvent->DevicePath = malloc((size_t)uefiImageLoadEvent->LengthOfDevicePath);
 	    if (uefiImageLoadEvent->DevicePath == NULL) {
 		printf("TSS_EfiBootServices_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)(uefiImageLoadEvent->LengthOfDevicePath));
@@ -4034,7 +4035,7 @@ static uint32_t TSS_EfiBootServices_ReadBuffer(TSST_EFIData *efiData,
     if (rc == 0) {
 	if (uefiImageLoadEvent->LengthOfDevicePath > 0) {
 	    rc = TSS_Array_Unmarshalu(uefiImageLoadEvent->DevicePath,
-				      uefiImageLoadEvent->LengthOfDevicePath,
+				      (uint16_t)uefiImageLoadEvent->LengthOfDevicePath,
 				      &event, &eventSize);
 	}
 	else {
@@ -4046,7 +4047,7 @@ static uint32_t TSS_EfiBootServices_ReadBuffer(TSST_EFIData *efiData,
 	rc = TSS_UefiDevicePathList_ReadBuffer(&uefiImageLoadEvent->UefiDevicePath,
 					       &uefiImageLoadEvent->UefiDevicePathCount,
 					       uefiImageLoadEvent->DevicePath,
-					       uefiImageLoadEvent->LengthOfDevicePath);
+					       (uint32_t)uefiImageLoadEvent->LengthOfDevicePath);
     }
 #if HAVE_EFIBOOT_H
     /* format path (based on external package) */
@@ -4071,7 +4072,7 @@ static void TSS_EfiBootServices_Trace(TSST_EFIData *efiData)
     printf("  DevicePath: %s\n", uefiImageLoadEvent->Path);
 #else
     TSS_PrintAll("  DevicePath:",
-		 uefiImageLoadEvent->DevicePath, uefiImageLoadEvent->LengthOfDevicePath);
+		 uefiImageLoadEvent->DevicePath, (uint32_t)uefiImageLoadEvent->LengthOfDevicePath);
 #endif /* HAVE_EFIBOOT_H */
     printf("  UefiDevicePathCount: %u\n", uefiImageLoadEvent->UefiDevicePathCount);
 
@@ -4111,7 +4112,7 @@ static uint32_t TSS_UefiDevicePathList_ReadBuffer(TSS_UEFI_DEVICE_PATH **UefiDev
 	    void *tmpptr;				/* for realloc */
 	    /* freed by TSS_EfiBootServices_Free() */
 	    tmpptr = realloc(*UefiDevicePath,
-			     sizeof(TSS_UEFI_DEVICE_PATH) * ((*UefiDevicePathCount)+1));
+			     sizeof(TSS_UEFI_DEVICE_PATH) * ((size_t)(*UefiDevicePathCount)+1));
 	    if (tmpptr != NULL) {
 		*UefiDevicePath = tmpptr;
 		nextDevicePath =
@@ -4295,7 +4296,7 @@ static uint32_t TSS_EfiGptEvent_ReadBuffer(TSST_EFIData *efiData,
 	if (uefiGptData->NumberOfPartitions > 0) {
 	    /* freed by TSS_EfiGptEvent_Free */
 	    uefiGptData->Partitions =
-		malloc(uefiGptData->NumberOfPartitions * sizeof(TSS_UEFI_PARTITION_ENTRY));
+		malloc((size_t)uefiGptData->NumberOfPartitions * sizeof(TSS_UEFI_PARTITION_ENTRY));
 	    if (uefiGptData->Partitions == NULL) {
 		printf("TSS_EfiGptEvent_ReadBuffer: Error allocating %u bytes\n",
 		       (unsigned int)
@@ -4927,7 +4928,7 @@ static uint32_t TSS_EfiHandoffTables_ReadBuffer(TSST_EFIData *efiData,
 	if (uefiHandoffTablePointers->NumberOfTables > 0) {
 	    /* freed by TSS_EfiHandoffTables_Free */
 	    uefiHandoffTablePointers->TableEntry =
-		malloc(uefiHandoffTablePointers->NumberOfTables *
+		malloc((size_t)uefiHandoffTablePointers->NumberOfTables *
 		       sizeof(TSS_EFI_CONFIGURATION_TABLE));
 	    if (uefiHandoffTablePointers->TableEntry == NULL) {
 		printf("TSS_EfiHandoffTables_ReadBuffer: Error allocating %u bytes\n",
