@@ -282,7 +282,12 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 			      imaTemplateData->imaTemplateMODSIG.modSigLength);
 	    if (pkcs7 != NULL) {
 		BIO *bio = NULL;
+#ifdef TPM_POSIX
 		bio = BIO_new_fd(fileno(stdout), BIO_NOCLOSE);	/* freed @2 */
+#endif
+#ifdef TPM_WINDOWS
+		bio = BIO_new_fd(_fileno(stdout), BIO_NOCLOSE);	/* freed @2 */
+#endif
 		if (bio != NULL) {
 		    PKCS7_print_ctx(bio, pkcs7, 4, NULL);
 		    BIO_free(bio);	/* @2 */

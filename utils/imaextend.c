@@ -52,7 +52,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef TPM_WINDOWS
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
+#ifdef TPM_POSIX
 #include <unistd.h>
+#endif
 
 #include <ibmtss/tss.h>
 #include <ibmtss/tssresponsecode.h>
