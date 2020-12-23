@@ -48,67 +48,68 @@ echo "CreateLoaded Primary Key, Hierarchy Parent"
 echo ""
 
 for %%H in ("40000001" "4000000c" "4000000b") do (
+    for %%A in ("-rsa 2048" "-rsa 3072" "-ecc nistp256" "-ecc nistp384" "-ecc bnp256" "-rsa") do (
 
-    echo "CreateLoaded primary key, parent %%~H"
-    %TPM_EXE_PATH%createloaded -hp %%~H -st -kt f -kt p -pwdk ppp > run.out
-    IF !ERRORLEVEL! NEQ 0 (
+    	echo "CreateLoaded primary key, parent %%~H %%~A"
+	%TPM_EXE_PATH%createloaded -hp %%~H %%~A -st -kt f -kt p -pwdk ppp > run.out
+	IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
-    )
+	)
 
-    echo "Create a storage key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp ppp > run.out
-    IF !ERRORLEVEL! NEQ 0 (
+	echo "Create a storage key under the primary key %%~A"
+	%TPM_EXE_PATH%create -hp 80000001 %%~A -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp ppp > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	exit /B 1
+	)
+
+	echo "Load the storage key under the primary key"
+	%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	exit /B 1
+	)
+
+	echo "Flush the storage key"
+	%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	exit /B 1
+	)
+
+	echo "Flush the primary storage key"
+	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	exit /B 1
+	)
+
+	echo "Load the storage key under the primary key - should fail"
+	%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
+	IF !ERRORLEVEL! EQU 0 (
+	exit /B 1
+	)
+
+	echo "CreateLoaded recreate owner primary key %%~A"
+	%TPM_EXE_PATH%createloaded -hp %%~H %%~A -st -kt f -kt p -pwdk ppp > run.out
+	IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
-    )
+	)
 
-    echo "Load the storage key under the primary key"
-    %TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
-    IF !ERRORLEVEL! NEQ 0 (
+        echo "Load the storage key under the primary key"
+	%TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
+	IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
-    )
+	)
 
-    echo "Flush the storage key"
-    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
+	echo "Flush the storage key"
+	%TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
+	IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
-    )
+	)
 
-    echo "Flush the primary storage key"
-    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
+	echo "Flush the primary storage key"
+	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+	IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
+	)
     )
-
-    echo "Load the storage key under the primary key - should fail"
-    %TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
-    IF !ERRORLEVEL! EQU 0 (
-        exit /B 1
-    )
-
-    echo "CreateLoaded recreate owner primary key"
-    %TPM_EXE_PATH%createloaded -hp %%~H -st -kt f -kt p -pwdk ppp > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       	exit /B 1
-    )
-
-    echo "Load the storage key under the primary key"
-    %TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       	exit /B 1
-    )
-
-    echo "Flush the storage key"
-    %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       	exit /B 1
-    )
-
-    echo "Flush the primary storage key"
-    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-       	exit /B 1
-    )
-
 )
 
 echo ""

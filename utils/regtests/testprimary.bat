@@ -3,9 +3,8 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: testprimary.bat 1278 2018-07-23 21:20:42Z kgoldman $	#
 REM										#
-REM (c) Copyright IBM Corporation 2015						#
+REM (c) Copyright IBM Corporation 2015 - 2020					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -219,6 +218,26 @@ IF !ERRORLEVEL! NEQ 0 (
   )
 
 exit /B 0
+
+REM different algorithms, command line options
+
+for %%A in ("-rsa 2048" "-rsa 3072" "-ecc nistp256" "-ecc nistp384" "-ecc bnp256" "-rsa") do (
+
+    echo "Create a primary storage key %%~A"
+    %TPM_EXE_PATH%createprimary -hi p %%~A  > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       	exit /B 1
+    )
+
+    echo "Flush the primary storage key %%~A"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       	exit /B 1
+    )
+)
+
+
+
 
 REM getcapability  -cap 1 -pr 80000000
 
