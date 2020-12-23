@@ -465,11 +465,11 @@ static uint32_t startup(TSS_CONTEXT	*tssContext,
 {
     uint32_t 		rc = 0;
     Startup_In 		in;
-    char 		localityString[2];
+    char 		localityString[17];	/* 17 to suppress false warning */
 
     if (rc == 0) {
+	memset(localityString, 0, sizeof(localityString));
 	sprintf(localityString, "%.*u", 1, locality);
-	localityString[1] = '\0';
 	TSS_SetProperty(tssContext, TPM_TRANSMIT_LOCALITY, localityString);
     }
     /* call TSS to execute the command */
