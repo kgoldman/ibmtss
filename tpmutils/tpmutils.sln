@@ -243,6 +243,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "printattr", "printattr\prin
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tpmcmd", "tpmcmd\tpmcmd.vcxproj", "{CBB55ED3-AA2F-40D2-87BD-5790C85C0F33}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imaextend", "imaextend\imaextend.vcxproj", "{F4983E33-9830-4927-ADE2-F377C039DC79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1893,6 +1895,20 @@ Global
 		{CBB55ED3-AA2F-40D2-87BD-5790C85C0F33}.Release|Win32.Build.0 = Release|Win32
 		{CBB55ED3-AA2F-40D2-87BD-5790C85C0F33}.Release|x64.ActiveCfg = Release|x64
 		{CBB55ED3-AA2F-40D2-87BD-5790C85C0F33}.Release|x64.Build.0 = Release|x64
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Debug|Win32.Build.0 = Debug|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Debug|x64.ActiveCfg = Debug|x64
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Debug|x64.Build.0 = Debug|x64
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Release|Any CPU.ActiveCfg = Release|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Release|Win32.ActiveCfg = Release|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Release|Win32.Build.0 = Release|Win32
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Release|x64.ActiveCfg = Release|x64
+		{F4983E33-9830-4927-ADE2-F377C039DC79}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
