@@ -43,28 +43,6 @@
 
 #define TSS_EFI_GUID_SIZE 16
 
-#ifdef HAVE_CONFIG_H
-/*
-  config.h is only present if autoconf was used, which is only for the linux builds.  This will
-  define HAVE_EFIBOOT_H if the EFI libraries are present.
-z
-  Use HAVE_EFIBOOT_H to conditionally compile other code.
-
-  Potential packages are:
-  
-  Ubuntu: efivar, libefiboot-dev, libefiboot1, libefivar-dev, libefivar1
-
-  RHEL, the packages may be efivar-libs efivar
-*/
-
-#include <config.h>
-#endif
-
-#if HAVE_EFIBOOT_H
-#include <efivar/efivar.h>
-#include <efivar/efiboot.h>
-#endif
-
 /* TSS_EFI_SIGNATURE_DATA from UEFI specification */
 
 typedef struct {
@@ -363,12 +341,10 @@ typedef struct  {
 typedef struct  {
     uint32_t Attributes;
     uint16_t FilePathListLength;
+    uint32_t DescriptionLength;
     char *Description;
-    uint32_t DescriptionUcs2Length;
-    char *DescriptionUcs2;
     uint32_t UefiDevicePathCount;
     TSS_UEFI_DEVICE_PATH *UefiDevicePath;	/* array of TSS_UEFI_DEVICE_PATH structures */
-    char *bootPath;				/* from efivar library */
 } TSS_VARIABLE_BOOT;
 
 /* This structure is used to designate the measurement of UEFI variables. The

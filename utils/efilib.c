@@ -484,7 +484,7 @@ static void isAsciiString(int *isAscii, uint8_t *buffer, uint32_t length)
 
 
 uint32_t TSS_UCS2_Unmarshal(char **ucs2,
-			    uint32_t *DescriptionUcs2Length,
+			    uint32_t *DescriptionLength,
 			    uint8_t **event, uint32_t *eventSize);
 
 /* TSS_UCS2_Unmarshal() copies the event to a malloc'ed ucs2, not including the NUL terminator.
@@ -493,14 +493,14 @@ uint32_t TSS_UCS2_Unmarshal(char **ucs2,
 */
 
 uint32_t TSS_UCS2_Unmarshal(char **ucs2,		/* freed by caller */
-			    uint32_t *DescriptionUcs2Length,
+			    uint32_t *DescriptionLength,
 			    uint8_t **event, uint32_t *eventSize)
 {
     uint32_t i;
     uint32_t bytes;	/* bytes to malloc and store from event */
     int foundNul = 0;
 
-    *DescriptionUcs2Length = 0;
+    *DescriptionLength = 0;
     /* count the number of UCS2 bytes */
     for (i = 0 ; i < *eventSize ; i+= 2) {
 	if ((i+1) > *eventSize) {
@@ -515,7 +515,7 @@ uint32_t TSS_UCS2_Unmarshal(char **ucs2,		/* freed by caller */
 	return TSS_RC_INSUFFICIENT_BUFFER;
     }
     bytes = i;
-    *DescriptionUcs2Length = i/2;
+    *DescriptionLength = i/2;
     *ucs2 = malloc(bytes);
     if (*ucs2 == NULL) {
 	return TSS_RC_OUT_OF_MEMORY;
@@ -2400,14 +2400,6 @@ static uint32_t TSS_EfiHandoffTables_ReadBuffer(TSST_EFIData *efiData,
 static void     TSS_EfiHandoffTables_Trace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiHandoffTables_ToJson(TSST_EFIData *efiData);
 
-/* helper functions */
-
-#if HAVE_EFIBOOT_H
-static uint32_t TSS_EfiFormatDevicePath(char **path,
-					uint8_t *devicePath,	/* efidp structure */
-					uint16_t pathlen);
-#endif /* HAVE_EFIBOOT_H */
-
 /* Table to map eventType to handling function callbacks.
 
    Missing events return an TSS_RC_NOT_IMPLEMENTED.
@@ -3675,8 +3667,6 @@ static uint32_t TSS_EfiVariableBootOrder_ReadBuffer(TSS_VARIABLE_BOOT_ORDER *var
 static void     TSS_EfiVariableBootPath_Init(TSS_VARIABLE_BOOT *variableBoot)
 {
     variableBoot->Description = NULL;
-    variableBoot->DescriptionUcs2 = NULL;
-    variableBoot->bootPath = NULL;
     variableBoot->UefiDevicePathCount = 0;
     variableBoot->UefiDevicePath = NULL;
     return;
@@ -3687,8 +3677,6 @@ static void     TSS_EfiVariableBootPath_Free(TSS_VARIABLE_BOOT *variableBoot)
     uint32_t count;
 
     free(variableBoot->Description);
-    free(variableBoot->DescriptionUcs2);
-    free(variableBoot->bootPath);
     for (count = 0 ; count < variableBoot->UefiDevicePathCount ; count++) {
 	TSS_UEFI_DEVICE_PATH *uefiDevicePath = variableBoot->UefiDevicePath + count;
 	TSS_UefiDevicePath_Free(uefiDevicePath);
@@ -3703,60 +3691,7 @@ static uint32_t TSS_EfiVariableBootPath_ReadBuffer(TSS_VARIABLE_BOOT *variableBo
     uint32_t rc = 0;
     uint8_t *event = VariableData;
     uint32_t eventSize = (uint32_t)VariableDataLength;
-#if HAVE_EFIBOOT_H
-    /* this parser uses the efivar library */
-    int isValid;
-    efi_load_option *loadOption = VariableData;	/* FIXME endian issue */
-    const char *description = NULL;
-    efidp efidp;
-    uint16_t pathlen;
 
-    /* int efi_loadopt_is_valid(efi_load_option *opt, size_t size) */
-    if (rc == 0) {
-	/* This fails on Supermicro https://github.com/rhboot/efivar/issues/163 */
-	isValid = efi_loadopt_is_valid(loadOption, VariableDataLength);
-	if (!isValid) {
-	    /* invalid load option */
-	    printf("TSS_EfiVariableBootPath_ReadBuffer: Error in efi_loadopt_is_valid\n");
-	    rc = TSS_RC_BAD_PROPERTY;
-	}
-    }
-    /* const unsigned char * efi_loadopt_desc(efi_load_option *opt, ssize_t limit)
-     */
-    if (rc == 0) {
-	description = (const char *)efi_loadopt_desc(loadOption, VariableDataLength);
-	if (description == NULL) {
-	    printf("TSS_EfiVariableBootPath_ReadBuffer: Error in efi_loadopt_desc\n");
-	    rc = TSS_RC_BAD_PROPERTY;
-	}
-    }
-    if (rc == 0) {
-	size_t descriptionLength = strlen(description);
-	/* freed by TSS_EfiVariableData_Free */
-	variableBoot->Description = malloc(descriptionLength +1);
-	if (variableBoot->Description != NULL) {
-	    strcpy(variableBoot->Description, (char *)description);
-	}
-	else {
-	    printf("TSS_EfiVariableBootPath_ReadBuffer: Error allocating %u bytes\n",
-		   (unsigned int)descriptionLength +1);
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
-    }
-    /* efidp efi_loadopt_path(efi_load_option *opt, ssize_t limit) */
-    /* uint16_t efi_loadopt_pathlen(efi_load_option *opt, ssize_t limit) */
-    if (rc == 0) {
-	efidp = efi_loadopt_path(loadOption, VariableDataLength);
-	pathlen = efi_loadopt_pathlen(loadOption, VariableDataLength);
-    }
-    if (rc == 0) {
-	rc = TSS_EfiFormatDevicePath(&variableBoot->bootPath,	/* must be freed */
-				     (uint8_t *)efidp,
-				     pathlen);
-    }
-#endif	/* HAVE_EFIBOOT_H */
-    /* even if the efivar calls fail, continue with the local parsing */
-    rc = 0;
     /* this parser is in-line, into the TSS_VARIABLE_BOOT structure */
     if (rc == 0) {
 	rc = TSS_UINT32LE_Unmarshal(&variableBoot->Attributes,
@@ -3767,8 +3702,8 @@ static uint32_t TSS_EfiVariableBootPath_ReadBuffer(TSS_VARIABLE_BOOT *variableBo
 				    &event, &eventSize);
     }
     if (rc == 0) {
-	rc = TSS_UCS2_Unmarshal(&variableBoot->DescriptionUcs2,	/* must be freed */
-				&variableBoot->DescriptionUcs2Length,
+	rc = TSS_UCS2_Unmarshal(&variableBoot->Description,	/* must be freed */
+				&variableBoot->DescriptionLength,
 				&event, &eventSize);
     }
     if (rc == 0) {
@@ -3799,10 +3734,8 @@ static void TSS_EfiVariableBoot_Trace(TSST_EFIData *efiData)
 	TSS_VARIABLE_BOOT *variableBoot = &uefiVariableData->variableBoot;
 	printf("  Attributes: %08x\n", variableBoot->Attributes);
 	printf("  FilePathListLength: %hu\n", variableBoot->FilePathListLength);
-	printf("  Description: %s\n", variableBoot->Description);
-	wchar_printf("DescriptionUcs2: ", variableBoot->DescriptionUcs2,
-		     (uint64_t)(variableBoot->DescriptionUcs2Length));
-	printf("  Path: %s\n", variableBoot->bootPath);
+	wchar_printf("Description: ", variableBoot->Description,
+		     (uint64_t)(variableBoot->DescriptionLength));
 	for (count = 0 ; count < variableBoot->UefiDevicePathCount ; count++) {
 	    TSS_UefiDevicePath_Trace(variableBoot->UefiDevicePath + count);
 	}
@@ -4049,14 +3982,6 @@ static uint32_t TSS_EfiBootServices_ReadBuffer(TSST_EFIData *efiData,
 					       uefiImageLoadEvent->DevicePath,
 					       (uint32_t)uefiImageLoadEvent->LengthOfDevicePath);
     }
-#if HAVE_EFIBOOT_H
-    /* format path (based on external package) */
-    if (rc == 0) {
-	rc = TSS_EfiFormatDevicePath(&uefiImageLoadEvent->Path,
-				     uefiImageLoadEvent->DevicePath,
-				     uefiImageLoadEvent->LengthOfDevicePath);
-    }
-#endif /* HAVE_EFIBOOT_H */
     return rc;
 }
 
@@ -4068,12 +3993,8 @@ static void TSS_EfiBootServices_Trace(TSST_EFIData *efiData)
     printf("  Image location in memory: %016" PRIx64 "\n", uefiImageLoadEvent->ImageLocationInMemory);
     printf("  Image length in memory: %" PRIu64 "\n", uefiImageLoadEvent->ImageLengthInMemory);
     printf("  Image link time address: %016" PRIx64 "\n", uefiImageLoadEvent->ImageLinkTimeAddress);
-#if HAVE_EFIBOOT_H
-    printf("  DevicePath: %s\n", uefiImageLoadEvent->Path);
-#else
     TSS_PrintAll("  DevicePath:",
 		 uefiImageLoadEvent->DevicePath, (uint32_t)uefiImageLoadEvent->LengthOfDevicePath);
-#endif /* HAVE_EFIBOOT_H */
     printf("  UefiDevicePathCount: %u\n", uefiImageLoadEvent->UefiDevicePathCount);
 
     for (count = 0 ; count < uefiImageLoadEvent->UefiDevicePathCount ; count++) {
@@ -4982,72 +4903,3 @@ static uint32_t TSS_EfiHandoffTables_ToJson(TSST_EFIData *efiData)
     }
     return rc;
 }
-
-#if HAVE_EFIBOOT_H
-
-/* ssize_t efidp_format_device_path(char *buf, size_t size, const_efidp dp, ssize_t limit); */
-
-/* TSS_EfiFormatDevicePath() runs efidp_format_device_path twice, first to get the size, then to get
-   the path
-
-*/
-
-static uint32_t TSS_EfiFormatDevicePath(char **path,	/*path must be freed by the caller */
-					uint8_t *devicePath,
-					uint16_t pathlen)
-{
-    uint32_t rc = 0;
-    ssize_t ssrc;	/* return code */
-    size_t pathLength;
-    efidp efiDevicePath = (efidp)devicePath;
-
-    if (pathlen > 0) {
-	/* ssize_t efidp_format_device_path(char *buf, size_t size, const_efidp dp, ssize_t
-	   limit); */
-	if (rc == 0) {
-	    /* returns the length, negative is error */
-	    ssrc = efidp_format_device_path(NULL,		/* buffer */
-					    0,			/* length */
-					    efiDevicePath,	/* const_efidp */
-					    pathlen);		/* length */
-	    if (ssrc < 0) {
-		printf("TSS_EfiFormatDevicePath: Error in efidp_format_device_path\n");
-		rc = TSS_RC_BAD_PROPERTY;
-	    }
-	}
-	if (rc == 0) {
-	    pathLength = ssrc + 1;	/* +1 for NUL terminator? */
-	    *path = malloc(pathLength);	/* freed by caller */
-	    if (*path == NULL) {
-		printf("TSS_EfiFormatDevicePath: Error allocating %u bytes\n",
-		       (unsigned int)pathLength);
-		rc = TSS_RC_OUT_OF_MEMORY;
-	    }
-	}
-	if (rc == 0) {
-	    (*path)[pathLength-1] = '\0';	/* NUL terminate the string */
-	    ssrc = efidp_format_device_path(*path, pathLength,
-					    efiDevicePath, pathlen);
-	    if (ssrc < 0) {
-		printf("TSS_EfiVariableBootPath: Error in efidp_format_device_path\n");
-		rc = TSS_RC_BAD_PROPERTY;
-	    }
-	}
-    }
-    else {	/* pathlen 0 is a bug in the event logging */
-	if (rc == 0) {
-	    *path = malloc(1);
-	    if (*path == NULL) {
-		printf("TSS_EfiFormatDevicePath: Error allocating %u byte\n", 1);
-		rc = TSS_RC_OUT_OF_MEMORY;
-	    }
-	}
-	/* return an empty path */
-	if (rc == 0) {
-	    (*path)[0] = '\0';
-	}
-    }
-    return rc;
-}
-
-#endif	/*  HAVE_EFIBOOT_H */
