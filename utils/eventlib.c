@@ -59,6 +59,8 @@ extern int tssUtilsVerbose;
 /* NOTE: PFP is the TCG PC Client Platform Firmware Profile Specification
 */
 
+#ifndef TPM_TSS_NOCRYPTO
+
 /* function prototypes for event callback table */
 
 typedef uint32_t (*TSS_Event2_CheckHash_t)(TCG_PCR_EVENT2 *event2,
@@ -554,6 +556,8 @@ TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event,
     }
     return rc;
 }
+
+#endif /* TPM_TSS_NOCRYPTO */
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20

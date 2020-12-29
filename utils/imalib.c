@@ -54,8 +54,10 @@
 #include <winsock2.h>
 #endif
 
+#ifndef TPM_TSS_NO_OPENSSL
 #include <openssl/x509.h>
 #include <openssl/bio.h>
+#endif	/* TPM_TSS_NO_OPENSSL */
 
 #include <ibmtss/TPM_Types.h>
 #include <ibmtss/tsscryptoh.h>
