@@ -607,13 +607,347 @@ do
 
 done
 
-rm -r tmppriv.bin
-rm -r tmppub.bin
-rm -r tmp.bin
+echo ""
+echo "Pre-OS Trusted Path demo"
+echo ""
+
+#
+# A trusted path beween a CPU and the TPM portects the seal and unseal
+# of a 'sealed secret'.  An encrypted sessions prevent a MiM attack.
+# The CPU secret is applied to an NV extend Index.  The run time unseal
+# is authorized as long as the CPU secret extend occurred, which
+# prevents the TPM from being moved to another platform.
+
+# It leverages the EK and its certificate to create a trusted path.
+# The CPU secret is used twice, first in a bind encrypt session when
+# extending the secret to NV, and next as the data extended into an NV
+# or derived secrets.
+#
+
+# Temporary files
+
+# tmpext.bin - extend of CPU secret
+# tmpuspol.bin - Unseal data policy
+# tmpseal.txt - test sealed data in plaintext
+# tmppub.bin - sealed data public part
+# tmppriv.bin - sealed data private part
+# tmpunseal.txt - unsealed data in plaintext
+
+# Key Slots
+
+# 80000000 EK
+# 80000001 SRK
+# 80000002 Sealed Data
+
+# Notation
+
+# DEMO: Actions that are just for the demo script, not for the actual application
+# PROVISION: Actions taken once during provisioning
+# RUNTIME: Actions taken at runtime
+
+# Policies
+
+# NV Extend Index
+#
+# Policy OR of
+# Policy A - command code NV read (only for debug)
+# Policy B - command code NV extend
+# Policy C - command code Policy NV (for the unseal)
+
+# Sealed Data
+#
+# Policy command code unseal
+# AND
+# policynv equals the CPU secret extended into the NV Index
+
+# If this changes, the unseal policynv calculation must also change
+CPU_SECRET=cpusecret
+
+# test sealed secret
+echo "sealedsecret" > tmpseal.txt
+
+# clean up from previous failed run
+${PREFIX}nvundefinespace -ha 01000000 -hi p > run.out
+
+echo "DEMO: Context save the regression test SRK to free up a key slot"
+${PREFIX}contextsave -ha 80000000 -of tmpsrk.bin > run.out
+checkSuccess $?
+
+echo "DEMO: Flush the regression test SRK"
+${PREFIX}flushcontext -ha 80000000 > run.out
+checkSuccess $?
+
+echo "DEMO: Create EK certificate for SW TPM"
+${PREFIX}createekcert -rsa 2048 -cakey cakey.pem    -capwd rrrr > run.out
+checkSuccess $?
+
+#
+# Provision the NV Extend Index
+#
+
+# The NV index policy permits unauthorized read OR extend
+
+# Policy A - command code NV read
+# tmp.txt:
+# 0000016c0000014e
+# > policymaker -if policies/policyccnvread.txt -ns -v -of policies/policyccnvread.bin
+# 47ce3032d8bad1f3089cb0c09088de43501491d460402b90cd1b7fc0b68ca92f
+
+# Policy B - command code NV extend
+# 0000016c00000136
+# > policymaker -if policies/policyccnvextend.txt -ns -v -of policies/policyccnvextend.bin
+# b6a2e7142ee56fd978047488483daa5b42b8dc4cc7ddcceddfb91793cf1ff1b7
+
+# Policy C - command code Policy NV
+# 0000016c00000149
+# > policymaker -if policies/policyccpolicynv.txt -ns -v -of policies/policyccpolicynv.bin
+# 203e4bd5d0448c9615cc13fa18e8d39222441cc40204d99a77262068dbd55a43
+
+# policyor
+# policyornvrep.txt:  policy OR command code | Policy A | Policy B | Policy C
+# 0000017147ce3032d8bad1f3089cb0c09088de43501491d460402b90cd1b7fc0b68ca92fb6a2e7142ee56fd978047488483daa5b42b8dc4cc7ddcceddfb91793cf1ff1b7203e4bd5d0448c9615cc13fa18e8d39222441cc40204d99a77262068dbd55a43
+# > policymaker -if policies/policyornvrep.txt -ns -v -of policies/policyornvrep.bin
+# 7f17937e206279a3f755fb60f40cf126b70e5b1d9bf202866d527613874a64ac
+
+echo ""
+echo "Provision NV Index and Create Sealed Blob"
+echo ""
+
+# createek also validates the EK public key against the EK certificate and
+# walks the certificate chain.  It leaves the EK loaded at 80000000
+
+echo "PROVISION: Create the EK for the salted session 80000000"
+${PREFIX}createek -rsa 2048 -cp -noflush -root certificates/rootcerts.txt > run.out
+checkSuccess $?
+
+echo "PROVISION: Start the EK salted session 02000000 for for an authenticated channel"
+${PREFIX}startauthsession -se h -hs 80000000 > run.out
+checkSuccess $?
+
+# the salted session HMAC ensures thet the storge key Name is authentic
+
+echo "PROVISION: Create the primary parent for the unseal data 80000001"
+${PREFIX}createprimary -hi p -pwdk sto -se0 02000000 21 > run.out
+checkSuccess $?
+
+# the salted session encrypts the NV index password, the CPU secret,
+# and ensures that the NV index Name us authentic
+
+echo "PROVISION: Define the NV Index, use an encrypt session to encrypt the password"
+${PREFIX}nvdefinespace -ha 01000000 -hi p -pwdn ${CPU_SECRET} -ty e +at ody +at stc -pol policies/policyornvrep.bin -se0 02000000 21 > run.out
+checkSuccess $?
+
+# Do this to calculate the NV Index Name for the policy
+
+# echo "DEMO: NV Extend to set the written bit, needed for the NV Index Name"
+# ${PREFIX}nvextend -ha 01000000 -ic 0 -pwdn ${CPU_SECRET} > run.out
+# checkSuccess $?
+
+# echo "DEMO: Read the NV Index Name"
+# ${PREFIX}nvreadpublic -ha 01000000 -ns > run.out
+# checkSuccess $?
+
+# NV Index Name 000bbc2784f51dda6d27b92784068c6b8c7c94a4cc530b434e16ef95222fe68e6c92
+
+# Calculate the hash of the CPU secret for the unseal.  Use
+# policymaker to calculate the eventual NV extend result in software.
+
+# 'cpusecret' in hexascii
+echo -n 637075736563726574 > tmp.txt
+
+# 637075736563726574
+policymaker -if tmp.txt -ns -of tmpext.bin > run.out
+# policy digest:
+# 0ad80f8e4450587760d9137df41c9374f657bafa621fe37d4d5c8cecf0bcce5e
+
+# Calculate the sealed object policy
+# Policy command code unseal AND policynv equals
+
+# AND term 1 command code unseal
+
+# 0000016c0000015e
+
+# AND term 2 policynv
+
+# args = Hash of operandB.buffer || offset || operation)
+
+# tmp.txt is operandB.buffer input in hexascii, offset 0, operand 0 means equals
+# 0ad80f8e4450587760d9137df41c9374f657bafa621fe37d4d5c8cecf0bcce5e00000000
+
+# Use policymaker with -nz to do a hash of hexascii
+# > policymaker -nz -if tmp.txt -v -ns 
+# args is a hash of the above input: 
+# 19936a82d9b3fabcc3794b1b9c1dbb71a7de7f6e360cb01f6a6f082f7e66dc60
+
+# CC_PolicyNV || args || Name
+# 0000014919936a82d9b3fabcc3794b1b9c1dbb71a7de7f6e360cb01f6a6f082f7e66dc60000bbc2784f51dda6d27b92784068c6b8c7c94a4cc530b434e16ef95222fe68e6c92
+
+# Combine the two AND terms to calculate the policy
+# tmp.txt
+# 0000016c0000015e
+# 0000014919936a82d9b3fabcc3794b1b9c1dbb71a7de7f6e360cb01f6a6f082f7e66dc60000bbc2784f51dda6d27b92784068c6b8c7c94a4cc530b434e16ef95222fe68e6c92
+
+echo 0000016c0000015e > tmp.txt
+echo 0000014919936a82d9b3fabcc3794b1b9c1dbb71a7de7f6e360cb01f6a6f082f7e66dc60000bbc2784f51dda6d27b92784068c6b8c7c94a4cc530b434e16ef95222fe68e6c92 >> tmp.txt
+
+policymaker -if tmp.txt -ns -v -of tmpuspol.bin > run.out
+#  intermediate policy digest length 32
+#  e6 13 13 70 76 52 4b de 48 75 33 86 58 84 e9 73 
+#  2e be e3 aa cb 09 5d 94 a6 de 49 2e c0 6c 46 fa 
+#  intermediate policy digest length 32
+#  b2 f6 13 21 27 36 b6 f1 c2 84 07 a3 fb a2 7e 14 
+#  c1 84 c8 21 34 3a 8c 3b fe 23 cd 5f 2e 76 d0 51 
+# policy digest:
+# b2f613212736b6f1c28407a3fba27e14c184c821343a8c3bfe23cd5f2e76d051
+
+echo "PROVISION: Create the sealed data object under the primary storage key 80000001, encrypt session"
+${PREFIX}create -hp 80000001 -pwdp sto -bl -if tmpseal.txt -kt f -kt p -pol tmpuspol.bin -uwa -opu tmppub.bin -opr tmppriv.bin -se0 02000000 20 
+checkSuccess $?
+
+echo ""
+echo "Run time - Extend the CPU secret unto the NV Index"
+echo ""
+
+#
+# Run time - Extend the CPU secret unto the NV Index
+#
+
+# Real code would read the NV Index Name at reboot and validate the
+# value to ensure that the NV Index has not been undefined and then
+# defined differently.
+
+echo "RUNTIME: Read the NV Index Name"
+${PREFIX}nvreadpublic -ha 01000000 -ns > run.out
+checkSuccess $?
+
+echo "RUNTIME: Start policy session 03000000 for NV authorization, bind to CPU secret for parameter encryption"
+${PREFIX}startauthsession -se p -bi 01000000 -pwdb ${CPU_SECRET} > run.out
+checkSuccess $?
+
+echo "RUNTIME: Policy command code NV extend"
+${PREFIX}policycommandcode -ha 03000000 -cc 00000136 > run.out
+checkSuccess $?
+
+echo "DEMO: Should be policy B first intermediate value b6a2 ..."
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "RUNTIME: Policy OR the NV Policies A, B, C"
+${PREFIX}policyor -ha 03000000 -if policies/policyccnvread.bin -if policies/policyccnvextend.bin -if policies/policyccpolicynv.bin > run.out
+checkSuccess $?
+
+echo "DEMO: Should be policy OR 7f17 ..."
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "RUNTIME: Extend the CPU secret into the NV Index, use parameter encryption"
+${PREFIX}nvextend -ha 01000000 -ic ${CPU_SECRET} -se0 03000000 21 > run.out
+checkSuccess $?
+
+echo "DEMO: Policy restart, set back to zero"
+${PREFIX}policyrestart -ha 03000000 > run.out 
+checkSuccess $?
+
+echo "DEMO: Policy command code NV read"
+${PREFIX}policycommandcode -ha 03000000 -cc 0000014e > run.out
+checkSuccess $?
+
+echo "DEMO: Policy OR"
+${PREFIX}policyor -ha 03000000 -if policies/policyccnvread.bin -if policies/policyccnvextend.bin -if policies/policyccpolicynv.bin > run.out
+checkSuccess $?
+
+echo "DEMO: Read NV Index, should be extend of CPU secret 0ad8 ..."
+${PREFIX}nvread -ha 01000000 -se0 03000000 0 > run.out
+checkSuccess $?
+
+echo ""
+echo "Run time - Unseal"
+echo ""
+
+# The application would recreate the EK at 80000000 and the primary
+# parent for the unseal data at 80000001
+
+echo "RUNTIME: Load the sealed data 80000002 under the storage parent 80000001"
+${PREFIX}load -hp 80000001 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+checkSuccess $?
+
+echo "RUNTIME: Start a PolicyNV authorization policy session 03000000"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo "RUNTIME: Policy command code PolicyNV"
+${PREFIX}policycommandcode -ha 03000000 -cc 00000149 > run.out
+checkSuccess $?
+
+echo "RUNTIME: Policy OR the NV Policies A, B, C"
+${PREFIX}policyor -ha 03000000 -if policies/policyccnvread.bin -if policies/policyccnvextend.bin -if policies/policyccpolicynv.bin > run.out
+checkSuccess $?
+
+echo "RUNTIME: Start a unseal policy session 03000001, salt for for response parameter encryption"
+${PREFIX}startauthsession -se p -hs 80000000 > run.out
+checkSuccess $?
+
+echo "RUNTIME: Policy command code Unseal"
+${PREFIX}policycommandcode -ha 03000001 -cc 0000015e > run.out
+checkSuccess $?
+
+echo "DEMO: Should be policy Unseal first intermediate value e6 13 13 70 ..."
+${PREFIX}policygetdigest -ha 03000001 > run.out
+checkSuccess $?
+
+echo "RUNTIME: Policy NV, operation equals extend of CPU secret"
+${PREFIX}policynv -ha 01000000 -hs 03000001 -op 0 -if tmpext.bin -se0 03000000 0 > run.out
+checkSuccess $?
+
+echo "DEMO: Should be policy Unseal second intermediate value b2 f6 13 21 ..."
+${PREFIX}policygetdigest -ha 03000001 > run.out
+checkSuccess $?
+
+echo "RUNTIME: Unseal, use the salt encrypt session"
+${PREFIX}unseal -ha 80000002 -of tmpunseal.txt -se0 03000001 40 > run.out
+checkSuccess $?
+
+echo "DEMO: Verify the unseal result"
+diff tmpseal.txt tmpunseal.txt > run.out
+checkSuccess $?
+
+# cleanup
+
+echo "DEMO: Undefine the NV Index"
+${PREFIX}nvundefinespace -ha 01000000 -hi p > run.out
+checkSuccess $?
+
+echo "DEMO: Flush EK at 80000000"
+${PREFIX}flushcontext -ha 80000000 > run.out
+checkSuccess $?
+
+echo "DEMO: Flush primary storage key at 80000001"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "DEMO: Flush sealed data at 80000002"
+${PREFIX}flushcontext -ha 80000002 > run.out
+checkSuccess $?
+
+echo "Context load the regression test SRK at 80000000"
+${PREFIX}contextload -if tmpsrk.bin > run.out
+checkSuccess $?
+
+# cleanup
+
+rm -f tmpseal.txt
+rm -f tmpunseal.txt
+rm -f tmppriv.bin
+rm -f tmppub.bin
+rm -f tmp.bin
 rm -f tmpdup.bin
 rm -f tmpss.bin
 rm -f tmppriv1.bin
 rm -f pssig.bin
 rm -f tkt.bin
+rm -f tmp.txt
+rm -f tmpext.bin
+rm -f tmpsrk.bin
+rm -f tmpuspol.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
