@@ -45,12 +45,16 @@
   The server type (mssim or raw) should agree with the TSS configuration.  mssim wrapes the packets
   in the MS simulator bytes.  raw does not.
 
+  For the mssim format, the server socket remains open until the TPM_SESSION_END preamble is
+  received.  Then, the proxy loops back and reopens the connection for the next TSS client side
+  open.
+
   The proxy is unnecessary when using a compiled application.
 
   Link with:
-  
+
   tbs.lib
-  ws2_32.lib 
+  ws2_32.lib
 */
 
 #include <limits.h>
@@ -87,6 +91,7 @@ typedef unsigned short 	TPM_TAG;
 #define SERVER_TYPE_MSSIM	0
 #define SERVER_TYPE_RAW		1
 #define TPM_SEND_COMMAND        8	/* simulator command preamble */
+#define TPM_SESSION_END        20
 
 /* local prototypes */
 
@@ -103,6 +108,7 @@ TSS_RESULT socketConnect(SOCKET *accept_fd,
 			 SOCKET sock_fd,
 			 short port);
 TSS_RESULT socketRead(SOCKET accept_fd,
+		      uint32_t	*commandType,
 		      char *buffer,
 		      uint32_t *bufferLength,
 		      size_t bufferSize);
@@ -153,11 +159,11 @@ int main(int argc, char** argv)
     TBS_CONTEXT_PARAMS2 contextParams;
 
     /* TPM command and response */
-    BYTE command[PACKET_SIZE]; 
+    BYTE command[PACKET_SIZE];
     uint32_t commandLength;
     BYTE response[PACKET_SIZE];
     uint32_t responseLength;
-		      
+
     /* command line arguments */
     short port;			/* TCPIP server port */
 
@@ -169,7 +175,7 @@ int main(int argc, char** argv)
     /* initialization */
     setvbuf(stdout, 0, _IONBF, 0);	/* output may be going through pipe */
     start_time = time(NULL);
-    
+
     /* get command line arguments */
     if (rc == 0) {
 	rc = getArgs(&port, &verbose, &logFilename,
@@ -205,45 +211,49 @@ int main(int argc, char** argv)
 	    socketOpened = TRUE;
 	}
     }
-    /* main loop */
+    /* outer loop, socket connect or reconnect */
     while (rc == 0) {
+
+	uint32_t	commandType = TPM_SEND_COMMAND;	/* for first time through inner loop */
 	/* connect to the client application */
 	if (rc == 0) {
 	    if (verbose) printf("Connecting on socket %hu\n", port);
 	    rc = socketConnect(&accept_fd, sock_fd, port);
 	}
-	/* read a command from client */
-	if (rc == 0) {
-	    rc = socketRead(accept_fd,
-			    (char *)command,	/* windows wants signed */
-			    &commandLength,
-			    sizeof(command));
-	    logAll("Command", commandLength, command);
-	}
-	/* send command to TPM and receive response */
-	if (rc == 0) {
-	    responseLength = sizeof(response);
-	    rc = Tbsip_Submit_Command(hContext,
-				      TBS_COMMAND_LOCALITY_ZERO,
-				      TBS_COMMAND_PRIORITY_NORMAL,
-				      command,
-				      commandLength,
-				      response,
-				      &responseLength);
-	    if (rc != 0) {
-		TPM_GetTBSError("Tbsi_Context_Create ", rc);
+
+	/* inner loop, read socket, send command, get response, write socket */
+	while ((rc == 0) && (commandType == TPM_SEND_COMMAND)) {
+
+	    /* read a command from client */
+	    if ((rc == 0) && (commandType == TPM_SEND_COMMAND)) {
+		rc = socketRead(accept_fd,
+				&commandType,
+				(char *)command,	/* windows wants signed */
+				&commandLength,
+				sizeof(command));
+		logAll("Command", commandLength, command);
 	    }
-	}
-	/* send response to client */
-	if (rc == 0) {
-	    logAll("Response", responseLength, response);
-	    rc = socketWrite(accept_fd,
-			     (char *)response,	/* windows wants signed char */
-			     responseLength);
-	}
-	/* disconnect from client */
-	if (rc == 0) {
-	    rc = socketDisconnect(accept_fd);
+	    /* send command to TPM and receive response */
+	    if ((rc == 0) && (commandType == TPM_SEND_COMMAND)) {
+		responseLength = sizeof(response);
+		rc = Tbsip_Submit_Command(hContext,
+					  TBS_COMMAND_LOCALITY_ZERO,
+					  TBS_COMMAND_PRIORITY_NORMAL,
+					  command,
+					  commandLength,
+					  response,
+					  &responseLength);
+		if (rc != 0) {
+		    TPM_GetTBSError("Tbsi_Context_Create ", rc);
+		}
+	    }
+	    /* send response to client */
+	    if ((rc == 0) && (commandType == TPM_SEND_COMMAND)) {
+		logAll("Response", responseLength, response);
+		rc = socketWrite(accept_fd,
+				 (char *)response,	/* windows wants signed char */
+				 responseLength);
+	    }
 	}
     }
     /* close socket */
@@ -300,7 +310,7 @@ TSS_RESULT socketInit(SOCKET *sock_fd, short port)
 	opt = 1;
 	/* Set SO_REUSEADDR before calling bind() for servers that bind to a fixed port number. */
 	/* For boolean values, opt must be an int, but the setsockopt prototype is IMHO wrong.
-	   It should take void *, but uses char *.  Hence the type cast. */       
+	   It should take void *, but uses char *.  Hence the type cast. */
 	irc = setsockopt(*sock_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt));
 	if (irc == SOCKET_ERROR) {
 	    printf("socketInit: Error, server setsockopt()\n");
@@ -343,14 +353,14 @@ TSS_RESULT socketConnect(SOCKET *accept_fd,
     TSS_RESULT		rc = 0;
     int			cli_len;
     struct sockaddr_in 	cli_addr;		/* Internet version of sockaddr */
-    
+
     /* accept a connection */
     if (rc == 0) {
 	cli_len = sizeof(cli_addr);
 	/* block until connection from client */
 	/* printf(" socketConnect: Waiting for connection on port %hu ...\n", port); */
 	*accept_fd = accept(sock_fd, (struct sockaddr *)&cli_addr, &cli_len);
-	if (*accept_fd == SOCKET_ERROR) { 
+	if (*accept_fd == SOCKET_ERROR) {
 	    printf("socketConnect: Error, accept()\n");
 	    TPM_HandleWsaError("socketConnect: ");
 	    closesocket(sock_fd);
@@ -365,24 +375,26 @@ TSS_RESULT socketConnect(SOCKET *accept_fd,
 
    Puts the result in 'buffer' up to 'bufferSize' bytes.
 
-   On success, the number of bytes in the buffer is equal to 'bufferLength' bytes
+   On success, if commandType is TPM_SEND_COMMAND, the number of bytes in the buffer is equal to
+   'bufferLength' bytes.  If commandType is TPM_SESSION_END, return it.  The loop should restart.
 
    This function is intended to be platform independent.
 */
 
-TSS_RESULT socketRead(SOCKET accept_fd,		/* read/write file descriptor */
-		      char *buffer,		/* output: command stream */
-		      uint32_t *bufferLength,	/* output: command stream length */
-		      size_t bufferSize)	/* input: max size of output buffer */
-{	
+TSS_RESULT socketRead(SOCKET 	accept_fd,		/* read/write file descriptor */
+		      uint32_t	*commandType,
+		      char 	*buffer,		/* output: command stream */
+		      uint32_t 	*bufferLength,	/* output: command stream length */
+		      size_t 	bufferSize)	/* input: max size of output buffer */
+{
     TSS_RESULT		rc = 0;
+    int			done = false;
     uint32_t		headerSize;	/* minimum required bytes in command through paramSize */
     uint32_t		paramSize;	/* from command stream */
-    uint32_t		commandTypeNbo;	/* MS simulator format preamble */ 	
-    uint32_t		commandType;	/* MS simulator format preamble */ 	
-    uint8_t 		locality;	/* MS simulator format preamble */ 
-    uint32_t 		lengthNbo;	/* MS simulator format preamble */ 
-    
+    uint32_t		commandTypeNbo;	/* MS simulator format preamble */
+    uint8_t 		locality;	/* MS simulator format preamble */
+    uint32_t 		lengthNbo;	/* MS simulator format preamble */
+
     /* if the MS simulator packet format */
     if (serverType == SERVER_TYPE_MSSIM) {
 	/* read and check the command */
@@ -390,25 +402,28 @@ TSS_RESULT socketRead(SOCKET accept_fd,		/* read/write file descriptor */
 	    rc = socketReadBytes(accept_fd, (char *)&commandTypeNbo, sizeof(uint32_t));
 	}
 	if (rc == 0) {
-	    commandType = LOAD32(&commandTypeNbo, 0);
-	    if (commandType != TPM_SEND_COMMAND) {
+	    *commandType = LOAD32(&commandTypeNbo, 0);
+	    if (*commandType == TPM_SESSION_END) {	/* client TSS termination request */
+		done = true;
+	    }
+	    else if (*commandType != TPM_SEND_COMMAND) {
 		printf("socketRead: Error, -mssim preamble is %08x not %08x\n",
-		       commandType,TPM_SEND_COMMAND); 
+		       *commandType, TPM_SEND_COMMAND);
 		rc = ERROR_CODE;
 	    }
 	}
 	/* read and discard the locality */
-	if (rc == 0) {
+	if ((rc == 0) && !done) {
 	    rc = socketReadBytes(accept_fd, &locality, sizeof(uint8_t));
 	}
 	/* read and discard the redundant length */
-	if (rc == 0) {
+	if ((rc == 0) && !done) {
 	    rc = socketReadBytes(accept_fd, (char *)&lengthNbo, sizeof(uint32_t));
 	}
     }
     /* check that the buffer can at least fit the command through the paramSize */
-    if (rc == 0) {
-	headerSize = sizeof(TPM_TAG) + sizeof(uint32_t);	
+    if ((rc == 0) && !done) {
+	headerSize = sizeof(TPM_TAG) + sizeof(uint32_t);
 	if (bufferSize < headerSize) {
 	    printf("socketRead: Error, buffer size %lu less than minimum %lu\n",
 		   (unsigned long)bufferSize, (unsigned long)headerSize);
@@ -416,10 +431,10 @@ TSS_RESULT socketRead(SOCKET accept_fd,		/* read/write file descriptor */
 	}
     }
     /* read the command through the paramSize from the socket stream */
-    if (rc == 0) {
+    if ((rc == 0) && !done) {
 	rc = socketReadBytes(accept_fd, buffer, headerSize);
     }
-    if (rc == 0) {
+    if ((rc == 0) && !done) {
 	/* extract the paramSize value, last field in header */
 	paramSize = LOAD32(buffer, headerSize - sizeof(uint32_t));
 	*bufferLength = headerSize + paramSize - (sizeof(TPM_TAG) + sizeof(uint32_t));
@@ -430,7 +445,7 @@ TSS_RESULT socketRead(SOCKET accept_fd,		/* read/write file descriptor */
 	}
     }
     /* read the rest of the command (already read tag and paramSize) */
-    if (rc == 0) {
+    if ((rc == 0) && !done) {
 	rc = socketReadBytes(accept_fd,
 			     buffer + headerSize,
 			     paramSize - (sizeof(TPM_TAG) + sizeof(uint32_t)));
@@ -469,7 +484,7 @@ TSS_RESULT socketReadBytes(SOCKET accept_fd,	/* read/write file descriptor */
 	else if (nread > 0) {
 	    nleft -= nread;
 	    buffer += nread;
-	}	    
+	}
 	else if (nread == 0) {  	/* EOF */
 	    printf("socketReadBytes: Error, read EOF, read %lu bytes\n", (unsigned long)(nbytes - nleft));
             rc = ERROR_CODE;
@@ -486,10 +501,10 @@ TSS_RESULT socketReadBytes(SOCKET accept_fd,	/* read/write file descriptor */
 TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
 		       const char *buffer,
 		       size_t buffer_length)
-{	
+{
     TSS_RESULT 	rc = 0;
     int		nwritten = 0;
-    
+
     /* write() is unspecified with buffer_length too large */
     if (rc == 0) {
 	if (buffer_length > SSIZE_MAX) {
@@ -502,7 +517,7 @@ TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
 	if (rc == 0) {
 	    uint32_t bufferLengthNbo = htonl((uint32_t)buffer_length);
 	    send(accept_fd, (const char *)&bufferLengthNbo, sizeof(uint32_t), 0);
-	}	
+	}
     }
    /* test that connection is open to write */
     if (rc == 0) {
@@ -520,7 +535,7 @@ TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
 	    TPM_HandleWsaError("socketWrite:");	/* report the error */
 	    socketDisconnect(accept_fd);
 	    rc = ERROR_CODE;
-	}	    
+	}
 	else {
 	    buffer_length -= nwritten;
 	    buffer += nwritten;
@@ -532,7 +547,7 @@ TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
 	if (rc == 0) {
 	    uint32_t acknowledgement = 0;
 	    send(accept_fd, (const char *)&acknowledgement, sizeof(uint32_t), 0);
-	}	
+	}
     }
     return rc;
 }
@@ -583,7 +598,7 @@ void TPM_GetWsaStartupError(int status,
 			    const char **error_string)
 {
     /* convert WSAStartup status to more useful text.  Copy the text to error_string */
-       
+
     switch(status) {
       case WSASYSNOTREADY:
 	*error_string = "WSAStartup error: WSASYSNOTREADY underlying network subsystem not ready for "
@@ -614,9 +629,9 @@ void TPM_GetWsaError(const char **error_string)
 {
     /* Use WSAGetLastError, and convert the resulting number
        to more useful text.  Copy the text to error_string */
-    
+
     int error;
-	
+
     error = WSAGetLastError();
     switch(error) {
 
@@ -707,7 +722,7 @@ void TPM_GetWsaError(const char **error_string)
       case WSAEHOSTUNREACH:
 	*error_string = "The remote host cannot be reached from this host at this time";
 	break;
-		
+
       default:
 	*error_string = "unknown error type\n";
 	break;
@@ -719,7 +734,7 @@ void TPM_GetTBSError(const char *prefix,
 		     TBS_RESULT rc)
 {
     const char *error_string;
-		     
+
     switch (rc) {
 
 	/* error codes from the TBS html docs */
@@ -803,7 +818,6 @@ void TPM_GetTBSError(const char *prefix,
 	error_string = "unknown error type\n";
 	break;
 
-	
     }
     printf("%s %s\n", prefix, error_string);
     return;
@@ -828,7 +842,7 @@ void CheckTPMError(const char *prefix,
 	    break;
 	}
 	printf("%s %s\n", prefix, error_string);
-    }    
+    }
     return;
 }
 
