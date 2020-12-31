@@ -424,6 +424,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
     if ((rc == 0) && !(*endOfFile)) {
 	/* nul terminate first */
 	memset(imaEvent->name, 0, sizeof(((ImaEvent *)NULL)->name));
+	/* ignore VS warning, name_len is range checked above, no buffer overrun */
 	readSize = fread(&(imaEvent->name),
 			 imaEvent->name_len, 1, inFile);
 	if (readSize != 1) {
@@ -502,6 +503,7 @@ static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller
 	}
     }
     if ((rc == 0) && !(*endOfFile)) {
+	/* ignore VS warning, template_data_len is used for the malloc, no buffer overrun */
 	readSize = fread(imaEvent->template_data,
 			 imaEvent->template_data_len, 1, inFile);
 	if (readSize != 1) {
@@ -599,6 +601,7 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
     /* copy results to template_data */
     if ((rc == 0) && !(*endOfFile)) {
 	/* copy file data hash */
+	/* ignore VS warning, template_data_len is calculated above for malloc, no buffer overrun */
 	memcpy(imaEvent->template_data, fileDataHash, sizeof(fileDataHash));
 	/* copy file name length */
 	memcpy(imaEvent->template_data + sizeof(fileDataHash),
