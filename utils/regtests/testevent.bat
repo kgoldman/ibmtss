@@ -43,80 +43,63 @@ echo ""
 echo "UEFI"
 echo ""
 
-for %%M in ("-sim" "-tpm" ) do (
+for %%F in ("dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "ubuntu1" "ubuntu2" ) do (
+    for %%M in ("-sim" "-tpm" ) do (
 
-    echo "UEFI %%M dell 1"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if dell1.log > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
+    	echo "UEFI %%M %%F"
+    	%TPM_EXE_PATH%eventextend -checkhash -v %%M -if %%F.log > run.out
+    	IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+	)
     )
-
-    echo "UEFI %%M hp 1"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if hp1.log > run.out 
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "UEFI %%M ideapad 1"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if ideapad1.log > run.out 
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "UEFI %%M deb 1"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if deb1.log > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "UEFI %%M deb 2"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if deb2.log > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "UEFI %%M p51 1"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if p511.log > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "UEFI %%M sm 1"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if sm1.log > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "UEFI %%M sm 2"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if sm2.log > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "UEFI %%M ubuntu 1"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if ubuntu1.log > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
-    echo "UEFI %%M ubuntu 2"
-    %TPM_EXE_PATH%eventextend -checkhash -v %%M -if ubuntu2.log > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
-    )
-
 )
 
 echo ""
 echo "IMA"
 echo ""
 
-for %%M in (" " "-sim" ) do (
-    echo "IMA %%~M Test Log"
-    %TPM_EXE_PATH%imaextend -if imatest.log %%~M -v -le > run.out
-    IF !ERRORLEVEL! NEQ 0 (
-        exit /B 1
+for %%T in ( "1" "2") do (
+     for %%H in (%ITERATE_ALGS%) do (
+
+	echo "Power cycle to reset IMA PCR"
+	%TPM_EXE_PATH%powerup > run.out
+    	IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+	)
+
+	echo "Startup"
+	%TPM_EXE_PATH%startup > run.out
+    	IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+	)
+
+ 	echo "IMA %%H Test Log type %%T simulate"
+	%TPM_EXE_PATH%imaextend -le -if imatest.log -sim -halg %%H -ty %%T  -checkhash -of tmpsim.bin > run.out
+    	IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+	)
+
+	echo "IMA %%H Test Log type %%T extend"
+	%TPM_EXE_PATH%imaextend -le -if imatest.log -tpm -halg %%H -ty %%T  -checkhash > run.out
+    	IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+	)
+
+	echo "PCR read %%H"
+	%TPM_EXE_PATH%pcrread -ha 10 -halg %%H -of tmppcr.bin > run.out
+    	IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+	)
+
+	echo "Verify PCR vs sim"
+	diff tmppcr.bin tmpsim.bin > run.out
+   	IF !ERRORLEVEL! NEQ 0 (
+            exit /B 1
+	)
     )
 )
 
 REM # cleanup
+
+rm -f tmppcr.bin
+rm -f tmpsim.bin

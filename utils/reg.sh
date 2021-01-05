@@ -114,7 +114,6 @@ printUsage ()
     echo "-32 Get Capability"
     echo "-35 Shutdown (only run for simulator)"
     echo "-40 Tests under development (not part of all)"
-    echo ""
     echo "-50 Change seed"
     echo "-51 Events"
 }
