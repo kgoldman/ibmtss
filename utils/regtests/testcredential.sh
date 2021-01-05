@@ -112,8 +112,8 @@ HBIN=(000b 000c 000d)
 
 # clear endorsement auth, may fail
 
-hierarchychangeauth -hi e -pwda eee > run.out
-dictionaryattacklockreset > run.out
+${PREFIX}hierarchychangeauth -hi e -pwda eee > run.out
+${PREFIX}dictionaryattacklockreset > run.out
 
 # The mbedtls port does not support EC certificate creation yet */
 
