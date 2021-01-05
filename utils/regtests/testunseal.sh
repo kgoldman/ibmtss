@@ -756,7 +756,7 @@ checkSuccess $?
 echo -n 637075736563726574 > tmp.txt
 
 # 637075736563726574
-policymaker -if tmp.txt -ns -of tmpext.bin > run.out
+${PREFIX}policymaker -if tmp.txt -ns -of tmpext.bin > run.out
 # policy digest:
 # 0ad80f8e4450587760d9137df41c9374f657bafa621fe37d4d5c8cecf0bcce5e
 
@@ -790,7 +790,7 @@ policymaker -if tmp.txt -ns -of tmpext.bin > run.out
 echo 0000016c0000015e > tmp.txt
 echo 0000014919936a82d9b3fabcc3794b1b9c1dbb71a7de7f6e360cb01f6a6f082f7e66dc60000bbc2784f51dda6d27b92784068c6b8c7c94a4cc530b434e16ef95222fe68e6c92 >> tmp.txt
 
-policymaker -if tmp.txt -ns -v -of tmpuspol.bin > run.out
+${PREFIX}policymaker -if tmp.txt -ns -v -of tmpuspol.bin > run.out
 #  intermediate policy digest length 32
 #  e6 13 13 70 76 52 4b de 48 75 33 86 58 84 e9 73 
 #  2e be e3 aa cb 09 5d 94 a6 de 49 2e c0 6c 46 fa 
