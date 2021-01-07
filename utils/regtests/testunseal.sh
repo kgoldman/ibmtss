@@ -677,9 +677,13 @@ echo "DEMO: Flush the regression test SRK"
 ${PREFIX}flushcontext -ha 80000000 > run.out
 checkSuccess $?
 
+# mbedtls port doesn't support X.509 certificate validation generation
+
+if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 echo "DEMO: Create EK certificate for SW TPM"
 ${PREFIX}createekcert -rsa 2048 -cakey cakey.pem    -capwd rrrr > run.out
 checkSuccess $?
+fi
 
 #
 # Provision the NV Extend Index
@@ -716,9 +720,16 @@ echo ""
 # createek also validates the EK public key against the EK certificate and
 # walks the certificate chain.  It leaves the EK loaded at 80000000
 
+# mbedtls port doesn't support X.509 certificate validation
+
 echo "PROVISION: Create the EK for the salted session 80000000"
+if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 ${PREFIX}createek -rsa 2048 -cp -noflush -root certificates/rootcerts.txt > run.out
+elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
+${PREFIX}createek -rsa 2048 -cp -noflush > run.out
+fi
 checkSuccess $?
+
 
 echo "PROVISION: Start the EK salted session 02000000 for for an authenticated channel"
 ${PREFIX}startauthsession -se h -hs 80000000 > run.out

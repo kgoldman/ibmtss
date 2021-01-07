@@ -57,7 +57,9 @@
 #include <stddef.h>
 #include <ctype.h>
 
+#ifndef TPM_TSS_NO_OPENSSL
 #include <openssl/x509.h>
+#endif	/* TPM_TSS_NO_OPENSSL */
 
 #include <ibmtss/tsserror.h>
 #include <ibmtss/tssprint.h>
@@ -3429,8 +3431,6 @@ static void     TSS_EfiSignatureList_Trace(TSS_EFI_SIGNATURE_LIST *signatureList
     int rc;
     size_t guidIndex;
     uint32_t count;
-    X509 *x509 = NULL;
-    unsigned char *tmpData = NULL;
 
     guid_printf("SignatureType GUID", signatureList->SignatureType);
     printf("  SignatureListSize %u\n", signatureList->SignatureListSize);
@@ -3448,19 +3448,25 @@ static void     TSS_EfiSignatureList_Trace(TSS_EFI_SIGNATURE_LIST *signatureList
 	guid_printf("SignatureOwner GUID", (signatureList->Signatures + count)->SignatureOwner);
 	switch (guidTable[guidIndex].type) {
 	  case GUID_TYPE_X509_CERT:
-	    /* tmp pointer because d2i moves the pointer */
-	    tmpData = (signatureList->Signatures + count)->SignatureData;
-	    x509 = d2i_X509(NULL,			/* freed by caller */
-			    (const unsigned char **)&tmpData,
-			    signatureList->SignatureSize - TSS_EFI_GUID_SIZE);
-	    if (x509 != NULL) {
-		X509_print_fp(stdout, x509);
-	    }
-	    else {
-		printf("  X509 Certificate invalid\n");
-	    }
-	    X509_free(x509);
-	    x509 = NULL;	/* for next time through loop */
+#ifndef TPM_TSS_MBEDTLS
+	      {
+		  X509 *x509 = NULL;
+		  unsigned char *tmpData = NULL;
+		  /* tmp pointer because d2i moves the pointer */
+		  tmpData = (signatureList->Signatures + count)->SignatureData;
+		  x509 = d2i_X509(NULL,			/* freed by caller */
+				  (const unsigned char **)&tmpData,
+				  signatureList->SignatureSize - TSS_EFI_GUID_SIZE);
+		  if (x509 != NULL) {
+		      X509_print_fp(stdout, x509);
+		  }
+		  else {
+		      printf("  X509 Certificate invalid\n");
+		  }
+		  X509_free(x509);
+		  x509 = NULL;	/* for next time through loop */
+	      }
+#endif	/* TPM_TSS_MBEDTLS */
 	    break;
 	  case  GUID_TYPE_SHA256:
 	    TSS_PrintAll("    SHA-256",
@@ -3848,8 +3854,6 @@ static void TSS_EfiVariableAuthority_Trace(TSST_EFIData *efiData)
     TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     TSS_AUTHORITY_SIGNATURE_DATA *authoritySignatureData =
 	&uefiVariableData->authoritySignatureData;
-    X509 *x509 = NULL;
-    unsigned char *tmpData = NULL;
 
     /* common TSS_UEFI_VARIABLE_DATA trace */
     TSS_EfiVariableData_Trace(efiData);
@@ -3859,10 +3863,13 @@ static void TSS_EfiVariableAuthority_Trace(TSST_EFIData *efiData)
     if (uefiVariableData->variableDataTag == TSS_VAR_DB) {
 	guid_printf("SignatureOwner GUID", authoritySignatureData->SignatureOwner);
     }
+#ifndef TPM_TSS_MBEDTLS
     if ((uefiVariableData->variableDataTag == TSS_VAR_DB) ||
 	(uefiVariableData->variableDataTag == TSS_VAR_SHIM) ||
 	(uefiVariableData->variableDataTag == TSS_VAR_MOKLIST)) {
 
+	X509 *x509 = NULL;
+	unsigned char *tmpData = NULL;
 	tmpData = authoritySignatureData->SignatureData;
 	x509 = d2i_X509(NULL,			/* freed by caller */
 			(const unsigned char **)&tmpData,
@@ -3876,6 +3883,7 @@ static void TSS_EfiVariableAuthority_Trace(TSST_EFIData *efiData)
 	X509_free(x509);
 	x509 = NULL;
     }
+#endif	/* TPM_TSS_MBEDTLS */
     return;
 }
 
@@ -4767,14 +4775,18 @@ static uint32_t TSS_EfiEvent_ReadBuffer(TSST_EFIData *efiData,
 
 static void     TSS_EfiEventTag_Trace(TSST_EFIData *efiData)
 {
+#ifndef TPM_TSS_MBEDTLS
     RSA 	*rsaKey = NULL;
-    const unsigned char *tmpData = NULL;
+#endif	/* TPM_TSS_MBEDTLS */
     TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
 
     printf("  taggedEventID %08x\n", taggedEvent->taggedEventID);
     /* https://github.com/mattifestation/TCGLogTools/blob/master/TCGLogTools.psm1 */
     /* by observation 0x00060002 appears to be a DER encoded public key */
+#ifndef TPM_TSS_MBEDTLS
     if (taggedEvent->taggedEventID == 0x00060002) {
+	RSA 	*rsaKey = NULL;
+	const unsigned char *tmpData = NULL;
 	/* tmp pointer because d2i moves the pointer */
 	tmpData = taggedEvent->taggedEventData;
 	rsaKey = d2i_RSA_PUBKEY(NULL, &tmpData , taggedEvent->taggedEventDataSize);	/* freed @2 */
@@ -4791,6 +4803,10 @@ static void     TSS_EfiEventTag_Trace(TSST_EFIData *efiData)
 	TSS_PrintAll("  taggedEvent",
 		     taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
     }
+#else
+    TSS_PrintAll("  taggedEvent",
+		 taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
+#endif	/* TPM_TSS_MBEDTLS */
     return;
 }
 
