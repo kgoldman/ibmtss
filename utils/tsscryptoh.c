@@ -454,7 +454,7 @@ TPM_RC TSS_RSA_padding_add_PKCS1_OAEP(unsigned char *em, uint32_t emLen,
     unsigned char *maskedSeed;
 
     uint16_t hlen = TSS_GetDigestSize(halg);
-    
+    em[0] = 0x00;	/* firsr byte is 0x00 per the standard */
     /* 1.a. If the length of L is greater than the input limitation for */
     /* the hash function (2^61-1 octets for SHA-1) then output "parameter */
     /* string too long" and stop. */
