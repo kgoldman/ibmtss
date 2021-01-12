@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2020.						*/
+/* (c) Copyright IBM Corporation 2021.						*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -428,6 +428,11 @@ typedef struct {
     uint8_t	*taggedEventData;
 } TSS_PCClientTaggedEvent;
 
+typedef struct {
+    uint32_t 			count;
+    TSS_PCClientTaggedEvent	*taggedEvent;
+} TSS_UEFI_TAGGED_EVENT;
+
 /* EV_POST_CODE */
 
 /* tag types */
@@ -467,7 +472,7 @@ typedef union {
     TSS4B_BUFFER		tss4bBuffer;
     TSS_UEFI_HANDOFF_TABLE_POINTERS uefiHandoffTablePointers;
     TSS_UEFI_GPT_DATA		uefiGptData;
-    TSS_PCClientTaggedEvent	taggedEvent;
+    TSS_UEFI_TAGGED_EVENT 	taggedEventList;
     TSS_POST_CODE_TAGGED_EVENT	postTaggedEvent;
 } TSSU_EFIData;
 

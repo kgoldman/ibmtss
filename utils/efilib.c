@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2020.						*/
+/* (c) Copyright IBM Corporation 2021.						*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -4723,98 +4723,130 @@ static uint32_t TSS_EfiAction_ToJson(TSST_EFIData *efiData)
 
 static void     TSS_EfiEventTag_Init(TSST_EFIData *efiData)
 {
-    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
-    taggedEvent->taggedEventData = NULL;
+    TSS_UEFI_TAGGED_EVENT *taggedEventList = &efiData->efiData.taggedEventList;
+    taggedEventList->count = 0;
+    taggedEventList->taggedEvent = NULL;
     return;
 }
 
 static void     TSS_EfiEventTag_Free(TSST_EFIData *efiData)
 {
-    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
-    free(taggedEvent->taggedEventData);
+    uint32_t count;
+    TSS_UEFI_TAGGED_EVENT *taggedEventList = &efiData->efiData.taggedEventList;
+    for (count = 0 ; count < taggedEventList->count ; count++) {
+	TSS_PCClientTaggedEvent *taggedEvent = taggedEventList->taggedEvent + count;
+	free(taggedEvent->taggedEventData);
+    }
+    free(taggedEventList->taggedEvent);
     return;
 }
 
 static uint32_t TSS_EfiEvent_ReadBuffer(TSST_EFIData *efiData,
-				       uint8_t *event, uint32_t eventSize,
-				       uint32_t pcrIndex)
+					uint8_t *event, uint32_t eventSize,
+					uint32_t pcrIndex)
 {
     uint32_t rc = 0;
-    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
+    TSS_UEFI_TAGGED_EVENT *taggedEventList = &efiData->efiData.taggedEventList;
+    TSS_PCClientTaggedEvent *taggedEvent;
     pcrIndex = pcrIndex;
 
-    if (rc == 0) {
-	rc = TSS_UINT32LE_Unmarshal(&taggedEvent->taggedEventID, &event, &eventSize);
-    }
-    if (rc == 0) {
-	rc = TSS_UINT32LE_Unmarshal(&taggedEvent->taggedEventDataSize, &event, &eventSize);
-    }
-    /* consistency check taggedEventDataSize */
-    if (rc == 0) {
-	if (taggedEvent->taggedEventDataSize != eventSize) {
-	    printf("TSS_EfiEvent_ReadBuffer: Error in taggedEventDataSize %u\n",
-		   (unsigned int)(taggedEvent->taggedEventDataSize));
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+    while ((rc == 0) && (eventSize > 0)) {
+	/* if there is more event data, unmarshal the next TSS_PCClientTaggedEvent */
+	if (rc == 0) {
+	    void *tmpptr;			/* for realloc */
+	    /* freed by TSS_EfiEventTag_Free */
+	    tmpptr = realloc(taggedEventList->taggedEvent,
+			     sizeof(TSS_PCClientTaggedEvent) * ((size_t)(taggedEventList->count)+1));
+	    if (tmpptr != NULL) {
+		taggedEventList->taggedEvent = tmpptr;
+		taggedEvent = taggedEventList->taggedEvent + taggedEventList->count;
+		taggedEventList->count++;
+	    }
+	    else {
+		printf("TSS_EfiEvent_ReadBuffer: Error allocating %lu bytes\n",
+		       (unsigned long)
+		       (sizeof(TSS_PCClientTaggedEvent) * ((size_t)(taggedEventList->count)+1)));
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
 	}
-    }
-    /* allocate the taggedEventData */
-    if ((rc == 0) && (eventSize > 0)) {
-	taggedEvent->taggedEventData = malloc(taggedEvent->taggedEventDataSize);
-	if (taggedEvent->taggedEventData == NULL) {
-	    printf("TSS_EfiEvent_ReadBuffer: Error allocating %u bytes\n",
-		   (unsigned int)taggedEvent->taggedEventDataSize);
-	    rc = TSS_RC_OUT_OF_MEMORY;
+	if (rc == 0) {
+	    rc = TSS_UINT32LE_Unmarshal(&taggedEvent->taggedEventID, &event, &eventSize);
 	}
-    }
-    if ((rc == 0) && (eventSize > 0)) {
-	rc = TSS_Array_Unmarshalu(taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize,
-				  &event, &eventSize);
+	if (rc == 0) {
+	    rc = TSS_UINT32LE_Unmarshal(&taggedEvent->taggedEventDataSize, &event, &eventSize);
+	}
+	/* consistency check taggedEventDataSize */
+	if (rc == 0) {
+	    if (taggedEvent->taggedEventDataSize > eventSize) {
+		printf("TSS_EfiEvent_ReadBuffer: Error in taggedEventDataSize %u\n",
+		       (unsigned int)(taggedEvent->taggedEventDataSize));
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+	/* allocate the taggedEventData */
+	if ((rc == 0) && (taggedEvent->taggedEventDataSize > 0)) {
+	    taggedEvent->taggedEventData = malloc(taggedEvent->taggedEventDataSize);
+	    if (taggedEvent->taggedEventData == NULL) {
+		printf("TSS_EfiEvent_ReadBuffer: Error allocating %u bytes\n",
+		       (unsigned int)taggedEvent->taggedEventDataSize);
+		rc = TSS_RC_OUT_OF_MEMORY;
+	    }
+	}
+	if ((rc == 0) && (eventSize > 0)) {
+	    rc = TSS_Array_Unmarshalu(taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize,
+				      &event, &eventSize);
+	}
     }
     return rc;
 }
 
 static void     TSS_EfiEventTag_Trace(TSST_EFIData *efiData)
 {
+    uint32_t 			count;
+    TSS_UEFI_TAGGED_EVENT 	*taggedEventList = &efiData->efiData.taggedEventList;
 #ifndef TPM_TSS_MBEDTLS
     RSA 	*rsaKey = NULL;
 #endif	/* TPM_TSS_MBEDTLS */
-    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
 
-    printf("  taggedEventID %08x\n", taggedEvent->taggedEventID);
-    /* https://github.com/mattifestation/TCGLogTools/blob/master/TCGLogTools.psm1 */
-    /* by observation 0x00060002 appears to be a DER encoded public key */
+    printf("  tagged events %u\n", taggedEventList->count);
+    for (count = 0 ; count < taggedEventList->count ; count++) {
+	TSS_PCClientTaggedEvent *taggedEvent = taggedEventList->taggedEvent + count;
+
+	printf("    taggedEventID %08x\n", taggedEvent->taggedEventID);
+	/* https://github.com/mattifestation/TCGLogTools/blob/master/TCGLogTools.psm1 */
+	/* by observation 0x00060002 appears to be a DER encoded public key */
 #ifndef TPM_TSS_MBEDTLS
-    if (taggedEvent->taggedEventID == 0x00060002) {
-	RSA 	*rsaKey = NULL;
-	const unsigned char *tmpData = NULL;
-	/* tmp pointer because d2i moves the pointer */
-	tmpData = taggedEvent->taggedEventData;
-	rsaKey = d2i_RSA_PUBKEY(NULL, &tmpData , taggedEvent->taggedEventDataSize);	/* freed @2 */
-	if (rsaKey != NULL) { 	/* success */
-	    RSA_print_fp(stdout, rsaKey, 2);
+	if (taggedEvent->taggedEventID == 0x00060002) {
+	    const unsigned char *tmpData = NULL;
+	    /* tmp pointer because d2i moves the pointer */
+	    tmpData = taggedEvent->taggedEventData;
+	    rsaKey = d2i_RSA_PUBKEY(NULL, &tmpData , taggedEvent->taggedEventDataSize);	/* freed @2 */
+	    if (rsaKey != NULL) { 	/* success */
+		RSA_print_fp(stdout, rsaKey, 4);
+	    }
+	    if (rsaKey != NULL) {
+		RSA_free(rsaKey); 
+	    }
 	}
-	if (rsaKey != NULL) {
-	    RSA_free(rsaKey); 
+	/* if it's not 0x00060002 or if the d2i fails */
+	/* 0x40010001 = 'TrustBoundary' seems to be a common event.  Anyone have documentation? */
+	if ((taggedEvent->taggedEventID != 0x00060002) || (rsaKey == NULL)) {
+	    TSS_PrintAll("   taggedEvent",
+			 taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
 	}
-    }
-    /* if it's not 0x00060002 or if the d2i fails */
-    /* 0x40010001 = 'TrustBoundary' seems to be a common event.  Anyone have documentation? */
-    if ((taggedEvent->taggedEventID != 0x00060002) || (rsaKey == NULL)) {
-	TSS_PrintAll("  taggedEvent",
-		     taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
-    }
 #else
-    TSS_PrintAll("  taggedEvent",
-		 taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
+	TSS_PrintAll("   taggedEvent",
+		     taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
 #endif	/* TPM_TSS_MBEDTLS */
+    }
     return;
 }
 
 static uint32_t TSS_EfiEventTag_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
-    TSS_PCClientTaggedEvent *taggedEvent = &efiData->efiData.taggedEvent;
-    taggedEvent = taggedEvent;
+    TSS_UEFI_TAGGED_EVENT 	*taggedEventList = &efiData->efiData.taggedEventList;
+    taggedEventList = taggedEventList;
     if (rc == 0) {
     }
     return rc;
