@@ -404,8 +404,10 @@ static void TSS_EFI_GetNameIndex(size_t *index,
 	 *index < sizeof(tagTable) / sizeof(TAG_TABLE)  ;
 	 (*index)++) {
 
-	m1 = (nameLength * 2) == tagTable[*index].nameLength;			/* length match */
-	m2 = memcmp(name, tagTable[*index].name, (size_t)(nameLength * 2)) == 0;	/* string match */
+	/* length match */
+	m1 = (nameLength * 2) == tagTable[*index].nameLength;
+	/* string match */
+	m2 = memcmp(name, tagTable[*index].name, (size_t)(nameLength * 2)) == 0;
 	if (m1 & m2) {
 	    return;
 	}
@@ -414,31 +416,25 @@ static void TSS_EFI_GetNameIndex(size_t *index,
     return;
 }
 
-static void wchar_printf(const char *msg, void *wchar, uint64_t length);
+static void ucs2_printf(const char *msg, uint8_t *ucs2, uint32_t length);
 
 /* Print UCS-2 character string.
 
-   length is number of characters, which is half the number of bytes in wchar
-   wchar is a uc16 array to be printed, not including an extra nul terminator
+   This function doesn't support true UCS-2.  It assumes that odd bytes are all zero.
+
+   length is number of UCS-2 characters, which is the number of bytes in the ucs2 arrray.  ucs2
+   is a ucs2 array to be printed, not including an extra nul terminator.
 
    It prepends msg to ther hexascii trace.  msg must not be NULL but can be "".
 */
 
-static void wchar_printf(const char *msg, void *wchar, uint64_t length)
+static void ucs2_printf(const char *msg, uint8_t *ucs2, uint32_t length)
 {
     uint32_t i;
-    uint16_t *ptr = wchar;	/* endian issue */
 
-    /*
-     * this is necessary because UEFI uses UCS-2, which is a two byte
-     * wide char.  Most linux tools use UC32, which is a four byte
-     * wide char, so we can't simply treat UEFI strings as arrays of
-     * wchar_t
-     */
     printf("  %s", msg);
-    for (i = 0; i < length ; i++) {
-        wchar_t c = (wchar_t)ptr[i];	/* FIXME alignment and endian issues */
-        printf("%lc", c);
+    for (i = 0; i < length ; i+=2) {
+        printf("%c", ucs2[i]);
     }
     printf("\n");
     return;
@@ -485,7 +481,7 @@ static void isAsciiString(int *isAscii, uint8_t *buffer, uint32_t length)
 }
 
 
-uint32_t TSS_UCS2_Unmarshal(char **ucs2,
+uint32_t TSS_UCS2_Unmarshal(uint8_t **ucs2,
 			    uint32_t *DescriptionLength,
 			    uint8_t **event, uint32_t *eventSize);
 
@@ -494,7 +490,7 @@ uint32_t TSS_UCS2_Unmarshal(char **ucs2,
    It returns the length, which is half the number of bytes in ucs2
 */
 
-uint32_t TSS_UCS2_Unmarshal(char **ucs2,		/* freed by caller */
+uint32_t TSS_UCS2_Unmarshal(uint8_t **ucs2,		/* freed by caller */
 			    uint32_t *DescriptionLength,
 			    uint8_t **event, uint32_t *eventSize)
 {
@@ -503,7 +499,7 @@ uint32_t TSS_UCS2_Unmarshal(char **ucs2,		/* freed by caller */
     int foundNul = 0;
 
     *DescriptionLength = 0;
-    /* count the number of UCS2 bytes */
+    /* count the number of UCS-2 bytes */
     for (i = 0 ; i < *eventSize ; i+= 2) {
 	if ((i+1) > *eventSize) {
 	    return TSS_RC_INSUFFICIENT_BUFFER;	/* handle odd number of event bytes case */
@@ -1395,8 +1391,8 @@ static void TSS_EfiDevicePathHwVENDOR_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath
     if (uefiDevicePath->unionBufferLength > 0) {
 	isUCS2String(&isUCS2, uefiDevicePath->unionBuffer, uefiDevicePath->unionBufferLength);
 	if (isUCS2) {
-	    wchar_printf("    Vendor ", uefiDevicePath->unionBuffer,
-			 (uint64_t)(uefiDevicePath->unionBufferLength -2)/ 2);
+	    ucs2_printf("    Vendor: ", uefiDevicePath->unionBuffer,
+			(uefiDevicePath->unionBufferLength -2));
 	}
 	else {
 	    TSS_PrintAll("     Vendor",
@@ -2122,8 +2118,8 @@ static void TSS_EfiDevicePathMediaFile_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePat
     /* subtract 2 because this field is NUL terminated */
     printf("    SubType %02x File Path\n",
 	   uefiDevicePath->protocol.SubType);
-    wchar_printf("    Path Name ", uefiDevicePath->buffer,
-		 (uint64_t)(uefiDevicePath->bufferLength -2)/ 2);
+    ucs2_printf("    Path Name: ", uefiDevicePath->buffer,
+		(uefiDevicePath->bufferLength -2));
     return;
 }
 
@@ -3142,7 +3138,8 @@ static void TSS_EfiVariableData_Trace(TSST_EFIData *efiData)
 {
     TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     guid_printf("Variable GUID", uefiVariableData->VariableName);
-    wchar_printf("Variable: ", uefiVariableData->UnicodeName, uefiVariableData->UnicodeNameLength);
+    ucs2_printf("Variable: ", uefiVariableData->UnicodeName,
+		(uint32_t)uefiVariableData->UnicodeNameLength * 2);
     printf("  VariableDataLength: %" PRIu64 "\n", uefiVariableData->VariableDataLength);
     return;
 }
@@ -3740,8 +3737,8 @@ static void TSS_EfiVariableBoot_Trace(TSST_EFIData *efiData)
 	TSS_VARIABLE_BOOT *variableBoot = &uefiVariableData->variableBoot;
 	printf("  Attributes: %08x\n", variableBoot->Attributes);
 	printf("  FilePathListLength: %hu\n", variableBoot->FilePathListLength);
-	wchar_printf("Description: ", variableBoot->Description,
-		     (uint64_t)(variableBoot->DescriptionLength));
+	ucs2_printf("Description: ", variableBoot->Description,
+		    variableBoot->DescriptionLength * 2);
 	for (count = 0 ; count < variableBoot->UefiDevicePathCount ; count++) {
 	    TSS_UefiDevicePath_Trace(variableBoot->UefiDevicePath + count);
 	}
@@ -4536,7 +4533,7 @@ static void TSS_EfiCrtmVersion_Trace(TSST_EFIData *efiData)
 	}
     }
     if (isUCS2) {
-	wchar_printf("CRTM Version: ", tss4bBuffer->buffer, ((tss4bBuffer->size) / 2) -1);
+	ucs2_printf("CRTM Version: ", tss4bBuffer->buffer, tss4bBuffer->size -2);
     }
     else if (isGuid) {
 	guid_printf("CRTM Version GUID", tss4bBuffer->buffer);
@@ -4657,7 +4654,7 @@ static void     TSS_EvNoAction_Trace(TSST_EFIData *efiData)
     }
     /* This is purely from guesses and decompiling the events, not from any spec */
     else if (efiData->pcrIndex == 0xffffffff) {
-	wchar_printf("  No Action: ", tss4bBuffer->buffer+16, 11);
+	ucs2_printf("  No Action: ", tss4bBuffer->buffer+16, 22);
     }
     else {
 	TSS_PrintAll("  No Action",

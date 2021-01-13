@@ -342,7 +342,7 @@ typedef struct  {
     uint32_t Attributes;
     uint16_t FilePathListLength;
     uint32_t DescriptionLength;
-    char *Description;
+    uint8_t *Description;
     uint32_t UefiDevicePathCount;
     TSS_UEFI_DEVICE_PATH *UefiDevicePath;	/* array of TSS_UEFI_DEVICE_PATH structures */
 } TSS_VARIABLE_BOOT;
