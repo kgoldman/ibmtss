@@ -216,8 +216,8 @@ createloaded.exe:	createloaded.o objecttemplates.o cryptoutils.o $(LIBTSS)
 createprimary.exe:	createprimary.o objecttemplates.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o objecttemplates.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
 
-eventextend.exe:	eventextend.o eventlib.o cryptoutils.o $(LIBTSS) 
-		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o eventlib.o cryptoutils.o $(LNLIBS) $(LIBTSS) 
+eventextend.exe:	eventextend.o eventlib.o efilib.o cryptoutils.o $(LIBTSS)
+		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o eventlib.o efilib.o cryptoutils.o $(LNLIBS) $(LIBTSS)
 
 imaextend.exe:	imaextend.o imalib.o cryptoutils.o $(LIBTSS) 
 		$(CC) $(LNFLAGS) -L. -libmtss $< -o $@ applink.o imalib.o cryptoutils.o $(LNLIBS) $(LIBTSS) 

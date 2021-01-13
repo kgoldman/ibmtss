@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2019					*/
+/* (c) Copyright IBM Corporation 2016 - 2020					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -44,11 +44,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <sys/param.h>
-
 #include <ibmtss/TPM_Types.h>
 
-/* FIXME meed OS independent value */
+/* FIXME need OS independent value */
 /* Debian/Hurd does not define MAXPATHLEN */
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 4096

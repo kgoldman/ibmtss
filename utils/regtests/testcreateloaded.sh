@@ -50,48 +50,53 @@ echo ""
 
 for HIER in "40000001" "4000000c" "4000000b"
 do
+    for ALG in "-rsa 2048" "-rsa 3072" "-ecc nistp256" "-ecc nistp384" "-ecc bnp256" "-rsa"
+    do
 
-    echo "CreateLoaded primary key, parent ${HIER}"
-    ${PREFIX}createloaded -hp ${HIER} -st -kt f -kt p -pwdk ppp > run.out
-    checkSuccess $?
+	echo "CreateLoaded primary key, parent ${HIER} ${ALG}"
+	${PREFIX}createloaded -hp ${HIER} ${ALG} -st -kt f -kt p -pwdk ppp > run.out
+	checkSuccess $?
 
-    echo "Create a storage key under the primary key"
-    ${PREFIX}create -hp 80000001 -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp ppp > run.out
-    checkSuccess $?
+	echo "Create a storage key under the primary key ${ALG}"
+	${PREFIX}create -hp 80000001 ${ALG} -st -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp ppp > run.out
+	checkSuccess $?
 
-    echo "Load the storage key under the primary key"
-    ${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
-    checkSuccess $?
+	echo "Load the storage key under the primary key"
+	${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
+	checkSuccess $?
 
-    echo "Flush the storage key"
-    ${PREFIX}flushcontext -ha 80000002 > run.out
-    checkSuccess $?
+	echo "Flush the storage key"
+	${PREFIX}flushcontext -ha 80000002 > run.out
+	checkSuccess $?
 
-    echo "Flush the primary storage key"
-    ${PREFIX}flushcontext -ha 80000001 > run.out
-    checkSuccess $?
+	echo "Flush the primary storage key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
 
-    echo "Load the storage key under the primary key - should fail"
-    ${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
-    checkFailure $?
+	echo "Load the storage key under the primary key - should fail"
+	${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
+	checkFailure $?
 
-    echo "CreateLoaded recreate owner primary key"
-    ${PREFIX}createloaded -hp ${HIER} -st -kt f -kt p -pwdk ppp > run.out
-    checkSuccess $?
+	echo "CreateLoaded recreate owner primary key ${HIER} ${ALG}"
+	${PREFIX}createloaded -hp ${HIER} ${ALG} -st -kt f -kt p -pwdk ppp > run.out
+	checkSuccess $?
 
-    echo "Load the storage key under the primary key"
-    ${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
-    checkSuccess $?
+	echo "Load the storage key under the primary key"
+	${PREFIX}load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp ppp > run.out
+	checkSuccess $?
 
-    echo "Flush the storage key"
-    ${PREFIX}flushcontext -ha 80000002 > run.out
-    checkSuccess $?
+	echo "Flush the storage key"
+	${PREFIX}flushcontext -ha 80000002 > run.out
+	checkSuccess $?
 
-    echo "Flush the primary storage key"
-    ${PREFIX}flushcontext -ha 80000001 > run.out
-    checkSuccess $?
+	echo "Flush the primary storage key"
+	${PREFIX}flushcontext -ha 80000001 > run.out
+	checkSuccess $?
 
+    done
 done
+
+exit 0
 
 echo ""
 echo "CreateLoaded Child Key, Primary Parent"

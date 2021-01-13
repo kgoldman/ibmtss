@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testprimary.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2020					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -166,6 +165,22 @@ checkSuccess $?
 echo "Flush the primary storage key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
+
+# different algorithms, command line options
+
+for ALG in "-rsa 2048" "-rsa 3072" "-ecc bnp256" "-ecc nistp256" "-ecc nistp384" "-rsa"
+
+do
+
+    echo "Create a primary storage key ${ALG}"
+    ${PREFIX}createprimary -hi p ${ALG}  > run.out
+    checkSuccess $?
+
+    echo "Flush the primary storage key ${ALG}"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
 
 # cleanup
 

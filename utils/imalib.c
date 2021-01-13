@@ -54,8 +54,10 @@
 #include <winsock2.h>
 #endif
 
+#ifndef TPM_TSS_NO_OPENSSL
 #include <openssl/x509.h>
 #include <openssl/bio.h>
+#endif	/* TPM_TSS_NO_OPENSSL */
 
 #include <ibmtss/TPM_Types.h>
 #include <ibmtss/tsscryptoh.h>
@@ -282,7 +284,12 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 			      imaTemplateData->imaTemplateMODSIG.modSigLength);
 	    if (pkcs7 != NULL) {
 		BIO *bio = NULL;
+#ifdef TPM_POSIX
 		bio = BIO_new_fd(fileno(stdout), BIO_NOCLOSE);	/* freed @2 */
+#endif
+#ifdef TPM_WINDOWS
+		bio = BIO_new_fd(_fileno(stdout), BIO_NOCLOSE);	/* freed @2 */
+#endif
 		if (bio != NULL) {
 		    PKCS7_print_ctx(bio, pkcs7, 4, NULL);
 		    BIO_free(bio);	/* @2 */
@@ -417,6 +424,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
     if ((rc == 0) && !(*endOfFile)) {
 	/* nul terminate first */
 	memset(imaEvent->name, 0, sizeof(((ImaEvent *)NULL)->name));
+	/* ignore VS warning, name_len is range checked above, no buffer overrun */
 	readSize = fread(&(imaEvent->name),
 			 imaEvent->name_len, 1, inFile);
 	if (readSize != 1) {
@@ -495,6 +503,7 @@ static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller
 	}
     }
     if ((rc == 0) && !(*endOfFile)) {
+	/* ignore VS warning, template_data_len is used for the malloc, no buffer overrun */
 	readSize = fread(imaEvent->template_data,
 			 imaEvent->template_data_len, 1, inFile);
 	if (readSize != 1) {
@@ -592,6 +601,7 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
     /* copy results to template_data */
     if ((rc == 0) && !(*endOfFile)) {
 	/* copy file data hash */
+	/* ignore VS warning, template_data_len is calculated above for malloc, no buffer overrun */
 	memcpy(imaEvent->template_data, fileDataHash, sizeof(fileDataHash));
 	/* copy file name length */
 	memcpy(imaEvent->template_data + sizeof(fileDataHash),

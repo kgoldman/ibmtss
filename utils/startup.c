@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -36,6 +36,9 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
+/* startup supports an optional locality specifier to simulate the locality 3 startup PCR 0
+   value. */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,7 +48,7 @@
 
 static void printUsage(void);
 TPM_RC selftestCommand(void);
-TPM_RC startupCommand(TPM_SU startupType);
+TPM_RC startupCommand(TPM_SU startupType, const char *locality);
 
 extern int tssUtilsVerbose;
 
@@ -56,7 +59,8 @@ int main(int argc, char *argv[])
     int                 doStartup = TRUE;		/* default startup */
     int                 doSelftest = FALSE;		/* default no self test */
     TPM_SU		startupType = TPM_SU_CLEAR;
-   
+    const char 		*locality = NULL;
+
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     tssUtilsVerbose = FALSE;
@@ -78,6 +82,16 @@ int main(int argc, char *argv[])
 	    doStartup = FALSE;
 	    doSelftest = TRUE;
 	}
+	else if (strcmp(argv[i],"-loc") == 0) {
+	    i++;
+	    if (i < argc) {
+		locality = argv[i];
+	    }
+	    else {
+		printf("Missing parameter for -loc\n");
+		printUsage();
+	    }
+	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
@@ -91,7 +105,7 @@ int main(int argc, char *argv[])
 	}
     }
     if ((rc == 0) && doStartup) {
-	rc = startupCommand(startupType);
+	rc = startupCommand(startupType, locality);
     }
     if ((rc == 0) && doSelftest ) {
 	rc = selftestCommand();
@@ -111,7 +125,9 @@ int main(int argc, char *argv[])
     return rc;
 }
 
-TPM_RC startupCommand(TPM_SU startupType)
+/* locality NULL uses the compiled in default locality, almost always locality 0 */
+
+TPM_RC startupCommand(TPM_SU startupType, const char *locality)
 {
     TPM_RC 		rc = 0;
     TSS_CONTEXT		*tssContext = NULL;
@@ -122,6 +138,9 @@ TPM_RC startupCommand(TPM_SU startupType)
     */
     if (rc == 0) {
 	rc = TSS_Create(&tssContext);
+    }
+    if ((rc == 0) && (locality != NULL)) {
+	TSS_SetProperty(tssContext, TPM_TRANSMIT_LOCALITY, locality);
     }
     /* call TSS to execute the command */
     if (rc == 0) {
@@ -186,6 +205,7 @@ static void printUsage(void)
     printf("\t[-s\tstartup state]\n");
     printf("\t[-st\trun TPM2_SelfTest]\n");
     printf("\t[-sto\trun only TPM2_SelfTest (no startup)]\n");
-    exit(1);	
+    printf("\t[-loc\tlocality]\n");
+    exit(1);
 }
 

@@ -319,9 +319,16 @@ IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
 
+call regtests\testevent.bat
+IF !ERRORLEVEL! NEQ 0 (
+      echo ""
+      echo "Failed testevent.bat"
+  exit /B 1
+)
+
 REM cleanup
 
-%TPM_EXE_PATH%flushcontext -ha 80000000
+%TPM_EXE_PATH%flushcontext -ha 80000000 > run.out
 
 rm -f run.out
 rm -f despriv.bin

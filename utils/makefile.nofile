@@ -90,7 +90,7 @@ LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 LNALIBS +=  -libmtssutils -libmtssmin
 
 # versioned shared library
-LIBTSSVERSIONED=libibmtssmin.so.1.5
+LIBTSSVERSIONED=libibmtssmin.so.1.6
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
@@ -109,7 +109,7 @@ endif
 
 # TSS utilities shared library
 
-LIBTSSUTILSVERSIONED=libibmtssutils.so.1.5
+LIBTSSUTILSVERSIONED=libibmtssutils.so.1.6
 LIBTSSUTILSSONAME=libibmtssutils.so.1
 LIBTSSUTILS=libibmtssutils.so
 
@@ -130,7 +130,8 @@ TSS_OBJS =  	tsscryptoh.o 		\
 TSSUTILS_OBJS = cryptoutils.o	\
 		ekutils.o	\
 		imalib.o	\
-		eventlib.o
+		eventlib.o	\
+		efilib.o
 
 # common to all builds
 
@@ -199,6 +200,8 @@ imalib.o: 	$(TSS_HEADERS) imalib.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) imalib.c
 eventlib.o: 	$(TSS_HEADERS) eventlib.c
 		$(CC) $(CCFLAGS) $(CCLFLAGS) eventlib.c
+efilib.o: 	$(TSS_HEADERS) efilib.c
+		$(CC) $(CCFLAGS) $(CCLFLAGS) efilib.c
 
 # TSS shared library build
 

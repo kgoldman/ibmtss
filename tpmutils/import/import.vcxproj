@@ -18,22 +18,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\utils\applink.c" />
-    <ClCompile Include="..\..\utils\cryptoutils.c" />
-    <ClCompile Include="..\..\utils\ekutils.c" />
-    <ClCompile Include="..\..\utils\importpem.c" />
-    <ClCompile Include="..\..\utils\objecttemplates.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\tss\tss.vcxproj">
-      <Project>{5c11af70-45a6-4888-a66a-c0a70302bd89}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4E46B941-806C-4EBC-AF95-3DE9BDA89D3F}</ProjectGuid>
+    <ProjectGuid>{EBA425BE-67E2-4439-B330-56F441CC4C65}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>importpem</RootNamespace>
+    <RootNamespace>import</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -79,7 +67,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
-    <Import Project="..\CommonPropertiesRelease.props" />
+    <Import Project="..\CommonPropertiesx64Release.props" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -155,6 +143,16 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\tss\tss.vcxproj">
+      <Project>{5c11af70-45a6-4888-a66a-c0a70302bd89}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\utils\applink.c" />
+    <ClCompile Include="..\..\utils\cryptoutils.c" />
+    <ClCompile Include="..\..\utils\import.c" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

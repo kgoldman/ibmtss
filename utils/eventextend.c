@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2019.					*/
+/* (c) Copyright IBM Corporation 2016 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -38,7 +38,11 @@
 
 /* eventextend is test/demo code.  It parses a TPM2 event log file and extends the measurements into
    TPM PCRs or simulated PCRs.  This simulates the actions that would be performed by BIOS /
-   firmware in a hardware platform.  */
+   firmware in a hardware platform.
+
+   It handles the EV_NO_ACTION StartupLocality by power cycling the TPM and sending a startup
+   at the locality from the event.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,11 +51,17 @@
 #include <ibmtss/tss.h>
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tsscryptoh.h>
+#include <ibmtss/tsstransmit.h>	/* for simulator power up */
 
 #include "eventlib.h"
 
 /* local prototypes */
 
+static uint32_t powerUp(void);
+static uint32_t startup(TSS_CONTEXT	*tssContext,
+			uint8_t 	locality);
+static uint32_t pcrExtend(TSS_CONTEXT		*tssContext,
+			  TCG_PCR_EVENT2 	*event2);
 static void printUsage(void);
 
 extern int tssUtilsVerbose;
@@ -214,58 +224,14 @@ int main(int argc, char * argv[])
 	    printf("\neventextend: line %u\n", lineNum);
 	    TSS_EVENT2_Line_Trace(&event2);
 	}
-	/* don't extend no action events */
-	if ((rc == 0) && !endOfFile) {
-	    if (event2.eventType == EV_NO_ACTION) {
-		continue;
-	    }
-	}
 	/* verify the event PCR digest against the event data */
-	if ((rc == 0) && checkHash) {
-	    rc = TSS_EVENT2_Line_CheckHash(&event2);
+	if ((rc == 0) && !endOfFile && checkHash) {
+	    rc = TSS_EVENT2_Line_CheckHash(&event2, &specIdEvent);
 	}
-	if ((rc == 0) && !endOfFile && tpm) {	/* extend TPM */
-	    PCR_Extend_In 		in;
-	    PCR_Read_In 		pcrReadIn;
-	    PCR_Read_Out 		pcrReadOut;
-
-	    if (rc == 0) {
-		in.pcrHandle = event2.pcrIndex;
-		in.digests = event2.digests;
-		rc = TSS_Execute(tssContext,
-				 NULL, 
-				 (COMMAND_PARAMETERS *)&in,
-				 NULL,
-				 TPM_CC_PCR_Extend,
-				 TPM_RS_PW, NULL, 0,
-				 TPM_RH_NULL, NULL, 0);
-	    }
-	    /* for debug, read back and trace the PCR value after the extend */
-	    if ((rc == 0) && tssUtilsVerbose) {
-		pcrReadIn.pcrSelectionIn.count = 1;
-		pcrReadIn.pcrSelectionIn.pcrSelections[0].hash =
-		    event2.digests.digests[0].hashAlg;
-		pcrReadIn.pcrSelectionIn.pcrSelections[0].sizeofSelect = 3;
-		pcrReadIn.pcrSelectionIn.pcrSelections[0].pcrSelect[0] = 0;
-		pcrReadIn.pcrSelectionIn.pcrSelections[0].pcrSelect[1] = 0;
-		pcrReadIn.pcrSelectionIn.pcrSelections[0].pcrSelect[2] = 0;
-		pcrReadIn.pcrSelectionIn.pcrSelections[0].pcrSelect[event2.pcrIndex / 8] =
-		    1 << (event2.pcrIndex % 8);
-
-		rc = TSS_Execute(tssContext,
-				 (RESPONSE_PARAMETERS *)&pcrReadOut,
-				 (COMMAND_PARAMETERS *)&pcrReadIn,
-				 NULL,
-				 TPM_CC_PCR_Read,
-				 TPM_RH_NULL, NULL, 0);
-	    }
-	    if ((rc == 0) && tssUtilsVerbose) {
-		TSS_PrintAll("PCR digest",
-			     pcrReadOut.pcrValues.digests[0].t.buffer,
-			     pcrReadOut.pcrValues.digests[0].t.size);
-	    }
+	if ((rc == 0) && !endOfFile && tpm) {		/* extend TPM */
+	    rc = pcrExtend(tssContext, &event2);
 	}
-	if ((rc == 0) && !endOfFile && sim) {	/* extend simulated PCRs */
+	if ((rc == 0) && !endOfFile && sim) {		/* extend simulated PCRs */
 	    rc = TSS_EVENT2_PCR_Extend(simPcrs, &event2);
 	}
     }
@@ -379,11 +345,155 @@ int main(int argc, char * argv[])
     return rc;
 }
 
+/* pcrExtend() extends the event into the TPM
+
+   If the event is EV_NO_ACTION -> StartupLocality, send a power cycle and a startup at the locality
+   in the event, typically locality 3.  This initializes PCR 0  to 00....0003.
+
+   Other EV_NO_ACTION events are skipped.
+
+   Other events extend the PCR.
+*/
+
+static uint32_t pcrExtend(TSS_CONTEXT		*tssContext,
+			  TCG_PCR_EVENT2 	*event2)
+{
+    uint32_t 			rc = 0;
+    size_t 			i;
+    PCR_Extend_In 		in;
+    PCR_Read_In 		pcrReadIn;
+    PCR_Read_Out 		pcrReadOut;
+
+    if (rc == 0) {
+	/* handle EV_NO_ACTION */
+	if (event2->eventType == EV_NO_ACTION) {
+	    /* startup locality sets PCR 0 to the locality */
+	    if ((event2->pcrIndex == 0) &&
+		/* StartupLocality in the event is NUL terminated, locality is one byte */
+		(event2->eventSize == (sizeof("StartupLocality") + 1)) &&
+		(memcmp(event2->event, "StartupLocality", sizeof("StartupLocality")) == 0)) {
+
+		/* poewr cycle the TPM to prepare for startup */
+		if (rc == 0) {		/* powerup platform port uses a separate TSS context */
+		    rc = powerUp();
+		}
+		/* startup using the event specified locality */
+		if (rc == 0) {
+		    uint8_t locality = event2->event[sizeof("StartupLocality")];
+		    rc = startup(tssContext, locality);
+		}
+	    }
+	    /* other EV_NO_ACTION events are ignored */
+	    else {
+		return 0;
+	    }
+	}
+	/* handle not EV_NO_ACTION */
+	else {
+	    in.pcrHandle = event2->pcrIndex;
+	    in.digests = event2->digests;
+	    rc = TSS_Execute(tssContext,
+			     NULL, 
+			     (COMMAND_PARAMETERS *)&in,
+			     NULL,
+			     TPM_CC_PCR_Extend,
+			     TPM_RS_PW, NULL, 0,
+			     TPM_RH_NULL, NULL, 0);
+	}
+    }
+    /* for debug, read back and trace the PCR value after the extend */
+    if ((rc == 0) && tssUtilsVerbose) {
+	pcrReadIn.pcrSelectionIn.count = event2->digests.count;
+	for (i = 0 ; i < event2->digests.count ; i++ ) {
+	    pcrReadIn.pcrSelectionIn.pcrSelections[i].hash =
+		event2->digests.digests[i].hashAlg;
+	    pcrReadIn.pcrSelectionIn.pcrSelections[i].sizeofSelect = 3;
+	    pcrReadIn.pcrSelectionIn.pcrSelections[i].pcrSelect[0] = 0;
+	    pcrReadIn.pcrSelectionIn.pcrSelections[i].pcrSelect[1] = 0;
+	    pcrReadIn.pcrSelectionIn.pcrSelections[i].pcrSelect[2] = 0;
+	    pcrReadIn.pcrSelectionIn.pcrSelections[i].pcrSelect[event2->pcrIndex / 8] =
+		1 << (event2->pcrIndex % 8);
+	}
+	rc = TSS_Execute(tssContext,
+			 (RESPONSE_PARAMETERS *)&pcrReadOut,
+			 (COMMAND_PARAMETERS *)&pcrReadIn,
+			 NULL,
+			 TPM_CC_PCR_Read,
+			 TPM_RH_NULL, NULL, 0);
+    }
+    if ((rc == 0) && tssUtilsVerbose) {
+	printf("PCR Read %u\n", event2->pcrIndex);
+	for (i = 0 ; i < event2->digests.count ; i++ ) {
+	    TSS_PrintAll("PCR digest",
+			 pcrReadOut.pcrValues.digests[i].t.buffer,
+			 pcrReadOut.pcrValues.digests[i].t.size);
+	}
+    }
+    return rc;
+}
+
+static uint32_t powerUp(void)
+{
+    uint32_t 			rc = 0;
+    TSS_CONTEXT			*tssContext = NULL;
+
+    if (rc == 0) {	/* use a separate context for the command port */
+	rc = TSS_Create(&tssContext);
+    }
+    if (rc == 0) {
+	rc = TSS_TransmitPlatform(tssContext, TPM_SIGNAL_POWER_OFF, "TPM2_PowerOffPlatform");
+    }
+    /* power on platform */
+    if (rc == 0) {
+	rc = TSS_TransmitPlatform(tssContext, TPM_SIGNAL_POWER_ON, "TPM2_PowerOnPlatform");
+    }
+    /* power on NV */
+    if (rc == 0) {
+	rc = TSS_TransmitPlatform(tssContext, TPM_SIGNAL_NV_ON, "TPM2_NvOnPlatform");
+    }
+    {
+	TPM_RC rc1 = TSS_Delete(tssContext);
+	if (rc == 0) {
+	    rc = rc1;
+	}
+    }
+    return rc;
+}
+
+static uint32_t startup(TSS_CONTEXT	*tssContext,
+			uint8_t 	locality)
+{
+    uint32_t 		rc = 0;
+    Startup_In 		in;
+    char 		localityString[17];	/* 17 to suppress false warning */
+
+    if (rc == 0) {
+	memset(localityString, 0, sizeof(localityString));
+	sprintf(localityString, "%.*u", 1, locality);
+	TSS_SetProperty(tssContext, TPM_TRANSMIT_LOCALITY, localityString);
+    }
+    /* call TSS to execute the command */
+    if (rc == 0) {
+	in.startupType = TPM_SU_CLEAR;
+	rc = TSS_Execute(tssContext,
+			 NULL, 
+			 (COMMAND_PARAMETERS *)&in,
+			 NULL,
+			 TPM_CC_Startup,
+			 TPM_RH_NULL, NULL, 0);
+    }
+    TSS_SetProperty(tssContext, TPM_TRANSMIT_LOCALITY, NULL);
+    return rc;
+}
+
 static void printUsage(void)
 {
     printf("Usage: eventextend -if <measurement file> [-v]\n");
     printf("\n");
     printf("Extends a measurement file (binary) into a TPM or simulated PCRs\n");
+    printf("Ignores most EV_NO_ACTION events, but handles StartupLocality.\n");
+    printf("For -tpm, StartupLocality power cycles the TPM and sends TPM2_Startup\n");
+    printf("at the specified locality.\n");
     printf("\n");
     printf("\t-if\tfile containing the data to be extended\n");
     printf("\t[-nospec\tfile does not contain spec ID header (useful for incremental test)]\n");

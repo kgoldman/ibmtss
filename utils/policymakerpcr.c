@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     /* open the input file if needed */
-    if ((rc == 0) && (pcrmask != 0)) {
+    if ((rc == 0) && (pcrmask != 0) && (inFilename != NULL)) {
 	inFile = fopen(inFilename, "r");
 	if (inFile == NULL) {
 	    printf("Error opening %s for %s, %s\n", inFilename, "r", strerror(errno));

@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*	      $Id: tsssocket.c 1304 2018-08-20 18:31:45Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015, 2018.					*/
+/* (c) Copyright IBM Corporation 2015 - 2020.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -350,7 +350,7 @@ static uint32_t TSS_Socket_Open(TSS_CONTEXT *tssContext, short port)
    The MS simulator packet is of the form:
 
    TPM_SEND_COMMAND
-   locality 0
+   locality
    length
    TPM command packet	(this is the raw packet format)
 
@@ -384,7 +384,10 @@ static uint32_t TSS_Socket_SendCommand(TSS_CONTEXT *tssContext,
 	rc = TSS_Socket_SendBytes(tssContext->sock_fd, (uint8_t *)&commandType, sizeof(uint32_t));
     }
     if ((rc == 0) && mssim) {
-	uint8_t locality = 0;
+	uint8_t locality = tssContext->locality;
+	if (locality != 0) {
+	    if (tssVverbose) printf("TSS_Socket_SendCommand: locality %u\n", tssContext->locality);
+	}
 	rc = TSS_Socket_SendBytes(tssContext->sock_fd, &locality, sizeof(uint8_t));
     }
     if ((rc == 0) && mssim) {

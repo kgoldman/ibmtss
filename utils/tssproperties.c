@@ -71,6 +71,7 @@ static TPM_RC TSS_SetServerType(TSS_CONTEXT *tssContext, const char *value);
 static TPM_RC TSS_SetInterfaceType(TSS_CONTEXT *tssContext, const char *value);
 static TPM_RC TSS_SetDevice(TSS_CONTEXT *tssContext, const char *value);
 static TPM_RC TSS_SetEncryptSessions(TSS_CONTEXT *tssContext, const char *value);
+static TPM_RC TSS_SetLocality(TSS_CONTEXT *tssContext, const char *value);
 
 /* globals for the library */
 
@@ -130,6 +131,10 @@ int tssFirstCall = TRUE;
 #define TPM_ENCRYPT_SESSIONS_DEFAULT	"1"
 #endif
 
+#ifndef TPM_TRANSMIT_LOCALITY_DEFAULT
+#define TPM_TRANSMIT_LOCALITY_DEFAULT	"0"		/* socket interface supports a locality byte */
+#endif
+
 /* TSS_GlobalProperties_Init() sets the global verbose trace flags at the first entry points to the
    TSS */
 
@@ -169,6 +174,8 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 #endif 	/* TPM_NOSOCKET */
 	tssContext->dev_fd = -1;
 #endif	/* TPM_POSIX */
+
+	tssContext->locality = 0;
 
 #ifdef TPM_SKIBOOT
 	tssContext->tpm_driver = NULL;
@@ -239,6 +246,11 @@ TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext)
 	value = GETENV("TPM_DEVICE");
 	rc = TSS_SetDevice(tssContext, value);
     }
+    /* TPM device within the interface type */
+    if (rc == 0) {
+	value = GETENV("TPM_TRANSMIT_LOCALITY");
+	rc = TSS_SetLocality(tssContext, value);
+    }
     return rc;
 }
 
@@ -296,6 +308,9 @@ TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,
 	    break;
 	  case TPM_ENCRYPT_SESSIONS:
 	    rc = TSS_SetEncryptSessions(tssContext, value);
+	    break;
+	  case TPM_TRANSMIT_LOCALITY:
+	    rc = TSS_SetLocality(tssContext, value);
 	    break;
 	  default:
 	    rc = TSS_RC_BAD_PROPERTY;
@@ -532,4 +547,28 @@ static TPM_RC TSS_SetEncryptSessions(TSS_CONTEXT *tssContext, const char *value)
    irc = irc;
 #endif /* TPM_TSS_NOFILE */
    return rc;
+}
+
+static TPM_RC TSS_SetLocality(TSS_CONTEXT *tssContext, const char *value)
+{
+    TPM_RC		rc = 0;
+    int			irc = 0;
+
+    if (rc == 0) {
+	if (value == NULL) {
+	    value = TPM_TRANSMIT_LOCALITY_DEFAULT;
+	}
+    }
+    if (rc == 0) {
+	int tmpint;
+	irc = sscanf(value, "%u", &tmpint);
+	if (irc != 1) {
+	    if (tssVerbose) printf("TSS_SetLocality: Error, value invalid\n");
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+	else {
+	    tssContext->locality = tmpint;
+	}
+    }
+    return rc;
 }

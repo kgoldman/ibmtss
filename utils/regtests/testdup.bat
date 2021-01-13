@@ -689,7 +689,7 @@ REM # change it.
     )
 
     echo "Target: Read policy digest for debug"
-    %TPM_EXE_PATH%policygetdigest -ha 03000000 -v
+    %TPM_EXE_PATH%policygetdigest -ha 03000000 -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

@@ -57,6 +57,10 @@ policyccnvchangeauth-auth.txt		policy command code nvchangeauth + policy authval
 policyccquote.txt			policy command code quote
 policyccsign.txt			policy command code sign
 policyccsign-auth.txt			policy command code sign + policy authvalue
+policyccnvread.txt			policy command code NV read
+policyccnvextend.txt			policy command code NV extend
+policyccpolicynv.txt			policy command code policy NV
+policyornvrep.txt			policy OR of the above three policies
 policyccundefinespacespecial-auth	policy command code undefinespacespecial + policy authvalue
 policycountertimer.txt			policy counter timer
 policycphash.txt			policy cphash
@@ -71,7 +75,7 @@ policyiwgekbsha256.txt			standard IWG EK policyB (policy OR)
 policyiwgekbsha384.txt			standard IWG EK policyB (policy OR)
 policyiwgekbsha512.txt			standard IWG EK policyB (policy OR)
 policynvargs.txt			policy nv arguments
-policynvnv.txt				policy nv has name and args			
+policynvnv.txt				policy nv has name and args
 policyor.txt				policy command code sign | quote
 policypcr.txt				policy pcr intermediate file
 policypcr0.txt				20 zeros

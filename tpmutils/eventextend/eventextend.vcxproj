@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\utils\applink.c" />
     <ClCompile Include="..\..\utils\cryptoutils.c" />
+    <ClCompile Include="..\..\utils\efilib.c" />
     <ClCompile Include="..\..\utils\eventextend.c" />
     <ClCompile Include="..\..\utils\eventlib.c" />
   </ItemGroup>
@@ -78,7 +79,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
-    <Import Project="..\CommonPropertiesRelease.props" />
+    <Import Project="..\CommonPropertiesx64Release.props" />
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />

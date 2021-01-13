@@ -44,72 +44,55 @@ echo ""
 echo "UEFI"
 echo ""
 
-for MODE in "-sim" "-tpm" 
-do
+for FILE in "dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "ubuntu1" "ubuntu2"
+do 
+    for MODE in "-sim" "-tpm" 
+    do
 
-    echo "UEFI ${MODE} dell 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if dell1.log > dell1.txt
+    echo "UEFI ${MODE} ${FILE} "
+    ${PREFIX}eventextend -checkhash -v ${MODE} -if ${FILE}.log > run.out
     checkSuccess $?
 
-    echo "UEFI ${MODE} hp 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if hp1.log > hp1.txt
-    checkSuccess $?
-
-    echo "UEFI ${MODE} ideapad 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if ideapad1.log  > ideapad1.txt
-    checkSuccess $?
-
-    echo "UEFI ${MODE} deb 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if deb1.log > deb1.txt
-    checkSuccess $?
-
-    echo "UEFI ${MODE} deb 2"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if deb2.log > deb2.txt
-    checkSuccess $?
-
-    echo "UEFI ${MODE} p51 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if p511.log > p511.txt
-    checkSuccess $?
-
-    echo "UEFI ${MODE} sm 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if sm1.log > sm1.txt
-    checkSuccess $?
-
-    echo "UEFI ${MODE} sm 2"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if sm2.log > sm2.txt
-    checkSuccess $?
-
-    echo "UEFI ${MODE} ubuntu 1"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if ubuntu1.log > ubuntu1.txt
-    checkSuccess $?
-
-    echo "UEFI ${MODE} ubuntu 2"
-    ${PREFIX}eventextend -checkhash -v ${MODE} -if ubuntu2.log > ubuntu2.txt
-    checkSuccess $?
-
+    done
 done
 
 echo ""
 echo "IMA"
 echo ""
 
-for MODE in "" "-sim" 
+for TYPE in "1" "2"
 do
-    echo "IMA ${MODE} Test Log"
-    ${PREFIX}imaextend -if imatest.log ${MODE} -v -le > imatest.txt
-    checkSuccess $?
+    for HALG in ${ITERATE_ALGS}
+    do
+
+	echo "Power cycle to reset IMA PCR"
+	${PREFIX}powerup > run.out
+	checkSuccess $?
+
+	echo "Startup"
+	${PREFIX}startup > run.out
+	checkSuccess $?
+
+	echo "IMA ${HALG} Test Log type ${TYPE} simulate"
+	${PREFIX}imaextend -le -if imatest.log -sim -halg ${HALG} -ty ${TYPE}  -checkhash -of tmpsim.bin > run.out
+	checkSuccess $?
+
+	echo "IMA ${HALG} Test Log type ${TYPE} extend"
+	${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ty ${TYPE}  -checkhash > run.out
+	checkSuccess $?
+
+	echo "PCR read ${HALG}"
+	${PREFIX}pcrread -ha 10 -halg ${HALG} -of tmppcr.bin > run.out
+	checkSuccess $?
+
+	echo "Verify PCR vs sim"
+	diff tmppcr.bin tmpsim.bin > run.out
+	checkSuccess $?
+
+    done
 done
 
 # cleanup
 
-rm -f deb1.txt
-rm -f deb2.txt
-rm -f dell1.txt
-rm -f hp1.txt
-rm -f ideapad1.txt
-rm -f p511.txt
-rm -f sm1.txt
-rm -f sm2.txt
-rm -f ubuntu1.txt
-rm -f ubuntu2.txt
-rm -f imatest.txt
+rm -f tmptpm.bin
+rm -f tmpsim.bin

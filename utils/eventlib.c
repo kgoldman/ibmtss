@@ -59,17 +59,25 @@ extern int tssUtilsVerbose;
 /* NOTE: PFP is the TCG PC Client Platform Firmware Profile Specification
 */
 
+#ifndef TPM_TSS_NOCRYPTO
+
 /* function prototypes for event callback table */
 
-typedef uint32_t (*TSS_Event2_CheckHash_t)(TCG_PCR_EVENT2 *event2);
+typedef uint32_t (*TSS_Event2_CheckHash_t)(TCG_PCR_EVENT2 *event2,
+					   const TCG_EfiSpecIDEvent *specIdEvent);
 
 /* function callbacks */
 
-static uint32_t TSS_Event2_Checkhash_Unused(TCG_PCR_EVENT2 *event2);
-static uint32_t TSS_Event2_Checkhash_EventHash(TCG_PCR_EVENT2 *event2);
-static uint32_t TSS_Event2_Checkhash_Success(TCG_PCR_EVENT2 *event2);
-static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2);
-static uint32_t TSS_Event2_Checkhash_VariableDataAuthority(TCG_PCR_EVENT2 *event2);
+static uint32_t TSS_Event2_Checkhash_Unused(TCG_PCR_EVENT2 *event2,
+					    const TCG_EfiSpecIDEvent *specIdEvent);
+static uint32_t TSS_Event2_Checkhash_EventHash(TCG_PCR_EVENT2 *event2,
+					       const TCG_EfiSpecIDEvent *specIdEvent);
+static uint32_t TSS_Event2_Checkhash_Success(TCG_PCR_EVENT2 *event2,
+					     const TCG_EfiSpecIDEvent *specIdEvent);
+static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2,
+						      const TCG_EfiSpecIDEvent *specIdEvent);
+static uint32_t TSS_Event2_Checkhash_VariableDataAuthority(TCG_PCR_EVENT2 *event2,
+							   const TCG_EfiSpecIDEvent *specIdEvent);
 
 #if 0	/* currently unused */
 static uint32_t TSS_Event2_Checkhash_SignatureDataHash(TCG_PCR_EVENT2 *event2);
@@ -212,9 +220,12 @@ static uint32_t TSS_Event2_Checkhash_GetTableIndex(size_t *index, uint32_t event
 /* TSS_Event2_Checkhash_Unused() is used for events that are reserved, deprecated, or otherwise
    unexpected and not handled */
 
-static uint32_t TSS_Event2_Checkhash_Unused(TCG_PCR_EVENT2 *event2)
+static uint32_t TSS_Event2_Checkhash_Unused(TCG_PCR_EVENT2 *event2,
+					    const TCG_EfiSpecIDEvent *specIdEvent)
 {
     event2 = event2;
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
     return TSS_RC_NOT_IMPLEMENTED;
 }
 
@@ -225,18 +236,25 @@ static uint32_t TSS_Event2_Checkhash_Unused(TCG_PCR_EVENT2 *event2)
    application code.
 */
 
-static uint32_t TSS_Event2_Checkhash_Success(TCG_PCR_EVENT2 *event2)
+static uint32_t TSS_Event2_Checkhash_Success(TCG_PCR_EVENT2 *event2,
+					     const TCG_EfiSpecIDEvent *specIdEvent)
 {
     event2 = event2;
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
     return 0;
 }
 
-static uint32_t TSS_Event2_Checkhash_EventHash(TCG_PCR_EVENT2 *event2)
+static uint32_t TSS_Event2_Checkhash_EventHash(TCG_PCR_EVENT2 *event2,
+					       const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     int irc;
     uint32_t count;
     TPML_DIGEST_VALUES *digestValues = &event2->digests;
+
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
 
     for (count = 0 ; (rc == 0) && (count < digestValues ->count) ; count++) {
 
@@ -283,7 +301,8 @@ static uint32_t TSS_Event2_Checkhash_EventHash(TCG_PCR_EVENT2 *event2)
    event
 */
 
-static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2)
+static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2,
+						      const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     int irc;
@@ -292,13 +311,16 @@ static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2)
     TSST_EFIData *efiData = NULL;
     uint8_t *VariableData;
     uint64_t VariableDataLength;
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
 
     /* Parse the event and get the VariableData */
     if (rc == 0) {
-	rc = TSS_EFIData_Init(&efiData, event2->eventType);
+	rc = TSS_EFIData_Init(&efiData, event2->eventType, specIdEvent);
     }
     if (rc == 0) {
-	rc = TSS_EFIData_ReadBuffer(efiData, event2->event, event2->eventSize, event2->pcrIndex);
+	rc = TSS_EFIData_ReadBuffer(efiData, event2->event, event2->eventSize,
+				    event2->pcrIndex, specIdEvent);
     }
     /* get the VariableData and its length from the structure */
     if (rc == 0) {
@@ -338,7 +360,7 @@ static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2)
 	    }
 	}
     }
-    TSS_EFIData_Free(efiData);
+    TSS_EFIData_Free(efiData, specIdEvent);
     return rc;
 }
 
@@ -346,13 +368,16 @@ static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2)
    that has an off by one error.  The last byte of the event is not hashed.
 */
 
-static uint32_t TSS_Event2_Checkhash_VariableDataAuthority(TCG_PCR_EVENT2 *event2)
+static uint32_t TSS_Event2_Checkhash_VariableDataAuthority(TCG_PCR_EVENT2 *event2,
+							   const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     int irc;
     uint32_t count;
     TPML_DIGEST_VALUES *digestValues = &event2->digests;
     uint32_t offByOne = 1;	/* Supermicro bug */
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
 
     for (count = 0 ; (rc == 0) && (count < digestValues ->count) ; count++) {
 
@@ -403,17 +428,20 @@ static uint32_t TSS_Event2_Checkhash_VariableDataAuthority(TCG_PCR_EVENT2 *event
 
 */
 
-static uint32_t TSS_Event2_Checkhash_SignatureDataHash(TCG_PCR_EVENT2 *event2)
+static uint32_t TSS_Event2_Checkhash_SignatureDataHash(TCG_PCR_EVENT2 *event2,
+						       const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     int irc;
     uint32_t count;
     TPML_DIGEST_VALUES *digestValues = &event2->digests;
     TSST_EFIData *efiData = NULL;
-    UEFI_VARIABLE_DATA *uefiVariableData;
+    TSS_UEFI_VARIABLE_DATA *uefiVariableData;
     uint8_t *hashData;
     uint64_t hashDataLength;
     uint32_t offset;
+    /*for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
 
     /* Parse the event and get the VariableData */
     if (rc == 0) {
@@ -493,7 +521,8 @@ static uint32_t TSS_Event2_Checkhash_SignatureDataHash(TCG_PCR_EVENT2 *event2)
    A NULL entry in the table second method returns the error from the primary method.
 */
 
-TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event)
+TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event,
+				 const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     size_t index;
@@ -506,13 +535,13 @@ TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event)
 	/* if there is a primary method */
 	if (event2CheckHashTable[index].checkHashFunction1 != NULL) {
 	    /* try the primary method */
-	    rc = event2CheckHashTable[index].checkHashFunction1(event);
+	    rc = event2CheckHashTable[index].checkHashFunction1(event, specIdEvent);
 	    /* if the primary method failed, try the second, alternate */
 	    if (rc != 0) {
 		/* if there is a second method */
 		if (event2CheckHashTable[index].checkHashFunction2 != NULL) {
 		    /* try the second method */
-		    rc = event2CheckHashTable[index].checkHashFunction2(event);
+		    rc = event2CheckHashTable[index].checkHashFunction2(event, specIdEvent);
 		}
 		/* else use the rc from the primary method */
 	    }
@@ -527,6 +556,8 @@ TPM_RC TSS_EVENT2_Line_CheckHash(TCG_PCR_EVENT2 *event)
     }
     return rc;
 }
+
+#endif /* TPM_TSS_NOCRYPTO */
 
 #ifndef TPM_TSS_NOFILE
 #ifdef TPM_TPM20
@@ -1178,8 +1209,12 @@ TPM_RC TSS_EVENT2_Line_LE_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint3
 }
 
 #ifndef TPM_TSS_NOCRYPTO
+
 /* TSS_EVENT2_PCR_Extend() extends PCR digests with the digest from the TCG_PCR_EVENT2 event log
    entry.
+
+   It ignores EV_NO_ACTION events except for StartupLocality.  StartupLocality resets the simulated
+   PCR 0 to the locality.
 */
 
 TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
@@ -1188,49 +1223,97 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
     TPM_RC 		rc = 0;
     uint32_t 		i;		/* iterator though hash algorithms */
     uint32_t 		bankNum = 0;	/* iterator though PCR hash banks */
-    
-    /* validate PCR number */
-    if (rc == 0) {
-	if (event2->pcrIndex >= IMPLEMENTATION_PCR) {
-	    printf("ERROR: TSS_EVENT2_PCR_Extend: PCR number %u out of range\n", event2->pcrIndex);
-	    rc = 1;
-	}
-    }
+    uint16_t 		digestSize;
+
     /* validate event count */
     if (rc == 0) {
 	uint32_t maxCount = sizeof(((TPML_DIGEST_VALUES *)NULL)->digests) / sizeof(TPMT_HA);
 	if (event2->digests.count > maxCount) {
 	    printf("ERROR: TSS_EVENT2_PCR_Extend: PCR count %u out of range, max %u\n",
 		   event2->digests.count, maxCount);
-	    rc = 1;
-	}	    
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	} 
     }
-    /* process each event hash algorithm */
-    for (i = 0; (rc == 0) && (i < event2->digests.count) ; i++) {
-	/* find the matching PCR bank */
-	for (bankNum = 0 ; (rc == 0) && (bankNum < event2->digests.count) ; bankNum++) {
-	    if (pcrs[bankNum][0].hashAlg == event2->digests.digests[i].hashAlg) {
+    /*
+      This logic handles EV_NO_ACTION -> StartupLocality.  If that event is encountered, set PCR 0
+      to the locality value before the extend.
 
-		uint16_t digestSize;
-		if (rc == 0) {
-		    digestSize = TSS_GetDigestSize(event2->digests.digests[i].hashAlg);
-		    if (digestSize == 0) {
-			printf("ERROR: TSS_EVENT2_PCR_Extend: hash algorithm %04hx unknown\n",
-			       event2->digests.digests[i].hashAlg);
-			rc = 1;
-		    }
+      This logic assumes that pcrs[] has been initialized to all zero.  The caller does this as part
+      of the simulated (event log replay) PCR calculation.
+
+      An error case is this event when PCR 0 is not zero.  Ignore it here since that would just be
+      an attestation client DoS'ing itself.  I.e., the attacker can reset PCR 0 in this simulation
+      calculation, but cannot reset the TPM PCR 0.
+
+      The event is a fixed value, " StartupLocality" plus a byte locality (e.g., for locality
+      3)
+
+      53 74 61 72 74 75 70 4c 6f 63 61 6c 69 74 79 00
+      03 
+
+    */
+    if (rc == 0) {
+	if (event2->eventType == EV_NO_ACTION) {
+	    if ((event2->pcrIndex == 0) &&
+		(event2->eventSize == (sizeof("StartupLocality") + 1)) &&
+		(memcmp(event2->event, "StartupLocality", sizeof("StartupLocality")) == 0)) {
+
+		uint8_t locality = event2->event[sizeof("StartupLocality")];
+		for (i = 0; (rc == 0) && (i < event2->digests.count) ; i++) {
+		    digestSize = TSS_GetDigestSize(pcrs[i][0].hashAlg);
+		    pcrs[i][0].digest.tssmax[digestSize-1] = locality;
 		}
-		if (rc == 0) {
-		    rc = TSS_Hash_Generate(&pcrs[bankNum][event2->pcrIndex],
-					   digestSize,
-					   (uint8_t *)&pcrs[bankNum][event2->pcrIndex].digest,
-					   digestSize,
-					   &event2->digests.digests[i].digest,
-					   0, NULL);
+	    }
+	    /* no 'else', other EV_NO_ACTION events are ignored */
+	}
+	/* not EV_NO_ACTION */
+	else {
+	    /* Range check event PCR number.  Do not do this test for EV_NO_ACTION, which can have
+	       non-standard PCR values like 0xffffffff */
+	    if (rc == 0) {
+		if (event2->pcrIndex >= IMPLEMENTATION_PCR) {
+		    printf("ERROR: TSS_EVENT2_PCR_Extend: PCR number %u out of range\n",
+			   event2->pcrIndex);
+		    rc = TSS_RC_BAD_PROPERTY_VALUE;
+		}
+	    }
+	    /* process each event hash algorithm */
+	    for (i = 0; (rc == 0) && (i < event2->digests.count) ; i++) {
+		/* find the matching PCR bank */
+		for (bankNum = 0 ; (rc == 0) && (bankNum < event2->digests.count) ; bankNum++) {
+		    if (pcrs[bankNum][0].hashAlg == event2->digests.digests[i].hashAlg) {
+
+			if (rc == 0) {
+			    digestSize = TSS_GetDigestSize(event2->digests.digests[i].hashAlg);
+			    if (digestSize == 0) {
+				printf("ERROR: TSS_EVENT2_PCR_Extend: hash algorithm %04hx unknown\n",
+				       event2->digests.digests[i].hashAlg);
+				rc = TSS_RC_BAD_HASH_ALGORITHM;
+			    }
+			}
+			if (rc == 0) {
+			    rc = TSS_Hash_Generate(&pcrs[bankNum][event2->pcrIndex],
+						   digestSize,
+						   (uint8_t *)&pcrs[bankNum][event2->pcrIndex].digest,
+						   digestSize,
+						   &event2->digests.digests[i].digest,
+						   0, NULL);
+			}
+		    }
 		}
 	    }
 	}
     }
+#if 0	/* for debug, trace the PCR calculation after each extend */
+    if (tssUtilsVerbose) {
+	/* process each event hash algorithm */
+	for (i = 0; (rc == 0) && (i < event2->digests.count) ; i++) {
+	    digestSize = TSS_GetDigestSize(event2->digests.digests[i].hashAlg);
+	    TSS_PrintAll("TSS_EVENT2_PCR_Extend:",
+			 (uint8_t *)&pcrs[i][event2->pcrIndex].digest, digestSize);
+	}
+    }
+#endif
     return rc;
 }
 
@@ -1323,7 +1406,24 @@ TPM_RC TSS_UINT64LE_Unmarshal(uint64_t *target, BYTE **buffer, uint32_t *size)
     return TPM_RC_SUCCESS;
 }
 
+/* TSS_EVENT2_Line_Trace() is a deprecated function that cannot handle different PC Client PFP
+   specifications.
+*/
+
 void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
+{
+    TSS_EVENT2_Line_Trace2(event, NULL);
+    return;
+}
+
+/* TSS_EVENT2_Line_Trace2() is recommended.  It adds the TCG_EfiSpecIDEvent parameter, which can
+   eventually handle updates to the PC Client PFP specifications.
+
+   A NULL TCG_EfiSpecIDEvent is permissible as a default to the TSS_EVENT2_Line_Trace() behavior.
+*/
+
+void TSS_EVENT2_Line_Trace2(TCG_PCR_EVENT2 *event,
+			    const TCG_EfiSpecIDEvent *specIdEvent)
 {
     uint32_t rc = 0;
     uint32_t count;
@@ -1343,15 +1443,16 @@ void TSS_EVENT2_Line_Trace(TCG_PCR_EVENT2 *event)
 		 event->event, event->eventSize);
     /* trace down into the EFI event */
     if (rc == 0) {
-	rc = TSS_EFIData_Init(&efiData, event->eventType);
+	rc = TSS_EFIData_Init(&efiData, event->eventType, specIdEvent);
     }
     if (rc == 0) {
-	rc = TSS_EFIData_ReadBuffer(efiData, event->event, event->eventSize, event->pcrIndex);
+	rc = TSS_EFIData_ReadBuffer(efiData, event->event, event->eventSize,
+				    event->pcrIndex, specIdEvent);
     }
     if (rc == 0) {
-       TSS_EFIData_Trace(efiData);
+	TSS_EFIData_Trace(efiData, specIdEvent);
     }
-    TSS_EFIData_Free(efiData);
+    TSS_EFIData_Free(efiData, specIdEvent);
     return;
 }
 
