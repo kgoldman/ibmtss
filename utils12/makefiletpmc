@@ -4,7 +4,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2018 - 2020					#
+# (c) Copyright IBM Corporation 2018 - 2021					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -171,10 +171,10 @@ makeidentity:		../utils/ibmtss/tss.h makeidentity.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) makeidentity.o $(LNALIBS) -o makeidentity
 nvdefinespace:		../utils/ibmtss/tss.h nvdefinespace.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvdefinespace.o $(LNALIBS) -o nvdefinespace
-nvreadvalueauth:	../utils/ibmtss/tss.h nvreadvalueauth.o $(LIBTSS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadvalueauth.o $(LNALIBS) -o nvreadvalueauth
-nvreadvalue:		../utils/ibmtss/tss.h nvreadvalue.o $(LIBTSS) $(LIBTSSUTILS12)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadvalue.o $(LNALIBS) -o nvreadvalue
+nvreadvalueauth:	../utils/ibmtss/tss.h nvreadvalueauth.o ../utils/cryptoutils.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadvalueauth.o ../utils/cryptoutils.o $(LNALIBS) -o nvreadvalueauth
+nvreadvalue:		../utils/ibmtss/tss.h nvreadvalue.o ../utils/cryptoutils.o $(LIBTSS) $(LIBTSSUTILS12)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) nvreadvalue.o ../utils/cryptoutils.o $(LNALIBS) -o nvreadvalue
 nvwritevalueauth:	../utils/ibmtss/tss.h nvwritevalueauth.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) nvwritevalueauth.o $(LNALIBS) -o nvwritevalueauth
 nvwritevalue:		../utils/ibmtss/tss.h nvwritevalue.o $(LIBTSS)
@@ -199,6 +199,7 @@ takeownership:		../utils/ibmtss/tss.h takeownership.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) takeownership.o $(LNALIBS) -o takeownership
 tpminit:		../utils/ibmtss/tss.h tpminit.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) tpminit.o $(LNALIBS) -o tpminit
+
 createekcert:		../utils/ibmtss/tss.h createekcert.o ekutils12.o \
 				../utils/ekutils.o ../utils/cryptoutils.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) createekcert.o ekutils12.o \
