@@ -5,9 +5,9 @@
 	<title>IBM TSS</title>
 	<meta name="generator" content="LibreOffice 4.3.7.2 (Linux)"/>
 	<meta name="author" content="Ken Goldman"/>
-	<meta name="created" content="2015-11-20T13:35:00"/>
+	<meta name="created" content="2015-11-20T12:35:00"/>
 	<meta name="changedby" content="Kenneth Goldman"/>
-	<meta name="changed" content="2020-03-31T11:10:00"/>
+	<meta name="changed" content="2021-01-15T10:49:00"/>
 	<style type="text/css">
 		@page { size: 8.5in 11in; margin-right: 1.25in; margin-top: 1in; margin-bottom: 0.5in }
 		p { margin-bottom: 0.08in; direction: ltr; color: #000000; widows: 2; orphans: 2 }
@@ -54,8 +54,8 @@ Research</font></font></p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" align="center" style="margin-bottom: 0in"><font size="5" style="font-size: 20pt">April
-March 3118, 202018</font></p>
+<p class="western" align="center" style="margin-bottom: 0in"><font size="5" style="font-size: 20pt">January
+15, 2020</font></p>
 <p lang="da-DK" class="western" align="center" style="margin-bottom: 0in">
 <br/>
 
@@ -266,8 +266,8 @@ upstreamed to</p>
 </p>
 <ol start="2">
 	<li/>
-<h1 class="western" align="justify" style="margin-top: 0.25in; margin-bottom: 0.17in; letter-spacing: 0.4pt; page-break-before: always"><a name="__RefHeading___Toc35934218"></a>
-	<font size="2" style="font-size: 11pt">Features</font></h1>
+<h1 class="western" align="justify" style="margin-top: 0.25in; margin-bottom: 0.17in; page-break-before: always"><a name="__RefHeading___Toc35934218"></a>
+	<font size="2" style="font-size: 11pt"><span style="letter-spacing: 0.4pt">Features</span></font></h1>
 </ol>
 <p class="western" style="margin-bottom: 0in"><br/>
 
@@ -716,6 +716,31 @@ process terminates, the ephemeral encryption key is lost.</p>
 <p class="western" style="margin-bottom: 0in">See 4.9 Command Line Utilities
 for the special case of using the command line utilities.  That
 section is not applicable when using the TSS library in programs.</p>
+<p class="western" style="margin-bottom: 0in"><br/>
+
+</p>
+<h4 class="western">TPM_TRANSMIT_LOCALITY</h4>
+<p class="western" style="margin-bottom: 0in">		default 0</p>
+<p class="western" style="margin-bottom: 0in"><br/>
+
+</p>
+<p class="western" style="margin-bottom: 0in">	set the locality for
+transmitting a command.</p>
+<p class="western" style="margin-bottom: 0in"><br/>
+
+</p>
+<p class="western" style="margin-bottom: 0in">This property only
+affects the TPM_INTERFACE_TYPETPM_SERVER_TYPE socsim and TPM_SERVER_TYPE
+mssim.  That is, the SW TPM packet format permits a locality
+specifier.  HW TPM locality requires hardware support and cannot
+typically be set by an OS level application.</p>
+<p class="western" style="margin-bottom: 0in"><br/>
+
+</p>
+<p class="western" style="margin-bottom: 0in">The main use case for
+this property is to send TPM2_Startup at a different locality to
+simulate the UEFI event EV_NO_ACTION, which sets PCR 0 to the startup
+locality.</p>
 <p class="western" style="margin-bottom: 0in; page-break-before: always">
 <br/>
 
@@ -1259,9 +1284,8 @@ marshal the structure and determine the correct size.
 </p>
 <p class="western" style="margin-bottom: 0in">An issue arises when
 using the TSS utilities (not the TSS itself) on a platform with a
-resource manager.  Windows 10 currently has a resource manager
-(called TBS) and Linux as of 4.12 all OSes will eventually have
-oneuses /dev/tpmrm0.</p>
+resource manager.  Windows 10 has a resource manager called TBS and
+Linux as of 4.12 uses /dev/tpmrm0.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -1275,15 +1299,15 @@ terminates, the resource manager will flush the key.</p>
 
 </p>
 <p class="western" style="margin-bottom: 0in">This is not an issue
-for a complete application using the TSS, because the TSS will keeps
-the connection open through multiple TPM commands.  For prototyping
-using the utilities, the Linux solution is to bypass the resource
-manager using /dev/tpm0.  For Windows 10, use a proxy toto simulate
-this persistent connection behavior.</p>
+for a complete application using the TSS because the TSS keeps the
+connection open through multiple TPM commands.  For prototyping using
+the utilities, the Linux solution is to bypass the resource manager
+using /dev/tpm0.  For Windows 10, use a proxy to simulate this
+persistent connection behavior.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">The &quot;tpm_proxy&quot;
+<p class="western" style="margin-bottom: 0in">The &quot;tpmproxy&quot;
 program connects as a socket server on one side and a TPM device
 driver on the other.  Once the proxy starts, the Windows resource
 manager sees one persistent connection, as desired.  The utilities
@@ -1293,11 +1317,7 @@ use the socket interface to the proxy.</p>
 </p>
 <p class="western" style="margin-bottom: 0in">Both the TSS and the
 proxy support both a raw packet format and the Microsoft simulator
-wrapped format.The proxy (for both TPM 1.2 and TPM 2.0) is part of
-the tarball at</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
+wrapped format.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -1333,16 +1353,6 @@ TPM_SERVER_TYPE=raw</p>
 </p>
 <p class="western" style="margin-bottom: 0in">and the tpmproxy with
 -raw.</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in"><font color="#0000ff"><span lang="en-US"><u><a class="western" href="https://sourceforge.net/projects/ibmswtpm/files/?source=navbar"><span lang="en-US">https://sourceforge.net/projects/ibmswtpm/files/?source=navbar</span></a></u></span></font></p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">It is not well tested
-for TPM 2.0.  I expect that the TPM_Startup call must be commented
-out, and that the TSS must run in &quot;raw&quot; mode.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -1420,6 +1430,10 @@ cert.cer -inform DER -out cert.pem</p>
 
 </p>
 <p class="western" style="margin-bottom: 0in"><font color="#0000ff"><span lang="en-US"><u><a class="western" href="https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%201110.cer"><span lang="en-US">https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%201110.cer</span></a></u></span></font></p>
+<p class="western" style="margin-bottom: 0in"><br/>
+
+</p>
+<p class="western" style="margin-bottom: 0in"><font color="#0000ff"><span lang="en-US"><u><span lang="en-US">https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202111.cer</span></u></span></font></p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -2437,32 +2451,6 @@ little reason not to define this macro.</p>
 	<ol>
 		<ol start="4">
 			<li/>
-<h3 class="western">TPM_WINDOWS_TBSI_WIN8</h3>
-		</ol>
-	</ol>
-</ol>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">For Windows hardware
-TPM support, use the Windows 8/10 API.</p>
-<ol>
-	<ol>
-		<ol start="5">
-			<li/>
-<h3 class="western">TPM_WINDOWS_TBSI_WIN7</h3>
-		</ol>
-	</ol>
-</ol>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">For Windows hardware
-TPM support, use the Windows 7 API.</p>
-<ol>
-	<ol>
-		<ol start="6">
-			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934278"></a>
 			TPM_TSS_NOFILE</h3>
 		</ol>
@@ -2500,7 +2488,7 @@ when the context is deleted.</p>
 </ul>
 <ol>
 	<ol>
-		<ol start="7">
+		<ol start="5">
 			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934279"></a>
 			TPM_TSS_NOCRYPTO</h3>
@@ -2532,7 +2520,7 @@ builds a TSS library that does not depend on a crypto library.</p>
 </ul>
 <ol>
 	<ol>
-		<ol start="8">
+		<ol start="6">
 			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934280"></a>
 			TPM_TSS_NO_PRINT</h3>
@@ -2550,7 +2538,7 @@ functions.</p>
 </p>
 <ol>
 	<ol>
-		<ol start="9">
+		<ol start="7">
 			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934281"></a>
 			TPM_TSS_NOECC</h3>
@@ -2568,7 +2556,7 @@ support.</p>
 </p>
 <ol>
 	<ol>
-		<ol start="10">
+		<ol start="8">
 			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934282"></a>
 			TPM_TSS_NORSA</h3>
@@ -2585,7 +2573,7 @@ builds a TSS that does not require crypto library RSA support.</p>
 </p>
 <ol>
 	<ol>
-		<ol start="11">
+		<ol start="9">
 			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934283"></a>
 			TPM_TSS_NOENV</h3>
@@ -2609,18 +2597,7 @@ supports the TSS_SetProperty() function.</p>
 </p>
 <ol>
 	<ol>
-		<ol start="12">
-			<li/>
-<h3 class="western"></h3>
-		</ol>
-	</ol>
-</ol>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<ol>
-	<ol>
-		<ol start="13">
+		<ol start="10">
 			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934286"></a>
 			TPM_NOSOCKET</h3>
@@ -2643,7 +2620,29 @@ defined, TPM_INTERFACE_TYPE defaults to dev, not socsim.</p>
 </p>
 <ol>
 	<ol>
-		<ol start="14">
+		<ol start="11">
+			<li/>
+<h3 class="western">TPM_TSS_NODEV</h3>
+		</ol>
+	</ol>
+</ol>
+<p class="western" style="margin-bottom: 0in"><br/>
+
+</p>
+<p class="western" style="margin-bottom: 0in">Defining this macro
+builds a TSS that does not include the TPM device driver interface.</p>
+<p class="western" style="margin-bottom: 0in"><br/>
+
+</p>
+<p class="western" style="margin-bottom: 0in">The main use for this
+macro is a Windows platform using mingw.  mingw does not apparently
+support the Tbsi interface.</p>
+<p class="western" style="margin-bottom: 0in"><br/>
+
+</p>
+<ol>
+	<ol>
+		<ol start="12">
 			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934287"></a>
 			TPM_TSS_NOCMDCHECK</h3>
@@ -2685,7 +2684,7 @@ return codes.</p>
 </p>
 <ol>
 	<ol>
-		<ol start="15">
+		<ol start="13">
 			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934288"></a>
 			TPM_TSS_NODEPRECATED</h3>
@@ -2703,7 +2702,7 @@ size in cases where the application is not using the functions</p>
 </p>
 <ol>
 	<ol>
-		<ol start="16">
+		<ol start="14">
 			<li/>
 <h3 class="western"><a name="__RefHeading___Toc35934289"></a>
 			TPM_TSS_NUVOTON</h3>
@@ -2864,9 +2863,8 @@ tricky.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">Install OpenSSL 1.1.1x
-or 1.0.x.  For 1.1.x .  with mingw, use the 32-bit build.  The usual
-place to get OpenSSL for Windows is
+<p class="western" style="margin-bottom: 0in">Install OpenSSL 1.1.1. 
+The usual place to get OpenSSL for Windows is
 <font color="#0000ff"><span lang="en-US"><u><a class="western" href="http://slproweb.com/products/Win32OpenSSL.html"><span lang="en-US">http://slproweb.com/products/Win32OpenSSL.html</span></a></u></span></font>.
  Install Win32 OpenSSL, not the &quot;Light&quot; versions, which I
 believe do not contain the development files. For use with mingw, use
@@ -2885,12 +2883,6 @@ in the OpenSSL binaries directory.  I don't know if this matters.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">The project now
-supports 1.1.x by default.  There are instructions in the makefile
-(mingw) or here (Visual Studio) for 1.0.x.</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
 <p class="western" style="margin-bottom: 0in">Recent Shining Light
 installs point to 
 </p>
@@ -2919,9 +2911,7 @@ other words, use the recommended location.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">Install Win32 OpenSSL,
-not the &quot;Light&quot; versions, which I believe do not contain
-the development files.After install, copy 
+<p class="western" style="margin-bottom: 0in">After install, copy 
 </p>
 <p class="western" style="text-indent: 0.5in; margin-bottom: 0in">C:\Program
 Files\openssl\bin\libcrypto-1.1.dll 
@@ -2936,34 +2926,6 @@ to eliminate this step.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">Recent Shining Light
-installs point to 
-</p>
-<p class="western" style="text-indent: 0.5in; margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="text-indent: 0.5in; margin-bottom: 0in">C:\OpenSSL-Win32
- 
-</p>
-<p class="western" style="text-indent: 0.5in; margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">Change this to 
-</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">	C:\Program
-Files\OpenSSL</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">If you chose not to
-install OpenSSL in this location, you must fix the build paths.  In
-other words, use the recommended location.</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
 <p class="western" style="margin-bottom: 0in">This directory should
 be added to the Path environment variable if it's not already there:</p>
 <p class="western" style="margin-bottom: 0in"><br/>
@@ -2971,19 +2933,11 @@ be added to the Path environment variable if it's not already there:</p>
 </p>
 <p class="western" style="text-indent: 0.25in; margin-bottom: 0in">c:\Program
 Files\OpenSSL\bin</p>
-<p class="western" style="text-indent: 0.25in; margin-bottom: 0in"><br/>
-
-</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
 <p class="western" style="margin-bottom: 0in">Note:  Windows builds
 must have TPM_WINDOWS defined.</p>
-<p class="western" style="text-indent: 0.25in; margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">I put the OpenSSL DLLs
-in the OpenSSL binaries directory.  I don't know if this matters.</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -3088,25 +3042,6 @@ makefile.mak</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
-<p class="western" style="margin-bottom: 0in">Note: mingw does not
-seem compatible with the Windows 10 TBSI.  For hardware TPM support,
-use the Visual Studio project.  Contributions to fix this are
-welcome.</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">In addition, Shining
-Light does not seem to supply the 64-bit OpenSSL library for mingw. 
-Use the 32-bit library.  Contributions to fix this are welcome.</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">Library names changed
-from OpenSSL 1.0 to 1.1.  For OpenSSL 1.0, see the comments in
-makefile.mak.</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
 <ol>
 	<ol>
 		<ol start="2">
@@ -3123,30 +3058,6 @@ makefile.mak.</p>
 files are supplied.  The Visual Studio 2017 Solution is
 &hellip;/tpmutils/tpmutils.sln.  
 </p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">Library names changed
-from OpenSSL 1.0 to 1.1.  For OpenSSL 1.0</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">View -  Property
-Manager</p>
-<p class="western" style="margin-bottom: 0in">Expand any application</p>
-<p class="western" style="margin-bottom: 0in">Expand Debug (for the
-debug build)</p>
-<p class="western" style="margin-bottom: 0in">double click Common
-Properties</p>
-<p class="western" style="margin-bottom: 0in">Expand linker, Input</p>
-<p class="western" style="margin-bottom: 0in">Change Additional
-Dependencies</p>
-<p class="western" style="text-indent: 0.5in; margin-bottom: 0in">from</p>
-<p class="western" style="margin-bottom: 0in">		libcrypto32mdd.lib</p>
-<p class="western" style="text-indent: 0.5in; margin-bottom: 0in">to 
-</p>
-<p class="western" style="margin-bottom: 0in">		libeay32mdd.lib and
-ssleay32.mdd.lib</p>
 <p class="western" style="margin-bottom: 0in"><br/>
 
 </p>
@@ -3236,36 +3147,6 @@ macro in Visual Studio:</p>
 </p>
 <p class="western" style="margin-left: 0.5in; margin-bottom: 0in">Note:
  The TPM_WINDOWS_TBSI_WIN8 macro also supports Windows 10.</p>
-<p class="western" style="margin-left: 0.5in; margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-left: 0.5in; margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">Windows 7 
-</p>
-<p class="western" style="margin-left: 0.5in; margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="margin-bottom: 0in">For Windows 7, the
-alternate macro TPM_WINDOWS_TBSI_WIN7 uses the TPM 1.2 Tbsi API.  I
-use it for light testing, but it is probably useless for a TPM 2.0.</p>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<ul>
-	<li/>
-<p class="western" style="margin-bottom: 0in">Link the tss
-	with Tbs.lib</p>
-</ul>
-<p class="western" style="margin-bottom: 0in"><br/>
-
-</p>
-<p class="western" style="text-indent: 0.5in; margin-bottom: 0in">Note:
- For Windows 7, use c:/progra~1/Micros~2/Windows/v7.1/lib/Tbs.lib</p>
 <p class="western" style="text-indent: 0.5in; margin-bottom: 0in"><br/>
 
 </p>
@@ -3888,7 +3769,7 @@ a proxy, which keeps the TPM connection alive. See section 4.7 Connecting to Res
 </p>
 <div title="footer">
 	<p style="margin-top: 0.46in; margin-bottom: 0in"><font size="3" style="font-size: 11pt">	Page
-	<sdfield type=PAGE subtype=RANDOM format=PAGE>44</sdfield>	</font></p>
+	<sdfield type=PAGE subtype=RANDOM format=PAGE>43</sdfield>	</font></p>
 </div>
 </body>
 </html>
