@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2020                                            #
+# (c) Copyright IBM Corporation 2020 - 2021                                     #
 # 										#
 # All rights reserved.								#
 # 										#
@@ -44,7 +44,7 @@ echo ""
 echo "UEFI"
 echo ""
 
-for FILE in "dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "ubuntu1" "ubuntu2"
+for FILE in "dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "sm3" "sm4" "ubuntu1" "ubuntu2" "ubuntu3"
 do 
     for MODE in "-sim" "-tpm" 
     do

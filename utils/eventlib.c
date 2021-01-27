@@ -78,6 +78,8 @@ static uint32_t TSS_Event2_Checkhash_VariableDataHash(TCG_PCR_EVENT2 *event2,
 						      const TCG_EfiSpecIDEvent *specIdEvent);
 static uint32_t TSS_Event2_Checkhash_VariableDataAuthority(TCG_PCR_EVENT2 *event2,
 							   const TCG_EfiSpecIDEvent *specIdEvent);
+static uint32_t TSS_Event2_Checkhash_EvIpl(TCG_PCR_EVENT2 *event2,
+					   const TCG_EfiSpecIDEvent *specIdEvent);
 
 #if 0	/* currently unused */
 static uint32_t TSS_Event2_Checkhash_SignatureDataHash(TCG_PCR_EVENT2 *event2);
@@ -139,8 +141,8 @@ const TSS_EVENT2_CHECKHASH_TABLE event2CheckHashTable [] =
       TSS_Event2_Checkhash_Success,		/* FIXME PFP ambiguous */
       NULL},
      {EV_IPL,
-      TSS_Event2_Checkhash_Success,		/* FIXME PFP ambiguous */
-      NULL},
+      TSS_Event2_Checkhash_EvIpl,		/* from observation */
+      NULL},					/* FIXME PFP ambiguous */
      {EV_IPL_PARTITION_DATA,
       TSS_Event2_Checkhash_Unused,		/* deprecated */
       NULL},
@@ -253,7 +255,7 @@ static uint32_t TSS_Event2_Checkhash_EventHash(TCG_PCR_EVENT2 *event2,
     uint32_t count;
     TPML_DIGEST_VALUES *digestValues = &event2->digests;
 
-    /*for future use, to handle PFP differences */
+    /* for future use, to handle PFP differences */
     specIdEvent = specIdEvent;
 
     for (count = 0 ; (rc == 0) && (count < digestValues ->count) ; count++) {
@@ -513,6 +515,115 @@ static uint32_t TSS_Event2_Checkhash_SignatureDataHash(TCG_PCR_EVENT2 *event2,
 }
 
 #endif	/* function currently unused */
+
+/* EV_IPL
+
+   Only checks events with these prefixes.  Others return success.
+*/
+
+typedef struct {
+    const char *command;	/* first part (prefix) of the event field */
+    size_t commandSize;		/* size of that first part */
+    int includeNul;		/* true to include the nul in the hash */
+} EV_IPL_TABLE;
+
+const EV_IPL_TABLE evIplTable [] =
+    {
+     {"grub_cmd ",
+      sizeof("grub_cmd "),
+      1},
+     {"grub_cmd: ",
+      sizeof("grub_cmd: "),
+      0},
+     {"kernel_cmdline: ",
+      sizeof("kernel_cmdline: "),
+      0},
+     {"grub_kernel_cmdline ",
+      sizeof("grub_kernel_cmdline "),
+      0},
+    };
+
+static uint32_t TSS_Event2_Checkhash_EvIpl(TCG_PCR_EVENT2 *event2,
+					   const TCG_EfiSpecIDEvent *specIdEvent)
+{
+    uint32_t 	rc = 0;
+    int 	irc;
+    size_t 	i;
+    size_t 	index;
+    int 	found = 0;
+    uint32_t 	count;
+    TPML_DIGEST_VALUES *digestValues = &event2->digests;
+    size_t 	start;	/* has start index */
+    size_t 	length;	/* bytes to be hashed */
+
+    /* for future use, to handle PFP differences */
+    specIdEvent = specIdEvent;
+
+    for (i = 0, found = 0 ;
+	 (rc == 0) && !found && (i < sizeof(evIplTable) /  sizeof(EV_IPL_TABLE)) ;
+	 i++) {
+
+	/* range check commandSize before compare, if insufficient, no match */
+	if (event2->eventSize >= (evIplTable[i].commandSize - 1)) {
+	    /* is this event one of the supported prefixes */
+	    irc = memcmp(evIplTable[i].command, event2->event, evIplTable[i].commandSize-1);
+	    if (irc == 0) {
+		found = 1;
+		index = i;
+	    }
+	}
+    }
+    if ((rc == 0) && found) {
+	start = evIplTable[index].commandSize - 1;
+	length = event2->eventSize - start;
+	if (!evIplTable[index].includeNul) {
+	    length--;
+	}
+    }
+    for (count = 0 ; (rc == 0) && found && (count < digestValues ->count)  ; count++) {
+	TPMT_HA *pcrDigest = &(digestValues->digests[count]);	/* value extended */
+	TPMI_ALG_HASH hashAlg = pcrDigest->hashAlg;
+	TPMT_HA eventDigest;				/* value from event */
+
+	if (rc == 0) {
+	    eventDigest.hashAlg = hashAlg;
+	    rc = TSS_Hash_Generate(&eventDigest,
+				   (int)length, event2->event + start,
+				   0, NULL);
+	}
+	if (rc == 0) {
+	    uint32_t sizeInBytes = TSS_GetDigestSize(hashAlg);
+#if 0
+	    printf("TSS_Event2_Checkhash_EvIpl: bytes to hash %u\n",
+		   (unsigned int)length);
+	    printf("TSS_Event2_Checkhash_EvIpl: first byte %02x\n", event2->event[start]);
+	    printf("TSS_Event2_Checkhash_EvIpl: last byte %02x\n",
+		   event2->event[start + length -1]);
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_EvIpl: PCR",
+					      (uint8_t *)&pcrDigest->digest, sizeInBytes);
+	    if (tssUtilsVerbose) TSS_PrintAll("TSS_Event2_Checkhash_EvIpl: event",
+					      (uint8_t *)&eventDigest.digest, sizeInBytes);
+#endif
+	    irc = memcmp((uint8_t *)&pcrDigest->digest,
+			 (uint8_t *)&eventDigest.digest,
+			 sizeInBytes);
+	    if (irc != 0) {
+#if 1
+		printf("TSS_Event2_Checkhash_EvIpl: "
+		       "ERROR: hash mismatch PCR %08x, event type %08x hash alg %08x\n",
+		       event2->pcrIndex, event2->eventType, hashAlg);
+#endif
+		rc = TSS_RC_HASH;
+	    }
+	    else {
+#if 0
+		printf("TSS_Event2_Checkhash_EvIpl: hash valid\n");
+#endif
+	    }
+	}
+    }
+    return rc;
+}
 
 /* TSS_EVENT2_Line_CheckHash() checks the event against the PCR hash.
 

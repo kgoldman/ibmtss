@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2020                                        #
+REM # (c) Copyright IBM Corporation 2020 - 2021                                 #
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -43,7 +43,7 @@ echo ""
 echo "UEFI"
 echo ""
 
-for %%F in ("dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "ubuntu1" "ubuntu2" ) do (
+for %%F in ("dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "sm3" "sm4" "ubuntu1" "ubuntu2"  "ubuntu3") do (
     for %%M in ("-sim" "-tpm" ) do (
 
     	echo "UEFI %%M %%F"
