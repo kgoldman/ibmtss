@@ -1,0 +1,740 @@
+----------------
+Changes in 1.6.0
+----------------
+
+The major new feature is the UEFI event log parsing library.
+
+	TSS
+
+Add TPM_TSS_NODEV to compile out HW TPM code.
+
+	Utilities
+
+Add a UEFI parsing library, including event tracing. Add sample
+application code and several sample UEFI event logs.
+
+importpem can clear userWithAuth
+
+getcapability supports the TPM ACT feature
+
+TPM proxy - Add support for more than one TPM command per
+connection. This is required for command line utilities that are more
+than 1:1 with TPM commands.
+
+	Sample scripts
+
+Add a sample solution to the pre-OS unseal man-in-the middle attack
+and the attack that moves the TPM to another platform.
+
+Add UEFI and IMA event log regression tests.
+
+-----------------------
+Changes in 1.5.0 (1627)
+-----------------------
+
+The major new feature is top to bottom support for the RSA 3072 and
+ECC P384 algorithms.
+
+	TSS
+
+Add ECC P384 support - salt and marshaling
+
+	Utilities
+
+Add ECC P384 support, including openssl converters
+
+Implement high range EK options. These include the new IWG templates
+and policies, and new key sizes RSA 3072 and ECC NIST p384.
+
+Update EK utilities and sample code support for EK password, EK RSA
+bit size, EK ECC curves. Original functions are deprecated.
+
+Add support for endorsement auth to test high range policies, and EK
+password for the high range.
+
+certifyx509 handles additional ECC curves and RSA bit lengths.
+
+Add the EK high range IWG policy templates, including the policies,
+and update the functions to get the templates. Understand that the
+high range never has a nonce.
+
+Update the regression tests to handle the additional command line
+arguments. Add EK high range tests, including password, policy A and
+policy C. Add RSA 3072 and ECC P384 key creation and test loops. Fix
+bug in initkeys where keys were all p256.
+
+	Certificates
+
+Add Nuvoton 2111 CA certificate
+
+    Minor
+
+Update tracing
+
+Add ifdefs for unused algorithms
+
+Clean up new gcc false positives
+
+-----------------------
+Changes in 1.4.0 (1602)
+-----------------------
+
+Minor changes for most users.
+
+	TSS
+
+Add TPM_TSS_NORSA and other ifndef options.
+
+Clean up Windows Tbsi and remove Windows 7 support, which required
+install hacks
+
+	Utilities
+
+Add RSA 3072 support
+
+Add IMA library support for d-modsig, modsig, and buf templates
+
+	Regression test
+
+Add RSAES examples
+
+OpenSSL commands can pipe to stdout
+
+-----------------------
+Changes in 1.3.0 (1561)
+-----------------------
+
+The tarball name and git tag now reflect the Linux .so name
+
+Add support for OpenSSL 1.1.1
+
+The sample code abstracts OpenSSL 1.0, 1.1, 1.1.1 API changes
+
+	New TSS Features
+
+Add Support for TPM2_CertifyX509
+
+Add TPM_TSS_NOCMDCHECK and TPM_TSS_NODEPRECATED for applications that
+need a reduced code size
+
+Remove some command parameter checks to permit TPM compliance testing
+
+Enhance command parameter tracing
+
+	New Utility Features
+
+Add TPM2_CertifyX509 certificate input, reconstruction, and validation
+
+Attestation and sign utilities can sign with HMAC key
+
+Visual Studio solution includes the TPM proxy, enhanced for TPM 2.0
+
+Add an API and utility for TPM Stop (used for TPM coverage tests)
+
+Add ECC signature tracing
+
+Add utility and test for setcommandcodeauditstatus
+
+Object creation can get the password from a file
+
+	Added Regression Tests (sample scripts)
+
+NV state and power management
+
+Primary key derivation parent
+
+NV Pin index TPM fix
+
+NV Certify new TPM behavior
+
+Unseal with more than one PCR
+
+	TSS Bug Fixes
+
+The check for EC point length should use x and y length.
+
+-----------------------
+    Changes in 1470
+-----------------------
+
+Move to Visual Studio 2017, default to OpenSSL 1.1, and Windows 10 TBS
+on Windows
+
+Add autotools support on Linux
+
+Fix many static analysis and run time tool alerts
+
+Isolate OpenSSL functions to low level files and use void pointers in
+preparation for mbedtls support
+
+	TSS Library
+
+Improve TSS parameter tracing
+
+Change large stack variables to malloc in TSS to handle small stack
+platforms
+
+Default to TPM device driver in 'no socket' environment
+
+Add wrappers to algorithm IDs so they can be configured from the
+command line
+
+	TSS Utilities and Sample Code
+
+Add IMA sample custom template and big endian support
+
+Improve getcapability utility tracing
+
+Add VerifySignature utility HMAC support
+
+Add create utility encrypted duplication support
+
+Add nvread utility PEM support
+
+Add a public name calculator utility
+
+Add printattr utility to trace TPM hex attributes
+
+Add EK certificate regression tests
+
+Add more use cases to regression test scripts
+
+-----------------------
+    Changes in 1331
+-----------------------
+
+	Major
+
+This is a (hopefully one time) ABI compatibility break. The API is
+still compatible. The library is now libibmtss.so.1.
+
+The regression tests now iterate through SHA-384 and SHA-512. Thus,
+the newest software TPM is required for the regression test. The TSS
+library itself is compatible with older software TPMs and any hardware
+TPMs.
+
+The API break in the unmarshal functions was rolled back. New
+functions with a u suffix are implemented to support the unsigned
+buffer sizes. The unmarshal function are unofficial but evidently are
+widely used.
+
+The default makefile now builds a combined TPM 1.2 and TPM 2.0 TSS
+library
+
+	TSS Library
+
+Increased and hard coded some constants rather than have dependencies
+on algorithms. This caused the ABI break. This was required because
+the open source vTPM was changed to add SHA-512 (four banks of PCRs).
+
+The include directory is now ibmtss (Linux distro request)
+
+TSS_File_ReadStructureFlag() is added to read structures that require
+the allowNULL flag
+
+	TSS Utilities
+
+Added support for SHA-256 and SHA-512 in all utilities.
+
+Several more utilities support -ns to print in a form directly usable
+by policies.
+
+imaextend has a -sim option to calculate PCR values rather than extend
+to the TPM
+
+eventextend can calculate the boot aggregate
+
+loadexternal and importpem have -den (encryption key) option
+
+ekutils traces the X509 certificate subject for certificate chain
+debugging
+
+nvread can optionally dump the certificate
+
+Added Infineon TPM 1.2 root certificates
+
+The man pages are now included and are better formatted
+
+Added audit PCR read example (atomic alternative to PCR read and
+Quote)
+
+Added example unseal PCR brittleness solution using policy authorize
+
+-----------------------
+    Changes in 1234
+-----------------------
+
+	TSS Utilities
+
+Added support for about 20 basic TPM 1.2 commands
+
+imaevent can take beginning and event options for incremental update
+simulation
+
+policymaker can can output a digest with no formatting. This can feed
+into policyor policy.
+
+policymaker can handle long strings for a complex policyor
+
+zreadpublic can trace the Name in policymaker format
+
+Added gettestresult
+
+Added policyduplicationselect, with sample application code
+
+Added policynamehash, with sample application code
+
+Added sample code for duplicating a sealed object
+
+importpem can create a storage key
+
+createekcert attributes changed to agree with the PC Client
+specification plus Microsoft Windows certification test, can support
+platform auth
+
+Packaged new ST Micro root certificates that are compatible with
+OpenSSL 1.1
+
+	TSS Library
+
+Library name changed to ibmtss at Debian's request.
+
+Packaged generally useful ekutils and cryptoutils into a library
+ibmtssutils. This is sample code. The API is not stable.
+
+Added support for about 20 basic TPM 1.2 commands with the same
+API. These commands permit implementation of a TPM 1.2 attestation
+client.
+
+Supports 'rawsingle' server type for the TPM 1.2 software TPM
+
+TSS traces input structures in nested prints
+
+Added TPM_TSS_NOECC to support OpenSSL builds without ECC.
+
+Fixed ECMQV missing marshaling function
+
+-----------------------
+    Changes in 1119
+-----------------------
+
+	TSS Utilities
+
+loadexternal supports DER ECC key, userWithAuth
+
+sign, commit, zgen2phase, ecephemeral support counter
+
+sign, loadexternal support signing scheme, storage key
+
+salt key supports exponent 0x010001
+
+importpem sets ECC scheme to ECDSA
+
+nvread now defaults to reading entire index
+
+	New Utilities
+
+tpm2pem - converts TPM2B_PUBLIC to PEM
+
+tpmpublic2eccpoint - converts an ECC TPM2B_PUBLIC to TPM2B_ECC_POINT
+
+Nuvoton TPM vendor proprietary commands
+
+createekcert - provisions a SW TPM with RSA and ECC EK certificates
+contributed makefile.mac for Mac
+
+    TSS Library - no changes
+
+-----------------------
+    Changes in 1045
+-----------------------
+
+	TSS utilities
+
+Object templates can remove attributes from the default.
+
+Continued to factor more useful sample code into cryptoutils.c and
+ekutils.c
+
+pcrread, readpublic, and nvreadpublic can take a session (useful for a
+salted audit session)
+
+Added Intel and NationZ EK root certificates. Documented the procedure
+to retrieve Intel EK certificates.
+
+Fixed some missing openssl 1.1 code
+
+	TSS Library
+
+Added C++ wrappers to headers where they were missing
+
+-----------------------
+    Changes in 996
+-----------------------
+
+	TSS Library
+
+Added support for session salt with an ECC key. Much thanks to Bill
+Martin for contributing this complex code!
+
+TSS_TPM2B_CREATION_DATA_Marshal() bug fixed.
+
+	TSS Utilities
+
+Create, CreatePrimary, CreateLoaded, and ReadPublic can output the
+public key in PEM format. VerifySignature can verify using the PEM
+public key.
+
+The crypto utility functions now have a fairly complete set of
+translations between TPM, OpenSSL, and PEM format keys.
+
+Added Commit and EC_Ephemeral, again thanks to Bill Martin for
+supplying basic regression tests.
+
+-----------------------
+    Changes in 974
+-----------------------
+
+	TSS library
+
+Added lightly tested initial support for a TSS that does not require a
+filesystem and/or openssl. See the doc for limitations and
+drawbacks. Please report bugs.
+
+Removed the temporary Linux resource manager ioctl, which is no longer
+needed.
+
+Fixed two bugs based on TPM spec clarifications:
+
+	HMAC calculation on a salted policy session
+
+	Parameter encryption using a policy session.
+
+Fixed bug when the caller specified an encrypted password session.
+
+Added new TPM rev 142 algorithm identifiers.
+
+	TSS utilities
+
+Added certifycreation.
+
+create and createprimary can output a creation ticket.
+
+Added many more regression tests.
+
+Removed erroneous BITFIELD_LE from Visual Studio projects.
+
+certify does not sanity check extraData for ECDAA scheme.
+
+-----------------------
+    Changes in 930
+-----------------------
+
+No bug fixes. Many utility and sample code enhancements based on user
+requests.
+
+rsadecrypt can add padding and OID, to support signing with arbitrary
+OID
+
+added ST Micro root certificates to certificate store
+
+pcrread has -ns option to pipe to PolicyPCR policy, supports multiple
+bank reads
+
+elliptic curve - storage key template
+
+TSS has support for preliminary Linux resource manager
+
+Added sample code (cryptoutils.c) for converting RSA and ECC PEM
+public and key pair files to TPM format.
+
+loadexternalpem and import handle ECC PEM keys
+
+getcapability printing supports TPM rev 138 properties
+
+imaextend supports SHA-256 bank
+
+Removed erroneous IBM Confidential marking from Nuvoton support
+files. Sorry about that.
+
+-----------------------
+    Changes in 886
+-----------------------
+
+No bug fixes.
+
+The major change (in the makefile) is that session state is now
+encrypted by default. See the documentation on how to use this, or get
+the old behavior back, using a build option or environment variable.
+
+An IMA (Linux Integrity Measurement Architecture) library is included,
+along with an imaextend utility.
+
+An importpem utility demonstrates how to import (wrap) a plaintext
+key.
+
+tssproperties.h was moved up from tss2/, since it is not a public
+header.
+
+-----------------------
+    Changes in 851
+-----------------------
+
+	No TSS bug fixes.
+
+Support for OpenSSL 1.1 on Linux. It is not tested on Windows. The
+crypto has been split into library independent and library dependent
+files, to make adding other crypto libraries easier.
+
+Support for Nuvoton TPM configuration.
+
+-----------------------
+    Changes in 825
+-----------------------
+
+No TSS bug fixes.
+
+Support for new TPM rev 138 commands. Regression test requires SW TPM
+revision 138.
+
+Added ifdefs for a reduced function TSS for an environment with no
+filesystem or crypto
+
+Name now tracked during TPM2_NV_Definespace(). No need for
+TPM2_NV_ReadPublic().
+
+Fixed utility bug when reading or writing NV space in chunks
+
+Removed TPM2_PolicySigned() callback for signature in favor of simpler
+approach. See utility.
+
+Decoupled TPM and TSS by replicating common files
+
+-----------------------
+    Changes in 755
+-----------------------
+
+No changes or bug fixes.
+
+Open sourced the web based TPM demo.
+
+Factored key templates into common functions for better utility
+
+The TSS now supports big endian platforms.
+
+-----------------------
+    Changes in 713
+-----------------------
+
+	Headers refinements
+
+Increased some structure maximum sizes to handle future TPM
+maximums. This breaks binary compatibility, requiring a recompile
+against the new headers.
+
+Changed headers so makefile -DTPM_TSS is no longer required.
+
+Headers are now in a tss2/ subdirectory, which is compatible with a
+future install in /usr/include/tss2/.
+
+	Utilities enhancements
+
+getcapability prints TPM_CAP_PCRS, algorithms and attributes as text.
+
+pcrextend can take multiple hash algorithms.
+
+readpublic can store the public data.
+
+policypcrmaker now correctly handles selection all 24 PCRs.
+
+loadexternal and verifysignature accept ECC keys.
+
+startup permits only self test.
+
+-----------------------
+    Changes in 653
+-----------------------
+
+Changed the rest of the library function namespaces from TSE and TST_
+to TSS_. This was a remnant of a proposal to the TCG, but was not a
+good long term design. Changed the file names for consistency.
+
+Internally changed to a more secure approach to salted sessions, no
+API change Added more sample utilities and options:
+
+Quote takes multiple PCRs
+
+
+-----------------------
+    Changes in 593
+-----------------------
+
+There were no significant changes to the TSS library other than the
+utility function namespacing. The sample code and command line tools
+continue to expand:
+
+MakeCredential, ActivateCredential samples
+
+event log parsing samples and utilities
+
+EK creation and EK template handling samples and utilities
+
+EK certificate validation samples and utilities
+
+loadexternal private key sample and utilities, documented optional
+private key flag
+
+getrandom sample can get numbers with no 0x00 bytes, for auth values
+
+TSS will not permit defining an NV index with policy delete and no
+policy, since it cannot be undefined
+
+create uses CFB (mandatory) rather that CBC (optional)
+
+nvread and nvwrite utilities can handle NV size greater than buffer
+size
+
+quote can specify PCR bank
+
+attestation utilities can specify RSA or ECC signing
+
+-----------------------
+   Changes in 470
+-----------------------
+
+Added a context (create and delete). This complicates the API a bit
+but permits more graceful closing of connections. See the manual.
+
+Completed the 'createek' sample to demonstrate how to use the EK
+template and EK nonce to generate a primary key. Validated with the
+Nuvoton HW TPM.
+
+Completed the Windows version of the regression test, which can run
+against either the gcc or Visual Studio build.
+
+Added a few missing utility VS projects. (The code was there all
+along.)
+
+-----------------------
+    Changes in 455
+-----------------------
+
+Utilities use CFB rather than CBC for better HW TPM
+interoperability. Developers, of course, can use whatever mode they
+like.
+
+TPML_Digest_Unmarshal should permit max size of 8.
+
+Added C++ wrappers around headers and (reluctantly) changed xor to
+xorr for header file C++ compatibility.
+
+Added a createek utility that creates the primary EK from a TCG
+standard template in NV. This is not completely tested yet.
+
+-----------------------
+    Changes in 439
+-----------------------
+
+Added pcrallocate utility.
+
+Updated code, Visual Studio project, and documentation support for a
+Windows 10 hardware device.
+
+Added a makefile.mak for mingw builds.
+
+Open now only occurs on the first transmit (socket and device driver),
+so the TSS can operate with a Linux resource manager (not tested) and
+a Windows 10 TBS (tested).
+
+    Notes:
+
+The Windows 10 interface was tested on a loaner platform. Without the
+ability to regression test, I rely on users to report bugs.
+
+There is currently no way to close a connection other than exiting. To
+add that, I would likely add a "TSS context" that the user creates and
+deletes. Is this useful or an unnecessary complication?
+
+-----------------------
+    Changes in 387
+-----------------------
+
+Fixed bug in ./clear command line argument parser that prevented -v
+from working properly.
+
+-----------------------
+    Changes in 383
+-----------------------
+
+There were no significant changes or bug fixes to the TSS
+library. Some utilities and samples were enhanced.
+
+A shutdown utility is included, and some utilities have additional
+command line options.
+
+There is sample code for converting between openssl and TPM key
+tokens.
+
+The Visual Studio projects no longer require static linking to openssl
+when the PEM functions are used.
+
+The beginning of a Windows BAT file regression test is included. The
+Linux version is more comprehensive.
+
+A raw socket interface (just the TPM Part 3 packet) option is added to
+the existing Microsoft simulator (wrapped packet) format.
+
+-----------------------
+    Changes in rev 356
+-----------------------
+
+There were no significant changes or bug fixes to the TSS
+library. Some utilities and samples were enhanced.
+
+Included an example in the regression test for sealing to PCRs.
+
+Attestation utilities can accept qualifyingData.
+
+Create can optionally create a rev116 symmetric key. Up to rev116,
+there was one attribute for both encrypt and decrypt. After 116, there
+are two attributes.
+
+Minor changes to support -O3 compiler optimization
+
+
+-----------------------
+    Changes in rev 346
+-----------------------
+
+There were no significant changes or bug fixes to the TSS library, but
+this should make the install and build easier.
+
+Regression test prints error message from failing command
+
+Regression test prints warnings for some errors due to a TPM that does
+not implement errata.
+
+TSS closes the socket the way the TPM simulator expects. The TSS
+worked correctly, but this eliminates the simulator console error
+messages.
+
+Linux TSS makefile adds rpath so there is no need to set
+LD_LIBRARY_PATH
+
+Changed TSS link order to satisfy Ubuntu build
+
+Removed Visual Studio solution dependency on mingw install
+
+-----------------------
+    Changes in rev 333
+-----------------------
+
+Utilities have separate name algorithm and entity algorithm.
+
+ECC unmarshal updated for TPM spec errata
+
+create utility can create ECC signing key
+
+Added applink.c to tarball for Windows gcc compile
+
+Removed requirement to install ec_lcl.h, define TPM_TSS macro
