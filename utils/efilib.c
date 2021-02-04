@@ -4500,11 +4500,47 @@ static uint32_t TSS_EfiCompactHash_ToJson(TSST_EFIData *efiData)
 
 static void     TSS_EfiIpl_Trace(TSST_EFIData *efiData)
 {
+    uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
-    /* unspecified, apparently holds a string */
-    printf("  IPL: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
+    uint8_t type;
+    uint32_t length;
+    uint8_t *buffer = tss4bBuffer->buffer;
+    uint32_t size = tss4bBuffer->size;
+
+    /* unspecified, this is not in a structure yet, because this is just a guess */
+    while ((rc == 0) && (size > 0)) {
+	/* if the first byte is printable, guess it's a nul terminated string */
+	if (isprint(tss4bBuffer->buffer[0])) {
+	    printf("  IPL: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
+	    size = 0;	/* consume the entire event */
+	}
+	/* else they are TLV tuples */
+	else {
+	    if (rc == 0) {
+		rc = TSS_UINT8_Unmarshalu(&type, &buffer, &size);
+	    }
+	    if (rc == 0) {
+		rc = TSS_UINT32_Unmarshalu(&length, &buffer, &size);
+	    }
+	    if (rc == 0) {
+		switch (type) {
+		  case 0x02:
+		    TSS_PrintAll("  IPL: Digest", buffer, length);
+		    break;
+		  case 0x03:
+		    printf("  IPL: %.*s\n", length, buffer);
+		    break;
+		  default:
+		    break;
+		}
+		buffer += length;
+		size -= length;
+	    }
+	}
+    }
     return;
 }
+
 
 static uint32_t TSS_EfiIpl_ToJson(TSST_EFIData *efiData)
 {

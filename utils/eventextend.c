@@ -211,6 +211,13 @@ int main(int argc, char * argv[])
 		memset(&simPcrs[bankNum][pcrNum].digest.tssmax, 0, sizeof(TPMU_HA));
 	    }
 	}
+	for ( ; bankNum < HASH_COUNT ; bankNum++) {
+	    for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
+		/* initialize each algorithm ID for unused specIdEvent banks */
+		simPcrs[bankNum][pcrNum].hashAlg = TPM_ALG_NULL;
+		memset(&simPcrs[bankNum][pcrNum].digest.tssmax, 0, sizeof(TPMU_HA));
+	    }
+	}
     }
     /* scan each measurement 'line' in the binary */
     for (lineNum = 1 ; (rc == 0) && !endOfFile ; lineNum++) {
