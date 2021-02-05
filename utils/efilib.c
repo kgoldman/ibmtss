@@ -1884,9 +1884,9 @@ static void     TSS_EfiDevicePathMsgUri_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePa
 {
     printf("    SubType %02x URI\n",
 	   uefiDevicePath->protocol.SubType);
-    TSS_PrintAll("     URI",
-		 uefiDevicePath->unionBuffer,
-		 uefiDevicePath->unionBufferLength);
+    printf("      URI: %.*s\n",
+	   (int)uefiDevicePath->unionBufferLength,
+	   uefiDevicePath->unionBuffer);
 }
 
 static void     TSS_EfiDevicePathMsgVendor_Trace(TSS_UEFI_DEVICE_PATH *uefiDevicePath)
