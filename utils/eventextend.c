@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2020.					*/
+/* (c) Copyright IBM Corporation 2016 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -37,8 +37,13 @@
 /********************************************************************************/
 
 /* eventextend is test/demo code.  It parses a TPM2 event log file and extends the measurements into
-   TPM PCRs or simulated PCRs.  This simulates the actions that would be performed by BIOS /
-   firmware in a hardware platform.
+   TPM PCRs or simulated PCRs.  This simulates the actions that would be performed by BIOS / UEFI /
+   pre-OS firmware in a hardware platform.
+
+   It can optionally:
+
+   - check the calculated, simulated PCR against the TPM PCRs
+   - check the digest against the event log data
 
    It handles the EV_NO_ACTION StartupLocality by power cycling the TPM and sending a startup
    at the locality from the event.
@@ -76,6 +81,7 @@ int main(int argc, char * argv[])
     int				tpm = FALSE;	/* extend into TPM */
     int				sim = FALSE;	/* extend into simulated PCRs */
     int				checkHash = FALSE;	/* verify event log hashes */
+    int				checkPcr = FALSE;	/* verify PCRs */
     int				nospec = FALSE;	/* event log does not start with spec file */
     int				noSpace = FALSE;
     uint32_t 			bankNum = 0;	/* PCR hash bank */
@@ -116,6 +122,9 @@ int main(int argc, char * argv[])
 	}
 	else if (strcmp(argv[i],"-checkhash") == 0) {
 	    checkHash = TRUE;
+	}
+	else if (strcmp(argv[i],"-checkpcr") == 0) {
+	    checkPcr = TRUE;
 	}
 	else if (strcmp(argv[i],"-ns") == 0) {
 	    noSpace = TRUE;
@@ -189,8 +198,8 @@ int main(int argc, char * argv[])
     if ((rc == 0) && !nospec && !endOfFile && tssUtilsVerbose) {
 	TSS_SpecIdEvent_Trace(&specIdEvent);
     }
-    /* Start a TSS context */
-    if ((rc == 0) && tpm) {
+    /* Start a TSS context for PCR extend or PCR read */
+    if ((rc == 0) && (tpm || (sim && checkPcr))) {
 	rc = TSS_Create(&tssContext);
     }
     /* initialize simulated PCRs */
@@ -201,21 +210,20 @@ int main(int argc, char * argv[])
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
-    /* simulated BIOS PCRs start at zero at boot */
+    /* simulated PCRs start at zero or ff at boot */
     if ((rc == 0) && sim) {
 	for (bankNum = 0 ; bankNum < specIdEvent.numberOfAlgorithms ; bankNum++) {
 	    bootAggregates[bankNum].hashAlg = specIdEvent.digestSizes[bankNum].algorithmId;
 	    for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
 		/* initialize each algorithm ID based on the specIdEvent */
 		simPcrs[bankNum][pcrNum].hashAlg = specIdEvent.digestSizes[bankNum].algorithmId;
-		memset(&simPcrs[bankNum][pcrNum].digest.tssmax, 0, sizeof(TPMU_HA));
-	    }
-	}
-	for ( ; bankNum < HASH_COUNT ; bankNum++) {
-	    for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
-		/* initialize each algorithm ID for unused specIdEvent banks */
-		simPcrs[bankNum][pcrNum].hashAlg = TPM_ALG_NULL;
-		memset(&simPcrs[bankNum][pcrNum].digest.tssmax, 0, sizeof(TPMU_HA));
+		if ((pcrNum < 17) || (pcrNum > 22)) {
+		    memset(&simPcrs[bankNum][pcrNum].digest.tssmax, 0, sizeof(TPMU_HA));
+		}
+		/* some PC Client PCRs initialize to all ff */
+		else {
+		    memset(&simPcrs[bankNum][pcrNum].digest.tssmax, 0xff, sizeof(TPMU_HA));
+		}
 	    }
 	}
     }
@@ -238,15 +246,23 @@ int main(int argc, char * argv[])
 	if ((rc == 0) && !endOfFile && tpm) {		/* extend TPM */
 	    rc = pcrExtend(tssContext, &event2);
 	}
+	if ((rc == 0) && !endOfFile && sim && tssUtilsVerbose &&
+	    (event2.pcrIndex < IMPLEMENTATION_PCR)) {	/* trace simulated PCRs */
+	    for (bankNum = 0 ; bankNum < specIdEvent.numberOfAlgorithms ; bankNum++) {
+		TSS_PrintAll("PCR simulated digest before extend",
+			     simPcrs[bankNum][event2.pcrIndex].digest.tssmax,
+			     specIdEvent.digestSizes[bankNum].digestSize);
+	    }
+	}
 	if ((rc == 0) && !endOfFile && sim) {		/* extend simulated PCRs */
 	    rc = TSS_EVENT2_PCR_Extend(simPcrs, &event2);
 	}
-    }
-    {
-	if (tpm) {
-	    TPM_RC rc1 = TSS_Delete(tssContext);
-	    if (rc == 0) {
-		rc = rc1;
+	if ((rc == 0) && !endOfFile && sim && tssUtilsVerbose &&
+	    (event2.pcrIndex < IMPLEMENTATION_PCR)) {	/* trace simulated PCRs */
+	    for (bankNum = 0 ; bankNum < specIdEvent.numberOfAlgorithms ; bankNum++) {
+		TSS_PrintAll("PCR simulated digest after extend",
+			     simPcrs[bankNum][event2.pcrIndex].digest.tssmax,
+			     specIdEvent.digestSizes[bankNum].digestSize);
 	    }
 	}
     }
@@ -274,6 +290,56 @@ int main(int argc, char * argv[])
 			    printf("%02x", simPcrs[bankNum][pcrNum].digest.tssmax[bp]);
 			}
 			printf("\n");
+		    }
+		}
+	    }
+	    /* verify the TPM PCRs against the calculated values */
+	    if ((rc == 0) && checkPcr) {
+		for (pcrNum = 0 ; pcrNum < IMPLEMENTATION_PCR ; pcrNum++) {
+		    PCR_Read_In 		in;
+		    PCR_Read_Out 		out;
+		    /* read the PCR */
+		    if (rc == 0) {
+			in.pcrSelectionIn.count = 1;
+			in.pcrSelectionIn.pcrSelections[0].hash =
+			    specIdEvent.digestSizes[bankNum].algorithmId;
+			in.pcrSelectionIn.pcrSelections[0].sizeofSelect = 3;
+			in.pcrSelectionIn.pcrSelections[0].pcrSelect[0] = 0;
+			in.pcrSelectionIn.pcrSelections[0].pcrSelect[1] = 0;
+			in.pcrSelectionIn.pcrSelections[0].pcrSelect[2] = 0;
+			in.pcrSelectionIn.pcrSelections[0].pcrSelect[pcrNum / 8] = 1 << (pcrNum % 8);
+			rc = TSS_Execute(tssContext,
+					 (RESPONSE_PARAMETERS *)&out,
+					 (COMMAND_PARAMETERS *)&in,
+					 NULL,
+					 TPM_CC_PCR_Read,
+					 TPM_RH_NULL, NULL, 0);
+		    }
+		    /* compare the PCR to the calculated value */
+		    if (rc == 0) {
+			if (specIdEvent.digestSizes[bankNum].digestSize !=
+			    out.pcrValues.digests[0].t.size) {
+			    printf("eventextend: PCR %u digest size TPM %u simulated %u\n",
+				   pcrNum,
+				   specIdEvent.digestSizes[bankNum].digestSize,
+				   out.pcrValues.digests[0].t.size);
+			    rc = TSS_RC_BAD_READ_VALUE;
+			}
+		    }
+		    if (rc == 0) {
+			int i = memcmp(simPcrs[bankNum][pcrNum].digest.tssmax,
+				       out.pcrValues.digests[0].t.buffer,
+				       out.pcrValues.digests[0].t.size);
+			if (i != 0) {
+			    printf("eventextend: PCR %u\n", pcrNum);
+			    TSS_PrintAll("PCR TPM digest",
+					 out.pcrValues.digests[0].t.buffer,
+					 out.pcrValues.digests[0].t.size);
+			    TSS_PrintAll("PCR simulated digest",
+					 simPcrs[bankNum][pcrNum].digest.tssmax,
+					 out.pcrValues.digests[0].t.size);
+			    rc = TSS_RC_BAD_READ_VALUE;
+			}
 		    }
 		}
 	    }
@@ -331,6 +397,14 @@ int main(int argc, char * argv[])
 		    }
 		    printf("\n");
 		}
+	    }
+	}
+    }
+    {
+	if (tpm|| (sim && checkPcr)) {
+	    TPM_RC rc1 = TSS_Delete(tssContext);
+	    if (rc == 0) {
+		rc = rc1;
 	    }
 	}
     }
@@ -507,6 +581,7 @@ static void printUsage(void)
     printf("\t[-tpm\textend TPM PCRs]\n");
     printf("\t[-sim\tcalculate simulated PCRs and boot aggregate]\n");
     printf("\t[-checkhash\tverify event log hashes]\n");
+    printf("\t[-checkpcr\twith -sim verify PCR values]\n");
     printf("\t[-pcrmax\twith -sim, sets the highest PCR number to be used to calculate the\n"
 	   "\t\tboot aggregate (default 7)]\n");
     printf("\t[-ns\tno space, no text, no newlines]\n");

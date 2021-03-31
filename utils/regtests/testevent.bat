@@ -43,14 +43,24 @@ echo ""
 echo "UEFI"
 echo ""
 
-for %%F in ("dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "sm3" "sm4" "ubuntu1" "ubuntu2"  "ubuntu3") do (
-    for %%M in ("-sim" "-tpm" ) do (
+for %%F in ("dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "ubuntu1" "ubuntu2"  "ubuntu3") do (
 
-    	echo "UEFI %%M %%F"
-    	%TPM_EXE_PATH%eventextend -checkhash -v %%M -if %%F.log > run.out
-    	IF !ERRORLEVEL! NEQ 0 (
-            exit /B 1
-	)
+    echo "Power cycle to reset IMA PCR"
+    %TPM_EXE_PATH%powerup > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Startup"
+    %TPM_EXE_PATH%startup > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "UEFI %%F"
+    %TPM_EXE_PATH%eventextend -checkhash -v -tpm -sim -checkpcr -if %%F.log > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
     )
 )
 

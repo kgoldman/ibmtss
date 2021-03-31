@@ -1279,10 +1279,9 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
 	    }
 	    /* process each event hash algorithm */
 	    for (i = 0; (rc == 0) && (i < event2->digests.count) ; i++) {
-		/* find the matching PCR bank */
+		/* find the simulated PCR bank matching the event at count i */
 		for (bankNum = 0 ; (rc == 0) && (bankNum < HASH_COUNT) ; bankNum++) {
-		    uint16_t hashAlg = pcrs[bankNum][0].hashAlg;
-		    if (hashAlg == event2->digests.digests[i].hashAlg) {
+		    if (pcrs[bankNum][0].hashAlg == event2->digests.digests[i].hashAlg) {
 
 			if (rc == 0) {
 			    digestSize = TSS_GetDigestSize(event2->digests.digests[i].hashAlg);
