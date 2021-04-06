@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 		sscanf(argv[i],"%x", &sequenceHandle);
 	    }
 	    else {
-		printf("Missing parameter for -ha\n");
+		printf("Missing parameter for -hs\n");
 		printUsage();
 	    }
 	}
@@ -323,6 +323,7 @@ static void printUsage(void)
     printf("Runs TPM2_SequenceComplete\n");
     printf("\n");
     printf("\t-hs\tsequence handle\n");
+    printf("\t[-hi\thierarchy (default null)]\n");
     printf("\t[-pwds\tpassword for sequence (default empty)]\n");
     printf("\t[-if\tinput file to be added (default no data)]\n");
     printf("\t[-of\tresult file name]\n");
@@ -332,5 +333,5 @@ static void printUsage(void)
     printf("\t01\tcontinue\n");
     printf("\t20\tcommand decrypt\n");
     printf("\t40\tresponse encrypt\n");
-    exit(1);	
+    exit(1);
 }
