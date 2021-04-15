@@ -155,10 +155,6 @@ int main(int argc, char * argv[])
 	printf("Missing -if argument\n");
 	printUsage();
     }
-    if (!tpm && !sim) {
-	printf("-tpm or -sim must be specified\n");
-	printUsage();
-    }
     if (sim && nospec) {
 	printf("-sim incompatible with -nospec\n");
 	printUsage();
@@ -198,7 +194,7 @@ int main(int argc, char * argv[])
     if ((rc == 0) && !nospec && !endOfFile && tssUtilsVerbose) {
 	TSS_SpecIdEvent_Trace(&specIdEvent);
     }
-    /* Start a TSS context for PCR extend or PCR read */
+    /* Start a TSS context for PCR extend and/or PCR read */
     if ((rc == 0) && (tpm || (sim && checkPcr))) {
 	rc = TSS_Create(&tssContext);
     }
@@ -343,7 +339,7 @@ int main(int argc, char * argv[])
 		    }
 		}
 	    }
-	    /* calculate the boot aggregate, hash of PCR 0-7 */
+	    /* calculate the boot aggregate, hash of PCRs, default 0-7 */
 	    if (rc == 0) {
 		int length[IMPLEMENTATION_PCR];
 		size_t j;
@@ -576,6 +572,11 @@ static void printUsage(void)
     printf("For -tpm, StartupLocality power cycles the TPM and sends TPM2_Startup\n");
     printf("at the specified locality.\n");
     printf("\n");
+    printf("A typical use is -tpm, -sim, and -checkpcr to extend PCRs, calculate\n");
+    printf("simulated PCRs, and compare the results.\n");
+    printf("\n");
+    printf("A typical use is just -v to parse and trace the event log details.\n");
+    printf("\n");
     printf("\t-if\tfile containing the data to be extended\n");
     printf("\t[-nospec\tfile does not contain spec ID header (useful for incremental test)]\n");
     printf("\t[-tpm\textend TPM PCRs]\n");
@@ -584,7 +585,8 @@ static void printUsage(void)
     printf("\t[-checkpcr\twith -sim verify PCR values]\n");
     printf("\t[-pcrmax\twith -sim, sets the highest PCR number to be used to calculate the\n"
 	   "\t\tboot aggregate (default 7)]\n");
-    printf("\t[-ns\tno space, no text, no newlines]\n");
+    printf("\t[-ns\tno space, no text, no newlines when tracing PCRs and boot aggregate]\n");
+    printf("\t[-v\tverbose tracing]\n");
     printf("\n");
    exit(-1);
 }
