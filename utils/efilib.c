@@ -146,6 +146,10 @@ static void isAsciiString(int *isAscii, uint8_t *buffer, uint32_t length);
 #define BIOS_BOOT_PARTITION_GUID			\
     {0x48, 0x61, 0x68, 0x21, 0x49, 0x64, 0x6f, 0x6e,	\
 	    0x74, 0x4e, 0x65, 0x65, 0x64, 0x45, 0x46, 0x49}
+/* 605dab50-e046-4300-abb6-3dd810dd8b23 */
+#define SHIM_LOCK_GUID					\
+    {0x50, 0xab, 0x5d, 0x60, 0x46, 0xe0, 0x00, 0x43,	\
+	    0xab, 0xb6, 0x3d, 0xd8, 0x10, 0xdd, 0x8b, 0x23}
 
 #if 0	/* future GUIDs to be supported */
 #define SMBIOS_TABLE_GUID    			"eb9d2d31-2d88-11d3-9a16-0090273fc14d"
@@ -156,6 +160,20 @@ static void isAsciiString(int *isAscii, uint8_t *buffer, uint32_t length);
 #define EFI_JSON_CONFIG_DATA_TABLE_GUID		"87367f87-1119-41ce-aaec-8be0111f558a"
 #define EFI_JSON_CAPSULE_DATA_TABLE_GUID    	"35e7a725-8dd2-4cac-8011-33cda8109056"
 #define EFI_JSON_CAPSULE_RESULT_TABLE_GUID    	"dbc461c3-b3de-422a-b9b4-9886fd49a1e5"
+/* these may not be endian correct */
+#define GRUB_EFI_CONSOLE_CONTROL_GUID		"f42f7782-012e-4c12-9956-49f94304f721"
+#define GRUB_EFI_PCI_IO_GUID			"4cf5b200-68b8-4ca5-9eec-b23e3f50029a"
+#define GRUB_EFI_PCI_ROOT_IO_GUID		"2F707EBB-4A1A-11d4-9A38-0090273FC14D"
+#define GRUB_EFI_LOADED_IMAGE_GUID		"5b1b31a1-9562-11d2-8e3f-00a0c969723b"
+#define GRUB_EFI_DISK_IO_GUID			"ce345171-ba0b-11d2-8e4f-00a0c969723b"
+#define GRUB_EFI_BLOCK_IO_GUID			"964e5b21-6459-11d2-8e39-00a0c969723b"
+#define GRUB_EFI_DEVICE_PATH_GUID		"09576e91-6d3f-11d2-8e39-00a0c969723b"
+#define GRUB_EFI_DEVICE_PATH_FROM_TEXT_GUID	"05c99a21-c70f-4ad2-8a5f-35df3343f51e"
+#define GRUB_EFI_GRAPHICS_OUTPUT_GUID		"042a9de-23dc-4a38- 96fb-7aded080516a"
+#define GRUB_EFI_UGA_DRAW_GUID			"982c298b-f4fa-41cb-b838-77aa688fb839"
+#define GRUB_EFI_UGA_IO_GUID			"61a4d49e-6f68-4f1b-b922-a86eed0b07a2"
+#define GRUB_EFI_SIMPLE_FILE_SYSTEM_GUID	"964e5b22-6459-11d2-8e39-00a0c969723b"
+#define GRUB_EFI_SERIAL_IO_GUID			"bb25cf6f-f1d4-11d2-9a0c-0090273Fc1fd"
 #endif
 
 /* GUID data types - used to map content type */
@@ -222,7 +240,9 @@ const GUID_TABLE guidTable [] =
      {BIOS_BOOT_PARTITION_GUID,
      GUID_TYPE_UNSUPPORTED,
      "BIOS_BOOT_PARTITION_GUID"},
-
+     {SHIM_LOCK_GUID,
+      GUID_TYPE_UNSUPPORTED,
+      "SHIM_LOCK_GUID"},
 #if 0
      {EFI_ACPI_20_TABLE_GUID,
       GUID_TYPE_UNSUPPORTED,
