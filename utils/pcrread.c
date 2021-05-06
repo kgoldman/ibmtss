@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
 	/* Table 102 - Definition of TPML_PCR_SELECTION Structure */
 	/* Table 85 - Definition of TPMS_PCR_SELECTION Structure */
 	for (c = 0 ; c < in.pcrSelectionIn.count ; c++) {
-	    in.pcrSelectionIn.pcrSelections[c].sizeofSelect = 3;
+	    in.pcrSelectionIn.pcrSelections[c].sizeofSelect = (IMPLEMENTATION_PCR+7)/8;
 	    in.pcrSelectionIn.pcrSelections[c].pcrSelect[0] = 0;
 	    in.pcrSelectionIn.pcrSelections[c].pcrSelect[1] = 0;
 	    in.pcrSelectionIn.pcrSelections[c].pcrSelect[2] = 0;
