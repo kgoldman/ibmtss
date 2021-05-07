@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2020.					*/
+/* (c) Copyright IBM Corporation 2016 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -193,6 +193,17 @@ extern "C" {
 				  TPMT_PUBLIC *tpmtPublic,
 				  TPMI_RH_NV_INDEX ekCertIndex,
 				  int print);
+    TPM_RC processPrimaryEN(TSS_CONTEXT *tssContext,
+			    TPM_HANDLE *keyHandle,
+			    const char *endorsementPassword,
+			    const char *keyPassword,
+			    TPMI_RH_NV_INDEX ekCertIndex,
+			    TPMI_RH_NV_INDEX ekNonceIndex,
+			    TPMI_RH_NV_INDEX ekTemplateIndex,
+			    unsigned int noFlush,
+			    unsigned int noPub,
+			    int print);
+    /* deprecated */
     TPM_RC processPrimaryE(TSS_CONTEXT *tssContext,
 			   TPM_HANDLE *keyHandle,
 			   const char *endorsementPassword,
@@ -210,7 +221,6 @@ extern "C" {
 			  TPMI_RH_NV_INDEX ekTemplateIndex,
 			  unsigned int noFlush,
 			  int print);
-
     /*
       deprecated OpenSSL specific functions
     */

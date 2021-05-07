@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2020.					*/
+/* (c) Copyright IBM Corporation 2016 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -328,7 +328,7 @@ static const unsigned char iwgPolicyBSha512[] = {
     0x56, 0x08, 0xb4, 0x13, 0xcd, 0x61, 0x6a, 0x5f, 0x6d, 0xb5, 0xb6, 0x07, 0x1a, 0xf9, 0x9b, 0xea,
 };
 
-/* getIwgTemplate() bulds a TPMT_PUBLIC template according to the IWG specification.  It handles
+/* getIwgTemplate() builds a TPMT_PUBLIC template according to the IWG specification.  It handles
    both the low and high NV index ranges.
 */
 
@@ -984,7 +984,7 @@ TPM_RC processEKTemplate(TSS_CONTEXT *tssContext,
 /* processEKCertificate() reads the EK certificate from NV and returns an X509 certificate
    structure.  It also extracts and returns the public modulus.
 
-   The return is void because the structure is opaque to the caller.  This accomodates other crypto
+   The return is void because the structure is opaque to the caller.  This accommodates other crypto
    libraries.
 
    ekCertificate is an X509 structure.
@@ -1005,7 +1005,7 @@ TPM_RC processEKCertificate(TSS_CONTEXT *tssContext,
 				     ekCertificate,	/* freed by caller */
 				     ekCertIndex);
 	if (rc != 0) {
-	    printf("No EK certificate for EK certifcate index %08x\n", ekCertIndex);
+	    printf("No EK certificate for EK certificate index %08x\n", ekCertIndex);
 	}
     }
     /* extract the public modulus from the X509 structure */
@@ -1105,7 +1105,7 @@ TPM_RC convertX509ToEc(EC_KEY **ecKey,	/* freed by caller */
 
    If print is true, prints the EK certificate
 
-   The return is void because the structure is opaque to the caller.  This accomodates other crypto
+   The return is void because the structure is opaque to the caller.  This accommodates other crypto
    libraries.
 
    ekCertificate is an X509 structure.
@@ -1373,7 +1373,7 @@ uint32_t convertPemToX509(X509 **x509,				/* freed by caller */
 
 /* convertDerToX509() converts a DER stream to an OpenSSL X509 structure
 
-   The return is void because the structure is opaque to the caller.  This accomodates other crypto
+   The return is void because the structure is opaque to the caller.  This accommodates other crypto
    libraries.
 */
 
@@ -1391,9 +1391,9 @@ uint32_t convertDerToX509(void **x509Certificate,			/* freed by caller */
     return rc;
 }
 
-/* x509FreeStructure() is the library specific free structure.
+/* x509Free Structure() is the library specific free structure.
 
-   The parameter is void because the structure is opaque to the caller.  This accomodates other
+   The parameter is void because the structure is opaque to the caller.  This accommodates other
    crypto libraries.
 */
 
@@ -1407,7 +1407,7 @@ void x509FreeStructure(void *x509)
 
 /* x509PrintStructure() prints the structure to stdout
 
-   The parameter is void because the structure is opaque to the caller.  This accomodates other
+   The parameter is void because the structure is opaque to the caller.  This accommodates other
    crypto libraries.
 */
 
@@ -1472,7 +1472,7 @@ uint32_t convertPemMemToX509(X509 **x509,		/* freed by caller */
 
 /* convertX509ToPem() writes an OpenSSL X509 structure to a PEM format file
 
-   The return is void because the structure is opaque to the caller.  This accomodates other crypto
+   The return is void because the structure is opaque to the caller.  This accommodates other crypto
    libraries.
  
    For OpenSSL, the type is X509*
@@ -2526,37 +2526,37 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,		/* from certificate */
 }
 
 /* processPrimary() is deprecated.  It is missing the endorsement auth.  It is missing the key
-   password, new for the high range EKs.
+   password, new for the high range EKs.  It always validates the low range EK public keys.
 
+   See processPrimaryEN()
 */
 
 TPM_RC processPrimary(TSS_CONTEXT *tssContext,
-		      TPM_HANDLE *keyHandle,		/* primary key handle */
+		      TPM_HANDLE *keyHandle,
 		      TPMI_RH_NV_INDEX ekCertIndex,
 		      TPMI_RH_NV_INDEX ekNonceIndex, 
 		      TPMI_RH_NV_INDEX ekTemplateIndex,
-		      unsigned int noFlush,		/* TRUE - don't flush the primary key */
+		      unsigned int noFlush,
 		      int print)
 {
-    TPM_RC rc = processPrimaryE(tssContext,
-				keyHandle,
-				NULL,	/* endorsement auth */
-				NULL,	/* endorsement key password */
-				ekCertIndex,
-				ekNonceIndex,
-				ekTemplateIndex,
-				noFlush,
-				print);
+    TPM_RC rc = processPrimaryEN(tssContext,
+				 keyHandle,
+				 NULL,	/* default endorsement auth */
+				 NULL,	/* default endorsement key password */
+				 ekCertIndex,
+				 ekNonceIndex,
+				 ekTemplateIndex,
+				 noFlush,
+				 FALSE,		/* default noPub */
+				 print);
     return rc;
 }
 
-/* processPrimaryE() reads the EK nonce and EK template from NV.  It combines them to form the
-   createprimary input.  It creates the primary key.
+/* processPrimaryE() is deprecated.  It always validates the low range EK public keys.
 
-   It reads the EK certificate from NV.  It extracts the public key.
-
-   Finally, it compares the public key in the certificate to the public key output of createprimary.
+   See processPrimaryEN()
 */
+
 
 TPM_RC processPrimaryE(TSS_CONTEXT *tssContext,
 		       TPM_HANDLE *keyHandle,		/* primary key handle */
@@ -2565,8 +2565,59 @@ TPM_RC processPrimaryE(TSS_CONTEXT *tssContext,
 		       TPMI_RH_NV_INDEX ekCertIndex,
 		       TPMI_RH_NV_INDEX ekNonceIndex,
 		       TPMI_RH_NV_INDEX ekTemplateIndex,
-		       unsigned int noFlush,		/* TRUE - don't flush the primary key */
+		       unsigned int noFlush,
 		       int print)
+{
+    TPM_RC rc = 0;
+    unsigned int noPub = 1;
+
+    /* the backward compatible behavior was to always validate the low range public key
+       and never validate the high range public key */
+#ifndef TPM_TSS_NORSA
+    if (ekCertIndex == EK_CERT_RSA_INDEX) {
+	noPub = 0;
+    }
+#endif /* TPM_TSS_NORSA */
+#ifndef TPM_TSS_NOECC
+   if (ekCertIndex == EK_CERT_EC_INDEX) {
+	noPub = 0;
+    }
+#endif	/* TPM_TSS_NOECC */
+    rc = processPrimaryEN(tssContext,
+			  keyHandle,		/* primary key handle */
+			  endorsementPassword,
+			  keyPassword,
+			  ekCertIndex,
+			  ekNonceIndex,
+			  ekTemplateIndex,
+			  noFlush,
+			  noPub,		/* noPub */
+			  print);
+    return rc;
+}
+
+/* processPrimaryEN() reads the EK nonce and EK template from NV if present.  It forms the
+   createprimary input.  It creates the primary key.
+
+   It reads the EK certificate from NV.  It extracts the public key.
+
+   If noPub is false, it compares the public key in the certificate to the public key output of
+   createprimary.
+
+   If noFlush is false, the EK is flushed after processing.  If noFlush is true, the EK remains in
+   the TPM as a transient key.
+*/
+
+TPM_RC processPrimaryEN(TSS_CONTEXT *tssContext,
+			TPM_HANDLE *keyHandle,		/* primary key handle */
+			const char *endorsementPassword,
+			const char *keyPassword,
+			TPMI_RH_NV_INDEX ekCertIndex,
+			TPMI_RH_NV_INDEX ekNonceIndex,
+			TPMI_RH_NV_INDEX ekTemplateIndex,
+			unsigned int noFlush,		/* TRUE - don't flush the primary key */
+			unsigned int noPub,		/* TRUE - don't verify the pubic key */
+			int print)
 {
     TPM_RC			rc = 0;
     void 			*ekCertificate = NULL;
@@ -2576,13 +2627,12 @@ TPM_RC processPrimaryE(TSS_CONTEXT *tssContext,
     TPMT_PUBLIC 		tpmtPublicOut;		/* primary key */
     uint8_t 			*publicKeyBin = NULL;	/* from certificate */
     int				publicKeyBytes;
-    int 			validate = FALSE;	/* validate the certificate */
 
     /* get the EK nonce */
     if (rc == 0) {
 	rc = processEKNonce(tssContext, &nonce, &nonceSize, ekNonceIndex, print); /* freed @1 */
 	if ((rc & 0xff) == TPM_RC_HANDLE) {
-	    if (print) printf("processPrimary: EK nonce not found, use default template\n");
+	    if (print) printf("processPrimaryEN: EK nonce not found, use default template\n");
 	    rc = 0;
 	}
     }
@@ -2605,21 +2655,8 @@ TPM_RC processPrimaryE(TSS_CONTEXT *tssContext,
 				   noFlush,
 				   print);
     }
-    /* validate against the certificate if the algorithm is compiled in */
-    if (rc == 0) {
-#ifndef TPM_TSS_NORSA
-	if (ekCertIndex == EK_CERT_RSA_INDEX) {
-	    validate = TRUE;
-	}
-#endif /* TPM_TSS_NORSA */
-#ifndef TPM_TSS_NOECC
-	if (ekCertIndex == EK_CERT_EC_INDEX) {
-	    validate = TRUE;
-	}
-#endif	/* TPM_TSS_NOECC */
-    }
     /* get the EK certificate */
-    if ((rc == 0) && validate) {
+    if ((rc == 0) && !noPub) {
 	rc = processEKCertificate(tssContext,
 				  &ekCertificate,			/* freed @2 */
 				  &publicKeyBin, &publicKeyBytes,	/* freed @3 */
@@ -2627,14 +2664,14 @@ TPM_RC processPrimaryE(TSS_CONTEXT *tssContext,
 				  print);
     }
     /* compare the public key in the EK certificate to the public key output */
-    if ((rc == 0) && validate) {
+    if ((rc == 0) && !noPub) {
 	rc = processValidatePrimary(publicKeyBin,	/* certificate */
 				    publicKeyBytes,
 				    &tpmtPublicOut,	/* primary key */
 				    ekCertIndex,
 				    print);
     }
-    if ((rc == 0) && validate) {
+    if ((rc == 0) && !noPub) {
 	if (print) printf("Public key from X509 certificate matches output of createprimary\n");
     } 
     free(nonce);			/* @1 */

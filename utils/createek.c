@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2020.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -44,9 +44,13 @@
 
    It constructs an EK createprimary input and runs the command
 
+   Optionally:
+
    It reads the EK certificate at 01c00002 (RSA) 01c0000a (EC) 
 
    It compares the public key from the createprimary to that of the certificate.
+
+   Optionally:
 
    If validates the EK certificate against the TPM vendor root CA certificate.
 
@@ -128,12 +132,13 @@ int main(int argc, char *argv[])
     uint8_t 			*modulusBin = NULL;
     int				modulusBytes;
     unsigned int 		noFlush = 0;		/* default flush after validation */
+    unsigned int 		noPub = 0;		/* default validate public key */
     TPM_HANDLE 			keyHandle;		/* primary key handle */
-    
+
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     tssUtilsVerbose = FALSE;
-    
+
     /* for free */
     for (i = 0 ; i < MAX_ROOTS ; i++) {
 	rootFilename[i] = NULL;
@@ -260,6 +265,9 @@ int main(int argc, char *argv[])
 	else if (strcmp(argv[i],"-noflush") == 0) {
 	    noFlush = 1;
 	}
+	else if (strcmp(argv[i],"-nopub") == 0) {
+	    noPub = 1;
+	}
 	else if (strcmp(argv[i],"-h") == 0) {
 	    printUsage();
 	}
@@ -328,21 +336,23 @@ int main(int argc, char *argv[])
 				      TRUE);		/* print the EK certificate */
 	    break;
 	  case CreateprimaryType:
-	    rc = processPrimaryE(tssContext, &keyHandle,
-				 endorsementPassword, keyPassword,
-				 ekCertIndex,
-				 ekNonceIndex, ekTemplateIndex,
-				 noFlush, TRUE);
+	    rc = processPrimaryEN(tssContext, &keyHandle,
+				  endorsementPassword, keyPassword,
+				  ekCertIndex,
+				  ekNonceIndex, ekTemplateIndex,
+				  noFlush, noPub, TRUE);
 	    break;
 	}
     }
     if (listFilename != NULL) {
+	/* get the list of of root EK CA certificate file names */
 	if (rc == 0) {
 	    rc = getRootCertificateFilenames(rootFilename,	/* freed @4 */
 					     &rootFileCount,
 					     listFilename,
 					     tssUtilsVerbose);
 	}
+	/* validate the EK certificate at ekCertIndex against the EK CA certifcates */
 	if (rc == 0) {
 	    rc = processRoot(tssContext,
 			     ekCertIndex,
@@ -383,8 +393,18 @@ static void printUsage(void)
     printf("\n");
     printf("createek\n");
     printf("\n");
-    printf("Parses and prints the various EK NV indexes specified by the IWG\n");
-    printf("Creates an EK primary key based on the EK NV indexes\n");
+    printf("createek provides several options regarding the IWG standard EKs\n");
+    printf("\n");
+    printf("-cp creates an EK primary key based on the EK NV indexes.\n"
+	   "By default, the EK is flushed, but -noflush will override that.\n"
+	   "By default, the EK public key is verified against the EK certificate,\n"
+	   "but -nopub will skip the check.\n");
+    printf("\n");
+    printf("-root reads the EK certificate and validates it agains the EK CA certificates\n");
+    printf("\n");
+    printf("-ce prints provisioned EK certificates\n");
+    printf("\n");
+    printf("-te and -no print the deprecated EK template and nonce if present\n");
     printf("\n");
     printf("\t[-pwde\t\tendorsement hierarchy password (default empty)]\n");
     printf("\t[-pwdk\t\tpassword for endorsement key (default empty)]");
@@ -401,9 +421,9 @@ static void printUsage(void)
     printf("\t-te\tprint EK Template \n");
     printf("\t-no\tprint EK nonce \n");
     printf("\t-ce\tprint EK certificate \n");
-    printf("\t-cp\tCreatePrimary using the EK template and EK nonce.\n");
-    printf("\t\tValidate the EK against the EK certificate\n");
+    printf("\t-cp\tCreatePrimary  the EK\n");
     printf("\t[-noflush\tDo not flush the primary key after validation]\n");
+    printf("\t[-nopub\t\tDo not verify the public key against the certificate]\n");
     printf("\t[-root\tfilename - validate EK certificate against the root]\n");
     printf("\t\tfilename contains a list of PEM format CA root certificate\n"
 	   "\t\tfilenames, one per line.\n");

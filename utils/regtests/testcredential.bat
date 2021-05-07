@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2021					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -240,9 +240,13 @@ set i=0
 for %%c in (!CIDX!) do set /A i+=1 & set CIDX[!i!]=%%c
 set L=!i!
 
+REM interate though high range RSA EK certficates.  Both the EK and
+REM certificate are removed in each iteration since the TPM resources
+REM are limited.
+
 for /L %%i in (1,1,!L!) do (
 
-    echo "Create an !{CALG[%%i]! EK certificate"
+    echo "Create an !CALG[%%i]! EK certificate"
     %TPM_EXE_PATH%createekcert -high -rsa !CALG[%%i]! -cakey cakey.pem -capwd rrrr -pwdp ppp -pwde eee -of tmp.der > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
@@ -256,6 +260,12 @@ for /L %%i in (1,1,!L!) do (
 
     echo "CreatePrimary 80000001 and validate the !CALG[%%i]! EK against the EK certificate"
     %TPM_EXE_PATH%createek -high -pwde eee -pwdk kkk -rsa !CALG[%%i]! -cp -noflush > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "CreatePrimary 80000002 and flush it"
+    %TPM_EXE_PATH%createek -high -pwde eee -pwdk kkk -rsa !CALG[%%i]! -cp -nopub > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -374,6 +384,17 @@ for /L %%i in (1,1,!L!) do (
         exit /B 1
     )
 
+    echo "CreatePrimary 80000001 and validate the !CALG[%%i]! EK against the EK certificate, should fail"
+    %TPM_EXE_PATH%createek -high -pwde eee -pwdk kkk -rsa !CALG[%%i]! cp > run.out
+    IF !ERRORLEVEL! EQU 0 (
+        exit /B 1
+    )
+
+    echo "CreatePrimary 80000001 and do not validate the !CALG[%%i]! EK against the EK certificate"
+    %TPM_EXE_PATH%createek -high -pwde eee -pwdk kkk -rsa !CALG[%%i]! -cp -nopub > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
 )
 
 REM ECC EK certficates
@@ -409,6 +430,12 @@ for /L %%i in (1,1,!L!) do (
 
     echo "CreatePrimary 80000001 and validate the !CALG[%%i]! EK against the EK certificate"
     %TPM_EXE_PATH%createek -high -pwde eee -pwdk kkk -ecc !CALG[%%i]! -cp -noflush > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "CreatePrimary 80000002 and flush it"
+    %TPM_EXE_PATH%createek -high -pwde eee -pwdk kkk -ecc !CALG[%%i]! -cp -nopub > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -527,6 +554,18 @@ for /L %%i in (1,1,!L!) do (
         exit /B 1
     )
 
+    echo "CreatePrimary 80000001 and validate the !CALG[%%i]! EK against the EK certificate, should fail"
+    %TPM_EXE_PATH%createek -high -pwde eee -pwdk kkk -ecc !CALG[%%i]! -cp > run.out
+    IF !ERRORLEVEL! EQU 0 (
+        exit /B 1
+    )
+
+    echo "CreatePrimary 80000001 and do not validate the !CALG[%%i]! EK against the EK certificate"
+    %TPM_EXE_PATH%createek -high -pwde eee -pwdk kkk -ecc !CALG[%%i]! -cp -nopub > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
 )
 
 echo ""
@@ -558,6 +597,10 @@ for /L %%i in (1,1,!L!) do (
 echo ""
 echo "Low Range EK Certificate"
 echo ""
+
+REM Policy Structure - See Section B.3 EK Templates in the Low Range
+REM 
+REM EK Policy is Policy A is policy secret with endorsement auth
 
 echo "Set platform hierarchy auth"
 %TPM_EXE_PATH%hierarchychangeauth -hi p -pwdn ppp > run.out
@@ -597,6 +640,12 @@ for %%A in ("-rsa 2048" "-ecc nistp256") do (
 
     echo "CreatePrimary 80000001 and validate the %%~A EK against the EK certificate"
     %TPM_EXE_PATH%createek %%~A -pwde eee -cp -noflush > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "CreatePrimary 80000002 and flush it"
+    %TPM_EXE_PATH%createek %%~A -pwde eee -cp > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

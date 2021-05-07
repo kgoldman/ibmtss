@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2021					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -284,7 +284,9 @@ NVNAME=(
     CALG=("-rsa 2048" "-rsa 3072")
     CIDX=(01c00012 01c0001c)
 
-# interate though high range RSA EK certficates
+# interate though high range RSA EK certficates.  Both the EK and
+# certificate are removed in each iteration since the TPM resources
+# are limited.
     for ((i = 0 ; i < 2 ; i++))
     do
 
@@ -298,6 +300,10 @@ NVNAME=(
 
 	echo "CreatePrimary 80000001 and validate the ${CALG[i]} EK against the EK certificate"
 	${PREFIX}createek -high -pwde eee -pwdk kkk ${CALG[i]} -cp -noflush > run.out
+	checkSuccess $?
+
+	echo "CreatePrimary 80000002 and flush it"
+	${PREFIX}createek -high -pwde eee -pwdk kkk ${CALG[i]} -cp -nopub > run.out
 	checkSuccess $?
 
 	echo "Validate the ${CALG[i]} EK certificate against the root"
@@ -376,6 +382,14 @@ NVNAME=(
 	${PREFIX}nvundefinespace -ha ${CIDX[i]} -hi p -pwdp ppp > run.out
 	checkSuccess $?
 
+	echo "CreatePrimary 80000001 and validate the ${CALG[i]} EK against the EK certificate, should fail"
+	${PREFIX}createek -high -pwde eee -pwdk kkk ${CALG[i]} -cp > run.out
+	checkFailure $?
+
+	echo "CreatePrimary 80000001 and do not validate the ${CALG[i]} EK against the EK certificate"
+	${PREFIX}createek -high -pwde eee -pwdk kkk ${CALG[i]} -cp -nopub > run.out
+	checkSuccess $?
+
     done
 
 # ECC EK certficates
@@ -400,6 +414,10 @@ NVNAME=(
 
 	echo "CreatePrimary 80000001 and validate the ${CALG[i]} EK against the EK certificate"
 	${PREFIX}createek -high -pwde eee -pwdk kkk ${CALG[i]} -cp -noflush > run.out
+	checkSuccess $?
+
+	echo "CreatePrimary 80000001 and flush it"
+	${PREFIX}createek -high -pwde eee -pwdk kkk ${CALG[i]} -cp -nopub > run.out
 	checkSuccess $?
 
 	echo "Validate the ${CALG[i]} EK certificate against the root"
@@ -478,6 +496,14 @@ NVNAME=(
 	${PREFIX}nvundefinespace -ha ${CIDX[i]} -hi p -pwdp ppp > run.out
 	checkSuccess $?
 
+	echo "CreatePrimary 80000001 and validate the ${CALG[i]} EK against the EK certificate, should fail"
+	${PREFIX}createek -high -pwde eee -pwdk kkk ${CALG[i]} -cp > run.out
+	checkFailure $?
+
+ 	echo "CreatePrimary 80000001 and validate the ${CALG[i]} EK against the EK certificate"
+	${PREFIX}createek -high -pwde eee -pwdk kkk ${CALG[i]} -cp -nopub> run.out
+	checkSuccess $?
+
     done
 
     echo ""
@@ -538,6 +564,10 @@ NVNAME=(
 
 	echo "CreatePrimary 80000001 and validate the ${ALG} EK against the EK certificate"
 	${PREFIX}createek ${ALG} -pwde eee -cp -noflush > run.out
+	checkSuccess $?
+
+	echo "CreatePrimary 80000002 and flush it"
+	${PREFIX}createek ${ALG} -pwde eee -cp > run.out
 	checkSuccess $?
 
 	echo "Validate the ${ALG} EK certificate against the root"
