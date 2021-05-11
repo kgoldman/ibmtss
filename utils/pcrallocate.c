@@ -314,11 +314,13 @@ static void setPcrSelect(TPMS_PCR_SELECTION *pcrSelections,
 			 TPM_ALG_ID hashAlg,
 			 uint8_t select)
 {
+    TPMI_DH_PCR pcrIndex;		/* iterator for initialization */
+
     pcrSelections->hash = hashAlg;
-    pcrSelections->sizeofSelect = 3;
-    pcrSelections->pcrSelect[0] = select;
-    pcrSelections->pcrSelect[1] = select;
-    pcrSelections->pcrSelect[2] = select;
+    pcrSelections->sizeofSelect = (IMPLEMENTATION_PCR+7)/8;
+    for (pcrIndex = 0 ; pcrIndex < pcrSelections->sizeofSelect ; pcrIndex++) {
+	pcrSelections->pcrSelect[pcrIndex] = select;
+    }
     return;
 }
 
