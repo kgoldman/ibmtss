@@ -692,7 +692,7 @@ int main(int argc, char *argv[])
 	    sizeInBytes = TSS_GetDigestSize(nalg);
 	    if (out.creationHash.b.size != sizeInBytes) {
 		printf("createprimary: failed, "
-		       "creationData size %u incompatible with name algorithm %04x\n",
+		       "creationHash size %u incompatible with name algorithm %04x\n",
 		       out.creationHash.b.size, nalg);
 		rc = EXIT_FAILURE;
 	    }
