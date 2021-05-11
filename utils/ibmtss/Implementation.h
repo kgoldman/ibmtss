@@ -90,7 +90,9 @@
 #define  MAX_ECC_KEY_BYTES     128
 #endif
 
-/* This is the PC Client minimum value, and should be used for applications. */
+/* 24 is the PC Client standard value, and should be used for applications. If this value is
+   changed, utilities must be recompiled.  If it is changed beyond 64, PCR_SELECT_MAX must change,
+   which will be an ABI break. */
 #define IMPLEMENTATION_PCR		24
 
 #define MAX_HANDLE_NUM			3	/* the maximum number of handles in the handle
@@ -102,7 +104,8 @@
 #ifdef TPM_TSS_SO_0
 #define PCR_SELECT_MAX			((IMPLEMENTATION_PCR+7)/8)
 #else
-/* increased to 8 to handle up to 64 PCRs */
+/* increased to 8 to handle up to 64 PCRs.  If IMPLEMENTATION_PCR is increased beyond 64, this value
+   must change, which will be an ABI break. */
 #define PCR_SELECT_MAX			8
 #endif
 
