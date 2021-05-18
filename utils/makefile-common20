@@ -5,7 +5,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2014 - 2019					#
+# (c) Copyright IBM Corporation 2014 - 2021					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -37,6 +37,8 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		#
 #										#
 #################################################################################
+
+CCFLAGS += 	-DTPM_TSS_NUVOTON
 
 # link - common flags for Posix and Windows, for TSS library and applications
 

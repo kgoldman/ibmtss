@@ -38,7 +38,7 @@ libibmtss_la_CFLAGS += -DTPM_DEVICE_DEFAULT="\"/dev/tpmrm0\""
 endif
 
 if CONFIG_TPM20
-libibmtss_la_CFLAGS += -DTPM_TPM20
+libibmtss_la_CFLAGS += -DTPM_TPM20 -DTPM_TSS_NUVOTON
 endif
 
 if CONFIG_TPM12
@@ -67,7 +67,7 @@ libibmtssutils_la_SOURCES = cryptoutils.c ekutils.c imalib.c eventlib.c efilib.c
 libibmtssutils_la_CFLAGS = -fPIC $(EFIBOOT_CFLAGS)
 
 if CONFIG_TPM20
-libibmtssutils_la_CFLAGS += -DTPM_TPM20
+libibmtssutils_la_CFLAGS += -DTPM_TPM20 -DTPM_TSS_NUVOTON
 endif
 
 if CONFIG_TPM12
