@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -204,14 +204,18 @@ int main(int argc, char *argv[])
 	if (tssUtilsVerbose) printf("INFO: Create a TSS context\n");
 	rc = TSS_Create(&tssContext);
     }
-    /* createprimary first for salt.  processPrimary() also reads the EK certificate and validates
-       it against the primary key.  It doesn't walk the certificate chain.  */
+    /* createprimary first for salt and for a storage key for the child signing key.
+       processPrimary() also reads the EK certificate and validates it against the primary key.  It
+       doesn't walk the certificate chain.  */
     if (rc == 0) {
 	if (tssUtilsVerbose) printf("INFO: Create a primary EK for the salt\n");
-	rc = processPrimary(tssContext,
-			    &ekKeyHandle,
-			    EK_CERT_RSA_INDEX, EK_NONCE_RSA_INDEX, EK_TEMPLATE_RSA_INDEX,
-			    TRUE, tssUtilsVerbose);		/* do not flush */
+	rc = processPrimaryEN(tssContext,
+			      &ekKeyHandle,
+			      NULL, NULL,
+			      EK_CERT_RSA_INDEX, EK_NONCE_RSA_INDEX, EK_TEMPLATE_RSA_INDEX,
+			      TRUE,			/* do not flush */
+			      TRUE,			/* do not validate the EK certificate */
+			      tssUtilsVerbose);	
 	if (tssUtilsVerbose) printf("INFO: Primary EK handle %08x\n", ekKeyHandle);
     }
     /* start a policy session */
