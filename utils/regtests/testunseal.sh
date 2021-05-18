@@ -726,7 +726,7 @@ echo "PROVISION: Create the EK for the salted session 80000000"
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 ${PREFIX}createek -rsa 2048 -cp -noflush -root certificates/rootcerts.txt > run.out
 elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
-${PREFIX}createek -rsa 2048 -cp -noflush > run.out
+${PREFIX}createek -rsa 2048 -cp -noflush -nopub > run.out
 fi
 checkSuccess $?
 
