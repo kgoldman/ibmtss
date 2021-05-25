@@ -8,7 +8,9 @@ c:/users/ibm_admin/tpm2/utils/certificates/InfineonOPTIGARSAManufacturingCA010.p
 c:/users/ibm_admin/tpm2/utils/certificates/InfineonRSAChain010.pem
 c:/users/ibm_admin/tpm2/utils/certificates/NuvotonTPMRootCA0100.pem
 c:/users/ibm_admin/tpm2/utils/certificates/NuvotonTPMRootCA1110.pem
+c:/users/ibm_admin/tpm2/utils/certificates/NuvotonTPMRootCA1111.pem
 c:/users/ibm_admin/tpm2/utils/certificates/NuvotonTPMRootCA2110.pem
+c:/users/ibm_admin/tpm2/utils/certificates/NuvotonTPMRootCA2111.pem
 c:/users/ibm_admin/tpm2/utils/certificates/cacert.pem
 c:/users/ibm_admin/tpm2/utils/certificates/cacertecc.pem
 c:/users/ibm_admin/tpm2/utils/certificates/gstpmroot.pem
