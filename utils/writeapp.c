@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -170,9 +170,11 @@ int main(int argc, char *argv[])
 	}
     }
     /* flush the salt session */
-    if (!pwSession) {
-	if (tssUtilsVerbose) printf("INFO: Flush the salt session\n");
-	flush(tssContext, sessionHandle);
+    if (rc == 0) {
+	if (!pwSession) {
+	    if (tssUtilsVerbose) printf("INFO: Flush the salt session\n");
+	    flush(tssContext, sessionHandle);
+	}
     }
     /* start a session, salt with EK, bind with unwritten NV index */
     if (rc == 0) {
@@ -210,16 +212,19 @@ int main(int argc, char *argv[])
 	if (tssUtilsVerbose) printf("INFO: Write the index\n");
 	rc = nvWrite(tssContext, sessionHandle);
     }
-    /* undefine NV index */
-    if (tssUtilsVerbose) printf("INFO: Undefine the index\n");
-    undefineSpace(tssContext, TPM_RS_PW);
-    /* flush the session */
-    if (!pwSession) {
-	if (tssUtilsVerbose) printf("INFO: Flush the session\n");
-	flush(tssContext, sessionHandle);
-	/* flush the primary key */
-	if (tssUtilsVerbose) printf("INFO: Flush the primary key\n");
-	flush(tssContext, ekKeyHandle);
+    /* cleanup */
+    if (tssContext != NULL) {
+	/* undefine NV index */
+	if (tssUtilsVerbose) printf("INFO: Undefine the index\n");
+	undefineSpace(tssContext, TPM_RS_PW);
+	/* flush the session */
+	if (!pwSession) {
+	    if (tssUtilsVerbose) printf("INFO: Flush the session\n");
+	    flush(tssContext, sessionHandle);
+	    /* flush the primary key */
+	    if (tssUtilsVerbose) printf("INFO: Flush the primary key\n");
+	    flush(tssContext, ekKeyHandle);
+	}
     }
     {
 	TPM_RC rc1;
