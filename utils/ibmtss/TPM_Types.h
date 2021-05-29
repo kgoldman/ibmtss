@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2019				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2021				*/
 /*										*/
 /********************************************************************************/
 
@@ -2493,7 +2493,17 @@ typedef union {
     TPM2B       b;
 } TPM2B_TEMPLATE;
 
-/* Table 186 - Definition of TPMU_SENSITIVE_COMPOSITE Union <IN/OUT, S> */
+/* Table 204  Definition of TPM2B_PRIVATE_VENDOR_SPECIFIC Structure */
+
+typedef union {                                     // Table 2:204
+    struct {
+	UINT16              size;
+	BYTE                buffer[PRIVATE_VENDOR_SPECIFIC_BYTES];
+    }            t;
+    TPM2B        b;
+} TPM2B_PRIVATE_VENDOR_SPECIFIC;
+
+/* Table 205 - Definition of TPMU_SENSITIVE_COMPOSITE Union <IN/OUT, S> */
 
 typedef union {
 #ifdef TPM_ALG_RSA
@@ -2507,6 +2517,12 @@ typedef union {
 #endif
 #ifdef TPM_ALG_SYMCIPHER
     TPM2B_SYM_KEY			sym;	/* TPM_ALG_SYMCIPHER the symmetric key */
+#endif
+#ifndef TPM_TSS_SO_0
+#ifndef TPM_TSS_SO_1
+    /* TSS 2.x and up */
+    TPM2B_PRIVATE_VENDOR_SPECIFIC	any;	/* vendor-specific size for key storage */
+#endif
 #endif
 } TPMU_SENSITIVE_COMPOSITE;
 

@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2020				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2021				*/
 /*										*/
 /********************************************************************************/
 
@@ -79,10 +79,20 @@
 // From Vendor-Specific: Table 4 - Defines for Key Size Constants
 
 #ifdef TPM_TSS_SO_0
-#define  MAX_RSA_KEY_BYTES          256
+#define  MAX_RSA_KEY_BYTES          256		/* TSS 0.x */
 #else
-#define  MAX_RSA_KEY_BYTES          512
-#endif
+
+#ifdef TPM_TSS_SO_1
+#define  MAX_RSA_KEY_BYTES          512		/* TSS 1.x */
+#else
+
+#define  MAX_RSA_KEY_BYTES          2048	/* TSS 2.x and up */
+#endif	/* TPM_TSS_SO_1 */
+#endif	/* TPM_TSS_SO_0 */
+
+#define RSA_MAX_PRIME           	(MAX_RSA_KEY_BYTES / 2)
+#define RSA_PRIVATE_SIZE        	(RSA_MAX_PRIME * 5)
+#define PRIVATE_VENDOR_SPECIFIC_BYTES   RSA_PRIVATE_SIZE
 
 #ifdef TPM_TSS_SO_0
 #define  MAX_ECC_KEY_BYTES     48

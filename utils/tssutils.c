@@ -3,9 +3,8 @@
 /*			    TSS and Application Utilities			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*		$Id: tssutils.c 1294 2018-08-09 19:08:34Z kgoldman $		*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2018					*/
+/* (c) Copyright IBM Corporation 2015 - 2021					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -58,7 +57,7 @@
    the volatile context.  The major factor is the number of TSS_OBJECT_PUBLIC slots.  See
    tssproperties.c */
 #ifdef TPM_TSS_NOFILE
-#define TSS_ALLOC_MAX  0x12000  /* 73k bytes */
+#define TSS_ALLOC_MAX  0x30000  /* 170k bytes */
 #else
 #define TSS_ALLOC_MAX  0x10000  /* 64k bytes */
 #endif
