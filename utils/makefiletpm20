@@ -103,12 +103,12 @@ LNALIBS +=  -libmtssutils -libmtss
 # shared library
 
 # versioned shared library
-LIBTSSVERSIONED=libibmtss.so.1.6
+LIBTSSVERSIONED=libibmtss.so.2.0
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
 # this is used to provide version backward-compatibility information
-LIBTSSSONAME=libibmtss.so.1
+LIBTSSSONAME=libibmtss.so.2
 
 # symbolic link to the versioned shared library
 # this allows linking to the shared library with '-libmtss' 
@@ -122,8 +122,8 @@ endif
 
 # TSS utilities shared library
 
-LIBTSSUTILSVERSIONED=libibmtssutils.so.1.6
-LIBTSSUTILSSONAME=libibmtssutils.so.1
+LIBTSSUTILSVERSIONED=libibmtssutils.so.2.0
+LIBTSSUTILSSONAME=libibmtssutils.so.2
 LIBTSSUTILS=libibmtssutils.so
 
 # executable extension

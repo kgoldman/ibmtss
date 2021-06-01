@@ -90,12 +90,12 @@ LNAFLAGS += -pie -Wl,-z,now -Wl,-rpath,.
 LNALIBS +=  -libmtssutils -libmtssmin
 
 # versioned shared library
-LIBTSSVERSIONED=libibmtssmin.so.1.6
+LIBTSSVERSIONED=libibmtssmin.so.2.0
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
 # this is used to provide version backward-compatibility information
-LIBTSSSONAME=libibmtssmin.so.1
+LIBTSSSONAME=libibmtssmin.so.2
 
 # symbolic link to the versioned shared library
 # this allows linking to the shared library with '-libmtss' 
@@ -109,8 +109,8 @@ endif
 
 # TSS utilities shared library
 
-LIBTSSUTILSVERSIONED=libibmtssutils.so.1.6
-LIBTSSUTILSSONAME=libibmtssutils.so.1
+LIBTSSUTILSVERSIONED=libibmtssutils.so.2.0
+LIBTSSUTILSSONAME=libibmtssutils.so.2
 LIBTSSUTILS=libibmtssutils.so
 
 # executable extension
