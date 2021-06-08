@@ -98,6 +98,7 @@ noinst_HEADERS += tss12.h Commands12_fp.h tssauth12.h tssccattributes12.h ibmtss
 endif
 
 if CONFIG_TPM20
+if !CONFIG_TSS_NOPRINT
 bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation certifyx509 changeeps changepps clear \
 	clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary \
 	dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters ecephemeral encryptdecrypt \
@@ -112,8 +113,12 @@ bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation 
 	policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt \
 	sequenceupdate sequencecomplete setcommandcodeauditstatus setprimarypolicy shutdown sign startauthsession \
 	startup stirrandom unseal \
-	verifysignature zgen2phase signapp writeapp timepacket createek createekcert tpm2pem tpmpublic2eccpoint \
+	verifysignature zgen2phase signapp writeapp createek createekcert tpm2pem tpmpublic2eccpoint \
 	ntc2getconfig ntc2preconfig ntc2lockconfig publicname tpmcmd printattr
+
+if !CONFIG_TSS_NOFILE
+bin_PROGRAMS += timepacket
+endif
 
 if CONFIG_TSS_NOECC
 UTILS_CFLAGS = -DTPM_TSS_NOECC
@@ -551,9 +556,11 @@ writeapp_SOURCES = writeapp.c
 writeapp_CFLAGS = $(UTILS_CFLAGS)
 writeapp_LDADD = libibmtssutils.la libibmtss.la
 
+if !CONFIG_TSS_NOFILE
 timepacket_SOURCES = timepacket.c
 timepacket_CFLAGS = $(UTILS_CFLAGS)
 timepacket_LDADD = libibmtssutils.la libibmtss.la $(LIBCRYPTO_LIBS)
+endif
 
 createek_SOURCES = createek.c
 createek_CFLAGS = $(UTILS_CFLAGS)
@@ -595,4 +602,5 @@ printattr_SOURCES = printattr.c
 printattr_CFLAGS = $(OPENSSL_CFLAGS)
 printattr_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
+endif
 endif

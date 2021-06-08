@@ -12,6 +12,7 @@ libibmtssutils12_la_LDFLAGS = -version-info @TSSLIB_VERSION_INFO@ ../utils/libib
 notrans_man_MANS = man/man1/*.1
 noinst_HEADERS = ekutils12.h
 
+if !CONFIG_TSS_NOPRINT
 bin_PROGRAMS = activateidentity createendorsementkeypair createwrapkey extend flushspecific getcapability loadkey2 makeidentity nvdefinespace nvreadvalueauth nvreadvalue nvwritevalueauth nvwritevalue oiap osap ownerreadinternalpub ownersetdisable pcrread quote2 sign startup takeownership tpminit createekcert makeekblob eventextend imaextend
 
 activateidentity_SOURCES = activateidentity.c
@@ -149,4 +150,6 @@ imaextend_SOURCES = imaextend.c ../utils/imalib.c
 imaextend_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 imaextend_LDFLAGS = -L$(top_srcdir)/utils
 imaextend_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)
+
+endif
 endif

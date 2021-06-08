@@ -91,13 +91,13 @@ AC_ARG_ENABLE(tpm-1.2,
    AM_CONDITIONAL([CONFIG_TPM12], [test x$tpm12 = xyes])
 
 AC_ARG_ENABLE(noprint,
-   AS_HELP_STRING([--enable-noprint], [Build a TSS library without tracing or prints]))
+   AS_HELP_STRING([--enable-noprint], [Build a TSS library without tracing or prints. It disables the TPM1.2 and TPM2.0 utilities.]))
    AM_CONDITIONAL([CONFIG_TSS_NOPRINT], [test "x$enable_noprint" = "xyes"])
    AS_IF([test "$enable_noprint" != "yes"], [enable_noprint="no"])
 
 AC_ARG_ENABLE(nofile,
 	      AS_HELP_STRING([--enable-nofile], [Build a TSS library that does not
-		   use files to preserve state]))
+		   use files to preserve state. It disables the build of timepacket utility.]))
    AM_CONDITIONAL([CONFIG_TSS_NOFILE], [test "x$enable_nofile" = "xyes"])
    AS_IF([test "$enable_nofile" != "yes"], [enable_nofile="no"])
 
