@@ -2355,6 +2355,11 @@ static uint32_t TSS_EfiCompactHash_ToJson(TSST_EFIData *efiData);
 static void     TSS_EfiIpl_Trace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiIpl_ToJson(TSST_EFIData *efiData);
 
+/* EV_IPL_PARTITION_DATA */
+
+static void     TSS_EfiIplPartitionData_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiIplPartitionData_ToJson(TSST_EFIData *efiData);
+
 /* EV_S_CRTM_VERSION */
 
 static void     TSS_EfiCrtmVersion_Trace(TSST_EFIData *efiData);
@@ -2367,8 +2372,8 @@ static uint32_t TSS_EfiCrtmContents_ToJson(TSST_EFIData *efiData);
 
 /* EV_EFI_ACTION */
 
-static void     TSS_EfiAction_Trace(TSST_EFIData *efiData);
-static uint32_t TSS_EfiAction_ToJson(TSST_EFIData *efiData);
+static void     TSS_EfiEfiAction_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiEfiAction_ToJson(TSST_EFIData *efiData);
 
 /* Event that is only a printable string */
 
@@ -2391,10 +2396,8 @@ static uint32_t TSS_EfiSeparator_ToJson(TSST_EFIData *efiData);
 
 /* EV_ACTION */
 
-#if 0
 static void     TSS_EfiAction_Trace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiAction_ToJson(TSST_EFIData *efiData);
-#endif
 
 /* EV_EVENT_TAG */
 
@@ -2484,14 +2487,12 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       TSS_Efi4bBuffer_ReadBuffer,
       TSS_EfiSeparator_Trace,
       TSS_EfiSeparator_ToJson},
-#if 0	/* implemented but not tested, needs a test event log */
      {EV_ACTION,
       TSS_Efi4bBuffer_Init,
       TSS_Efi4bBuffer_Free,
       TSS_Efi4bBuffer_ReadBuffer,
       TSS_EfiAction_Trace,
       TSS_EfiAction_ToJson},
-#endif
      {EV_EVENT_TAG,
       TSS_EfiEventTag_Init,
       TSS_EfiEventTag_Free,
@@ -2542,14 +2543,12 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       TSS_Efi4bBuffer_ReadBuffer,
       TSS_EfiIpl_Trace,
       TSS_EfiIpl_ToJson},
-#if 0	/* deprecated */
      {EV_IPL_PARTITION_DATA,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL},
-#endif
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiIplPartitionData_Trace,
+      TSS_EfiIplPartitionData_ToJson},
 #if 0	/* needs a test event log */
      {EV_NONHOST_CODE,
       NULL,
@@ -2618,8 +2617,8 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       TSS_Efi4bBuffer_Init,
       TSS_Efi4bBuffer_Free,
       TSS_Efi4bBuffer_ReadBuffer,
-      TSS_EfiAction_Trace,
-      TSS_EfiAction_ToJson},
+      TSS_EfiEfiAction_Trace,
+      TSS_EfiEfiAction_ToJson},
      {EV_EFI_PLATFORM_FIRMWARE_BLOB,
       NULL,
       NULL,
@@ -4561,13 +4560,32 @@ static void     TSS_EfiIpl_Trace(TSST_EFIData *efiData)
     return;
 }
 
-
 static uint32_t TSS_EfiIpl_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     tss4bBuffer = tss4bBuffer;
 
+    if (rc == 0) {
+    }
+    return rc;
+}
+
+/* EV_IPL_PARTITION_DATA */
+
+static void     TSS_EfiIplPartitionData_Trace(TSST_EFIData *efiData)
+{
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+
+    printf("  Partition Data: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
+    return;
+}
+
+static uint32_t TSS_EfiIplPartitionData_ToJson(TSST_EFIData *efiData)
+{
+    uint32_t rc = 0;
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+    tss4bBuffer = tss4bBuffer;
     if (rc == 0) {
     }
     return rc;
@@ -4643,14 +4661,14 @@ static uint32_t TSS_EfiCrtmContents_ToJson(TSST_EFIData *efiData)
 
 /* EV_EFI_ACTION */
 
-static void TSS_EfiAction_Trace(TSST_EFIData *efiData)
+static void TSS_EfiEfiAction_Trace(TSST_EFIData *efiData)
 {
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
     printf("  EFI Action: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
     return;
 }
 
-static uint32_t TSS_EfiAction_ToJson(TSST_EFIData *efiData)
+static uint32_t TSS_EfiEfiAction_ToJson(TSST_EFIData *efiData)
 {
     uint32_t rc = 0;
     TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
@@ -4750,8 +4768,7 @@ static uint32_t TSS_EfiSeparator_ToJson(TSST_EFIData *efiData)
 
 /* EV_ACTION */
 
-#if 0
-/* PFP says these are printable strings, not NUL terminated */
+/* PFP says these are printable strings, but not NUL terminated */
 
 static void     TSS_EfiAction_Trace(TSST_EFIData *efiData)
 {
@@ -4770,7 +4787,6 @@ static uint32_t TSS_EfiAction_ToJson(TSST_EFIData *efiData)
     }
     return rc;
 }
-#endif
 
 /* EV_EVENT_TAG */
 
