@@ -142,7 +142,7 @@ const TSS_EVENT2_CHECKHASH_TABLE event2CheckHashTable [] =
       TSS_Event2_Checkhash_Success,		/* FIXME PFP ambiguous */
       NULL},
      {EV_IPL_PARTITION_DATA,
-      TSS_Event2_Checkhash_Unused,		/* deprecated */
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
       NULL},
      {EV_NONHOST_CODE,
       TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
