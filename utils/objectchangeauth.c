@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2020.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -246,6 +246,11 @@ int main(int argc, char *argv[])
 	    rc = TSS_File_ReadBinaryFile(&newPasswordBuffer,     /* freed @1 */
 					 &newPasswordBufferLength,
 					 newPasswordFilename);
+	    if ((newPasswordBufferLength == 0) ||
+		(newPasswordBuffer[newPasswordBufferLength-1] != '\0')) {
+		printf("-ipwdn file must be nul terminated\n");
+		printUsage();
+	    }
 	    newPasswordPtr = (const char *)newPasswordBuffer;
 	}
 	/* empty password */
@@ -319,7 +324,7 @@ static void printUsage(void)
     printf("\t-ho\tobject handle\n");
     printf("\t[-pwdo\tpassword for object (default empty)]\n");
     printf("\t[-pwdn\tnew password for object (default empty)]\n");
-    printf("\t[-pwdni\t new password file for object, nul terminated (default empty)]\n");
+    printf("\t[-ipwdn\t new password file for object, nul terminated (default empty)]\n");
     printf("\t[-opr\tprivate key file name (default do not save)]\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
