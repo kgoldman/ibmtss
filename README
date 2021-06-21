@@ -82,7 +82,7 @@ options:
 -O0					- change compiler optimization (default: 02)
 -DTPM_DEVICE_DEFAULT="\"/dev/tpmrm0\""	- change hardware TPM (default: /dev/tpm0)
 -DTPM_DATA_DIR_DEFAULT="\"<pathname>\""	- specify directory for TSS state files
--DTPM_TRACE_LEVEL_DEFAULT="\"<level>""	- change level of tracing (default: 0)
+-DTPM_TRACE_LEVEL_DEFAULT="\"<level>\""	- change level of tracing (default: 0)
 	0 - no tracing
 	1 - trace errors
 	2 - trace errors and execution flow
