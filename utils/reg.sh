@@ -74,6 +74,9 @@ PREFIX=./
 export ITERATE_ALGS="sha1 sha256 sha384 sha512"
 export BAD_ITERATE_ALGS="sha256 sha384 sha512 sha1"
 
+# When going to the TPM device, don't use the resource manager
+export TPM_DEVICE="/dev/tpm0"
+
 printUsage ()
 {
     echo ""
@@ -282,6 +285,13 @@ main ()
 	fi
 	# example for running scripts with encrypted sessions, see TPM_ENCRYPT_SESSIONS above
 	# getrandom must wait until after inittpm.sh (powerup and startup)
+	# do it once to verify that it works, then again to set TPM_SESSION_ENCKEY
+	${PREFIX}getrandom -by 16 -ns -v > run.out
+	RC=$?
+	if [ $RC -ne 0 ]; then
+	    cat run.out
+	    exit 255
+	fi
 	TPM_SESSION_ENCKEY=`${PREFIX}getrandom -by 16 -ns`
 	./regtests/initkeys.sh
 	RC=$?
