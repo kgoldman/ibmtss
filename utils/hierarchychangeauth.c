@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -256,6 +256,11 @@ int main(int argc, char *argv[])
 		rc = TSS_File_ReadBinaryFile(&buffer,     /* freed @1 */
 					     &length,
 					     newPasswordFilename);
+		if ((length == 0) ||
+		    (buffer[length-1] != '\0')) {
+		    printf("-pwdni file must be nul terminated\n");
+		    printUsage();
+		}
 	    }
 	    /* convert password file string to TPM2B */
 	    if (rc == 0) {
@@ -282,11 +287,11 @@ int main(int argc, char *argv[])
 		rc = TSS_File_ReadBinaryFile(&authPasswordBuffer,
 					     &authPasswordLength,
 					     authPasswordFilename);
-	    }
-	    if (rc == 0) {
-		if (authPasswordLength > sizeof(TPMU_HA)) {
-		    printf("Password too long %u\n", (unsigned int)authPasswordLength);
-		    rc = TSS_RC_INSUFFICIENT_BUFFER;
+		if ((authPasswordLength > sizeof(TPMU_HA)) ||
+		    (authPasswordLength == 0) ||
+		    (authPasswordBuffer[authPasswordLength -1] != '\0')) {
+		    printf("-pwdai file must be nul terminated\n");
+		    printUsage();
 		}
 	    }
 	    if (rc == 0) {

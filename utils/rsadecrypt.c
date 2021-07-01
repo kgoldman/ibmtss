@@ -272,6 +272,11 @@ int main(int argc, char *argv[])
 	    rc = TSS_File_ReadBinaryFile(&keyPasswordBuffer,     /* freed @2 */
 					 &keyPasswordBufferLength,
 					 keyPasswordFilename);
+	    if ((keyPasswordBufferLength == 0) ||
+		(keyPasswordBuffer[keyPasswordBufferLength -1] != '\0')) {
+		printf("-ipwdk file must be nul terminated\n");
+		printUsage();
+	    }
 	    keyPasswordPtr = (const char *)keyPasswordBuffer;
 	}
 	/* empty password */

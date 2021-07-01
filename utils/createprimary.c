@@ -532,9 +532,11 @@ int main(int argc, char *argv[])
 					     parentPasswordFilename);
 	    }
 	    if (rc == 0) {
-		if (parentPasswordLength > sizeof(TPMU_HA)) {
-		    printf("Password too long %u\n", (unsigned int)parentPasswordLength);
-		    rc = TSS_RC_INSUFFICIENT_BUFFER;
+		if ((parentPasswordLength > sizeof(TPMU_HA)) ||
+		    (parentPasswordLength = 0) ||
+		    (parentPasswordBuffer[parentPasswordLength-1] != '\0')) {
+		    printf("-pwdpi file must be nul terminated\n");
+		    printUsage();
 		}
 	    }
 	    if (rc == 0) {
