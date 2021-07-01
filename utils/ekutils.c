@@ -61,6 +61,7 @@
 
 #include <openssl/pem.h>
 #include <openssl/x509.h>
+#include <openssl/evp.h>
 
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tssutils.h>
@@ -1835,7 +1836,7 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
     ASN1_TIME 		*arc;			/* return code */
     ASN1_INTEGER 	*x509Serial;		/* certificate serial number in ASN1 */
     BIGNUM 		*x509SerialBN;		/* certificate serial number as a BIGNUM */
-    unsigned char 	x509Serialbin[SHA1_DIGEST_SIZE]; /* certificate serial number in binary */
+    unsigned char 	x509Serialbin[EVP_MAX_MD_SIZE]; /* certificate serial number in binary */
     X509_NAME 		*x509IssuerName;	/* composite issuer name, key/value pairs */
     X509_NAME 		*x509SubjectName;	/* composite subject name, key/value pairs */
 
@@ -1855,11 +1856,20 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
       add certificate serial number
     */
     if (rc == 0) {
+	const EVP_MD *type;
+
 	if (tssUtilsVerbose) printf("startCertificate: Adding certificate serial number\n");
 	/* to create a unique serial number, hash the key to be certified */
-	SHA1(keyBuffer, keyLength, x509Serialbin);
-	/* convert the SHA1 digest to a BIGNUM */
-	x509SerialBN = BN_bin2bn(x509Serialbin, SHA1_DIGEST_SIZE, x509SerialBN);
+	type = EVP_sha256();
+	irc = EVP_Digest(keyBuffer, keyLength, x509Serialbin, NULL, type, NULL);
+	if (irc == 0) {
+	    printf("startCertificate: Error in serial number EVP_Digest\n");
+	    rc = TSS_RC_X509_ERROR;
+	}
+    }
+    if (rc == 0) {
+	/* convert the digest to a BIGNUM, use 20 octets */
+	x509SerialBN = BN_bin2bn(x509Serialbin, 20, x509SerialBN);
 	if (x509SerialBN == NULL) {
 	    printf("startCertificate: Error in serial number BN_bin2bn\n");
 	    rc = TSS_RC_X509_ERROR;
