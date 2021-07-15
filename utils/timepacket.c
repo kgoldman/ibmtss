@@ -105,6 +105,10 @@ int main(int argc, char *argv[])
 	    i++;
 	    if (i < argc) {
 		loops = atoi(argv[i]);
+		if (loops == 0) {
+		    printf("-l option cannot be 0\n");
+		    printUsage();
+ 		}
 	    }
 	    else {
 		printf("-l option needs a value\n");
@@ -134,12 +138,13 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (commandBufferString[commandStringLength-1] != ' ') {
 	    printf("packet string does not end in a space\n");
+	    exit(1);
 	}
 	else {
 	    /* nul terminate the string */
 	    commandBufferString[commandStringLength-1] = '\0';
 	}
-    }    
+    }
     if (rc == 0) {
 	rc = TSS_Array_Scan(&commandBuffer,		/* freed @1 */
 			    &commandLength, (char *)commandBufferString);
