@@ -2748,30 +2748,34 @@ static TPM_RC TSS_HmacSession_SetHMAC(TSS_AUTH_CONTEXT *tssAuthContext,	/* autho
 		    uint8_t *cpBuffer;
 		    TPM_CC commandCode;
 		    TPM_CC commandCodeNbo;
-	
-		    rc = TSS_GetCpBuffer(tssAuthContext,
-					 &cpBufferSize,
-					 &cpBuffer);
-		    if (tssVverbose) TSS_PrintAll("TSS_HmacSession_SetHMAC: cpBuffer",
-						  cpBuffer, cpBufferSize);
-		    cpHash.hashAlg = session[i]->authHashAlg;
-    
-		    /* cpHash = hash(commandCode [ || authName1		*/
-		    /*                           [ || authName2		*/
-		    /*                           [ || authName3 ]]]	*/
-		    /*                           [ || parameters])	*/
-		    /* A cpHash can contain just a commandCode only if the lone session is */
-		    /* an audit session. */
 
-		    commandCode = TSS_GetCommandCode(tssAuthContext);
-		    commandCodeNbo = htonl(commandCode);
-		    rc = TSS_Hash_Generate(&cpHash,		/* largest size of a digest */
-					   sizeof(TPM_CC), &commandCodeNbo,
-					   name0->b.size, &name0->b.buffer,
-					   name1->b.size, &name1->b.buffer,
-					   name2->b.size, &name2->b.buffer,
-					   cpBufferSize, cpBuffer,
-					   0, NULL);
+		    if (rc == 0) {
+			rc = TSS_GetCpBuffer(tssAuthContext,
+					     &cpBufferSize,
+					     &cpBuffer);
+		    }
+		    if (rc == 0) {
+			if (tssVverbose) TSS_PrintAll("TSS_HmacSession_SetHMAC: cpBuffer",
+						      cpBuffer, cpBufferSize);
+			cpHash.hashAlg = session[i]->authHashAlg;
+
+			/* cpHash = hash(commandCode [ || authName1		*/
+			/*                           [ || authName2		*/
+			/*                           [ || authName3 ]]]	*/
+			/*                           [ || parameters])	*/
+			/* A cpHash can contain just a commandCode only if the lone session is */
+			/* an audit session. */
+
+			commandCode = TSS_GetCommandCode(tssAuthContext);
+			commandCodeNbo = htonl(commandCode);
+			rc = TSS_Hash_Generate(&cpHash,		/* largest size of a digest */
+					       sizeof(TPM_CC), &commandCodeNbo,
+					       name0->b.size, &name0->b.buffer,
+					       name1->b.size, &name1->b.buffer,
+					       name2->b.size, &name2->b.buffer,
+					       cpBufferSize, cpBuffer,
+					       0, NULL);
+		    }
 		}
 		if (i == 0) {
 		    unsigned int 	isDecrypt = 0;	/* count number of sessions with decrypt
