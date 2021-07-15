@@ -1463,9 +1463,10 @@ TPM_RC TSS_AES_EncryptCFB(uint8_t	*dOut,		/* OUT: the encrypted data */
     int		blockSize;
     AES_KEY	aeskey;
     int32_t	dSize;         /* signed version of dInSize */
-    
+
     /* Create AES encryption key token */
     if (rc == 0) {
+	memset(&aeskey, 0, sizeof(AES_KEY));	/* to suppress Coverity false positive */
 	irc = AES_set_encrypt_key(key, keySizeInBits, &aeskey);
 	if (irc != 0) {
             if (tssVerbose) printf("TSS_AES_EncryptCFB: Error setting openssl AES encryption key\n");
@@ -1499,9 +1500,10 @@ TPM_RC TSS_AES_DecryptCFB(uint8_t *dOut,          	/* OUT: the decrypted data */
     int		blockSize;
     AES_KEY	aesKey;
     int32_t	dSize;
-    
+
     /* Create AES encryption key token */
     if (rc == 0) {
+	memset(&aesKey, 0, sizeof(AES_KEY));	/* to suppress Coverity false positive */
 	irc = AES_set_encrypt_key(key, keySizeInBits, &aesKey);
 	if (irc != 0) {
             if (tssVerbose) printf("TSS_AES_DecryptCFB: Error setting openssl AES encryption key\n");
