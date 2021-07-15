@@ -533,7 +533,7 @@ int main(int argc, char *argv[])
 	    }
 	    if (rc == 0) {
 		if ((parentPasswordLength > sizeof(TPMU_HA)) ||
-		    (parentPasswordLength = 0) ||
+		    (parentPasswordLength == 0) ||
 		    (parentPasswordBuffer[parentPasswordLength-1] != '\0')) {
 		    printf("-pwdpi file must be nul terminated\n");
 		    printUsage();
