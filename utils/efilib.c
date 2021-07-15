@@ -2803,6 +2803,10 @@ void TSS_EFIData_Trace(TSST_EFIData *efiData,
     /* a failure here is a call sequence error */
     if (rc == 0) {
 	rc = TSS_EFI_GetTableIndex(&index, efiData->eventType);
+	if (rc != 0) {
+	    printf("TSS_EFIData_Trace: eventType %08x is not in trace table\n",
+		   efiData->eventType);
+	}
     }
     if (rc == 0) {
 	/* eventType specific traceFunction */
@@ -2811,7 +2815,8 @@ void TSS_EFIData_Trace(TSST_EFIData *efiData,
 	}
 	/* this should never occur, there should be no NULLs in the table */
 	else {
-	    rc = TSS_RC_NOT_IMPLEMENTED;
+	    printf("TSS_EFIData_Trace: eventType %08x has NULL trace function\n",
+		   efiData->eventType);
 	}
     }
     return;
@@ -3347,6 +3352,14 @@ static uint32_t TSS_EfiSignatureList_ReadBuffer(TSS_EFI_SIGNATURE_LIST *signatur
     }
     if (rc == 0) {
 	rc = TSS_UINT32LE_Unmarshal(&signatureList->SignatureSize, event, eventSize);
+    }
+    /* range check this untrusted value, to prevent a large malloc */
+    if (rc == 0) {
+	if (signatureList->SignatureSize > *eventSize) {
+	    printf("TSS_EfiSignatureList_ReadBuffer: Error in SignatureSize %u\n",
+		   (unsigned int)(signatureList->SignatureSize));
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
     }
     /* the SignatureSize must have at least the mandatory SignatureOwner GUID */
     if (rc == 0) {
@@ -4542,18 +4555,24 @@ static void     TSS_EfiIpl_Trace(TSST_EFIData *efiData)
 		rc = TSS_UINT32_Unmarshalu(&length, &buffer, &size);
 	    }
 	    if (rc == 0) {
-		switch (type) {
-		  case 0x02:
-		    TSS_PrintAll("  IPL: Digest", buffer, length);
-		    break;
-		  case 0x03:
-		    printf("  IPL: %.*s\n", length, buffer);
-		    break;
-		  default:
-		    break;
+		if (length <= size) {
+		    switch (type) {
+		      case 0x02:
+			TSS_PrintAll("  IPL: Digest", buffer, length);
+			break;
+		      case 0x03:
+			printf("  IPL: %.*s\n", length, buffer);
+			break;
+		      default:
+			break;
+		    }
+		    buffer += length;
+		    size -= length;
 		}
-		buffer += length;
-		size -= length;
+		else {
+		    printf("  IPL: type %02x length %u > size %u\n", type, length, size);
+		    size = 0;	/* reject the rest of the buffer */
+		}
 	    }
 	}
     }
