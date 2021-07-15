@@ -625,7 +625,7 @@ static TPM_RC createKey(TSS_CONTEXT *tssContext,
     }
     /* policy command code sign + policy authvalue or policy password */
     if (rc == 0) {
-	memcpy(&createIn.inPublic.publicArea.authPolicy.b.buffer, policy, sizeof(policy));
+	memcpy(&createIn.inPublic.publicArea.authPolicy.t.buffer, policy, sizeof(policy));
 	createIn.inPublic.publicArea.authPolicy.b.size = sizeof(policy);
     }
     if (rc == 0) {
