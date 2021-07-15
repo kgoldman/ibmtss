@@ -246,6 +246,11 @@ int main(int argc, char *argv[])
 	    rc = TSS_File_ReadBinaryFile(&newPasswordBuffer,     /* freed @1 */
 					 &newPasswordBufferLength,
 					 newPasswordFilename);
+	    if ((newPasswordBufferLength == 0) ||
+		(newPasswordBuffer[newPasswordBufferLength-1] != '\0')) {
+		printf("-ipwdn file must be nul terminated\n");
+		printUsage();
+	    }
 	    newPasswordPtr = (const char *)newPasswordBuffer;
 	}
 	/* empty password */
