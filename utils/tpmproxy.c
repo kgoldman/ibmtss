@@ -1,10 +1,10 @@
 /********************************************************************************/
 /*										*/
-/*			    Windows 10 TPM Proxy	 			*/
+/*			    Windows 10 and Linux TPM Proxy	 		*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2006 - 2019.					*/
+/* (c) Copyright IBM Corporation 2006 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -38,9 +38,9 @@
 
 
 /*
-  Use this proxy when using the TSS command line utilities on Windows.  It keeps the connection to
-  the Windows TPM device driver open.  This prevents its resource manager from flushing resources
-  after each utiity exits.
+  Use this proxy when using the TSS command line utilities.  It keeps the connection to
+  the TPM device driver open.  This prevents a resource manager from flushing resources
+  after each utiity exits.  It also permits remote access to a HW TPM.
 
   The server type (mssim or raw) should agree with the TSS configuration.  mssim wrapes the packets
   in the MS simulator bytes.  raw does not.
@@ -49,9 +49,7 @@
   received.  Then, the proxy loops back and reopens the connection for the next TSS client side
   open.
 
-  The proxy is unnecessary when using a compiled application.
-
-  Link with:
+  Windows: Link with:
 
   tbs.lib
   ws2_32.lib
@@ -63,11 +61,29 @@
 #include <string.h>
 #include <stdint.h>
 #include <time.h>
+#include <errno.h>
 
+#include <ibmtss/tss.h>
+#include <ibmtss/tsstransmit.h>
+
+#ifdef TPM_WINDOWS 
 #include <windows.h>
 #include <specstrings.h>
-
 #include <tbs.h>
+
+#define SOCKET_FD 	SOCKET
+#define SOCKLEN_T	INT
+
+#endif	/* TPM_WINDOWS */
+
+#ifdef TPM_POSIX        /* Posix sockets  */
+#include <unistd.h>
+#define SOCKET_FD 	int
+#define SOCKLEN_T	socklen_t
+#define INVALID_SOCKET 	-1
+#define SOCKET_ERROR 	-1
+
+#endif	/* TPM_POSIX         */
 
 #define LOAD32(buffer,offset)         ( ntohl(*(uint32_t *)&(buffer)[(offset)]) )
 
@@ -103,23 +119,24 @@ long getArgs(short *port,
 	     char **argv);
 void logAll(const char *message, unsigned long length, const unsigned char* buff);
 
-TSS_RESULT socketInit(SOCKET *sock_fd, short port);
-TSS_RESULT socketConnect(SOCKET *accept_fd,
-			 SOCKET sock_fd,
+TSS_RESULT socketInit(SOCKET_FD *sock_fd, short port);
+TSS_RESULT socketConnect(SOCKET_FD *accept_fd,
+			 SOCKET_FD sock_fd,
 			 short port);
-TSS_RESULT socketRead(SOCKET accept_fd,
+TSS_RESULT socketRead(SOCKET_FD accept_fd,
 		      uint32_t	*commandType,
 		      char *buffer,
 		      uint32_t *bufferLength,
 		      size_t bufferSize);
-TSS_RESULT socketReadBytes(SOCKET accept_fd,
+TSS_RESULT socketReadBytes(SOCKET_FD accept_fd,
 			   char *buffer,
 			   size_t nbytes);
-TSS_RESULT socketWrite(SOCKET accept_fd,
+TSS_RESULT socketWrite(SOCKET_FD accept_fd,
 		       const char *buffer,
 		       size_t buffer_length);
-TSS_RESULT socketDisconnect(SOCKET accept_fd);
+TSS_RESULT socketDisconnect(SOCKET_FD accept_fd);
 
+#ifdef TPM_WINDOWS
 void TPM_HandleWsaStartupError(const char *prefix,
 			       int irc);
 void TPM_HandleWsaError(const char *prefix);
@@ -129,8 +146,7 @@ void TPM_GetWsaError(const char **error_string);
 
 void TPM_GetTBSError(const char *prefix,
 		     TBS_RESULT rc);
-void CheckTPMError(const char *prefix,
-		     unsigned char *response);
+#endif
 
 /* global variable for trace logging */
 
@@ -147,17 +163,19 @@ int serverType = SERVER_TYPE_MSSIM;	/* default MS simulator format */
 
 int main(int argc, char** argv)
 {
-    TBS_RESULT 		rc = 0;
-    TBS_RESULT 		rc1 = 0;
+    TPM_RC 		rc = 0;
+    TPM_RC 		trc = 0;
+    TSS_CONTEXT 	*tssContext = NULL;		/* TPM connection */
     time_t 		start_time;
-    int 		contextOpened = false;
-    SOCKET 		sock_fd;		/* server socket */
-    SOCKET 		accept_fd;    		/* server accept socket for a packet */
+    SOCKET_FD 		sock_fd;		/* server socket */
+    SOCKET_FD 		accept_fd;    		/* server accept socket for a packet */
     int 		socketOpened = FALSE;
 
+#if 0
     TBS_HCONTEXT 	hContext = 0;
     TBS_CONTEXT_PARAMS2 contextParams;
 
+#endif
     /* TPM command and response */
     BYTE command[PACKET_SIZE];
     uint32_t commandLength;
@@ -181,24 +199,10 @@ int main(int argc, char** argv)
 	rc = getArgs(&port, &verbose, &logFilename,
 		     argc, argv);
     }
-    /* open HW TPM device driver */
     if (rc == 0) {
 	if (verbose) printf("tpmproxy: start at %s", ctime(&start_time));
 	if (verbose) printf("tpmproxy: server type %s\n",
 			    (serverType == SERVER_TYPE_MSSIM) ? "MS simulator" : "raw");
-	contextParams.version = TBS_CONTEXT_VERSION_TWO;
-	contextParams.includeTpm12 = 0;
-	contextParams.includeTpm20 = 1;
-	rc = Tbsi_Context_Create((TBS_CONTEXT_PARAMS *)&contextParams,
-				 &hContext);
-
-	if (verbose) printf("tpmproxy: Tbsi_Context_Create rc %08x\n", rc);
-	if (rc == 0) {
-	    contextOpened = true;
-	}
-	else {
-	    TPM_GetTBSError("Tbsi_Context_Create ", rc);
-	}
     }
     /* open / initialize server socket */
     if (rc == 0) {
@@ -211,16 +215,23 @@ int main(int argc, char** argv)
 	    socketOpened = TRUE;
 	}
     }
+    /* prepare for the HW TPM connection */
+    if (rc == 0) {
+	rc = TSS_Create(&tssContext);
+    }
+    /* regardless of the env variables, the proxy connects to the device */
+    if (rc == 0) {
+	rc = TSS_SetProperty(tssContext, TPM_INTERFACE_TYPE, "dev");
+    }
     /* outer loop, socket connect or reconnect */
     while (rc == 0) {
-
 	uint32_t	commandType = TPM_SEND_COMMAND;	/* for first time through inner loop */
+
 	/* connect to the client application */
 	if (rc == 0) {
 	    if (verbose) printf("Connecting on socket %hu\n", port);
 	    rc = socketConnect(&accept_fd, sock_fd, port);
 	}
-
 	/* inner loop, read socket, send command, get response, write socket */
 	while ((rc == 0) && (commandType == TPM_SEND_COMMAND)) {
 
@@ -231,21 +242,17 @@ int main(int argc, char** argv)
 				(char *)command,	/* windows wants signed */
 				&commandLength,
 				sizeof(command));
+	    }
+	    if ((rc == 0) && (commandType == TPM_SEND_COMMAND)) {
 		logAll("Command", commandLength, command);
 	    }
 	    /* send command to TPM and receive response */
 	    if ((rc == 0) && (commandType == TPM_SEND_COMMAND)) {
-		responseLength = sizeof(response);
-		rc = Tbsip_Submit_Command(hContext,
-					  TBS_COMMAND_LOCALITY_ZERO,
-					  TBS_COMMAND_PRIORITY_NORMAL,
-					  command,
-					  commandLength,
-					  response,
-					  &responseLength);
-		if (rc != 0) {
-		    TPM_GetTBSError("Tbsi_Context_Create ", rc);
-		}
+		trc = TSS_Transmit(tssContext,
+				  response, &responseLength,
+				  command, commandLength,
+				  NULL);		/* message */
+		trc = trc;	/* ignore TPM errors */
 	    }
 	    /* send response to client */
 	    if ((rc == 0) && (commandType == TPM_SEND_COMMAND)) {
@@ -261,9 +268,8 @@ int main(int argc, char** argv)
 	socketDisconnect(sock_fd);
     }
     /* close TPM */
-    if (contextOpened) {
-	rc1 = Tbsip_Context_Close(hContext);
-	if (verbose) printf("tpmproxy:Tbsip_Context_Close rc1 %08x\n", rc1);
+    {
+	TPM_RC rc1 = TSS_Delete(tssContext);
 	if (rc == 0) {
 	    rc = rc1;
 	}
@@ -276,14 +282,17 @@ int main(int argc, char** argv)
   All the socket code is basically a cut and paste from the TPM 1.2 tpm_io.c
 */
 
-TSS_RESULT socketInit(SOCKET *sock_fd, short port)
+TSS_RESULT socketInit(SOCKET_FD *sock_fd, short port)
 {
     TSS_RESULT   	rc = 0;
     int			irc;
     struct sockaddr_in 	serv_addr;
     int 		opt;
+#ifdef TPM_WINDOWS
     WSADATA 		wsaData;
+#endif
 
+#ifdef TPM_WINDOWS
     /* initiate use of the Windows Sockets DLL 2.0 */
     if (rc == 0) {
 	if ((irc = WSAStartup(0x202,&wsaData)) != 0) {		/* if not successful */
@@ -292,13 +301,16 @@ TSS_RESULT socketInit(SOCKET *sock_fd, short port)
 	    rc = ERROR_CODE;
 	}
     }
+#endif
     /* create a tcpip protocol socket */
     if (rc == 0) {
 	/* if (verbose) printf(" socketInit: Port %hu\n", port); */
 	*sock_fd = socket(AF_INET, SOCK_STREAM, 0);	/* tcpip socket */
 	if (*sock_fd == INVALID_SOCKET) {
 	    printf("socketInit: Error, server socket()\n");
+#ifdef TPM_WINDOWS
 	    TPM_HandleWsaError("socketInit:");
+#endif
 	    rc = ERROR_CODE;
 	}
     }
@@ -314,8 +326,10 @@ TSS_RESULT socketInit(SOCKET *sock_fd, short port)
 	irc = setsockopt(*sock_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&opt, sizeof(opt));
 	if (irc == SOCKET_ERROR) {
 	    printf("socketInit: Error, server setsockopt()\n");
+#ifdef TPM_WINDOWS
 	    TPM_HandleWsaError("socketInit:");
-	    closesocket(*sock_fd);
+#endif
+	    socketDisconnect(*sock_fd);
 	    rc = ERROR_CODE;
 	}
     }
@@ -325,8 +339,10 @@ TSS_RESULT socketInit(SOCKET *sock_fd, short port)
 	if (irc == SOCKET_ERROR) {
 	    printf("socketInit: Error, server bind()\n");
 	    printf("socketInit: Is SW TPM listening on this port?\n");
+#ifdef TPM_WINDOWS
 	    TPM_HandleWsaError("socketInit:");
-	    closesocket(*sock_fd);
+#endif
+	    socketDisconnect(*sock_fd);
 	    rc = ERROR_CODE;
 	}
     }
@@ -335,36 +351,45 @@ TSS_RESULT socketInit(SOCKET *sock_fd, short port)
 	irc = listen(*sock_fd, SOMAXCONN);
 	if (irc == SOCKET_ERROR) {
 	    printf("socketInit: Error, server listen()\n");
+#ifdef TPM_WINDOWS
 	    TPM_HandleWsaError("socketInit:");
-	    closesocket(*sock_fd);
+#endif
+	    socketDisconnect(*sock_fd);
 	    rc = ERROR_CODE;
 	}
     }
+#ifdef TPM_WINDOWS
     if (rc != 0) {
 	WSACleanup();
     }
+#endif
     return rc;
 }
 
-TSS_RESULT socketConnect(SOCKET *accept_fd,
-			 SOCKET sock_fd,
+TSS_RESULT socketConnect(SOCKET_FD *accept_fd,
+			 SOCKET_FD sock_fd,
 			 short port)
 {
     TSS_RESULT		rc = 0;
-    int			cli_len;
+    SOCKLEN_T		cli_len;
     struct sockaddr_in 	cli_addr;		/* Internet version of sockaddr */
 
     /* accept a connection */
     if (rc == 0) {
 	cli_len = sizeof(cli_addr);
 	/* block until connection from client */
+	port = port;
 	/* printf(" socketConnect: Waiting for connection on port %hu ...\n", port); */
 	*accept_fd = accept(sock_fd, (struct sockaddr *)&cli_addr, &cli_len);
 	if (*accept_fd == SOCKET_ERROR) {
 	    printf("socketConnect: Error, accept()\n");
+#ifdef TPM_WINDOWS
 	    TPM_HandleWsaError("socketConnect: ");
-	    closesocket(sock_fd);
+#endif
+	    socketDisconnect(sock_fd);
+#ifdef TPM_WINDOWS
 	    WSACleanup();
+#endif
 	    rc = ERROR_CODE;
 	}
     }
@@ -381,7 +406,7 @@ TSS_RESULT socketConnect(SOCKET *accept_fd,
    This function is intended to be platform independent.
 */
 
-TSS_RESULT socketRead(SOCKET 	accept_fd,		/* read/write file descriptor */
+TSS_RESULT socketRead(SOCKET_FD	accept_fd,		/* read/write file descriptor */
 		      uint32_t	*commandType,
 		      char 	*buffer,		/* output: command stream */
 		      uint32_t 	*bufferLength,	/* output: command stream length */
@@ -414,7 +439,7 @@ TSS_RESULT socketRead(SOCKET 	accept_fd,		/* read/write file descriptor */
 	}
 	/* read and discard the locality */
 	if ((rc == 0) && !done) {
-	    rc = socketReadBytes(accept_fd, &locality, sizeof(uint8_t));
+	    rc = socketReadBytes(accept_fd, (char *)&locality, sizeof(uint8_t));
 	}
 	/* read and discard the redundant length */
 	if ((rc == 0) && !done) {
@@ -458,7 +483,7 @@ TSS_RESULT socketRead(SOCKET 	accept_fd,		/* read/write file descriptor */
    The buffer has already been checked for sufficient size.
 */
 
-TSS_RESULT socketReadBytes(SOCKET accept_fd,	/* read/write file descriptor */
+TSS_RESULT socketReadBytes(SOCKET_FD accept_fd,	/* read/write file descriptor */
 			   char *buffer,
 			   size_t nbytes)
 {
@@ -477,7 +502,9 @@ TSS_RESULT socketReadBytes(SOCKET accept_fd,	/* read/write file descriptor */
 	if ((nread == SOCKET_ERROR) ||
 	    (nread < 0)) {       		/* error */
 	    printf("socketReadBytes: Error, read() error\n");
+#ifdef TPM_WINDOWS
 	    TPM_HandleWsaError("socketReadBytes:");
+#endif
 	    socketDisconnect(accept_fd);
             rc = ERROR_CODE;
 	}
@@ -486,7 +513,8 @@ TSS_RESULT socketReadBytes(SOCKET accept_fd,	/* read/write file descriptor */
 	    buffer += nread;
 	}
 	else if (nread == 0) {  	/* EOF */
-	    printf("socketReadBytes: Error, read EOF, read %lu bytes\n", (unsigned long)(nbytes - nleft));
+	    printf("socketReadBytes: Error, read EOF, read %lu bytes\n",
+		   (unsigned long)(nbytes - nleft));
             rc = ERROR_CODE;
 	}
     }
@@ -496,9 +524,9 @@ TSS_RESULT socketReadBytes(SOCKET accept_fd,	/* read/write file descriptor */
 /* socketWrite() writes buffer_length bytes from buffer to accept_fd.
 
    In mmssim mode, it prepends the size and appends the acknowledgement.
- */
+*/
 
-TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
+TSS_RESULT socketWrite(SOCKET_FD accept_fd,	/* read/write file descriptor */
 		       const char *buffer,
 		       size_t buffer_length)
 {
@@ -519,7 +547,7 @@ TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
 	    send(accept_fd, (const char *)&bufferLengthNbo, sizeof(uint32_t), 0);
 	}
     }
-   /* test that connection is open to write */
+    /* test that connection is open to write */
     if (rc == 0) {
 	if (accept_fd == SOCKET_ERROR) {
 	    printf("socketWrite: Error, connection not open, fd %d\n",
@@ -532,7 +560,9 @@ TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
 	if ((nwritten == SOCKET_ERROR) ||
 	    (nwritten < 0)) {
 	    printf("socketWrite: Error, send()\n");
+#ifdef TPM_WINDOWS
 	    TPM_HandleWsaError("socketWrite:");	/* report the error */
+#endif
 	    socketDisconnect(accept_fd);
 	    rc = ERROR_CODE;
 	}
@@ -554,10 +584,9 @@ TSS_RESULT socketWrite(SOCKET accept_fd,	/* read/write file descriptor */
 
 /* socketDisconnect() breaks the connection between the TPM server and the host client
 
-   This is the Windows platform dependent socket version.
 */
 
-TSS_RESULT socketDisconnect(SOCKET accept_fd)
+TSS_RESULT socketDisconnect(SOCKET_FD accept_fd)
 {
     TSS_RESULT 	rc = 0;
     int		irc;
@@ -565,8 +594,12 @@ TSS_RESULT socketDisconnect(SOCKET accept_fd)
     /* close the connection to the client */
     if (verbose) printf("Closing socket\n");
     if (rc == 0) {
+#ifdef TPM_WINDOWS
 	irc = closesocket(accept_fd);
-	accept_fd = SOCKET_ERROR;	/* mark the connection closed */
+#endif
+#ifdef TPM_POSIX
+	irc = close(accept_fd);
+#endif
 	if (irc == SOCKET_ERROR) {
 	    printf("socketDisconnect: Error, closesocket()\n");
 	    rc = ERROR_CODE;
@@ -574,6 +607,8 @@ TSS_RESULT socketDisconnect(SOCKET accept_fd)
     }
     return rc;
 }
+
+#ifdef TPM_WINDOWS
 
 void TPM_HandleWsaStartupError(const char *prefix,
 			       int irc)
@@ -761,7 +796,7 @@ void TPM_GetTBSError(const char *prefix,
 	break;
       case TBS_E_INVALID_CONTEXT_PARAM:
 	error_string = "A context parameter that is not valid was passed when attempting to create a "
-			"TBS context.";
+		       "TBS context.";
 	break;
       case TBS_E_SERVICE_NOT_RUNNING:
 	error_string = "The TBS service is not running and could not be started.";
@@ -771,7 +806,7 @@ void TPM_GetTBSError(const char *prefix,
 	break;
       case TBS_E_TOO_MANY_RESOURCES:
 	error_string = "A new virtual resource could not be created because there are too many open "
-			"virtual resources.";
+		       "virtual resources.";
 	break;
       case TBS_E_SERVICE_START_PENDING:
 	error_string = "The TBS service has been started but is not yet running.";
@@ -787,7 +822,7 @@ void TPM_GetTBSError(const char *prefix,
 	break;
       case TBS_E_TPM_NOT_FOUND:
 	error_string = "A compatible Trusted Platform Module (TPM) Security Device cannot be found "
-			"on this computer.";
+		       "on this computer.";
 	break;
       case TBS_E_SERVICE_DISABLED:
 	error_string = "The TBS service has been disabled.";
@@ -803,7 +838,7 @@ void TPM_GetTBSError(const char *prefix,
 	break;
       case TBS_E_PPI_FUNCTION_UNSUPPORTED:
 	error_string = "The Physical Presence Interface of this firmware does not support the "
-			"requested method.";
+		       "requested method.";
 	break;
       case TBS_E_OWNERAUTH_NOT_FOUND:
 	error_string = "The requested TPM OwnerAuth value was not found.";
@@ -823,28 +858,7 @@ void TPM_GetTBSError(const char *prefix,
     return;
 }
 
-void CheckTPMError(const char *prefix,
-		   unsigned char *response)
-{
-    const char *error_string;
-    uint32_t tpmError = htonl(*(uint32_t *)(response+6));
-
-    if (tpmError != 0) {
-
-	switch (tpmError) {
-	    /* a few error codes from WinError.h */
-	  case TPM_E_COMMAND_BLOCKED:
-	    error_string = "The command was blocked.";
-	    break;
-	  default:
-	    error_string = "unknown error type\n";
-	    printf("TPM error %08x\n", tpmError);
-	    break;
-	}
-	printf("%s %s\n", prefix, error_string);
-    }
-    return;
-}
+#endif /* TPM_WINDOWS */
 
 /* logging, tracing */
 
@@ -967,7 +981,7 @@ long getArgs(short *port,
     return rc;
 }
 
-void printUsage()
+void printUsage(void)
 {
     printf("\n");
     printf("tpmproxy\n");
