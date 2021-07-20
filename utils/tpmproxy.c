@@ -91,15 +91,10 @@
 #define SSIZE_MAX INT_MAX
 #endif
 
-/* standard TCG definitions */
-
-typedef unsigned long 	TSS_RESULT;
-typedef unsigned char 	BYTE;
-typedef unsigned short 	TPM_TAG;
-
 /* local constants */
 
-#define ERROR_CODE	-1
+#define ERROR_CODE	(TPM_RC)-1
+#define EOF_CODE	(TPM_RC)-2
 #define DEFAULT_PORT 	2321
 #define PACKET_SIZE	4096
 #define TRACE_SIZE	(PACKET_SIZE * 4)
@@ -119,22 +114,22 @@ long getArgs(short *port,
 	     char **argv);
 void logAll(const char *message, unsigned long length, const unsigned char* buff);
 
-TSS_RESULT socketInit(SOCKET_FD *sock_fd, short port);
-TSS_RESULT socketConnect(SOCKET_FD *accept_fd,
-			 SOCKET_FD sock_fd,
-			 short port);
-TSS_RESULT socketRead(SOCKET_FD accept_fd,
-		      uint32_t	*commandType,
-		      char *buffer,
-		      uint32_t *bufferLength,
-		      size_t bufferSize);
-TSS_RESULT socketReadBytes(SOCKET_FD accept_fd,
-			   char *buffer,
-			   size_t nbytes);
-TSS_RESULT socketWrite(SOCKET_FD accept_fd,
-		       const char *buffer,
-		       size_t buffer_length);
-TSS_RESULT socketDisconnect(SOCKET_FD accept_fd);
+TPM_RC socketInit(SOCKET_FD *sock_fd, short port);
+TPM_RC socketConnect(SOCKET_FD *accept_fd,
+		     SOCKET_FD sock_fd,
+		     short port);
+TPM_RC socketRead(SOCKET_FD accept_fd,
+		  uint32_t	*commandType,
+		  char *buffer,
+		  uint32_t *bufferLength,
+		  size_t bufferSize);
+TPM_RC socketReadBytes(SOCKET_FD accept_fd,
+		       char *buffer,
+		       size_t nbytes);
+TPM_RC socketWrite(SOCKET_FD accept_fd,
+		   const char *buffer,
+		   size_t buffer_length);
+TPM_RC socketDisconnect(SOCKET_FD accept_fd);
 
 #ifdef TPM_WINDOWS
 void TPM_HandleWsaStartupError(const char *prefix,
@@ -282,9 +277,9 @@ int main(int argc, char** argv)
   All the socket code is basically a cut and paste from the TPM 1.2 tpm_io.c
 */
 
-TSS_RESULT socketInit(SOCKET_FD *sock_fd, short port)
+TPM_RC socketInit(SOCKET_FD *sock_fd, short port)
 {
-    TSS_RESULT   	rc = 0;
+    TPM_RC   		rc = 0;
     int			irc;
     struct sockaddr_in 	serv_addr;
     int 		opt;
@@ -366,11 +361,11 @@ TSS_RESULT socketInit(SOCKET_FD *sock_fd, short port)
     return rc;
 }
 
-TSS_RESULT socketConnect(SOCKET_FD *accept_fd,
-			 SOCKET_FD sock_fd,
-			 short port)
+TPM_RC socketConnect(SOCKET_FD *accept_fd,
+		     SOCKET_FD sock_fd,
+		     short port)
 {
-    TSS_RESULT		rc = 0;
+    TPM_RC		rc = 0;
     SOCKLEN_T		cli_len;
     struct sockaddr_in 	cli_addr;		/* Internet version of sockaddr */
 
@@ -406,13 +401,13 @@ TSS_RESULT socketConnect(SOCKET_FD *accept_fd,
    This function is intended to be platform independent.
 */
 
-TSS_RESULT socketRead(SOCKET_FD	accept_fd,		/* read/write file descriptor */
-		      uint32_t	*commandType,
-		      char 	*buffer,		/* output: command stream */
-		      uint32_t 	*bufferLength,	/* output: command stream length */
-		      size_t 	bufferSize)	/* input: max size of output buffer */
+TPM_RC socketRead(SOCKET_FD	accept_fd,	/* read/write file descriptor */
+		  uint32_t	*commandType,
+		  char 		*buffer,	/* output: command stream */
+		  uint32_t 	*bufferLength,	/* output: command stream length */
+		  size_t 	bufferSize)	/* input: max size of output buffer */
 {
-    TSS_RESULT		rc = 0;
+    TPM_RC		rc = 0;
     int			done = false;
     uint32_t		headerSize;	/* minimum required bytes in command through paramSize */
     uint32_t		paramSize;	/* from command stream */
@@ -458,6 +453,13 @@ TSS_RESULT socketRead(SOCKET_FD	accept_fd,		/* read/write file descriptor */
     /* read the command through the paramSize from the socket stream */
     if ((rc == 0) && !done) {
 	rc = socketReadBytes(accept_fd, buffer, headerSize);
+	if ((serverType != SERVER_TYPE_MSSIM) &&
+	    (rc ==  EOF_CODE)) {
+	    /* if in raw mode and connection closed, signal to start a new connection */
+	    *commandType = TPM_SESSION_END;	/* client TSS termination request */
+	    done = true;
+	    rc = 0;
+	}
     }
     if ((rc == 0) && !done) {
 	/* extract the paramSize value, last field in header */
@@ -483,13 +485,13 @@ TSS_RESULT socketRead(SOCKET_FD	accept_fd,		/* read/write file descriptor */
    The buffer has already been checked for sufficient size.
 */
 
-TSS_RESULT socketReadBytes(SOCKET_FD accept_fd,	/* read/write file descriptor */
-			   char *buffer,
-			   size_t nbytes)
+TPM_RC socketReadBytes(SOCKET_FD accept_fd,	/* read/write file descriptor */
+		       char *buffer,
+		       size_t nbytes)
 {
-    TSS_RESULT rc = 0;
-    int nread = 0;
-    size_t nleft = nbytes;
+    TPM_RC 	rc = 0;
+    int 	nread = 0;
+    size_t 	nleft = nbytes;
 
     /* read() is unspecified with nbytes too large */
     if (rc == 0) {
@@ -513,9 +515,7 @@ TSS_RESULT socketReadBytes(SOCKET_FD accept_fd,	/* read/write file descriptor */
 	    buffer += nread;
 	}
 	else if (nread == 0) {  	/* EOF */
-	    printf("socketReadBytes: Error, read EOF, read %lu bytes\n",
-		   (unsigned long)(nbytes - nleft));
-            rc = ERROR_CODE;
+            rc = EOF_CODE;
 	}
     }
     return rc;
@@ -526,11 +526,11 @@ TSS_RESULT socketReadBytes(SOCKET_FD accept_fd,	/* read/write file descriptor */
    In mmssim mode, it prepends the size and appends the acknowledgement.
 */
 
-TSS_RESULT socketWrite(SOCKET_FD accept_fd,	/* read/write file descriptor */
-		       const char *buffer,
-		       size_t buffer_length)
+TPM_RC socketWrite(SOCKET_FD accept_fd,	/* read/write file descriptor */
+		   const char *buffer,
+		   size_t buffer_length)
 {
-    TSS_RESULT 	rc = 0;
+    TPM_RC 	rc = 0;
     int		nwritten = 0;
 
     /* write() is unspecified with buffer_length too large */
@@ -586,9 +586,9 @@ TSS_RESULT socketWrite(SOCKET_FD accept_fd,	/* read/write file descriptor */
 
 */
 
-TSS_RESULT socketDisconnect(SOCKET_FD accept_fd)
+TPM_RC socketDisconnect(SOCKET_FD accept_fd)
 {
-    TSS_RESULT 	rc = 0;
+    TPM_RC 	rc = 0;
     int		irc;
 
     /* close the connection to the client */

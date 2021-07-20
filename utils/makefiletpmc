@@ -156,6 +156,8 @@ include makefile-common
 include makefile-common12
 include makefile-common20
 
+ALL += tpmproxy$(EXE)
+
 # default build target
 
 all:	$(ALL)
@@ -511,6 +513,8 @@ printattr:		printattr.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) printattr.o $(LNALIBS) -o printattr
 tpmcmd:			tpmcmd.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) tpmcmd.o $(LNALIBS) -o tpmcmd
+tpmproxy:		tpmproxy.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) tpmproxy.o $(LNALIBS) -o tpmproxy
 
 # for applications, not for TSS library
 

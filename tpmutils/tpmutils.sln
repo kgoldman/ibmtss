@@ -238,6 +238,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "certifyx509", "certifyx509\
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tpmproxy", "tpmproxy\tpmproxy.vcxproj", "{4D260CDA-D160-43F8-94DF-D98A1D7E0385}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C11AF70-45A6-4888-A66A-C0A70302BD89} = {5C11AF70-45A6-4888-A66A-C0A70302BD89}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "printattr", "printattr\printattr.vcxproj", "{C975A00B-23E5-4D34-B903-987C393F1B3D}"
 EndProject

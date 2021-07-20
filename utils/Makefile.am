@@ -114,7 +114,7 @@ bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation 
 	sequenceupdate sequencecomplete setcommandcodeauditstatus setprimarypolicy shutdown sign startauthsession \
 	startup stirrandom unseal \
 	verifysignature zgen2phase signapp writeapp createek createekcert tpm2pem tpmpublic2eccpoint \
-	ntc2getconfig ntc2preconfig ntc2lockconfig publicname tpmcmd printattr
+	ntc2getconfig ntc2preconfig ntc2lockconfig publicname tpmcmd printattr tpmproxy
 
 if !CONFIG_TSS_NOFILE
 bin_PROGRAMS += timepacket
@@ -601,6 +601,10 @@ tpmcmd_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 printattr_SOURCES = printattr.c
 printattr_CFLAGS = $(OPENSSL_CFLAGS)
 printattr_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
+
+tpmproxy_SOURCES = tpmproxy.c
+tpmproxy_CFLAGS = $(OPENSSL_CFLAGS)
+tpmproxy_LDADD = $(OPENSSL_LIBS) libibmtssutils.la libibmtss.la
 
 endif
 endif

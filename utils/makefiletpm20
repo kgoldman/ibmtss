@@ -153,6 +153,8 @@ TSSUTILS_OBJS = cryptoutils.o	\
 include makefile-common
 include makefile-common20
 
+ALL += tpmproxy$(EXE)
+
 # default build target
 
 all:	$(ALL)
