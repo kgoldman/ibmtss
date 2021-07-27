@@ -11,6 +11,7 @@
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/NuvotonTPMRootCA1111.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/NuvotonTPMRootCA2110.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/NuvotonTPMRootCA2111.pem
+/gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/NuvotonTPMRootCA2112.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/cacert.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/cacertecc.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/gstpmroot.pem
@@ -49,3 +50,7 @@
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/Infineon-TPM_EK_Intermediate_CA_54-C-v01_00-EN.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/Infineon-TPM_EK_Intermediate_CA_62-C-v01_00-EN.pem
 /gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/Infineon-TPM_EK_Intermediate_CA_63-C-v01_00-EN.pem
+/gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/amd23452201D41C5AB064032BD23F158FEF.pem
+/gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/amd264D39A23CEB5D5B49D610044EEBD121.pem
+/gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/amd51ADE34A2F8253525E2321AD63F7B197.pem
+/gsa/yktgsa/home/k/g/kgold/tpm2/utils/certificates/amdD30EE6F7557055BA66AD1A1DD1157D2C.pem
