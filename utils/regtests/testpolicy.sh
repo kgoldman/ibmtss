@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2021					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -400,6 +400,30 @@ do
 
     echo "Sign a digest - policy ticket"
     ${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    checkSuccess $?
+
+    echo "Start a policy session - save nonceTPM"
+    ${PREFIX}startauthsession -se p -on noncetpm.bin > run.out
+    checkSuccess $?
+
+    echo "Policy signed with nonceTPM and no expiration, create a faulty ticket - $HALG"
+    ${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg $HALG -pwdk rrrr -in noncetpm.bin -tk tkt.bin -to to.bin > run.out
+    checkSuccess $?
+
+    echo "Sign a digest - policy signed"
+    ${PREFIX}sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    checkSuccess $?
+
+    echo "Start a policy session"
+    ${PREFIX}startauthsession -se p > run.out
+    checkSuccess $?
+
+    echo "Policy ticket, with timeout 0, ticket should fail"
+    ${PREFIX}policyticket -ha 03000000 -to to.bin -na ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin > run.out
+    checkFailure $?
+
+    echo "Flush the policy session"
+    ${PREFIX}flushcontext -ha 03000000 > run.out
     checkSuccess $?
 
     echo "Flush the verification public key"

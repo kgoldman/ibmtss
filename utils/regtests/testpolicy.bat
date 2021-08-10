@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2021					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -521,6 +521,42 @@ for %%H in (%ITERATE_ALGS%) do (
 
     echo "Sign a digest - policy ticket"
     %TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Start a policy session - save nonceTPM"
+    %TPM_EXE_PATH%startauthsession -se p -on noncetpm.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Policy signed with nonceTPM and no expiration, create a faulty ticket - %%H"
+    %TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg %%H -pwdk rrrr -in noncetpm.bin -tk tkt.bin -to to.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Sign a digest - policy signed"
+    %TPM_EXE_PATH%sign -hk 80000002 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Start a policy session"
+    %TPM_EXE_PATH%startauthsession -se p > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+    )
+
+    echo "Policy ticket, with timeout 0, ticket should fail"
+    %TPM_EXE_PATH%policyticket -ha 03000000 -to to.bin -na h80000001.bin -tk tkt.bin > run.out
+    IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+    )
+
+    echo "Flush the policy session"
+    %TPM_EXE_PATH%flushcontext -ha 03000000 > run.out
     IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
     )
