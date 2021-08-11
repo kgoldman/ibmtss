@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2021					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -215,7 +215,12 @@ echo ""
 
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
     echo "generate the RSA signing key with openssl"
-    openssl genrsa -out tmpprivkey.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
+
+    openssl genpkey -out tmpprivkey.pem -outform pem -aes-256-cbc -algorithm rsa -pkeyopt rsa_keygen_bits:2048 -pass pass:rrrr > run.out 2>&1
+
+# The following worked up to Openssl 3.0.0.  The key generation
+# remains here for when mbedtls is updated, but the tests are now
+# if'ed out
 
 elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
     echo "Generate the RSA signing  key with openssl"
@@ -232,21 +237,23 @@ else
     exit 255
 fi
 
-echo "load the ECC storage key 80000001"
-${PREFIX}load -hp 80000000 -pwdp sto -ipr storeeccnistp256priv.bin -ipu storeeccnistp256pub.bin > run.out
-checkSuccess $?
+if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 
-echo "Start an HMAC auth session"
-${PREFIX}startauthsession -se h > run.out
-checkSuccess $?
+    echo "load the ECC storage key 80000001"
+    ${PREFIX}load -hp 80000000 -pwdp sto -ipr storeeccnistp256priv.bin -ipu storeeccnistp256pub.bin > run.out
+    checkSuccess $?
 
-for SESS in "" "-se0 02000000 1"
-do
-    for HALG in ${ITERATE_ALGS}
+    echo "Start an HMAC auth session"
+    ${PREFIX}startauthsession -se h > run.out
+    checkSuccess $?
+
+    for SESS in "" "-se0 02000000 1"
     do
-
-	for PARENT in 80000000 80000001
+	for HALG in ${ITERATE_ALGS}
 	do
+
+	    for PARENT in 80000000 80000001
+	    do
 
 		echo "Import the signing key under the parent key ${PARENT} ${HALG}"
 		${PREFIX}importpem -hp ${PARENT} -pwdp sto -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
@@ -268,9 +275,10 @@ do
 		${PREFIX}flushcontext -ha 80000002 > run.out
 		checkSuccess $?
 
+	    done
 	done
     done
-done
+fi
 
 echo ""
 echo "Import PEM EC signing key under RSA and ECC storage key"
@@ -300,49 +308,53 @@ else
     exit 255
 fi
 
-for CURVE in "nistp256" "nistp384"
-do
-    
-    for SESS in "" "-se0 02000000 1"
-    do
-	for HALG in ${ITERATE_ALGS}
-	do
+if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 
-	    for PARENT in 80000000 80000001
+    for CURVE in "nistp256" "nistp384"
+    do
+
+	for SESS in "" "-se0 02000000 1"
+	do
+	    for HALG in ${ITERATE_ALGS}
 	    do
 
-		echo "Import the ${CURVE} signing key under the parent key ${PARENT} ${HALG}"
-		${PREFIX}importpem -hp ${PARENT} -pwdp sto -ipem tmpec${CURVE}privkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
-		checkSuccess $?
+		for PARENT in 80000000 80000001
+		do
 
-		echo "Load the TPM signing key"
-		${PREFIX}load -hp ${PARENT} -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
-		checkSuccess $?
+		    echo "Import the ${CURVE} signing key under the parent key ${PARENT} ${HALG}"
+		    ${PREFIX}importpem -hp ${PARENT} -pwdp sto -ipem tmpec${CURVE}privkey.pem -ecc -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
+		    checkSuccess $?
 
-		echo "Sign the message ${HALG} ${SESS}"
-		${PREFIX}sign -hk 80000002 -salg ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
-		checkSuccess $?
+		    echo "Load the TPM signing key"
+		    ${PREFIX}load -hp ${PARENT} -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+		    checkSuccess $?
 
-		echo "Verify the signature ${HALG}"
-		${PREFIX}verifysignature -hk 80000002 -ecc -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
-		checkSuccess $?
+		    echo "Sign the message ${HALG} ${SESS}"
+		    ${PREFIX}sign -hk 80000002 -salg ecc -pwdk rrrr -if policies/aaa -os tmpsig.bin -halg ${HALG} ${SESS} > run.out
+		    checkSuccess $?
 
-		echo "Flush the signing key"
-		${PREFIX}flushcontext -ha 80000002 > run.out
-		checkSuccess $?
+		    echo "Verify the signature ${HALG}"
+		    ${PREFIX}verifysignature -hk 80000002 -ecc -if policies/aaa -is tmpsig.bin -halg ${HALG} > run.out
+		    checkSuccess $?
 
+		    echo "Flush the signing key"
+		    ${PREFIX}flushcontext -ha 80000002 > run.out
+		    checkSuccess $?
+
+		done
 	    done
 	done
     done
-done
 
-echo "Flush the ECC storage key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
+    echo "Flush the ECC storage key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
 
-echo "Flush the auth session"
-${PREFIX}flushcontext -ha 02000000 > run.out
-checkSuccess $?
+    echo "Flush the auth session"
+    ${PREFIX}flushcontext -ha 02000000 > run.out
+    checkSuccess $?
+
+fi
 
 echo ""
 echo "Rewrap"

@@ -91,15 +91,16 @@ echo ""
 echo "Salt Session - Load External"
 echo ""
 
-echo "Create RSA and ECC key pairs in PEM format using openssl"
+echo "Create RSA key pair in DER format using openssl"
   
-openssl genrsa -out tmpkeypairrsa.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
-openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out 2>&1
+openssl genpkey -out tmpkeypairrsa.der -outform der -aes-256-cbc -algorithm rsa -pkeyopt rsa_keygen_bits:2048 -pass pass:rrrr > run.out 2>&1
 
+echo "Create ECC key pair in PEM format using openssl"
 echo "Convert key pair to plaintext DER format"
 
-openssl rsa -inform pem -outform der -in tmpkeypairrsa.pem -out tmpkeypairrsa.der -passin pass:rrrr > run.out 2>&1
+openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out 2>&1
 openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out 2>&1
+
 
 for HALG in ${ITERATE_ALGS}
 do

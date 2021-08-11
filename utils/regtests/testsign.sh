@@ -47,11 +47,9 @@ echo ""
 for BITS in 2048 3072
 do
 
-    echo "Create an RSA $BITS key pair in PEM format using openssl"
-    openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr 2048 > run.out 2>&1
+    echo "Create an RSA $BITS key pair in DER format using openssl"
 
-    echo "Convert RSA $BITS key pair to plaintext DER format"
-    openssl rsa -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out 2>&1
+    openssl genpkey -out tmpkeypairrsa${BITS}.der -outform der -aes-256-cbc -algorithm rsa -pkeyopt rsa_keygen_bits:${BITS} -pass pass:rrrr > run.out 2>&1
 
     echo "Load the RSA $BITS signing key under the primary key"
     ${PREFIX}load -hp 80000000 -ipr signrsa${BITS}priv.bin -ipu signrsa${BITS}pub.bin -pwdp sto > run.out

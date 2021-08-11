@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2021					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -59,12 +59,17 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
     do
 
 	echo "Generate the RSA $BITS encryption key with openssl"
-	openssl genrsa -out tmpkeypairrsa${BITS}.pem -aes256 -passout pass:rrrr ${BITS} > run.out 2>&1
+	openssl genpkey -out tmpkeypairrsa${BITS}.pem -outform pem -aes-256-cbc -algorithm rsa -pkeyopt rsa_keygen_bits:${BITS} -pass pass:rrrr > run.out 2>&1
 
 	echo "Convert key pair to plaintext DER format"
-	openssl rsa -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out 2>&1
+	openssl pkey -inform pem -in tmpkeypairrsa${BITS}.pem -outform der -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out 2>&1
 
     done
+
+
+# The following worked up to Openssl 3.0.0.  The key generation
+# remains here for when mbedtls is updated, but the tests are now
+# if'ed out
 
 elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
 
@@ -72,7 +77,7 @@ elif [ ${CRYPTOLIBRARY} == "mbedtls" ]; then
     do
 
 	echo "Generate the RSA $BITS encryption key with openssl"
-	openssl genrsa -out tmpkeypairrsaenc${BITS}.pem -aes256 -passout pass:rrrr ${BITS} > run.out 2>&1
+	openssl genrsa -out tmpkeypairrsaenc${BITS}.pem -outform pem -aes-256-cbc -algorithm rsa -pkeyopt rsa_keygen_bits:${BITS} -pass:rrrr > run.out 2>&1
 
 	echo "Convert RSA $BITS key pair to plaintext DER format"
 	openssl rsa -in tmpkeypairrsaenc${BITS}.pem -passin pass:rrrr -outform der -out tmpkeypairrsa${BITS}.der > run.out 2>&1
@@ -158,19 +163,21 @@ do
 
 done
 
-echo ""
-echo "Import PEM RSA encryption key"
-echo ""
+if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 
-echo "Start an HMAC auth session"
-${PREFIX}startauthsession -se h > run.out
-checkSuccess $?
+    echo ""
+    echo "Import PEM RSA encryption key"
+    echo ""
 
-for BITS in 2048 3072
-do
+    echo "Start an HMAC auth session"
+    ${PREFIX}startauthsession -se h > run.out
+    checkSuccess $?
 
-    for SESS in "" "-se0 02000000 1"
+    for BITS in 2048 3072
     do
+
+	for SESS in "" "-se0 02000000 1"
+	do
 
 	echo "Import the $BITS encryption key under the primary key"
 	${PREFIX}importpem -hp 80000000 -den -pwdp sto -ipem tmpkeypairrsa${BITS}.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin > run.out
@@ -201,89 +208,7 @@ do
 	${PREFIX}flushcontext -ha 80000001 > run.out
 	checkSuccess $?
 
-    done
-
-done
-
-echo "Flush the session"
-${PREFIX}flushcontext -ha 02000000 > run.out
-checkSuccess $?
-
-echo ""
-echo "Import PEM RSA encryption key userWithAuth test"
-echo ""
-
-echo "Import the RSA 2048 encryption key under the primary key 80000000"
-${PREFIX}importpem -hp 80000000 -den -pwdp sto -ipem tmpkeypairrsa2048.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin > run.out
-checkSuccess $?
-
-echo "Load the RSA 2048 encryption key 80000001"
-${PREFIX}load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
-checkSuccess $?
-
-echo "RSA encrypt with the encryption key"
-${PREFIX}rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
-checkSuccess $?
-
-echo "RSA decrypt with the decryption key and password"
-${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
-checkSuccess $?
-
-echo "Flush the encryption key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
-
-echo "Import the RSA 2048 encryption key under the primary key, userWithAuth false"
-${PREFIX}importpem -hp 80000000 -si -pwdp sto -ipem tmpkeypairrsa2048.pem -pwdk rrrr -uwa -opu tmppub.bin -opr tmppriv.bin > run.out
-checkSuccess $?
-
-echo "Load the RSA 2048 encryption key"
-${PREFIX}load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
-checkSuccess $?
-
-echo "RSA decrypt with the decryption key and password - should fail"
-${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
-checkFailure $?
-
-echo "Flush the encryption key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
-
-
-echo ""
-echo "Loadexternal DER encryption key"
-echo ""
-
-for BITS in 2048 3072
-do
-
-    echo "Start an HMAC auth session"
-    ${PREFIX}startauthsession -se h > run.out
-    checkSuccess $?
-
-    for SESS in "" "-se0 02000000 1"
-    do
-
-	echo "Load the openssl key pair in the NULL hierarchy 80000001"
-	${PREFIX}loadexternal -den -ider tmpkeypairrsa${BITS}.der -pwdk rrrr > run.out
-	checkSuccess $?
-
-	echo "RSA encrypt with the encryption key"
-	${PREFIX}rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
-	checkSuccess $?
-
-	echo "RSA decrypt with the decryption key ${SESS}"
-	${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin ${SESS} > run.out
-	checkSuccess $?
-
-	echo "Verify the decrypt result"
-	tail -c 3 dec.bin > tmp.bin
-	diff policies/aaa tmp.bin > run.out
-	checkSuccess $?
-
-	echo "Flush the encryption key"
-	${PREFIX}flushcontext -ha 80000001 > run.out
-	checkSuccess $?
+	done
 
     done
 
@@ -291,7 +216,90 @@ do
     ${PREFIX}flushcontext -ha 02000000 > run.out
     checkSuccess $?
 
-done
+    echo ""
+    echo "Import PEM RSA encryption key userWithAuth test"
+    echo ""
+
+    echo "Import the RSA 2048 encryption key under the primary key 80000000"
+    ${PREFIX}importpem -hp 80000000 -den -pwdp sto -ipem tmpkeypairrsa2048.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin > run.out
+    checkSuccess $?
+
+    echo "Load the RSA 2048 encryption key 80000001"
+    ${PREFIX}load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+    checkSuccess $?
+
+    echo "RSA encrypt with the encryption key"
+    ${PREFIX}rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+    checkSuccess $?
+
+    echo "RSA decrypt with the decryption key and password"
+    ${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the encryption key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "Import the RSA 2048 encryption key under the primary key, userWithAuth false"
+    ${PREFIX}importpem -hp 80000000 -si -pwdp sto -ipem tmpkeypairrsa2048.pem -pwdk rrrr -uwa -opu tmppub.bin -opr tmppriv.bin > run.out
+    checkSuccess $?
+
+    echo "Load the RSA 2048 encryption key"
+    ${PREFIX}load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+    checkSuccess $?
+
+    echo "RSA decrypt with the decryption key and password - should fail"
+    ${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
+    checkFailure $?
+
+    echo "Flush the encryption key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo ""
+    echo "Loadexternal DER encryption key"
+    echo ""
+
+    for BITS in 2048 3072
+    do
+
+	echo "Start an HMAC auth session"
+	${PREFIX}startauthsession -se h > run.out
+	checkSuccess $?
+
+	for SESS in "" "-se0 02000000 1"
+	do
+
+	    echo "Load the openssl key pair in the NULL hierarchy 80000001"
+	    ${PREFIX}loadexternal -den -ider tmpkeypairrsa${BITS}.der -pwdk rrrr > run.out
+	    checkSuccess $?
+
+	    echo "RSA encrypt with the encryption key"
+	    ${PREFIX}rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+	    checkSuccess $?
+
+	    echo "RSA decrypt with the decryption key ${SESS}"
+	    ${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin ${SESS} > run.out
+	    checkSuccess $?
+
+	    echo "Verify the decrypt result"
+	    tail -c 3 dec.bin > tmp.bin
+	    diff policies/aaa tmp.bin > run.out
+	    checkSuccess $?
+
+	    echo "Flush the encryption key"
+	    ${PREFIX}flushcontext -ha 80000001 > run.out
+	    checkSuccess $?
+
+    done
+
+	echo "Flush the session"
+	${PREFIX}flushcontext -ha 02000000 > run.out
+	checkSuccess $?
+
+    done
+
+fi
 
 echo ""
 echo "Encrypt with OpenSSL OAEP, decrypt with TPM"
