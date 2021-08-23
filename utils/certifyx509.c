@@ -204,6 +204,7 @@ int main(int argc, char *argv[])
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
 
+    curveID = curveID;		/* no longer used, get from parent */
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-ho") == 0) {
@@ -686,8 +687,6 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *partialCertificate,	/* input /
     X509_NAME 	*x509SubjectName = NULL;/* composite subject name, key/value pairs */
     size_t	issuerEntriesSize = sizeof(issuerEntries)/sizeof(char *);
     size_t	subjectEntriesSize = sizeof(subjectEntries)/sizeof(char *);
-    ASN1_TIME 	*notBefore = NULL;
-    ASN1_TIME 	*notAfter = NULL;
     uint8_t 	*tmpPartialDer = NULL;	/* for the i2d */
 
     /* add issuer */
@@ -717,8 +716,6 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *partialCertificate,	/* input /
 	}
     }
     if (rc == 0) {
-	/* can't fail, just returns a structure member */
-	notBefore = X509_get_notBefore(x509Certificate);
 	irc = X509_set1_notBefore(x509Certificate, partialCertificate->validity->notBefore);
 	if (irc == 0) {
 	    printf("createPartialCertificate: Error setting notBefore time\n");
@@ -737,7 +734,6 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *partialCertificate,	/* input /
 	}
     }
     if (rc == 0) {
-	notAfter = X509_get_notAfter(x509Certificate);
 	irc = X509_set1_notAfter(x509Certificate,partialCertificate->validity->notAfter);
 	if (irc == 0) {
 	    printf("createPartialCertificate: Error setting notAfter time\n");
