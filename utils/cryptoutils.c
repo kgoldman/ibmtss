@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018 - 2020.					*/
+/* (c) Copyright IBM Corporation 2018 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -158,6 +158,36 @@ void RSA_get0_factors(const RSA *rsaKey,
 	*q = rsaKey->q;
     }
     return;
+}
+
+static int ossl_x509_set1_time(ASN1_TIME **ptm, const ASN1_TIME *tm);
+
+int X509_set1_notBefore(X509 *x, const ASN1_TIME *tm)
+{
+    if (x == NULL)
+        return 0;
+    return ossl_x509_set1_time(&x->cert_info->validity->notBefore, tm);
+}
+
+int X509_set1_notAfter(X509 *x, const ASN1_TIME *tm)
+{
+    if (x == NULL)
+        return 0;
+    return ossl_x509_set1_time(&x->cert_info->validity->notAfter, tm);
+}
+
+static int ossl_x509_set1_time(ASN1_TIME **ptm, const ASN1_TIME *tm)
+{
+    ASN1_TIME *in;
+    in = *ptm;
+    if (in != tm) {
+        in = ASN1_STRING_dup(tm);
+        if (in != NULL) {
+            ASN1_TIME_free(*ptm);
+            *ptm = in;
+        }
+    }
+    return (in != NULL);
 }
 
 #endif	/* pre openssl 1.1 */

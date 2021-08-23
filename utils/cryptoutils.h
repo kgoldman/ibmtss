@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017 - 2019.					*/
+/* (c) Copyright IBM Corporation 2017 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -225,6 +225,9 @@ extern "C" {
     void RSA_get0_factors(const RSA *rsaKey,
 			  const BIGNUM **p,
 			  const BIGNUM **q);
+    int X509_set1_notBefore(X509 *x, const ASN1_TIME *tm);
+    int X509_set1_notAfter(X509 *x, const ASN1_TIME *tm);
+    EVP_PKEY *X509_PUBKEY_get0(X509_PUBKEY *key);
 #endif	/* pre openssl 1.1 */
 
 #if OPENSSL_VERSION_NUMBER < 0x10002000

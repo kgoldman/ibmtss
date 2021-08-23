@@ -73,8 +73,6 @@ do
     checkSuccess $?
 
 
-    # dumpasn1 -a -l -d     tmpx509i.bin > tmpx509i1.dump
-    # dumpasn1 -a -l -d -hh tmpx509i.bin > tmpx509i1.dumphh
     # dumpasn1 -a -l -d     tmppart1.bin > tmppart1.dump
     # dumpasn1 -a -l -d -hh tmppart1.bin > tmppart1.dumphh
     # dumpasn1 -a -l -d     tmpadd1.bin  > tmpadd1.dump
@@ -88,7 +86,7 @@ do
     echo " INFO:"
 
     echo "Verify ${SALG[i]} self signed issuer root" 
-    openssl verify -CAfile tmpx5091.pem tmpx5091.pem > run.out 2>&1
+    openssl verify -check_ss_sig -CAfile tmpx5091.pem tmpx5091.pem > run.out 2>&1
     grep -q OK run.out
     checkSuccess $?
 
@@ -96,8 +94,6 @@ do
     ${PREFIX}certifyx509 -hk 80000001 -ho 80000002 -halg ${HALG[i]} -pwdk sig -pwdo sig -opc tmppart2.bin -os tmpsig2.bin -oa tmpadd2.bin -otbs tmptbs2.bin -ocert tmpx5092.bin ${SALG[i]} -iob 00040472 > run.out
     checkSuccess $?
 
-    # dumpasn1 -a -l -d     tmpx509i.bin > tmpx509i2.dump
-    # dumpasn1 -a -l -d -hh tmpx509i.bin > tmpx509i2.dumphh
     # dumpasn1 -a -l -d     tmppart2.bin > tmppart2.dump
     # dumpasn1 -a -l -d -hh tmppart2.bin > tmppart2.dumphhe 
     # dumpasn1 -a -l -d     tmpadd2.bin  > tmpadd2.dump
@@ -111,7 +107,7 @@ do
     echo " INFO:"
 
     echo "Verify ${SALG[i]} subject against issuer" 
-    openssl verify -CAfile tmpx5091.pem tmpx5092.pem > run.out 2>&1
+    openssl verify -check_ss_sig -CAfile tmpx5091.pem tmpx5092.pem > run.out 2>&1
     grep -q OK run.out
     checkSuccess $?
 
@@ -333,7 +329,6 @@ rm -r tmpsig1.bin
 rm -r tmpx5091.bin
 rm -r tmpx5091.pem
 rm -r tmpx5092.pem
-rm -r tmpx509i.bin
 rm -r tmppart2.bin
 rm -r tmpadd2.bin
 rm -r tmptbs2.bin
