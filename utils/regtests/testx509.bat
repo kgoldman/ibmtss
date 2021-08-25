@@ -80,8 +80,6 @@ for /L %%i in (1,1,!L!) do (
 	exit /B 1
     )
 
-    rem # dumpasn1 -a -l -d     tmpx509i.bin > tmpx509i1.dump
-    rem # dumpasn1 -a -l -d -hh tmpx509i.bin > tmpx509i1.dumphh
     rem # dumpasn1 -a -l -d     tmppart1.bin > tmppart1.dump
     rem # dumpasn1 -a -l -d -hh tmppart1.bin > tmppart1.dumphh
     rem # dumpasn1 -a -l -d     tmpadd1.bin  > tmpadd1.dump
@@ -102,8 +100,6 @@ for /L %%i in (1,1,!L!) do (
 	exit /B 1
     )
 
-rem     # dumpasn1 -a -l -d     tmpx509i.bin > tmpx509i2.dump
-rem     # dumpasn1 -a -l -d -hh tmpx509i.bin > tmpx509i2.dumphh
 rem     # dumpasn1 -a -l -d     tmppart2.bin > tmppart2.dump
 rem     # dumpasn1 -a -l -d -hh tmppart2.bin > tmppart2.dumphhe 
 rem     # dumpasn1 -a -l -d     tmpadd2.bin  > tmpadd2.dump
@@ -446,7 +442,6 @@ rm tmpsig1.bin
 rm tmpx5091.bin
 rm tmpx5091.pem
 rm tmpx5092.pem
-rm tmpx509i.bin
 rm tmppart2.bin
 rm tmpadd2.bin
 rm tmptbs2.bin

@@ -94,7 +94,7 @@ typedef struct {
 ASN1_SEQUENCE(TPM_PARTIAL_CERT_VALIDITY) = {
     ASN1_SIMPLE(TPM_PARTIAL_CERT_VALIDITY, notBefore, ASN1_TIME),
     ASN1_SIMPLE(TPM_PARTIAL_CERT_VALIDITY, notAfter, ASN1_TIME),
-} ASN1_SEQUENCE_END(TPM_PARTIAL_CERT_VALIDITY)
+} static_ASN1_SEQUENCE_END(TPM_PARTIAL_CERT_VALIDITY)
 
 /* the signature algorithm is optional while the extension list is mandatory */
 ASN1_SEQUENCE(TPM_PARTIAL_CERT) = {
@@ -103,7 +103,7 @@ ASN1_SEQUENCE(TPM_PARTIAL_CERT) = {
     ASN1_SIMPLE(TPM_PARTIAL_CERT, validity, TPM_PARTIAL_CERT_VALIDITY),
     ASN1_SIMPLE(TPM_PARTIAL_CERT, subject, X509_NAME),
     ASN1_EXP_SEQUENCE_OF(TPM_PARTIAL_CERT, extensions, X509_EXTENSION, 3),
-} ASN1_SEQUENCE_END(TPM_PARTIAL_CERT)
+} static_ASN1_SEQUENCE_END(TPM_PARTIAL_CERT)
 
 DECLARE_ASN1_FUNCTIONS(TPM_PARTIAL_CERT)
 IMPLEMENT_ASN1_FUNCTIONS(TPM_PARTIAL_CERT)
@@ -122,7 +122,7 @@ ASN1_SEQUENCE(TPM_ADDTOCERT) = {
     ASN1_SIMPLE(TPM_ADDTOCERT, serialNumber, ASN1_INTEGER),
     ASN1_SIMPLE(TPM_ADDTOCERT, signatureAlgorithm, X509_ALGOR),
     ASN1_SIMPLE(TPM_ADDTOCERT, key, X509_PUBKEY),
-} ASN1_SEQUENCE_END(TPM_ADDTOCERT)
+} static_ASN1_SEQUENCE_END(TPM_ADDTOCERT)
 
 DECLARE_ASN1_FUNCTIONS(TPM_ADDTOCERT)
 IMPLEMENT_ASN1_FUNCTIONS(TPM_ADDTOCERT)
@@ -629,7 +629,7 @@ int main(int argc, char *argv[])
 	X509_free(x509Certificate);			/* @1 */
     }
     free(x509Der);					/* @2 */
-    free(addToCert);					/* @3 */
+    OPENSSL_free(addToCert);				/* @3 */
     return rc;
 }
 
@@ -808,7 +808,7 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *partialCertificate,	/* input /
 #endif
     X509_NAME_free(x509IssuerName);	/* @1 */
     X509_NAME_free(x509SubjectName);	/* @2 */
-    free(tmpPartialDer);		/* @3 */
+    OPENSSL_free(tmpPartialDer);	/* @3 */
     return rc;
 }
 
