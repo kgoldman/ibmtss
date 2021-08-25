@@ -125,7 +125,7 @@ for /L %%i in (1,1,!L!) do (
     )
 
     echo "Create an ECC !CURVE[%%i]! !SHALG[%%i]! not fixedTPM signing key under the primary key"
-%TPM_EXE_PATH%create -hp 80000000 -ecc !CURVE[%%i]! -halg !SHALG[%%i]! -sir -opr signecc%%Cnfpriv.bin -opu signecc%%Cnfpub.bin -opem signecc%%Cnfpub.pem -pwdp sto -pwdk sig > run.out
+%TPM_EXE_PATH%create -hp 80000000 -ecc !CURVE[%%i]! -halg !SHALG[%%i]! -sir -opr signecc!CURVE[%%i]!nfpriv.bin -opu signeccc!CURVE[%%i]!nfpub.bin -opem signeccc!CURVE[%%i]!nfpub.pem -pwdp sto -pwdk sig > run.out
     IF !ERRORLEVEL! NEQ 0 (
       exit /B 1
     )
