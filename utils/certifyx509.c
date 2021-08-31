@@ -159,7 +159,7 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *certificate,
 TPM_RC reformCertificate(X509 			*x509Certificate,
 			 TPMI_ALG_HASH		halg,
 			 TPMI_ALG_SIG_SCHEME   	scheme,
-			 TPM_ADDTOCERT		*addToCert,
+			 const TPM_ADDTOCERT	*addToCert,
 			 TPMT_SIGNATURE 	*tSignature);
 TPM_RC addSignatureRsa(X509 		*x509Certificate,
 		       TPMI_ALG_HASH	halg,
@@ -630,7 +630,7 @@ int main(int argc, char *argv[])
     if (rc == 0) {
 	if (verbose) X509_print_fp(stdout, x509Certificate);	/* for debug */
 	rc = convertX509ToDer(&x509DerLength,
-			      &x509Der,				/* freed @2 */
+			      &x509Der,				/* freed @4 */
 			      x509Certificate);
     }
     if ((rc == 0) && (outCertificateFilename != NULL)) {
@@ -640,8 +640,13 @@ int main(int argc, char *argv[])
     if (x509Certificate != NULL) {
 	X509_free(x509Certificate);			/* @1 */
     }
-    free(x509Der);					/* @2 */
-    OPENSSL_free(addToCert);				/* @3 */
+    if (partialCertificate != NULL) {
+	TPM_PARTIAL_CERT_free(partialCertificate);	/* @2 */
+    }
+    if (addToCert != NULL) {
+	TPM_ADDTOCERT_free(addToCert);			/* @3 */
+    }
+    free(x509Der);					/* @4 */
     return rc;
 }
 
@@ -695,8 +700,6 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *partialCertificate,	/* input /
     int		irc;
     ASN1_TIME	*arc;			/* return code */
 
-    X509_NAME 	*x509IssuerName = NULL;	/* composite issuer name, key/value pairs */
-    X509_NAME 	*x509SubjectName = NULL;/* composite subject name, key/value pairs */
     size_t	issuerEntriesSize = sizeof(issuerEntries)/sizeof(char *);
     size_t	subjectEntriesSize = sizeof(subjectEntries)/sizeof(char *);
     uint8_t 	*tmpPartialDer = NULL;	/* for the i2d */
@@ -705,6 +708,9 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *partialCertificate,	/* input /
     if (rc == 0) {
 	if (verbose) printf("createPartialCertificate: Adding issuer, size %lu\n",
 			    (unsigned long)issuerEntriesSize);
+	/* _new allocates the member.  free it because createX509Name() allocates a new structure */
+	X509_NAME_free(partialCertificate->issuer);
+	partialCertificate->issuer = NULL;
 	rc = createX509Name(&partialCertificate->issuer,	/* freed @1 */
 			    issuerEntriesSize,
 			    issuerEntries);
@@ -758,6 +764,8 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *partialCertificate,	/* input /
 	if (!subeqiss) {
 	    if (verbose) printf("createPartialCertificate: Adding subject, size %lu\n",
 				(unsigned long)subjectEntriesSize);
+	    X509_NAME_free(partialCertificate->subject);
+	    partialCertificate->subject = NULL;
 	    rc = createX509Name(&partialCertificate->subject,	/* freed @2 */
 				subjectEntriesSize,
 				subjectEntries);
@@ -766,6 +774,8 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *partialCertificate,	/* input /
 	else {
 	    if (verbose) printf("createPartialCertificate: Adding subject (issuer), size %lu\n",
 				(unsigned long)issuerEntriesSize);
+	    X509_NAME_free(partialCertificate->subject);
+	    partialCertificate->subject = NULL;
 	    rc = createX509Name(&partialCertificate->subject,	/* freed @2 */
 				issuerEntriesSize,
 				issuerEntries);
@@ -818,8 +828,6 @@ TPM_RC createPartialCertificate(TPM_PARTIAL_CERT *partialCertificate,	/* input /
 	if (verbose) X509_print_fp(stdout, x509Certificate);
     }
 #endif
-    X509_NAME_free(x509IssuerName);	/* @1 */
-    X509_NAME_free(x509SubjectName);	/* @2 */
     OPENSSL_free(tmpPartialDer);	/* @3 */
     return rc;
 }
@@ -968,7 +976,7 @@ TPM_RC addPartialCertExtensionTpmaOid(TPM_PARTIAL_CERT  *partialCertificate,
 TPM_RC reformCertificate(X509 			*x509Certificate,
 			 TPMI_ALG_HASH		halg,
 			 TPMI_ALG_SIG_SCHEME   	scheme,
-			 TPM_ADDTOCERT		*addToCert,
+			 const TPM_ADDTOCERT	*addToCert,
 			 TPMT_SIGNATURE 	*tSignature)
 {
     TPM_RC 		rc = 0;
