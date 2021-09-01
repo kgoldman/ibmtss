@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -239,7 +239,8 @@ int main(int argc, char *argv[])
     }	
     /* Table 50 - TPMI_RH_HIERARCHY authHandle */
     if (rc == 0) {
-	in.newTime += (addSec * 1000);	/* new clock is in msec */
+	/* cast avoids overflow in multiplication */
+	in.newTime += ((uint64_t)addSec * 1000);	/* new clock is in msec */
 	if (tssUtilsVerbose) printf("clockset: New clock %"PRIu64"\n", in.newTime);
 	if (hierarchyChar == 'o') {
 	    authHandle = TPM_RH_OWNER;

@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -309,17 +309,18 @@ int main(int argc, char *argv[])
 	rc = TSS_TPM2B_MAX_BUFFER_Marshalu(&out.outData, &written, NULL, NULL);
     }
     if ((rc == 0) && (outFilename != NULL)) {
-	buffer = realloc(buffer, written);	/* freed @2 */
+	buffer = malloc(written);	/* freed @2 */
 	buffer1 = buffer;
 	written = 0;
 	rc = TSS_TPM2B_MAX_BUFFER_Marshalu(&out.outData, &written, &buffer1, NULL);
-    }    
+    }
     if ((rc == 0) && (outFilename != NULL)) {
 	rc = TSS_File_WriteBinaryFile(buffer + sizeof(uint16_t),
 				      written - sizeof(uint16_t),
 				      outFilename);
-    }    
+    }
     free(buffer);	/* @2 */
+    buffer = NULL;
     if (rc == 0) {
 	if (tssUtilsVerbose) printDecrypt(&out);
 	if (tssUtilsVerbose) printf("encryptdecrypt: success\n");
