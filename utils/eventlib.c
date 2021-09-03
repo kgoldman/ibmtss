@@ -1346,12 +1346,12 @@ static uint32_t Uint32_Convert(uint32_t in)
 {
     uint32_t out = 0;
     unsigned char *inb = (unsigned char *)&in;
-    
+
     /* little endian input */
-    out = (inb[0] <<  0) |
-	  (inb[1] <<  8) |
-	  (inb[2] << 16) |
-	  (inb[3] << 24);
+    out = ((((uint32_t)inb[0]) <<  0) |
+	   (((uint32_t)inb[1]) <<  8) |
+	   (((uint32_t)inb[2]) << 16) |
+	   (((uint32_t)inb[3]) << 24));
     return out;
 }
 #endif /* TPM_TSS_NOFILE */

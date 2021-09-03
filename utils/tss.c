@@ -179,8 +179,10 @@ TPM_RC TSS_Delete(TSS_CONTEXT *tssContext)
 	    for (i = 0 ; i < (sizeof(tssContext->sessions) / sizeof(TSS_SESSIONS)) ; i++) {
 		tssContext->sessions[i].sessionHandle = TPM_RH_NULL;
 		/* erase any secrets */
-		memset(tssContext->sessions[i].sessionData,
-		       0, tssContext->sessions[i].sessionDataLength);
+		if (tssContext->sessions[i].sessionData != NULL) {
+		    memset(tssContext->sessions[i].sessionData,
+			   0, tssContext->sessions[i].sessionDataLength);
+		}
 		free(tssContext->sessions[i].sessionData);
 		tssContext->sessions[i].sessionData = NULL;
 		tssContext->sessions[i].sessionDataLength = 0;

@@ -419,16 +419,19 @@ static void TSS_EFI_GetNameIndex(size_t *index,
 				 const uint8_t *name,
 				 uint64_t nameLength)	/* half the total bytes in array */
 {
-    int m1,m2;
+    int m1 = 0;
+    int m2 = 0;
     for (*index = 0 ;
 	 *index < sizeof(tagTable) / sizeof(TAG_TABLE)  ;
 	 (*index)++) {
 
 	/* length match */
 	m1 = (nameLength * 2) == tagTable[*index].nameLength;
-	/* string match */
-	m2 = memcmp(name, tagTable[*index].name, (size_t)(nameLength * 2)) == 0;
-	if (m1 & m2) {
+	if (m1) {
+	    /* string match */
+	    m2 = memcmp(name, tagTable[*index].name, (size_t)(nameLength * 2)) == 0;
+	}
+	if (m1 && m2) {
 	    return;
 	}
     }
