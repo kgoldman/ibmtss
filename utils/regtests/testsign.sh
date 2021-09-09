@@ -185,7 +185,7 @@ checkSuccess $?
 
 for HALG in ${ITERATE_ALGS}
 do
-    
+
     echo "Sign a digest - $HALG"
     ${PREFIX}sign -hk 80000001 -halg $HALG -if policies/aaa -os sig.bin -pwdk sig -ipu tmppub.bin > run.out
     checkSuccess $?
@@ -213,6 +213,18 @@ do
     echo "Verify the signature using createprimary converted PEM - $HALG"
     ${PREFIX}verifysignature -ipem tmppub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
     checkSuccess $?
+
+    echo "Verify with OpenSSL command line"
+    tail -c 256 sig.bin > sig256.bin
+    openssl dgst -$HALG -verify tmppub.pem -signature sig256.bin policies/aaa > run.out 2>&1
+    verified="Verified OK"
+    if [ "$verified" == "$(cat run.out)" ] ;then
+	echo " INFO:"
+    else 
+	echo " ERROR:"
+	cat run.out
+	exit 255
+    fi
 
 done
 
@@ -415,6 +427,7 @@ rm -f tmpkeypaireccnistp256.der
 rm -f tmpkeypaireccnistp384.pem
 rm -f tmpkeypaireccnistp384.der
 rm -r pssig.bin
+rm -r sig256.bin
 rm -r tmppub.bin
 rm -r tmppub.pem
 
