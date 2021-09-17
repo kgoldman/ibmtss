@@ -96,8 +96,6 @@ do
     done
 done
 
-exit 0
-
 echo ""
 echo "CreateLoaded Child Key, Primary Parent"
 echo ""
