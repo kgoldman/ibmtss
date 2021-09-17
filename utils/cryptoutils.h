@@ -248,9 +248,10 @@ extern "C" {
     
     TPM_RC convertEvpPkeyToRsakey(RSA **rsaKey,
 				  EVP_PKEY *evpPkey);
-    TPM_RC convertRsaKeyToPrivateKeyBin(int 	*privateKeyBytes,
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    TPM_RC convertRsaKeyToPrivateKeyBin(int 		*privateKeyBytes,
 					uint8_t 	**privateKeyBin,
-					const RSA	 *rsaKey);
+					const RSA	*rsaKey);
     TPM_RC convertRsaKeyToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 				  TPM2B_SENSITIVE 	*objectSensitive,
 				  RSA 			*rsaKey,
@@ -260,7 +261,22 @@ extern "C" {
 			  const BIGNUM **d,
 			  const BIGNUM **p,
 			  const BIGNUM **q,
-			  const RSA *rsaKey);
+			  const RSA	*rsaKey);
+#else
+    TPM_RC convertRsaKeyToPrivateKeyBin(int 		*privateKeyBytes,
+					uint8_t 	**privateKeyBin,
+					const EVP_PKEY *rsaKey);
+    TPM_RC convertRsaKeyToPrivate(TPM2B_PRIVATE 	*objectPrivate,
+				  TPM2B_SENSITIVE 	*objectSensitive,
+				  EVP_PKEY 		*rsaKey,
+				  const char 		*password);
+    TPM_RC getRsaKeyParts(const BIGNUM **n,
+			  const BIGNUM **e,
+			  const BIGNUM **d,
+			  const BIGNUM **p,
+			  const BIGNUM **q,
+			  const EVP_PKEY *rsaKey);
+#endif
     int getRsaPubkeyAlgorithm(EVP_PKEY *pkey);
     TPM_RC convertRsaPublicToEvpPubKey(EVP_PKEY **evpPubkey,
 				       const TPM2B_PUBLIC_KEY_RSA *tpm2bRsa);

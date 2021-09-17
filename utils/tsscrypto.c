@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -37,7 +37,7 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
-/* Interface to OpenSSL version 1.0 or 1.1 crypto library */
+/* Interface to OpenSSL version 1.0.2, 1.1.1, 3.0.0 crypto library */
 
 #include <string.h>
 #include <stdio.h>
@@ -59,6 +59,10 @@
 #include <openssl/rand.h>
 #include <openssl/engine.h>
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000
+#include <openssl/param_build.h>
+#endif
+
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssprint.h>
@@ -66,6 +70,9 @@
 
 #include <ibmtss/tsscryptoh.h>
 #include <ibmtss/tsscrypto.h>
+
+TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
+		      TPMI_ALG_HASH hashAlg);
 
 extern int tssVverbose;
 extern int tssVerbose;
@@ -80,8 +87,6 @@ extern int tssVerbose;
 /* local prototypes */
 
 static TPM_RC TSS_Hash_GetOsslString(const char **str, TPMI_ALG_HASH hashAlg);
-static TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
-			     TPMI_ALG_HASH hashAlg);
 
 #ifndef TPM_TSS_NOECC
 
@@ -164,8 +169,8 @@ static TPM_RC TSS_Hash_GetOsslString(const char **str, TPMI_ALG_HASH hashAlg)
     return rc;
 }
 
-static TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
-			     TPMI_ALG_HASH hashAlg)
+TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
+		      TPMI_ALG_HASH hashAlg)
 {
     TPM_RC		rc = 0;
     const char 		*str = NULL; 
@@ -220,14 +225,14 @@ TPM_RC TSS_HMAC_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
     }
 #else
     if (rc == 0) {
-	mac = EVP_MAC_fetch(NULL, "hmac", NULL);
+	mac = EVP_MAC_fetch(NULL, "hmac", NULL);	/* freed @2 */
 	if (mac == NULL) {
 	    if (tssVerbose) printf("TSS_Hash_Generate_valist: EVP_MAC_new failed\n");
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
     if (rc == 0) {
-	ctx = EVP_MAC_CTX_new(mac);
+	ctx = EVP_MAC_CTX_new(mac);			/* freed @1 */
 	if (ctx == NULL) {
 	    if (tssVerbose) printf("TSS_Hash_Generate_valist: EVP_MAC_CTX_new failed\n");
 	    rc = TSS_RC_OUT_OF_MEMORY;
@@ -298,7 +303,6 @@ TPM_RC TSS_HMAC_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
 	    done = TRUE;
 	}
     }
-
     if (rc == 0) {
 #if OPENSSL_VERSION_NUMBER < 0x10100000
 	irc = HMAC_Final(&ctx, (uint8_t *)&digest->digest, NULL);
@@ -317,9 +321,9 @@ TPM_RC TSS_HMAC_Generate_valist(TPMT_HA *digest,		/* largest size of a digest */
 #elif OPENSSL_VERSION_NUMBER < 0x30000000
     HMAC_CTX_free(ctx);
 #else
-    EVP_MAC_CTX_free(ctx);
-    EVP_MAC_free(mac);
- #endif
+    EVP_MAC_CTX_free(ctx);		/* @1 */
+    EVP_MAC_free(mac);			/* @2 */
+#endif
     return rc;
 }
 
@@ -407,7 +411,8 @@ TPM_RC TSS_RandBytes(unsigned char *buffer, uint32_t size)
 
    This abstracts the crypto library specific allocation.
 
-   For Openssl, rsaKey is an RSA structure.
+   For Openssl < 3, rsaKey is an RSA structure.
+   For Openssl 3, rsaKey is an EVP_PKEY,
 */
 
 TPM_RC TSS_RsaNew(void **rsaKey)
@@ -424,6 +429,7 @@ TPM_RC TSS_RsaNew(void **rsaKey)
 	}
     }
     /* construct the OpenSSL private key object */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     if (rc == 0) {
         *rsaKey = RSA_new();                        	/* freed by caller */
         if (*rsaKey == NULL) {
@@ -431,20 +437,36 @@ TPM_RC TSS_RsaNew(void **rsaKey)
             rc = TSS_RC_RSA_KEY_CONVERT;
         }
     }
+#else
+    if (rc == 0) {
+	*rsaKey = EVP_PKEY_new();
+        if (*rsaKey == NULL) {
+            if (tssVerbose) printf("TSS_RsaNew: Error in EVP_PKEY_new()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+        }
+    }
+    if (rc == 0) {
+    }
+#endif
     return rc;
 }
 
 /* TSS_RsaFree() frees an openssl RSA key token.
 
    This abstracts the crypto library specific free.
-   
-   For Openssl, rsaKey is an RSA structure.
+
+   For Openssl < 3, rsaKey is an RSA structure.
+   For Openssl 3, rsaKey is an EVP_PKEY,
 */
 
 void TSS_RsaFree(void *rsaKey)
 {
     if (rsaKey != NULL) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
         RSA_free(rsaKey); 
+#else
+	EVP_PKEY_free(rsaKey);
+#endif
     }
     return;
 }
@@ -473,42 +495,122 @@ TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
 /* TSS_RSAGeneratePublicTokenI() generates an RSA key token from n and e
 
    Free rsa_pub_key using TSS_RsaFree();
+
+   For Openssl < 3, rsaKey is an RSA structure.
+   For Openssl 3, rsaKey is an EVP_PKEY.
  */
 
 TPM_RC TSS_RSAGeneratePublicTokenI(void **rsa_pub_key,		/* freed by caller */
-				   const unsigned char *narr,    /* public modulus */
+				   const unsigned char *narr,   /* public modulus */
 				   uint32_t nbytes,
-				   const unsigned char *earr,    /* public exponent */
+				   const unsigned char *earr,   /* public exponent */
 				   uint32_t ebytes)
 {
     TPM_RC  	rc = 0;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000
+    int 	irc;
+#endif
     BIGNUM *    n = NULL;
     BIGNUM *    e = NULL;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     RSA **	rsaPubKey = (RSA **)rsa_pub_key;	/* openssl specific structure */
+#else
+    EVP_PKEY_CTX 	*ctx = NULL;
+    OSSL_PARAM_BLD 	*param_bld = NULL;
+    OSSL_PARAM 		*params = NULL; 
+#endif
 
     /* construct the OpenSSL private key object */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     if (rc == 0) {
-	rc = TSS_RsaNew(rsa_pub_key);
+	rc = TSS_RsaNew(rsa_pub_key);		/* freed by caller */
     }
+#endif
     if (rc == 0) {
-        rc = TSS_bin2bn(&n, narr, nbytes);	/* freed by caller */
-    }
+        rc = TSS_bin2bn(&n, narr, nbytes);	/* freed by caller, < 3.0.0 */
+    }						/* freed @4, 3.0.0 */
     if (rc == 0) {
-        rc = TSS_bin2bn(&e, earr, ebytes);	/* freed by caller */
-    }
-    if (rc == 0) {
+        rc = TSS_bin2bn(&e, earr, ebytes);	/* freed by caller, < 3.0.0  */
+    }						/* freed @5, 3.0.0 */
 #if OPENSSL_VERSION_NUMBER < 0x10100000
+    if (rc == 0) {
         (*rsaPubKey)->n = n;
         (*rsaPubKey)->e = e;
         (*rsaPubKey)->d = NULL;
-#else
-	int irc = RSA_set0_key(*rsaPubKey, n, e, NULL);
+    }
+#elif OPENSSL_VERSION_NUMBER < 0x30000000
+    if (rc == 0) {
+	irc = RSA_set0_key(*rsaPubKey, n, e, NULL);
 	if (irc != 1) {
             if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: Error in RSA_set0_key()\n");
             rc = TSS_RC_RSA_KEY_CONVERT;
 	}
-#endif
     }
+#else
+    if (rc == 0) {
+	param_bld = OSSL_PARAM_BLD_new();		/* freed @2 */
+	if (param_bld == NULL) {
+            if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: Error in OSSL_PARAM_BLD_new()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	irc = OSSL_PARAM_BLD_push_BN(param_bld, "n", n);
+	if (irc != 1) {
+            if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: "
+				   "Error in OSSL_PARAM_BLD_push_BN()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	irc = OSSL_PARAM_BLD_push_BN(param_bld, "e", e);
+	if (irc != 1) {
+	    if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: "
+				   "Error in OSSL_PARAM_BLD_push_BN()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	params = OSSL_PARAM_BLD_to_param(param_bld);	/* freed @3 */
+	if (params == NULL) {
+	    if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: "
+				   "Error in OSSL_PARAM_BLD_to_param()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	ctx = EVP_PKEY_CTX_new_from_name(NULL, "RSA", NULL);		/* freed @1 */
+	if (ctx == NULL) {
+	    if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: "
+				   "Error in EVP_PKEY_CTX_new_from_name()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_fromdata_init(ctx);
+	if (irc != 1) {
+	    if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: "
+				   "Error in EVP_PKEY_fromdata_init()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_fromdata(ctx, (EVP_PKEY **)rsa_pub_key,		/* freed by caller */
+				EVP_PKEY_PUBLIC_KEY, params);
+	if (irc != 1) {
+	    if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: "
+				   "Error in OSSL_PARAM_BLD_push_BN()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    OSSL_PARAM_free(params);		/* @3 */
+    OSSL_PARAM_BLD_free(param_bld);	/* @2 */
+    EVP_PKEY_CTX_free(ctx);		/* @1 */
+    /* for openssl < 3.0.0, n and e are part of the RSA structure, freed with it.  For 3.0.0 and up,
+       they're copied to the EVP_PKEY, so the parts are freed here. */
+    BN_free(n);				/* @4 */
+    BN_free(e);				/* @5 */
+#endif
     return rc;
 }
 
@@ -530,7 +632,12 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
 {
     TPM_RC  	rc = 0;
     int         irc;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     RSA         *rsa_pub_key = NULL;
+#else
+    EVP_PKEY 	*rsa_pub_key = NULL;
+    EVP_PKEY_CTX 	*ctx = NULL;
+#endif
     unsigned char *padded_data = NULL;
  
     if (tssVverbose) printf(" TSS_RSAPublicEncrypt: Input data size %lu\n",
@@ -541,12 +648,16 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
     }
     /* construct the OpenSSL public key object */
     if (rc == 0) {
-	rc = TSS_RSAGeneratePublicTokenI((void **)&rsa_pub_key,	/* freed @1 */
+	/* For Openssl < 3, rsaKey is an RSA structure. */
+	/* For Openssl 3, rsaKey is an EVP_PKEY, */
+	rc = TSS_RSAGeneratePublicTokenI((void **)&rsa_pub_key,	/* freed @3 */
 					 narr,      	/* public modulus */
 					 nbytes,
 					 earr,      	/* public exponent */
 					 ebytes);
     }
+    /* Must pad first and then encrypt because the encrypt call cannot specify an encoding
+       parameter */
     if (rc == 0) {
 	padded_data[0] = 0x00;
 	rc = TSS_RSA_padding_add_PKCS1_OAEP(padded_data,		    /* to */
@@ -563,25 +674,61 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
 		   (unsigned long)encrypt_data_size);
         if (tssVverbose) TSS_PrintAll("  TPM_RSAPublicEncrypt: Padded data", padded_data,
 				      (uint32_t)encrypt_data_size);
-        /* encrypt with public key.  Must pad first and then encrypt because the encrypt
-           call cannot specify an encoding parameter */
+    }
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    if (rc == 0) {
+	/* encrypt with public key. */
 	/* returns the size of the encrypted data.  On error, -1 is returned */
 	irc = RSA_public_encrypt((int)encrypt_data_size,         /* from length */
 				 padded_data,               /* from - the clear text data */
 				 encrypt_data,              /* the padded and encrypted data */
-				 rsa_pub_key,               /* key */
+				 rsa_pub_key,               /* RSA key structure */
 				 RSA_NO_PADDING);           /* padding */
 	if (irc < 0) {
 	    if (tssVerbose) printf("TSS_RSAPublicEncrypt: Error in RSA_public_encrypt()\n");
 	    rc = TSS_RC_RSA_ENCRYPT;
 	}
     }
+#else
+    /* create EVP_PKEY_CTX for the encrypt */
+    if (rc == 0) {
+	ctx = EVP_PKEY_CTX_new(rsa_pub_key, NULL);		/* freed @1 */
+	if (ctx == NULL) {
+	    printf("TSS_RSAPublicEncrypt: Error in EVP_PKEY_CTX_new()\n");
+            rc = TSS_RC_RSA_ENCRYPT;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_encrypt_init(ctx);
+	if (irc != 1) {
+	    printf("TSS_RSAPublicEncrypt: Error in EVP_PKEY_encrypt_init()\n");
+            rc = TSS_RC_RSA_ENCRYPT;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_NO_PADDING);
+	if (irc <= 0) {
+	    if (tssVerbose) printf("TSS_RSAPublicEncrypt: Error in EVP_PKEY_CTX_set_rsa_padding\n");
+	    rc = TSS_RC_RSA_ENCRYPT;
+	}
+    }
+    if (rc == 0) {
+	size_t outlen = encrypt_data_size;
+	irc = EVP_PKEY_encrypt(ctx,
+			       encrypt_data, &outlen,
+			       padded_data, encrypt_data_size);
+    }
+#endif
     if (rc == 0) {
         if (tssVverbose) printf("  TSS_RSAPublicEncrypt: RSA_public_encrypt() success\n");
     }
-    TSS_RsaFree(rsa_pub_key);          /* @1 */
-    free(padded_data);                  /* @2 */
-    return rc;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+#else
+    EVP_PKEY_CTX_free(ctx);		/* @1 */
+#endif
+   TSS_RsaFree(rsa_pub_key);          	/* @3 */
+   free(padded_data);                  	/* @2 */
+   return rc;
 }
 
 #endif /* TPM_TSS_NORSA */

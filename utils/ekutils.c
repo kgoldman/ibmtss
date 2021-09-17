@@ -568,9 +568,12 @@ TPM_RC getIndexX509Certificate(TSS_CONTEXT *tssContext,
    certificate stored in a file.
 
    Returns both the OpenSSL X509 certificate token and RSA public key token.
+
+   For Openssl < 3, rsaKey is an RSA structure.
+   For Openssl 3, rsaKey is an EVP_PKEY,
 */
 
-uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
+uint32_t getPubkeyFromDerCertFile(void **rsaPkey,	/* freed by caller */
 				  X509 **x509,
 				  const char *derCertificateFileName)
 {
@@ -595,7 +598,7 @@ uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
     }
     /* extract the OpenSSL format public key from the X509 token */
     if (rc == 0) {
-	rc = getPubKeyFromX509Cert(rsaPkey, *x509);
+	rc = getPubKeyFromX509Cert(rsaPkey, *x509);	/* freed by caller */
     }
     /* for debug, print the X509 certificate */
     if (rc == 0) {
@@ -613,9 +616,13 @@ uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
 #ifndef TPM_TSS_NORSA
 
 /* getPubKeyFromX509Cert() gets an OpenSSL RSA public key token from an OpenSSL X509 certificate
-   token. */
+   token.
 
-uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
+   For Openssl < 3, rsaKey is an RSA structure.
+   For Openssl 3, rsaKey is an EVP_PKEY,
+*/
+
+uint32_t getPubKeyFromX509Cert(void **rsaPkey,
 			       X509 *x509)
 {
     uint32_t rc = 0;
@@ -624,20 +631,24 @@ uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
     if (rc == 0) {
 	evpPkey = X509_get_pubkey(x509);	/* freed @1 */
 	if (evpPkey == NULL) {
-	    printf("getPubKeyFromX509Cert: X509_get_pubkey failed\n");  
+	    printf("getPubKeyFromX509Cert: X509_get_pubkey failed\n");
 	    rc = TSS_RC_X509_ERROR;
 	}
     }
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     if (rc == 0) {
 	*rsaPkey = EVP_PKEY_get1_RSA(evpPkey);
 	if (*rsaPkey == NULL) {
-	    printf("getPubKeyFromX509Cert: EVP_PKEY_get1_RSA failed\n");  
+	    printf("getPubKeyFromX509Cert: EVP_PKEY_get1_RSA failed\n");
 	    rc = TSS_RC_X509_ERROR;
 	}
     }
     if (evpPkey != NULL) {
 	EVP_PKEY_free(evpPkey);		/* @1 */
     }
+#else
+    *rsaPkey = evpPkey;
+#endif
     return rc;
 }
 #endif /* TPM_TSS_NORSA */
@@ -1106,8 +1117,8 @@ TPM_RC convertX509ToEc(EC_KEY **ecKey,	/* freed by caller */
 
    If print is true, prints the EK certificate
 
-   The return is void because the structure is opaque to the caller.  This accommodates other crypto
-   libraries.
+   The ekCertificate return is void because the structure is opaque to the caller.  This
+   accommodates other crypto libraries.
 
    ekCertificate is an X509 structure.
 */
@@ -1159,7 +1170,11 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	      case EK_CERT_RSA_3072_INDEX_H6:
 	      case EK_CERT_RSA_4096_INDEX_H7:
 		  {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 		      RSA *rsaKey = NULL;
+#else
+		      EVP_PKEY *rsaKey = NULL;
+#endif
 		      /* check that the public key algorithm matches the ekCertIndex algorithm */
 		      if (rc == 0) {
 			  if (pkeyType != EVP_PKEY_RSA) {
@@ -1170,12 +1185,16 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 		      }
 		      /* convert the public key to OpenSSL structure */
 		      if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 			  rsaKey = EVP_PKEY_get1_RSA(pkey);		/* freed @3 */
 			  if (rsaKey == NULL) {
 			      printf("convertCertificatePubKey: Could not extract RSA public key "
 				     "from X509 certificate\n");
 			      rc = TPM_RC_INTEGRITY;
 			  }
+#else		/* use the EVP_PKEY directly */
+			  rsaKey = pkey;
+#endif
 		      }
 		      if (rc == 0) {
 			  rc = convertRsaKeyToPublicKeyBin(modulusBytes,
@@ -1186,7 +1205,9 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 			  if (print) TSS_PrintAll("Certificate public key:",
 						  *modulusBin, *modulusBytes);
 		      }    
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 		      RSA_free(rsaKey);   		/* @3 */
+#endif
 		  }
 		  break;
 #endif /* TPM_TSS_NORSA */
@@ -1255,7 +1276,11 @@ TPM_RC convertCertificatePubKey12(uint8_t **modulusBin,	/* freed by caller */
     const unsigned char *pk = NULL;			/* do not free */
     int 		ppklen;
     X509_ALGOR 		*palg = NULL;			/* algorithm identifier for public key */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     RSA 		*rsaKey = NULL;
+#else
+    EVP_PKEY 		*rsaKey = NULL;
+#endif
 
     /* get internal pointer to the public key in the certificate */
     if (rc == 0) {
@@ -1279,7 +1304,12 @@ TPM_RC convertCertificatePubKey12(uint8_t **modulusBin,	/* freed by caller */
     }
     if (rc == 0) {
 	const unsigned char *tmppk = pk;	/* because d2i moves the pointer */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 	rsaKey = d2i_RSAPublicKey(NULL, &tmppk, ppklen);	/* freed @1 */
+#else
+	rsaKey = d2i_PublicKey(EVP_PKEY_RSA, NULL,
+			       &tmppk, (long)ppklen);
+#endif
 	if (rsaKey == NULL) {
 	    printf("convertCertificatePubKey12: Could not convert to RSA structure\n");
 	    rc = TPM_RC_INTEGRITY;
@@ -1291,9 +1321,7 @@ TPM_RC convertCertificatePubKey12(uint8_t **modulusBin,	/* freed by caller */
 					 rsaKey);
 	TSS_PrintAll("convertCertificatePubKey12", *modulusBin, *modulusBytes);
     }
-    if (rsaKey != NULL) {
-	RSA_free(rsaKey);		/* @1 */
-    }
+    TSS_RsaFree(rsaKey);		/* @1 */
     return rc;
 }
 

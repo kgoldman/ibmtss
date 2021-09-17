@@ -64,6 +64,7 @@
 #include <ibmtss/tsserror.h>
 #include <ibmtss/tssprint.h>
 #include <ibmtss/Unmarshal_fp.h>
+#include <ibmtss/tsscrypto.h>
 
 #include "eventlib.h"
 #include "efilib.h"
@@ -4896,7 +4897,13 @@ static void     TSS_EfiEventTag_Trace(TSST_EFIData *efiData)
     uint32_t 			count;
     TSS_UEFI_TAGGED_EVENT 	*taggedEventList = &efiData->efiData.taggedEventList;
 #ifndef TPM_TSS_MBEDTLS
-    RSA 	*rsaKey = NULL;
+#ifndef TPM_TSS_NORSA
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    RSA 		*rsaKey = NULL;
+#else
+    EVP_PKEY 		*rsaKey = NULL;
+#endif
+#endif	/* TPM_TSS_NORSA */
 #endif	/* TPM_TSS_MBEDTLS */
 
     printf("  tagged events %u\n", taggedEventList->count);
@@ -4906,17 +4913,25 @@ static void     TSS_EfiEventTag_Trace(TSST_EFIData *efiData)
 	printf("    taggedEventID %08x\n", taggedEvent->taggedEventID);
 	/* https://github.com/mattifestation/TCGLogTools/blob/master/TCGLogTools.psm1 */
 	/* by observation 0x00060002 appears to be a DER encoded public key */
-#ifndef TPM_TSS_MBEDTLS
+#if ! defined TPM_TSS_MBEDTLS && ! defined TPM_TSS_NORSA
 	if (taggedEvent->taggedEventID == 0x00060002) {
 	    const unsigned char *tmpData = NULL;
 	    /* tmp pointer because d2i moves the pointer */
 	    tmpData = taggedEvent->taggedEventData;
-	    rsaKey = d2i_RSA_PUBKEY(NULL, &tmpData , taggedEvent->taggedEventDataSize);	/* freed @2 */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+	    rsaKey = d2i_RSA_PUBKEY(NULL, &tmpData ,taggedEvent->taggedEventDataSize); /* freed @2 */
+#else
+	    rsaKey = d2i_PUBKEY(NULL, &tmpData, (long)taggedEvent->taggedEventDataSize);
+#endif	/* OPENSSL_VERSION_NUMBER */
 	    if (rsaKey != NULL) { 	/* success */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 		RSA_print_fp(stdout, rsaKey, 4);
+#else
+		EVP_PKEY_print_public_fp(stdout, rsaKey, 4, NULL);
+#endif /* OPENSSL_VERSION_NUMBER */
 	    }
 	    if (rsaKey != NULL) {
-		RSA_free(rsaKey); 
+		TSS_RsaFree(rsaKey); 	/* @2 */
 	    }
 	}
 	/* if it's not 0x00060002 or if the d2i fails */
@@ -4925,10 +4940,10 @@ static void     TSS_EfiEventTag_Trace(TSST_EFIData *efiData)
 	    TSS_PrintAll("   taggedEvent",
 			 taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
 	}
-#else
+#else	/* TPM_TSS_MBEDTLS or TPM_TSS_NORSA */
 	TSS_PrintAll("   taggedEvent",
 		     taggedEvent->taggedEventData, taggedEvent->taggedEventDataSize);
-#endif	/* TPM_TSS_MBEDTLS */
+#endif	/* TPM_TSS_MBEDTLS TPM_TSS_NORSA */
     }
     return;
 }

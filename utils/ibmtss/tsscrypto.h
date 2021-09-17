@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -107,6 +107,7 @@ extern "C" {
     LIB_EXPORT
     TPM_RC TSS_RsaNew(void **rsaKey);
 
+    /* deprecated */
     LIB_EXPORT
     TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
 				      const unsigned char *narr,   	/* public modulus */

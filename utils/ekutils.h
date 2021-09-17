@@ -228,10 +228,10 @@ extern "C" {
 #ifndef TPM_TSS_NO_OPENSSL
 
 
-    uint32_t getPubkeyFromDerCertFile(RSA  **rsaPkey,
+    uint32_t getPubkeyFromDerCertFile(void **rsaPkey,
 				      X509 **x509,
 				      const char *derCertificateFileName);
-    uint32_t getPubKeyFromX509Cert(RSA  **rsaPkey,
+    uint32_t getPubKeyFromX509Cert(void **rsaPkey,
 				   X509 *x509);
     TPM_RC getCaStore(X509_STORE **caStore,
 		      X509 *caCert[],

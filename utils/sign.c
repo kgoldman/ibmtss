@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2021.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -426,6 +426,8 @@ int main(int argc, char *argv[])
 	/* construct the OpenSSL RSA public key token */
 	if (rc == 0) {
 	    unsigned char earr[3] = {0x01, 0x00, 0x01};
+	    /* For Openssl < 3, rsaKey is an RSA structure. */
+	    /* For Openssl 3, rsaKey is an EVP_PKEY. */
 	    rc = TSS_RSAGeneratePublicTokenI
 		 (&rsaPubKey,					/* freed @2 */
 		  public.publicArea.unique.rsa.t.buffer, 	/* public modulus */
