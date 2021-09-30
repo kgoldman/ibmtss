@@ -64,6 +64,7 @@
 #endif
 
 #include <ibmtss/tssresponsecode.h>
+#include "tssproperties.h"
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssprint.h>
 #include <ibmtss/tsserror.h>
@@ -87,6 +88,14 @@ extern int tssVerbose;
 /* local prototypes */
 
 static TPM_RC TSS_Hash_GetOsslString(const char **str, TPMI_ALG_HASH hashAlg);
+#if OPENSSL_VERSION_NUMBER >=  0x30000000
+static TPM_RC TSS_AES_CFB(EVP_CIPHER_CTX **ctx,
+			  uint32_t keySizeInBits,
+			  uint8_t *key,
+			  uint8_t *iv,
+			  int encrypt);
+#endif
+
 
 #ifndef TPM_TSS_NOECC
 
@@ -1468,6 +1477,73 @@ TPM_RC TSS_AES_GetDecKeySize(size_t *tssSessionDecKeySize)
     return 0;
 }
 
+/* TSS_AES_KeyAllocate() allocates memory for the AES encryption and decryption keys.
+ */
+
+TPM_RC TSS_AES_KeyAllocate(void **tssSessionEncKey,
+			   void **tssSessionDecKey)
+{
+    TPM_RC		rc = 0;
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    size_t tssSessionEncKeySize;
+    size_t tssSessionDecKeySize;
+
+    /* crypto library dependent code to allocate the session state encryption and decryption keys.
+       They are probably always the same size, but it's safer not to assume that. */
+    if (rc == 0) {
+	rc = TSS_AES_GetEncKeySize(&tssSessionEncKeySize);
+    }
+    if (rc == 0) {
+	rc = TSS_AES_GetDecKeySize(&tssSessionDecKeySize);
+    }
+    if (rc == 0) {
+        rc = TSS_Malloc((uint8_t **)tssSessionEncKey, (uint32_t)tssSessionEncKeySize);
+    }
+    if (rc == 0) {
+        rc = TSS_Malloc((uint8_t **)tssSessionDecKey, (uint32_t)tssSessionDecKeySize);
+    }
+#else
+    if (rc == 0) {
+	*tssSessionEncKey = EVP_CIPHER_CTX_new();
+	if (*tssSessionEncKey == NULL) {
+	    if (tssVerbose)
+		printf("TSS_AES_KeyAllocate: Error creating openssl AES decryption key\n");
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	*tssSessionDecKey = EVP_CIPHER_CTX_new();
+	if (*tssSessionDecKey == NULL) {
+	    if (tssVerbose)
+		printf("TSS_AES_KeyAllocate: Error creating openssl AES decryption key\n");
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;
+	}
+    }
+#endif
+    return rc;
+}
+
+TPM_RC TSS_AES_KeyFree(void *tssSessionEncKey,
+		       void *tssSessionDecKey)
+{
+    TPM_RC rc = 0;
+
+#ifndef TPM_TSS_NOFILE
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    free(tssSessionEncKey);
+    free(tssSessionDecKey);
+#else
+    EVP_CIPHER_CTX_free(tssSessionEncKey);
+    EVP_CIPHER_CTX_free(tssSessionDecKey);
+#endif	/* OPENSSL_VERSION_NUMBER  */
+#else
+    tssSessionEncKey = tssSessionEncKey;
+    tssSessionDecKey = tssSessionDecKey;
+#endif	/* TPM_TSS_NOFILE */
+    return rc;
+}
+
 #define TSS_AES_KEY_BITS 128
 
 #ifndef TPM_TSS_NOFILE
@@ -1514,10 +1590,11 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
 	}
 	/* copy the binary to the common userKey for use below */
 	if (rc == 0) {
-	    memcpy(userKey, envKeyBin, envKeyBinLen);  
+	    memcpy(userKey, envKeyBin, envKeyBinLen);
 	}
     }
-    /* translate to an openssl key token */
+    /* translate userKey to openssl key tokens */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     if (rc == 0) {
         irc = AES_set_encrypt_key(userKey,
                                   TSS_AES_KEY_BITS,
@@ -1526,7 +1603,7 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
 	if (irc != 0) {
             if (tssVerbose)
 		printf("TSS_AES_KeyGenerate: Error setting openssl AES encryption key\n");
-	    rc = TSS_RC_AES_KEYGEN_FAILURE; 
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;
 	}
     }
     if (rc == 0) {
@@ -1537,9 +1614,51 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
 	if (irc != 0) {
             if (tssVerbose)
 		printf("TSS_AES_KeyGenerate: Error setting openssl AES decryption key\n");
-	    rc = TSS_RC_AES_KEYGEN_FAILURE; 
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;
 	}
     }
+#else
+    {
+	EVP_CIPHER *cipher = NULL;
+	unsigned char	ivec[AES_128_BLOCK_SIZE_BYTES];       /* initial chaining vector */
+        memset(ivec, 0, sizeof(ivec));
+
+	if (rc == 0) {
+	    cipher = EVP_CIPHER_fetch(NULL, "AES-128-CBC", NULL);	/* freed @1 */
+	    if (cipher == NULL) {
+		if (tssVerbose)
+		    printf("TSS_AES_KeyGenerate: Error getting openssl cipher\n");
+		rc = TSS_RC_AES_KEYGEN_FAILURE;
+	    }
+	}
+	/* encryption context */
+	if (rc == 0) {
+	    irc = EVP_CipherInit_ex2(tssSessionEncKey, cipher, userKey, ivec, 1, NULL);
+	    if (irc != 1) {
+		if (tssVerbose)
+		    printf("TSS_AES_KeyGenerate: Error setting openssl AES encryption key\n");
+		rc = TSS_RC_AES_KEYGEN_FAILURE;
+	    }
+	}
+	if (rc == 0) {		/* always returns 1 */
+	    EVP_CIPHER_CTX_set_padding(tssSessionEncKey, 0);
+	}
+	/* decryption context */
+	if (rc == 0) {
+	    irc = EVP_CipherInit_ex2(tssSessionDecKey, cipher, userKey, ivec, 0, NULL);
+	    if (irc != 1) {
+		if (tssVerbose)
+		    printf("TSS_AES_KeyGenerate: Error setting openssl AES decryption key\n");
+		rc = TSS_RC_AES_KEYGEN_FAILURE;
+	    }
+	}
+	if (rc == 0) {		/* always returns 1 */
+	    EVP_CIPHER_CTX_set_padding(tssSessionDecKey, 0);
+	}
+	EVP_CIPHER_free(cipher);	/* @1 */
+
+    }
+#endif
     free(envKeyBin);	/* @1 */
     return rc;
 }
@@ -1553,7 +1672,7 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
 
    'encrypt_data' must be free by the caller
 */
-   
+
 TPM_RC TSS_AES_Encrypt(void *tssSessionEncKey,
 		       unsigned char **encrypt_data,   		/* output, caller frees */
 		       uint32_t *encrypt_length,		/* output */
@@ -1561,11 +1680,12 @@ TPM_RC TSS_AES_Encrypt(void *tssSessionEncKey,
 		       uint32_t decrypt_length)			/* input */
 {
     TPM_RC		rc = 0;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000
+    int 		irc;
+#endif
     uint32_t		pad_length;
-    unsigned char	*decrypt_data_pad;
-    unsigned char	ivec[AES_128_BLOCK_SIZE_BYTES];       /* initial chaining vector */
+    unsigned char	*decrypt_data_pad = NULL;
 
-    decrypt_data_pad = NULL;    /* freed @1 */
     if (rc == 0) {
         /* calculate the pad length and padded data length */
         pad_length = AES_128_BLOCK_SIZE_BYTES - (decrypt_length % AES_128_BLOCK_SIZE_BYTES);
@@ -1575,7 +1695,7 @@ TPM_RC TSS_AES_Encrypt(void *tssSessionEncKey,
     }
     /* allocate memory for the padded decrypted data */
     if (rc == 0) {
-        rc = TSS_Malloc(&decrypt_data_pad, *encrypt_length);
+        rc = TSS_Malloc(&decrypt_data_pad, *encrypt_length);    /* freed @1 */
     }
     /* pad the decrypted clear text data */
     if (rc == 0) {
@@ -1583,7 +1703,11 @@ TPM_RC TSS_AES_Encrypt(void *tssSessionEncKey,
         memcpy(decrypt_data_pad, decrypt_data, decrypt_length);
         /* last gets pad = pad length */
         memset(decrypt_data_pad + decrypt_length, pad_length, pad_length);
+    }
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    if (rc == 0) {
         /* set the IV */
+	unsigned char	ivec[AES_128_BLOCK_SIZE_BYTES];       /* initial chaining vector */
         memset(ivec, 0, sizeof(ivec));
         /* encrypt the padded input to the output */
         AES_cbc_encrypt(decrypt_data_pad,
@@ -1593,6 +1717,30 @@ TPM_RC TSS_AES_Encrypt(void *tssSessionEncKey,
                         ivec,
                         AES_ENCRYPT);
     }
+#else
+    /* reset the encrypt context */
+    if (rc == 0) {
+	irc = EVP_CipherInit_ex2(tssSessionEncKey, NULL, NULL, NULL, 1, NULL);
+	if (irc != 1) {
+	    if (tssVerbose)
+		printf("TSS_AES_Encrypt: Error setting openssl AES encryption key\n");
+	    rc = TSS_RC_AES_ENCRYPT_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	uint32_t decrypt_length_pad = decrypt_length + pad_length;
+	int encLength;		/* because openssl uses an int length */
+	irc = EVP_CipherUpdate(tssSessionEncKey,
+			       *encrypt_data, &encLength,
+				decrypt_data_pad, decrypt_length_pad);
+	*encrypt_length = encLength;	/* cast back to unsigned for return */
+	if (irc != 1) {
+	    if (tssVerbose)
+		printf("TSS_AES_Encrypt: Error in EVP_EncryptUpdate\n");
+	    rc = TSS_RC_AES_ENCRYPT_FAILURE;
+	}
+    }
+#endif
     free(decrypt_data_pad);     /* @1 */
     return rc;
 }
@@ -1612,11 +1760,13 @@ TPM_RC TSS_AES_Decrypt(void *tssSessionDecKey,
 		       uint32_t encrypt_length)			/* input */
 {
     TPM_RC          	rc = 0;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000
+    int 		irc;
+#endif
     uint32_t		pad_length;
     uint32_t		i;
     unsigned char       *pad_data;
-    unsigned char       ivec[AES_128_BLOCK_SIZE_BYTES];       /* initial chaining vector */
-    
+
     /* sanity check encrypted length */
     if (rc == 0) {
         if (encrypt_length < AES_128_BLOCK_SIZE_BYTES) {
@@ -1630,8 +1780,10 @@ TPM_RC TSS_AES_Decrypt(void *tssSessionDecKey,
         rc = TSS_Malloc(decrypt_data, encrypt_length);
     }
     /* decrypt the input to the padded output */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     if (rc == 0) {
-        /* set the IV */
+	/* set the IV */
+	unsigned char       ivec[AES_128_BLOCK_SIZE_BYTES];       /* initial chaining vector */
         memset(ivec, 0, sizeof(ivec));
         /* decrypt the padded input to the output */
         AES_cbc_encrypt(encrypt_data,
@@ -1641,6 +1793,29 @@ TPM_RC TSS_AES_Decrypt(void *tssSessionDecKey,
                         ivec,
                         AES_DECRYPT);
     }
+#else
+    /* reset the decrypt context */
+    if (rc == 0) {
+	irc = EVP_CipherInit_ex2(tssSessionDecKey, NULL, NULL, NULL, 0, NULL);
+	if (irc != 1) {
+	    if (tssVerbose)
+		printf("TSS_AES_Decrypt: Error setting openssl AES decryption key\n");
+	    rc = TSS_RC_AES_DECRYPT_FAILURE;
+	}
+    }
+    if (rc == 0) {
+	int decLength;		/* because openssl uses an int length */
+	irc = EVP_DecryptUpdate(tssSessionDecKey,
+				*decrypt_data, &decLength,
+				encrypt_data, encrypt_length);
+	*decrypt_length = decLength;	/* cast back to unsigned for return */
+	if (irc != 1) {
+	    if (tssVerbose)
+		printf("TSS_AES_Decrypt: Error in EVP_DecryptUpdate\n");
+	    rc = TSS_RC_AES_DECRYPT_FAILURE;
+	}
+    }
+#endif
     /* get the pad length */
     if (rc == 0) {
         /* get the pad length from the last byte */
@@ -1678,9 +1853,11 @@ TPM_RC TSS_AES_EncryptCFB(uint8_t	*dOut,		/* OUT: the encrypted data */
 {
     TPM_RC	rc = 0;
     int 	irc;
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     int		blockSize;
-    AES_KEY	aeskey;
     int32_t	dSize;         /* signed version of dInSize */
+    AES_KEY	aeskey;
 
     /* Create AES encryption key token */
     if (rc == 0) {
@@ -1697,11 +1874,37 @@ TPM_RC TSS_AES_EncryptCFB(uint8_t	*dOut,		/* OUT: the encrypted data */
 	    /* Encrypt the current value of the IV to the intermediate value.  Store in old iv,
 	       since it's not needed anymore. */
 	    AES_encrypt(iv, iv, &aeskey);
-	    blockSize = (dSize < 16) ? dSize : 16;	/* last block can be < 16 */	
+	    blockSize = (dSize < 16) ? dSize : 16;	/* last block can be < 16 */
 	    TSS_XOR(dOut, dIn, iv, blockSize);
 	    memcpy(iv, dOut, blockSize);
 	}
     }
+#else
+    {
+	EVP_CIPHER_CTX *ctx = NULL;
+
+	/* initialize the key context */
+	if (rc == 0) {
+	    rc = TSS_AES_CFB(&ctx,		/* freed @2 */
+			     keySizeInBits,	/* IN: key size in bits */
+			     key,           	/* IN: key buffer */
+			     iv,            	/* IN: IV */
+			     1);		/* encrypt */
+	}
+	if (rc == 0) {
+	    int encLength;		/* because openssl uses an int length */
+	    irc = EVP_CipherUpdate(ctx,
+				   dOut, &encLength,
+				   dIn, dInSize);
+	    if (irc != 1) {
+		if (tssVerbose)
+		    printf("TSS_AES_EncryptCFB: Error in EVP_EncryptUpdate\n");
+		rc = TSS_RC_AES_ENCRYPT_FAILURE;
+	    }
+	}
+	EVP_CIPHER_CTX_free(ctx);	/* @2 */
+    }
+#endif
     return rc;
 }
 
@@ -1714,6 +1917,8 @@ TPM_RC TSS_AES_DecryptCFB(uint8_t *dOut,          	/* OUT: the decrypted data */
 {
     TPM_RC	rc = 0;
     int 	irc;
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     uint8_t	tmp[16];
     int		blockSize;
     AES_KEY	aesKey;
@@ -1732,11 +1937,94 @@ TPM_RC TSS_AES_DecryptCFB(uint8_t *dOut,          	/* OUT: the decrypted data */
 	for (dSize = (int32_t)dInSize ; dSize > 0; dSize -= 16, dOut += 16, dIn += 16) {
 	    /* Encrypt the IV into the temp buffer */
 	    AES_encrypt(iv, tmp, &aesKey);
-	    blockSize = (dSize < 16) ? dSize : 16;	/* last block can be < 16 */	
+	    blockSize = (dSize < 16) ? dSize : 16;	/* last block can be < 16 */
 	    TSS_XOR(dOut, dIn, tmp, blockSize);
 	    memcpy(iv, dIn, blockSize);
 	}
     }
-    return rc;
+#else
+    {
+	EVP_CIPHER_CTX *ctx = NULL;
+
+	/* initialize the key context */
+	if (rc == 0) {
+	    rc = TSS_AES_CFB(&ctx,		/* freed @2 */
+			     keySizeInBits,	/* IN: key size in bits */
+			     key,           	/* IN: key buffer */
+			     iv,            	/* IN: IV */
+			     0);		/* encrypt */
+	}
+	if (rc == 0) {
+	    int encLength;		/* because openssl uses an int length */
+	    irc = EVP_CipherUpdate(ctx,
+				   dOut, &encLength,
+				   dIn, dInSize);
+	    if (irc != 1) {
+		if (tssVerbose)
+		    printf("TSS_AES_DecryptCFB: Error in EVP_EncryptUpdate\n");
+		rc = TSS_RC_AES_DECRYPT_FAILURE;
+	    }
+	}
+	EVP_CIPHER_CTX_free(ctx);	/* @2 */
+    }
+#endif
+   return rc;
 }
 
+#if OPENSSL_VERSION_NUMBER >=  0x30000000
+/* TSS_AES_CFB() is openssl common code to initialize the key context for AES CFB encrypt and
+   decrypt */
+
+static TPM_RC TSS_AES_CFB(EVP_CIPHER_CTX **ctx,		/* freed by caller */
+			  uint32_t keySizeInBits,	/* IN: key size in bits */
+			  uint8_t *key,           	/* IN: key buffer */
+			  uint8_t *iv,            	/* IN: IV */
+			  int encrypt)			/* boolean */
+
+{
+    TPM_RC	rc = 0;
+    int 	irc;
+    EVP_CIPHER *cipher = NULL;
+
+    /* currently supports CFB AES 128 and 256 */
+    if (rc == 0) {
+	switch (keySizeInBits) {
+	  case 128:
+	    cipher = EVP_CIPHER_fetch(NULL, "AES-128-CFB", NULL);	/* freed @1 */
+	    break;
+	  case 256:
+	    cipher = EVP_CIPHER_fetch(NULL, "AES-256-CFB", NULL);	/* freed @1 */
+	    break;
+	  default:
+	    printf("TSS_AES_CFB: keySizeInBits %u not supported\n", keySizeInBits);
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;
+	    break;
+	}
+	if (cipher == NULL) {
+	    if (tssVerbose)
+		printf("TSS_AES_CFB: Error getting openssl cipher\n");
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;
+	}
+    }
+    /* allocate the context */
+    if (rc == 0) {
+	*ctx = EVP_CIPHER_CTX_new();		/* freed by caller */
+	if (ctx == NULL) {
+	    if (tssVerbose)
+		printf("TSS_AES_CFB: Error creating openssl AES decryption key\n");
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;
+	}
+    }
+    /* initialize the context with the key and IV */
+    if (rc == 0) {
+	irc = EVP_CipherInit_ex2(*ctx, cipher, key, iv, encrypt, NULL);
+	if (irc != 1) {
+	    if (tssVerbose)
+		printf("TSS_AES_CFB: Error setting openssl AES encryption key\n");
+	    rc = TSS_RC_AES_KEYGEN_FAILURE;
+	}
+    }
+    EVP_CIPHER_free(cipher);	/* @1 */
+    return rc;
+}
+#endif

@@ -114,12 +114,7 @@ TPM_RC TSS_Create(TSS_CONTEXT **tssContext)
 static TPM_RC TSS_Context_Init(TSS_CONTEXT *tssContext)
 {
     TPM_RC		rc = 0;
-#ifndef TPM_TSS_NOCRYPTO
-#ifndef TPM_TSS_NOFILE
-    size_t		tssSessionEncKeySize;
-    size_t		tssSessionDecKeySize;
-#endif
-#endif
+
     /* at the first call to the TSS, initialize global variables */
     if (tssFirstCall) {		/* tssFirstCall is a library global */
 #ifndef TPM_TSS_NOCRYPTO
@@ -140,19 +135,9 @@ static TPM_RC TSS_Context_Init(TSS_CONTEXT *tssContext)
     }
 #ifndef TPM_TSS_NOCRYPTO
 #ifndef TPM_TSS_NOFILE
-    /* crypto library dependent code to allocate the session state encryption and decryption keys.
-       They are probably always the same size, but it's safer not to assume that. */
     if (rc == 0) {
-	rc = TSS_AES_GetEncKeySize(&tssSessionEncKeySize);
-    }
-    if (rc == 0) {
-	rc = TSS_AES_GetDecKeySize(&tssSessionDecKeySize);
-    }
-    if (rc == 0) {
-        rc = TSS_Malloc((uint8_t **)&tssContext->tssSessionEncKey, (uint32_t)tssSessionEncKeySize);
-    }
-    if (rc == 0) {
-        rc = TSS_Malloc((uint8_t **)&tssContext->tssSessionDecKey, (uint32_t)tssSessionDecKeySize);
+	rc = TSS_AES_KeyAllocate(&tssContext->tssSessionEncKey,
+				 &tssContext->tssSessionDecKey);
     }
     /* build the session encryption and decryption keys */
     if (rc == 0) {
@@ -188,11 +173,11 @@ TPM_RC TSS_Delete(TSS_CONTEXT *tssContext)
 		tssContext->sessions[i].sessionDataLength = 0;
 	    }
 	}
-#endif
-#ifndef TPM_TSS_NOCRYPTO
+#endif	/* TPM_TSS_NOFILE */
 #ifndef TPM_TSS_NOFILE
-	free(tssContext->tssSessionEncKey);
-	free(tssContext->tssSessionDecKey);
+#ifndef TPM_TSS_NOCRYPTO
+	TSS_AES_KeyFree(tssContext->tssSessionEncKey,
+			tssContext->tssSessionDecKey);
 #endif
 #endif
 	rc = TSS_Close(tssContext);

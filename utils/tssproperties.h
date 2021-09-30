@@ -120,11 +120,12 @@ extern "C" {
 	/* encrypt saved session state */
 	int tssEncryptSessions;
 
-	/* saved session encryption key.  This seems to port to openssl 1.0 and 1.1, but will have to
-	   become a malloced void * for other crypto libraries. */
+	/* saved session encryption key - void so portable across crypto libraries */
 #ifndef TPM_TSS_NOCRYPTO
+#ifndef TPM_TSS_NOFILE
 	void *tssSessionEncKey;
 	void *tssSessionDecKey;
+#endif
 #endif
 	/* a minimal TSS with no file support stores the sessions, objects, and NV metadata in a
 	   structure.  Scripting will not work, and persistent objects will not work, but a single
@@ -177,6 +178,11 @@ extern "C" {
 
     TPM_RC TSS_GlobalProperties_Init(void);
     TPM_RC TSS_Properties_Init(TSS_CONTEXT *tssContext);
+
+    TPM_RC TSS_AES_KeyAllocate(void **tssSessionEncKey,
+			       void **tssSessionDecKey);
+    TPM_RC TSS_AES_KeyFree(void *tssSessionEncKey,
+			   void *tssSessionDecKey);
 
 #ifdef __cplusplus
 }
