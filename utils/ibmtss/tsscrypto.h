@@ -126,6 +126,7 @@ extern "C" {
 
 #endif
 #ifndef TPM_TSS_NOECC
+    void TSS_EccFree(void *eccKey);
     TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
 			TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
 			TPMT_PUBLIC		*publicArea);

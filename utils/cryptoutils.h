@@ -289,12 +289,6 @@ extern "C" {
 #ifndef TPM_TSS_NOECC
     TPM_RC convertEvpPkeyToEckey(EC_KEY **ecKey,
 				 EVP_PKEY *evpPkey);
-    TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
-				       uint8_t 		**privateKeyBin,
-				       const EC_KEY 	*ecKey);
-    TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
-				      uint8_t 		**modulusBin,
-				      const EC_KEY 	*ecKey);
     TPM_RC convertEcPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
 					 int			keyType,
 					 TPMI_ALG_SIG_SCHEME 	scheme,
@@ -303,17 +297,43 @@ extern "C" {
 					 TPMI_ECC_CURVE 	curveID,
 					 int 			modulusBytes,
 					 uint8_t 		*modulusBin);
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     TPM_RC convertEcKeyToPrivate(TPM2B_PRIVATE 		*objectPrivate,
 				 TPM2B_SENSITIVE 	*objectSensitive,
 				 EC_KEY 		*ecKey,
 				 const char 		*password);
+    TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
+				      uint8_t 		**modulusBin,
+				      const EC_KEY 	*ecKey);
+    TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
+				       uint8_t 		**privateKeyBin,
+				       const EC_KEY 	*ecKey);
     TPM_RC convertEcKeyToPublic(TPM2B_PUBLIC 		*objectPublic,
 				int			keyType,
 				TPMI_ALG_SIG_SCHEME 	scheme,
 				TPMI_ALG_HASH 		nalg,
 				TPMI_ALG_HASH		halg,
 				EC_KEY 			*ecKey);
-    TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,	
+#else
+    TPM_RC convertEcKeyToPrivate(TPM2B_PRIVATE 		*objectPrivate,
+				 TPM2B_SENSITIVE 	*objectSensitive,
+				 EVP_PKEY 		*ecKey,
+				 const char 		*password);
+    TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
+				      uint8_t 		**modulusBin,
+				      const EVP_PKEY 	*ecKey);
+    TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
+				       uint8_t 		**privateKeyBin,
+				       const EVP_PKEY 	*ecKey);
+    TPM_RC convertEcKeyToPublic(TPM2B_PUBLIC 		*objectPublic,
+				int			keyType,
+				TPMI_ALG_SIG_SCHEME 	scheme,
+				TPMI_ALG_HASH 		nalg,
+				TPMI_ALG_HASH		halg,
+				EVP_PKEY 		*ecKey);
+
+#endif
+    TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,
 				      const TPMS_ECC_POINT *tpmsEccPoint);
     TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,
 					  const TPMT_PUBLIC *tpmtPublic);
@@ -321,8 +341,6 @@ extern "C" {
 					  unsigned int messageSize,
 					  TPMT_SIGNATURE *tSignature,
 					  EVP_PKEY *evpPkey);
-    TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
-		      const EC_KEY *ecKey);
     
 #endif /* TPM_TSS_NOECC */
 #endif /* TPM_TSS_NO_OPENSSL */

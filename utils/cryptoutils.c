@@ -91,6 +91,22 @@ static TPM_RC getEcNid(int		*nid,
 static TPM_RC getEcModulusBytes(int	*modulusBytes,
 				int	*pointBytes,
 				TPMI_ECC_CURVE curveID);
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+static TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
+			 int 		*privateKeyBytes, 
+			 const EC_KEY 	*ecKey);
+#else
+static TPM_RC getEccKeyParts(uint8_t **priv,
+			     int *privLen,
+			     uint8_t **pub,
+			     int *pubLen,
+			     const EVP_PKEY *eccKey);
+static TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
+			 int 		*privateKeyBytes, 
+			 const EVP_PKEY *ecKey);
+#endif
+
+
 #endif /* TPM_TSS_NOECC */
 #endif /* TPM_TPM20 */
 
@@ -368,44 +384,31 @@ TPM_RC convertEvpPkeyToRsakey(RSA **rsaKey,		/* freed by caller */
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
-/* convertEcKeyToPrivateKeyBin() converts an OpenSSL EC_KEY to a binary array
+/* convertEcKeyToPrivateKeyBin() converts an OpenSSL ECC key token to a binary array
 
    Only supports NIST P256 and P384 curves.
+
+   For Openssl < 3, ecKey is an EC_KEY structure.
+   For Openssl 3, ecKey is an EVP_PKEY,
 */
 
 TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
 				   uint8_t 	**privateKeyBin,	/* freed by caller */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 				   const EC_KEY *ecKey)
+#else
+    const EVP_PKEY *ecKey)
+#endif
 {
     TPM_RC 		rc = 0;
-    const EC_GROUP 	*ecGroup = NULL;
-    int			nid;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     const BIGNUM 	*privateKeyBn = NULL;
     int 		bnBytes;
-    
-    /* get the group from the key */
-    if (rc == 0) {   
-	ecGroup = EC_KEY_get0_group(ecKey);
-	if (ecGroup == NULL) {
-	    printf("convertEcKeyToPrivateKeyBin: Error extracting EC group from EC key\n");
-	    rc = TSS_RC_EC_KEY_CONVERT;
-	}
-    }
-    /* and then the curve from the group */
     if (rc == 0) {
-	nid = EC_GROUP_get_curve_name(ecGroup);
-	/* map NID to size of private key */
-	switch (nid) {
-	  case NID_X9_62_prime256v1:
-	    *privateKeyBytes = 32;
-	    break;
-	  case NID_secp384r1:
-	    *privateKeyBytes = 48;
-	    break;
-	  default:
-	    printf("convertEcKeyToPrivateKeyBin: Error, curve NID %u not supported\n", nid);
-	    rc = TSS_RC_EC_KEY_CONVERT;
-	}
+	TPMI_ECC_CURVE curveID;		/* not used */
+	rc = getEcCurve(&curveID,
+			privateKeyBytes, 
+			ecKey);
     }
     /* get the ECC private key as a BIGNUM from the EC_KEY */
     if (rc == 0) {
@@ -431,8 +434,18 @@ TPM_RC convertEcKeyToPrivateKeyBin(int 		*privateKeyBytes,
 	size_t padSize = (size_t)(*privateKeyBytes) - (size_t)bnBytes;
 	memset(*privateKeyBin, 0, padSize);
 	BN_bn2bin(privateKeyBn, (*privateKeyBin) + padSize);
-	if (tssUtilsVerbose) TSS_PrintAll("convertEcKeyToPrivateKeyBin:", *privateKeyBin, *privateKeyBytes);
+	if (tssUtilsVerbose) TSS_PrintAll("convertEcKeyToPrivateKeyBin:",
+					  *privateKeyBin, *privateKeyBytes);
     }
+#else
+    if (rc == 0) {
+	rc = getEccKeyParts(privateKeyBin,		/* freed by caller */
+			    privateKeyBytes,
+			    NULL,
+			    NULL,
+			    ecKey);
+    }
+#endif
     return rc;
 }
 
@@ -483,9 +496,14 @@ TPM_RC convertRsaKeyToPrivateKeyBin(int 	*privateKeyBytes,
 
 TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
 				  uint8_t 	**modulusBin,	/* freed by caller */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 				  const EC_KEY 	*ecKey)
+#else
+    const EVP_PKEY 		*ecKey)
+#endif
 {
     TPM_RC 		rc = 0;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     const EC_POINT 	*ecPoint = NULL;
     const EC_GROUP 	*ecGroup = NULL;
 
@@ -496,7 +514,7 @@ TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
 	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
     }
-    if (rc == 0) {   
+    if (rc == 0) {
 	ecGroup = EC_KEY_get0_group(ecKey);
 	if (ecGroup == NULL) {
 	    printf("convertEcKeyToPublicKeyBin: Error extracting EC group from EC public key\n");
@@ -518,6 +536,15 @@ TPM_RC convertEcKeyToPublicKeyBin(int 		*modulusBytes,
 			   *modulusBin, *modulusBytes, NULL);
 	if (tssUtilsVerbose) TSS_PrintAll("convertEcKeyToPublicKeyBin:", *modulusBin, *modulusBytes);
     }
+#else
+    if (rc == 0) {
+	rc = getEccKeyParts(NULL,
+			    NULL,
+			    modulusBin,		/* freed by caller */
+			    modulusBytes,
+			    ecKey);
+     }
+#endif
     return rc;
 }
 
@@ -558,6 +585,111 @@ TPM_RC convertRsaKeyToPublicKeyBin(int 		*modulusBytes,
 
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000
+
+/* getEccKeyParts() gets the ECC key parts from an OpenSSL ECC key token.
+
+   For openssl >= 3.0.0, the octet strings are allocated and must be freed.
+*/
+
+static TPM_RC getEccKeyParts(uint8_t **priv,	/* freed by caller */
+			     int *privLen,
+			     uint8_t **pub,	/* freed by caller */
+			     int *pubLen,
+			     const EVP_PKEY *eccKey)
+{
+    TPM_RC  	rc = 0;
+    int		irc;
+
+    if (priv != NULL) {
+	BIGNUM *bnpriv = NULL;	/* freed @1 */
+	if (rc == 0) {
+	    irc = EVP_PKEY_get_bn_param(eccKey, OSSL_PKEY_PARAM_PRIV_KEY, &bnpriv);
+	    if (irc != 1) {
+		printf("getEccKeyParts: Error getting priv\n");
+		rc = TSS_RC_EC_KEY_CONVERT;
+	    }
+	}
+	if (rc == 0) {
+	    *privLen = BN_num_bytes(bnpriv);
+	    rc = TSS_Malloc(priv, *privLen);
+	}
+	if (rc == 0) {
+	    BN_bn2bin(bnpriv, *priv);
+	    BN_free(bnpriv);		/* @1 */
+#if 0
+	    if (tssUtilsVerbose) TSS_PrintAll("getEccKeyParts: priv",
+					      *priv, *privLen);
+#endif
+	}
+    }
+    if (pub != NULL) {
+	BIGNUM *bnx = NULL;	/* free @1 */
+	BIGNUM *bny = NULL;	/* free @2 */
+	int 	bnxBytes;
+	int 	bnyBytes;
+	TPMI_ECC_CURVE 	curveID;	/* not used */
+	int 		privateKeyBytes;
+
+	/* the public key is assembled from X and Y.  In openssl 3.0.0, these are bignums and the
+	   leading zero can be truncated when converting to bin.  Get the size based on the ECC
+	   curve, so that it can be zero padded if necessary. */
+	if (rc == 0) {
+	    rc = getEcCurve(&curveID,
+			    &privateKeyBytes,
+			    eccKey);
+	}
+	/* X point as BIGNUM */
+	if (rc == 0) {
+	    irc = EVP_PKEY_get_bn_param(eccKey, OSSL_PKEY_PARAM_EC_PUB_X, &bnx);
+	    if (irc != 1) {
+		printf("getEccKeyParts: Error getting x\n");
+		rc = TSS_RC_EC_KEY_CONVERT;
+	    }
+	}
+	/* Y point as BIGNUM */
+	if (rc == 0) {
+	    irc = EVP_PKEY_get_bn_param(eccKey, OSSL_PKEY_PARAM_EC_PUB_Y, &bny);
+	    if (irc != 1) {
+		printf("getEccKeyParts: Error getting y\n");
+		rc = TSS_RC_EC_KEY_CONVERT;
+	    }
+	}
+	if (rc == 0) {
+	    bnxBytes = BN_num_bytes(bnx);	/* public key point sizes */
+	    bnyBytes = BN_num_bytes(bny);
+	    /* sanity check against the curve */
+	    if ((bnxBytes > privateKeyBytes) ||
+		(bnyBytes > privateKeyBytes)) {
+		printf("getEccKeyParts: size of X %d or Y %d is greater than private key %d\n",
+		       bnxBytes, bnyBytes, privateKeyBytes);
+	    }
+	}
+	/* public key bin is 2x the point size plus 1 for the compression indicator byte */
+	if (rc == 0) {
+	    *pubLen = privateKeyBytes + privateKeyBytes +1;
+	    rc = TSS_Malloc(pub, *pubLen);
+	}
+	if (rc == 0) {
+	    memset(*pub , 0 ,*pubLen);		/* for zero padding */ 
+	    (*pub)[0] = 0x04; 			/* uncompressed */
+	    /* convert to bin, normally the entire point, but occasionally have to add the zero
+	       pad */
+	    BN_bn2bin(bnx, (*pub) + 1 + privateKeyBytes - bnxBytes);
+	    BN_bn2bin(bny, (*pub) + 1 + privateKeyBytes + privateKeyBytes - bnyBytes);
+	    BN_free(bnx);		/* @1 */
+	    BN_free(bny);		/* @2 */
+#if 0
+	    if (tssUtilsVerbose) TSS_PrintAll("getEccKeyParts: pub",
+					      *pub, *pubLen);
+#endif
+	}
+    }
+    return rc;
+}
+
+#endif
 
 /* convertEcPrivateKeyBinToPrivate() converts an EC 'privateKeyBin' to either a
    TPM2B_PRIVATE or a TPM2B_SENSITIVE
@@ -880,13 +1012,17 @@ TPM_RC convertRsaPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
 
 TPM_RC convertEcKeyToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 			     TPM2B_SENSITIVE 	*objectSensitive,
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 			     EC_KEY 		*ecKey,
+#else
+			     EVP_PKEY 		*ecKey,
+#endif
 			     const char 	*password)
 {
     TPM_RC 	rc = 0;
     int 	privateKeyBytes;
     uint8_t 	*privateKeyBin = NULL;
-    
+
     /* convert an openssl EC_KEY token to a binary array */
     if (rc == 0) {
 	rc = convertEcKeyToPrivateKeyBin(&privateKeyBytes,
@@ -919,9 +1055,9 @@ TPM_RC convertEcKeyToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 TPM_RC convertRsaKeyToPrivate(TPM2B_PRIVATE 	*objectPrivate,
 			      TPM2B_SENSITIVE 	*objectSensitive,
 #if OPENSSL_VERSION_NUMBER < 0x30000000
-			      RSA	*rsaKey,
+			      RSA		*rsaKey,
 #else
-			      EVP_PKEY *rsaKey,
+			      EVP_PKEY 		*rsaKey,
 #endif
 			      const char 	*password)
 {
@@ -959,20 +1095,25 @@ TPM_RC convertEcKeyToPublic(TPM2B_PUBLIC 		*objectPublic,
 			    TPMI_ALG_SIG_SCHEME 	scheme,
 			    TPMI_ALG_HASH 		nalg,
 			    TPMI_ALG_HASH		halg,
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 			    EC_KEY 			*ecKey)
+#else
+    EVP_PKEY 		*ecKey)
+#endif
 {
     TPM_RC 		rc = 0;
     int 		modulusBytes;
     uint8_t 		*modulusBin = NULL;
     TPMI_ECC_CURVE	curveID;
-    
+    int 		privateKeyBytes;
+
     if (rc == 0) {
 	rc = convertEcKeyToPublicKeyBin(&modulusBytes,
 					&modulusBin,		/* freed @1 */
 					ecKey);
     }
     if (rc == 0) {
-	rc = getEcCurve(&curveID, ecKey);
+	rc = getEcCurve(&curveID, &privateKeyBytes, ecKey);
     }
     if (rc == 0) {
 	rc = convertEcPublicKeyBinToPublic(objectPublic,
@@ -1049,7 +1190,11 @@ TPM_RC convertEcPemToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 {
     TPM_RC 	rc = 0;
     EVP_PKEY 	*evpPkey = NULL;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     EC_KEY 	*ecKey = NULL;
+#else
+    EVP_PKEY 	*ecKey = NULL;
+#endif
 
     /* convert a PEM file to an openssl EVP_PKEY */
     if (rc == 0) {
@@ -1058,8 +1203,13 @@ TPM_RC convertEcPemToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 				    password);
     }
     if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 	rc = convertEvpPkeyToEckey(&ecKey,		/* freed @2 */
 				   evpPkey);
+#else
+	/* openssl 3.0.0 and up use the EVP_PKEY directly */
+	ecKey = evpPkey;
+#endif
     }
     if (rc == 0) {
 	rc = convertEcKeyToPrivate(objectPrivate,	/* TPM2B_PRIVATE */
@@ -1075,7 +1225,9 @@ TPM_RC convertEcPemToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 				  halg,
 				  ecKey);
     }
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     EC_KEY_free(ecKey);   		/* @2 */
+#endif
     if (evpPkey != NULL) {
 	EVP_PKEY_free(evpPkey);		/* @1 */
     }
@@ -1102,15 +1254,24 @@ TPM_RC convertEcPemToPublic(TPM2B_PUBLIC 	*objectPublic,
 {
     TPM_RC	rc = 0;
     EVP_PKEY  	*evpPkey = NULL;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     EC_KEY 	*ecKey = NULL;
+#else
+    EVP_PKEY 	*ecKey = NULL;
+#endif
 
     if (rc == 0) {
 	rc = convertPemToEvpPubKey(&evpPkey,		/* freed @1 */
 				   pemKeyFilename);
     }
     if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 	rc = convertEvpPkeyToEckey(&ecKey,		/* freed @2 */
 				   evpPkey);
+#else
+	/* openssl 3.0.0 and up use the EVP_PKEY directly */
+	ecKey = evpPkey;
+#endif
     }
     if (rc == 0) {
 	rc = convertEcKeyToPublic(objectPublic,
@@ -1120,9 +1281,11 @@ TPM_RC convertEcPemToPublic(TPM2B_PUBLIC 	*objectPublic,
 				  halg,
 				  ecKey);
     }
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     if (ecKey != NULL) {
 	EC_KEY_free(ecKey);   		/* @2 */
     }
+#endif
     if (evpPkey != NULL) {
 	EVP_PKEY_free(evpPkey);		/* @1 */
     }
@@ -1216,7 +1379,11 @@ TPM_RC convertEcDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 			     const char 		*password)
 {
     TPM_RC		rc = 0;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     EC_KEY		*ecKey = NULL;
+#else
+    EVP_PKEY 		*ecKey = NULL;
+#endif
     unsigned char	*derBuffer = NULL;
     size_t		derSize;
 
@@ -1228,7 +1395,12 @@ TPM_RC convertEcDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
     }
     if (rc == 0) {
 	const unsigned char *tmpPtr = derBuffer;	/* because pointer moves */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 	ecKey = d2i_ECPrivateKey(NULL, &tmpPtr, (long)derSize);	/* freed @2 */
+#else
+	ecKey = d2i_PrivateKey(EVP_PKEY_EC, NULL,
+				&tmpPtr, (long)derSize);
+#endif
 	if (ecKey == NULL) {
 	    printf("convertEcDerToKeyPair: could not convert key to EC_KEY\n");
 	    rc = TPM_RC_VALUE;
@@ -1239,7 +1411,7 @@ TPM_RC convertEcDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 				   objectSensitive,	/* TPM2B_SENSITIVE */
 				   ecKey,
 				   password);
-    }	
+    }
     if (rc == 0) {
 	rc = convertEcKeyToPublic(objectPublic,
 				  keyType,
@@ -1249,9 +1421,7 @@ TPM_RC convertEcDerToKeyPair(TPM2B_PUBLIC 		*objectPublic,
 				  ecKey);
     }
     free(derBuffer);		/* @1 */
-    if (ecKey != NULL) {
-	EC_KEY_free(ecKey);		/* @2 */
-    }
+    TSS_EccFree(ecKey);		/* @2 */
     return rc;
 }
 
@@ -1269,7 +1439,11 @@ TPM_RC convertEcDerToPublic(TPM2B_PUBLIC 		*objectPublic,
 {
     TPM_RC		rc = 0;
     EVP_PKEY 		*evpPkey = NULL;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     EC_KEY		*ecKey = NULL;
+#else
+    EVP_PKEY 		*ecKey = NULL;
+#endif
     unsigned char	*derBuffer = NULL;
     size_t		derSize;
 
@@ -1288,8 +1462,13 @@ TPM_RC convertEcDerToPublic(TPM2B_PUBLIC 		*objectPublic,
 	}
     }
     if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 	rc = convertEvpPkeyToEckey(&ecKey,		/* freed @3 */
 				   evpPkey);
+#else
+	/* openssl 3.0.0 and up use the EVP_PKEY directly */
+	ecKey = evpPkey;
+#endif
     }
     if (rc == 0) {
 	rc = convertEcKeyToPublic(objectPublic,
@@ -1301,11 +1480,11 @@ TPM_RC convertEcDerToPublic(TPM2B_PUBLIC 		*objectPublic,
     }
     free(derBuffer);			/* @1 */
     if (evpPkey != NULL) {
-	EVP_PKEY_free(evpPkey);		/* @1 */
+	EVP_PKEY_free(evpPkey);		/* @2 */
     }
-    if (ecKey != NULL) {
-	EC_KEY_free(ecKey);		/* @2 */
-    }
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    EC_KEY_free(ecKey);   		/* @3 */
+#endif
     return rc;
 }
 
@@ -1488,8 +1667,6 @@ TPM_RC convertRsaPemToPublic(TPM2B_PUBLIC 		*objectPublic,
    For openssl < 3.0.0, the bignums are references to the RSA key and should not be freed separately.
 
    For openssl >= 3.0.0, the bignums are allocated and must be freed.
-
-   FIXME - is there a better way?
 */
 
 TPM_RC getRsaKeyParts(const BIGNUM **n,
@@ -1668,7 +1845,7 @@ TPM_RC convertRsaPublicToEvpPubKey(EVP_PKEY **evpPubkey,	/* freed by caller */
 	    rc = TSS_RC_RSA_KEY_CONVERT;
 	}
     }
-#else	/*  FIXME this should always work? */
+#else
     /* TPM to RSA token */
     if (rc == 0) {
 	/* For Openssl < 3, rsaKey is an RSA structure. */
@@ -2466,15 +2643,20 @@ TPM_RC convertEcBinToTSignature(TPMT_SIGNATURE *tSignature,
 
 #ifndef TPM_TSS_NOECC
 
-/* getEcCurve() gets the TCG algorithm ID curve associated with the openssl EC_KEY */
+/* getEcCurve() gets the TCG algorithm ID curve associated with the openssl EC_KEY.  Gets the length
+   of the private key (in bytes).
+*/
 
-TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
-		  const EC_KEY *ecKey)
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+
+static TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
+			 int 		*privateKeyBytes, 
+			 const EC_KEY 	*ecKey)
 {
     TPM_RC 		rc = 0;
     const EC_GROUP 	*ecGroup;
     int			nid;
-    
+
     if (rc == 0) {
 	ecGroup = EC_KEY_get0_group(ecKey);
 	nid = EC_GROUP_get_curve_name(ecGroup);	/* openssl NID */
@@ -2482,9 +2664,11 @@ TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
 	switch (nid) {
 	  case NID_X9_62_prime256v1:
 	    *curveID = TPM_ECC_NIST_P256;
+	    *privateKeyBytes = 32;
 	    break;
 	  case NID_secp384r1:
 	    *curveID = TPM_ECC_NIST_P384;
+	    *privateKeyBytes = 48;
 	    break;
 	  default:
 	    printf("getEcCurve: Error, curve NID %u not supported \n", nid);
@@ -2493,6 +2677,45 @@ TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
     }
     return rc;
 }
+
+#else
+
+static TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
+			 int 		*privateKeyBytes,
+			 const EVP_PKEY *ecKey)
+{
+    TPM_RC  	rc = 0;
+    int		irc;
+    char 	curveName[64];
+
+    if (rc == 0) {
+	irc = EVP_PKEY_get_utf8_string_param(ecKey, OSSL_PKEY_PARAM_GROUP_NAME,
+					     curveName, sizeof(curveName), NULL);
+	if (irc != 1) {
+	    printf("getEcCurve: Error getting curve\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    /* FIXME make table */
+    if (rc == 0) {
+	if (strcmp(curveName, "prime256v1") == 0) {
+	    *curveID = TPM_ECC_NIST_P256;
+	    *privateKeyBytes = 32;
+	}
+	else if (strcmp(curveName, "secp384r1") == 0) {
+	    *curveID = TPM_ECC_NIST_P384;
+	    *privateKeyBytes = 48;
+	}
+	else {
+	    printf("getEcCurve: Error, curve %s not supported \n", curveName);
+	    rc = TSS_RC_EC_KEY_CONVERT;
+
+	}
+    }
+    return rc;
+}
+
+#endif
 
 /* getEcNid() gets the OpenSSL nid corresponding to the TCG algorithm ID curve */
 

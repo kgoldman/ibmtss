@@ -1219,7 +1219,11 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	      case EK_CERT_ECC_NISTP521_INDEX_H4:
 	      case EK_CERT_ECC_SM2P256INDEX_H5:
 		  {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 		      EC_KEY *ecKey = NULL;
+#else
+		      EVP_PKEY *ecKey = NULL;
+#endif
 		      /* check that the public key algorithm matches the ekCertIndex algorithm */
 		      if (rc == 0) {
 			  if (pkeyType != EVP_PKEY_EC) {
@@ -1230,12 +1234,16 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 		      }
 		      /* convert the public key to OpenSSL structure */
 		      if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 			  ecKey = EVP_PKEY_get1_EC_KEY(pkey);		/* freed @3 */
 			  if (ecKey == NULL) {
 			      printf("convertCertificatePubKey: Could not extract EC public key "
 				     "from X509 certificate\n");
 			      rc = TPM_RC_INTEGRITY;
 			  }
+#else		/* use the EVP_PKEY directly */
+			  ecKey = pkey;
+#endif
 		      }
 		      if (rc == 0) {
 			  rc = convertEcKeyToPublicKeyBin(modulusBytes,
@@ -1246,7 +1254,9 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 			  if (print) TSS_PrintAll("Certificate public key:",
 						  *modulusBin, *modulusBytes);
 		      }
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 		      EC_KEY_free(ecKey);   		/* @3 */
+#endif
 		  }
 		  break;
 #endif	/* TPM_TSS_NOECC */
@@ -2517,7 +2527,7 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,		/* from certificate */
 		    != publicKeyBytes) {
 		    printf("processValidatePrimary: "
 			   "X509 certificate key length %u does not match "
-			   "output of createprimary x %u +y %u\n",
+			   "output of createprimary x %u + y %u\n",
 			   publicKeyBytes,
 			   tpmtPublic->unique.ecc.x.t.size,
 			   tpmtPublic->unique.ecc.y.t.size);
@@ -2552,7 +2562,7 @@ TPM_RC processValidatePrimary(uint8_t *publicKeyBin,		/* from certificate */
 	else
 #endif /* TPM_TSS_NOECC */
 	    {
-		printf("processValidatePrimary=: "
+		printf("processValidatePrimary: "
 		       "ekCertIndex %08x (asymmetric algorithm) not supported\n", ekCertIndex);
 		rc = TPM_RC_INTEGRITY;
 	    }

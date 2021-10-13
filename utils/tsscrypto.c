@@ -744,6 +744,26 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
 
 #ifndef TPM_TSS_NOECC
 
+/* TSS_EccFree() frees an openssl ECC key token.
+
+   This abstracts the crypto library specific free.
+
+   For Openssl < 3, eccKey is an EC_KEY structure.
+   For Openssl 3, rsaKey is an EVP_PKEY,
+*/
+
+void TSS_EccFree(void *eccKey)
+{
+    if (eccKey != NULL) {
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+	EC_KEY_free(eccKey);
+#else
+	EVP_PKEY_free(eccKey);
+#endif
+    }
+    return;
+}
+
 /* TSS_GeneratePlatformEphemeralKey sets the EC parameters to curveID for generating the ephemeral
    key. Some OpenSSL versions do not come with NIST p256.
 
