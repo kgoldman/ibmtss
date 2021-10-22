@@ -63,6 +63,7 @@
 #include <openssl/pem.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000
 #include <openssl/core_names.h>
+#include <openssl/param_build.h>
 #endif
 
 #ifndef TPM_TSS_NOECC
@@ -86,23 +87,25 @@ TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
 
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
-static TPM_RC getEcNid(int		*nid,
-		       TPMI_ECC_CURVE 	curveID);
 static TPM_RC getEcModulusBytes(int	*modulusBytes,
 				int	*pointBytes,
 				TPMI_ECC_CURVE curveID);
+static TPM_RC getEcNid(int		*nid,
+		       TPMI_ECC_CURVE 	curveID);
 #if OPENSSL_VERSION_NUMBER < 0x30000000
 static TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
-			 int 		*privateKeyBytes, 
+			 int 		*privateKeyBytes,
 			 const EC_KEY 	*ecKey);
 #else
+static TPM_RC getEcCurveString(const char **curveString,
+			       int nid);
 static TPM_RC getEccKeyParts(uint8_t **priv,
 			     int *privLen,
 			     uint8_t **pub,
 			     int *pubLen,
 			     const EVP_PKEY *eccKey);
 static TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
-			 int 		*privateKeyBytes, 
+			 int 		*privateKeyBytes,
 			 const EVP_PKEY *ecKey);
 #endif
 
@@ -341,6 +344,8 @@ TPM_RC convertPemToRsaPrivKey(void **rsaKey,		/* freed by caller */
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+
 /* convertEvpPkeyToEckey retrieves the EC_KEY key token from the EVP_PKEY */
 
 TPM_RC convertEvpPkeyToEckey(EC_KEY **ecKey,		/* freed by caller */
@@ -357,6 +362,7 @@ TPM_RC convertEvpPkeyToEckey(EC_KEY **ecKey,		/* freed by caller */
     }
     return rc;
 }
+#endif
 
 #endif /* TPM_TSS_NOECC */
 #endif /* TPM_TPM20 */
@@ -1866,6 +1872,8 @@ TPM_RC convertRsaPublicToEvpPubKey(EVP_PKEY **evpPubkey,	/* freed by caller */
 #ifdef TPM_TPM20
 #ifndef TPM_TSS_NOECC
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+
 /* convertEcPublicToEvpPubKey() converts an EC TPMS_ECC_POINT to an EVP_PKEY.
 
    Deprecated: This is hard coded to NIST P256.  See convertEcTPMTPublicToEvpPubKey().
@@ -1891,7 +1899,7 @@ TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller */
     if (rc == 0) {
 	ecGroup = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);	/* freed @4 */
 	if (ecGroup == NULL) {
-	    printf("convertEcPublicToEvpPubKey: Error in EC_GROUP_new_by_curve_name\n");
+	    printf("convertEcPublicToEvpPubKey: Error in EC_GROUP_new_by_curve_name\an");
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
@@ -1955,6 +1963,8 @@ TPM_RC convertEcPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller */
     return rc;
 }
 
+#endif
+
 /* convertEcTPMTPublicToEvpPubKey() converts an EC TPMT_PUBLIC to an EVP_PKEY.  The only items used
    from the TPMT_PUBLIC are the curveID and X and Y points.
 
@@ -1966,18 +1976,30 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 {
     TPM_RC 	rc = 0;
     int		irc;
-    int		nid;
-    EC_GROUP 	*ecGroup = NULL;
-    EC_KEY 	*ecKey = NULL;
     BIGNUM 	*x = NULL;		/* freed @2 */
     BIGNUM 	*y = NULL;		/* freed @3 */
-    
+    int		nid;
+    EC_GROUP 	*ecGroup = NULL;
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    EC_KEY 	*ecKey = NULL;
+#else
+    EC_POINT		*ecPoint = NULL;
+    uint8_t		*pubBin;
+    size_t		pubBinLength;
+    EVP_PKEY_CTX 	*ctx = NULL;
+    OSSL_PARAM_BLD 	*param_bld = NULL;
+    OSSL_PARAM 		*params = NULL;
+    const char 		*curveString = NULL;
+#endif
     if (rc == 0) {
-	ecKey = EC_KEY_new();		/* freed @1 */
-	if (ecKey == NULL) {
-	    printf("convertEcTPMTPublicToEvpPubKey: Error creating EC_KEY\n");
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+	rc = convertBin2Bn(&x,				/* freed @1 */
+			   tpmtPublic->unique.ecc.x.t.buffer,
+			   tpmtPublic->unique.ecc.x.t.size);
+    }
+    if (rc == 0) {
+	rc = convertBin2Bn(&y,				/* freed @2 */
+			   tpmtPublic->unique.ecc.y.t.buffer,
+			   tpmtPublic->unique.ecc.y.t.size);
     }
     /* map from the TCG curve to the openssl nid */
     if (rc == 0) {
@@ -1987,6 +2009,14 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 	ecGroup = EC_GROUP_new_by_curve_name(nid);	/* freed @4 */
 	if (ecGroup == NULL) {
 	    printf("convertEcTPMTPublicToEvpPubKey: Error in EC_GROUP_new_by_curve_name\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+#if OPENSSL_VERSION_NUMBER < 0x30000000
+    if (rc == 0) {
+	ecKey = EC_KEY_new();				/* freed @3 */
+	if (ecKey == NULL) {
+	    printf("convertEcTPMTPublicToEvpPubKey: Error creating EC_KEY\n");
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
@@ -2001,16 +2031,6 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 	    printf("convertEcTPMTPublicToEvpPubKey: Error in EC_KEY_set_group\n");
 	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
-    }
-    if (rc == 0) {
-	rc = convertBin2Bn(&x,				/* freed @2 */
-			   tpmtPublic->unique.ecc.x.t.buffer,
-			   tpmtPublic->unique.ecc.x.t.size);	
-    }
-    if (rc == 0) {
-	rc = convertBin2Bn(&y,				/* freed @3 */
-			   tpmtPublic->unique.ecc.y.t.buffer,
-			   tpmtPublic->unique.ecc.y.t.size);
     }
     if (rc == 0) {
 	irc = EC_KEY_set_public_key_affine_coordinates(ecKey, x, y);
@@ -2035,18 +2055,127 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
     }
-    if (ecGroup != NULL) {
-	EC_GROUP_free(ecGroup);	/* @4 */
+#else
+    /* see EVP_PKEY-EC.html for constants */
+    if (rc == 0) {
+	ecPoint = EC_POINT_new(ecGroup);		/* freed @3 */
+	if (ecPoint== NULL) {
+	    printf("convertEcTPMTPublicToEvpPubKey: EC_POINT_new failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
     }
+    if (rc == 0) {
+	irc = EC_POINT_set_affine_coordinates(ecGroup, ecPoint, x, y, NULL);
+	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
+		   "Error converting public key from X Y to EC_KEY format\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	pubBinLength = EC_POINT_point2buf(ecGroup, ecPoint,
+					  POINT_CONVERSION_COMPRESSED,
+					  &pubBin, NULL);	/* freed @7 */
+	if (pubBinLength == 0) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
+		   "Error in EC_POINT_point2buf\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	param_bld = OSSL_PARAM_BLD_new();		/* freed @3 */
+	if (param_bld == NULL) {
+	    printf("convertEcTPMTPublicToEvpPubKey; "
+		   "Error in OSSL_PARAM_BLD_new\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	rc = getEcCurveString(&curveString, nid);
+    }
+    if (rc == 0) {
+	irc = OSSL_PARAM_BLD_push_utf8_string(param_bld, OSSL_PKEY_PARAM_GROUP_NAME,
+					      curveString, 0);
+	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey; "
+		   "Error in OSSL_PARAM_BLD_push_utf8_string\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	irc = OSSL_PARAM_BLD_push_octet_string(param_bld, OSSL_PKEY_PARAM_PUB_KEY,
+					       pubBin, pubBinLength);
+  	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey; "
+		   "Error in OSSL_PARAM_BLD_push_utf8_string\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+#if 0
+    if (rc == 0) {
+	irc = OSSL_PARAM_BLD_push_BN(param_bld, OSSL_PKEY_PARAM_EC_PUB_X, x);
+	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
+		   "Error in OSSL_PARAM_BLD_push_BN() x\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	irc = OSSL_PARAM_BLD_push_BN(param_bld, OSSL_PKEY_PARAM_EC_PUB_Y, y);
+	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
+		   "Error in OSSL_PARAM_BLD_push_BN() y\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+#endif
+    if (rc == 0) {
+	params = OSSL_PARAM_BLD_to_param(param_bld);		/* freed @6 */
+	if (params == NULL) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
+		   "Error in OSSL_PARAM_BLD_to_param()\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	ctx = EVP_PKEY_CTX_new_from_name(NULL, "EC", NULL);	/* freed @5 */
+	if (ctx == NULL) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
+		   "Error in EVP_PKEY_CTX_new_from_name()\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_fromdata_init(ctx);
+	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
+		   "Error in EVP_PKEY_fromdata_init()\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_fromdata(ctx, evpPubkey,			/* freed by caller */
+				EVP_PKEY_PUBLIC_KEY, params);
+	if (irc != 1) {
+	    printf("convertEcTPMTPublicToEvpPubKey: "
+		   "Error in EVP_PKEY_fromdata()\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
+#endif
+    BN_free(x);			/* @1 */
+    BN_free(y);			/* @2 */
+    EC_GROUP_free(ecGroup);	/* @4 */
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     if (ecKey != NULL) {
-	EC_KEY_free(ecKey);	/* @1 */
+	EC_KEY_free(ecKey);	/* @3 */
     }
-    if (x != NULL) {
-	BN_free(x);		/* @2 */
-    }
-    if (y != NULL) {
-	BN_free(y);		/* @3 */
-    }
+#else
+    OSSL_PARAM_BLD_free(param_bld);;	/* @3 */
+    OSSL_PARAM_free(params); 		/* @6 */
+    EVP_PKEY_CTX_free(ctx);		/* @5 */
+    OPENSSL_free(pubBin);		/* @7 */
+#endif
     return rc;
 }
 
@@ -2712,6 +2841,21 @@ static TPM_RC getEcCurve(TPMI_ECC_CURVE *curveID,
 
 	}
     }
+    return rc;
+}
+
+/* getEcCurveString() maps the TPM curve ID to the openssl utf-8 string */
+
+static TPM_RC getEcCurveString(const char **curveString,
+			       int nid)
+{
+    TPM_RC  	rc = 0;
+
+    *curveString = OBJ_nid2sn(nid);
+    if (*curveString == NULL) {
+	printf("getEcCurveString: Error, nid %d not supported \n", nid);
+	rc = TSS_RC_EC_KEY_CONVERT;
+   }
     return rc;
 }
 

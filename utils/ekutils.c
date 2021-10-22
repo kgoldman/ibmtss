@@ -1083,6 +1083,7 @@ TPM_RC convertX509ToDer(uint32_t *certLength,
 
  */
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 TPM_RC convertX509ToEc(EC_KEY **ecKey,	/* freed by caller */
 		       X509 *x509)
 {
@@ -1109,6 +1110,7 @@ TPM_RC convertX509ToEc(EC_KEY **ecKey,	/* freed by caller */
     }
     return rc;
 }
+#endif
 
 #endif	/* TPM_TSS_NOECC */
 
@@ -2138,7 +2140,7 @@ TPM_RC addCertKeyEccT(X509 *x509Certificate,
     if (rc == 0) {
 	irc = X509_set_pubkey(x509Certificate, evpPubkey);
 	if (irc != 1) {
-	    printf("addCertKeyEcc: Error adding public key to certificate\n");
+	    printf("addCertKeyEccT: Error adding public key to certificate\n");
 	    rc = TSS_RC_X509_ERROR;
 	}
     }
@@ -2148,6 +2150,8 @@ TPM_RC addCertKeyEccT(X509 *x509Certificate,
     }
     return rc;
 }
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 
 /* addCertKeyEcc() adds the TPM ECC public key (the key to be certified) to the openssl X509
    certificate.
@@ -2182,6 +2186,7 @@ TPM_RC addCertKeyEcc(X509 *x509Certificate,
     }
     return rc;
 }
+#endif
 
 #endif	/* TPM_TSS_NOECC */
 #endif /* TPM_TPM20 */
