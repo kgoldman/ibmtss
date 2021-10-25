@@ -2111,24 +2111,6 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 	    rc = TSS_RC_EC_KEY_CONVERT;
 	}
     }
-#if 0
-    if (rc == 0) {
-	irc = OSSL_PARAM_BLD_push_BN(param_bld, OSSL_PKEY_PARAM_EC_PUB_X, x);
-	if (irc != 1) {
-	    printf("convertEcTPMTPublicToEvpPubKey: "
-		   "Error in OSSL_PARAM_BLD_push_BN() x\n");
-	    rc = TSS_RC_EC_KEY_CONVERT;
-	}
-    }
-    if (rc == 0) {
-	irc = OSSL_PARAM_BLD_push_BN(param_bld, OSSL_PKEY_PARAM_EC_PUB_Y, y);
-	if (irc != 1) {
-	    printf("convertEcTPMTPublicToEvpPubKey: "
-		   "Error in OSSL_PARAM_BLD_push_BN() y\n");
-	    rc = TSS_RC_EC_KEY_CONVERT;
-	}
-    }
-#endif
     if (rc == 0) {
 	params = OSSL_PARAM_BLD_to_param(param_bld);		/* freed @6 */
 	if (params == NULL) {
@@ -2588,25 +2570,19 @@ TPM_RC verifyEcSignatureFromEvpPubKey(unsigned char *message,
 {
     TPM_RC 		rc = 0;
     int			irc;
-    EC_KEY 		*ecKey = NULL;
     BIGNUM 		*r = NULL;
     BIGNUM 		*s = NULL;
     ECDSA_SIG 		*ecdsaSig = NULL;
+    uint8_t 		*signature = NULL;
+    int 		signatureSize;
+    EVP_PKEY_CTX 	*ctx = NULL;
 
-    /* construct the EC key token */
-    if (rc == 0) {
-	ecKey = EVP_PKEY_get1_EC_KEY(evpPkey);	/* freed @1 */
-	if (ecKey == NULL) {
-	    printf("verifyEcSignatureFromEvpPubKey: EVP_PKEY_get1_EC_KEY failed\n");  
-	    rc = TSS_RC_EC_KEY_CONVERT;
-	}
-    }
     /* construct the ECDSA_SIG signature token */
     if (rc == 0) {
 	rc = convertBin2Bn(&r,			/* freed @2 */
 			   tSignature->signature.ecdsa.signatureR.t.buffer,
 			   tSignature->signature.ecdsa.signatureR.t.size);
-    }	
+    }
     if (rc == 0) {
 	rc = convertBin2Bn(&s,			/* freed @2 */
 			   tSignature->signature.ecdsa.signatureS.t.buffer,
@@ -2621,24 +2597,46 @@ TPM_RC verifyEcSignatureFromEvpPubKey(unsigned char *message,
 	}
     }
     if (rc == 0) {
-	int irc = ECDSA_SIG_set0(ecdsaSig, r, s);	
+	int irc = ECDSA_SIG_set0(ecdsaSig, r, s);
 	if (irc != 1) {
             printf("verifyEcSignatureFromEvpPubKey: Error in ECDSA_SIG_set0()\n");
             rc = TSS_RC_EC_KEY_CONVERT;
 	}
     }
+    /* serialize the signature */
+    if (rc == 0) {
+	signatureSize = i2d_ECDSA_SIG(ecdsaSig, &signature);	/* freed @3 */
+	if (signatureSize < 0) {
+	    printf("verifyEcSignatureFromEvpPubKey: Signature serialization failed\n");
+	    rc = TSS_RC_EC_KEY_CONVERT;
+	}
+    }
     /* verify the signature */
     if (rc == 0) {
-	irc = ECDSA_do_verify(message, messageSize, 
-			      ecdsaSig, ecKey);
-	if (irc != 1) {		/* quote signature did not verify */
-	    printf("verifyEcSignatureFromEvpPubKey: Bad signature\n");
+	ctx = EVP_PKEY_CTX_new(evpPkey, NULL);	/* freed @1 */
+	if (ctx == NULL) {
+	    printf("verifyEcSignatureFromEvpPubKey: Error in EVP_PKEY_CTX_new()\n");
+	    rc =TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_verify_init(ctx);
+	if (irc != 1) {
+	    printf("verifyEcSignatureFromEvpPubKey: Error in EVP_PKEY_verify_init()\n");
 	    rc = TSS_RC_EC_SIGNATURE;
 	}
     }
-    if (ecKey != NULL) {
-	EC_KEY_free(ecKey);		/* @1 */
+    if (rc == 0) {
+	irc = EVP_PKEY_verify(ctx,
+			      signature, signatureSize,
+			      message, messageSize);
+	if (irc != 1) {
+	    printf("verifyEcSignatureFromEvpPubKey: Error in EVP_PKEY_verify()\n");
+	    rc = TSS_RC_EC_SIGNATURE;
+	}
     }
+    EVP_PKEY_CTX_free(ctx);		/* @1 */
+    OPENSSL_free(signature);		/* @3 */
     /* if the ECDSA_SIG was allocated correctly, r and s are implicitly freed */
     if (ecdsaSig != NULL) {
 	ECDSA_SIG_free(ecdsaSig);	/* @2 */
