@@ -84,9 +84,17 @@ extern "C" {
 					  int plen,
 					  TPMI_ALG_HASH halg);	
 #ifndef TPM_TSS_NORSA
+
     LIB_EXPORT
     void TSS_RsaFree(void *rsaKey);
 
+    /* crypto library independent */
+    LIB_EXPORT
+    TPM_RC TSS_RSAGeneratePublicTokenI(void **rsa_pub_key,		/* freed by caller */
+				       const unsigned char *narr,   	/* public modulus */
+				       uint32_t nbytes,
+				       const unsigned char *earr,   	/* public exponent */
+				       uint32_t ebytes);
     LIB_EXPORT
     TPM_RC TSS_RSAPublicEncrypt(unsigned char* encrypt_data,
 				size_t encrypt_data_size,
@@ -99,14 +107,33 @@ extern "C" {
 				unsigned char *p,
 				int pl,
 				TPMI_ALG_HASH halg);
+#endif	/* TPM_TSS_NORSA */
+
+#ifndef TPM_TSS_NOECC
+
+    LIB_EXPORT
+    void TSS_EccFree(void *eccKey);
+
+#endif	/* TPM_TSS_NOECC */
+
+
+
     /*
-      deprecated OpenSSL specific functions
+      deprecated and OpenSSL specific functions
     */
+#ifndef TPM_TSS_NOECC
+    TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
+			TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
+			TPMT_PUBLIC		*publicArea);
+
+#endif	/* TPM_TSS_NOECC */
+
 #ifndef TPM_TSS_NO_OPENSSL
+
+#ifndef TPM_TSS_NORSA
 
     LIB_EXPORT
     TPM_RC TSS_RsaNew(void **rsaKey);
-
     /* deprecated */
     LIB_EXPORT
     TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
@@ -114,24 +141,12 @@ extern "C" {
 				      uint32_t nbytes,
 				      const unsigned char *earr,   	/* public exponent */
 				      uint32_t ebytes);
+
+
+#endif /* TPM_TSS_NORSA */
+    
 #endif /* TPM_TSS_NO_OPENSSL */
-
-    /* crypto library independent */
-    LIB_EXPORT
-    TPM_RC TSS_RSAGeneratePublicTokenI(void **rsa_pub_key,		/* freed by caller */
-				       const unsigned char *narr,   	/* public modulus */
-				       uint32_t nbytes,
-				       const unsigned char *earr,   	/* public exponent */
-				       uint32_t ebytes);
-
-#endif
-#ifndef TPM_TSS_NOECC
-    void TSS_EccFree(void *eccKey);
-    TPM_RC TSS_ECC_Salt(TPM2B_DIGEST 		*salt,
-			TPM2B_ENCRYPTED_SECRET	*encryptedSalt,
-			TPMT_PUBLIC		*publicArea);
-
-#endif
+    
     TPM_RC TSS_AES_GetEncKeySize(size_t *tssSessionEncKeySize);
     TPM_RC TSS_AES_GetDecKeySize(size_t *tssSessionDecKeySize);
     TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
