@@ -2859,8 +2859,6 @@ TSS_TPMS_SCHEME_KDF1_SP800_56A_Unmarshalu(TPMS_SCHEME_KDF1_SP800_56A *target, BY
     return rc;
 }
 
-#ifndef TPM_TSS_NOCMDCHECK
-
 /* Table 148 - Definition of Types for KDF Schemes, hash-based key- or mask-generation functions */
 
 TPM_RC
@@ -2873,8 +2871,6 @@ TSS_TPMS_SCHEME_KDF2_Unmarshalu(TPMS_SCHEME_KDF2 *target, BYTE **buffer, uint32_
     }
     return rc;
 }
-
-#endif	/* TPM_TSS_NOCMDCHECK */
 
 /* Table 148 - Definition of Types for KDF Schemes, hash-based key- or mask-generation functions */
 

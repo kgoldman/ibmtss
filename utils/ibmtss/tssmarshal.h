@@ -68,6 +68,8 @@
 #include "DictionaryAttackLockReset_fp.h"
 #include "DictionaryAttackParameters_fp.h"
 #include "Duplicate_fp.h"
+#include "ECC_Encrypt_fp.h"
+#include "ECC_Decrypt_fp.h"
 #include "ECC_Parameters_fp.h"
 #include "ECDH_KeyGen_fp.h"
 #include "ECDH_ZGen_fp.h"
@@ -211,6 +213,10 @@ extern "C" {
     TSS_ECDH_KeyGen_In_Marshalu(const ECDH_KeyGen_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     TPM_RC
     TSS_ECDH_ZGen_In_Marshalu(const ECDH_ZGen_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
+    TPM_RC
+    TSS_ECC_Encrypt_In_Marshalu(const ECC_Encrypt_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
+    TPM_RC
+    TSS_ECC_Decrypt_In_Marshalu(const ECC_Decrypt_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     TPM_RC
     TSS_ECC_Parameters_In_Marshalu(const ECC_Parameters_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     TPM_RC
@@ -643,6 +649,10 @@ extern "C" {
     TSS_ECDH_KeyGen_Out_Unmarshalu(ECDH_KeyGen_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
     TPM_RC
     TSS_ECDH_ZGen_Out_Unmarshalu(ECDH_ZGen_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
+    TPM_RC
+    TSS_ECC_Encrypt_Out_Unmarshalu(ECC_Encrypt_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
+    TPM_RC
+    TSS_ECC_Decrypt_Out_Unmarshalu(ECC_Decrypt_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
     TPM_RC
     TSS_ECC_Parameters_Out_Unmarshalu(ECC_Parameters_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
     TPM_RC

@@ -54,11 +54,9 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2019				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2022				*/
 /*										*/
 /********************************************************************************/
-
-/* TPM and TSS share thses structures */
 
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
@@ -84,6 +82,8 @@
 #include "DictionaryAttackLockReset_fp.h"
 #include "DictionaryAttackParameters_fp.h"
 #include "Duplicate_fp.h"
+#include "ECC_Encrypt_fp.h"
+#include "ECC_Decrypt_fp.h"
 #include "ECC_Parameters_fp.h"
 #include "ECDH_KeyGen_fp.h"
 #include "ECDH_ZGen_fp.h"
@@ -197,6 +197,8 @@ typedef union {
     DictionaryAttackLockReset_In  DictionaryAttackLockReset;
     DictionaryAttackParameters_In DictionaryAttackParameters;
     Duplicate_In                  Duplicate;
+    ECC_Encrypt_In		  ECC_Encrypt;
+    ECC_Decrypt_In		  ECC_Decrypt;
     ECC_Parameters_In             ECC_Parameters;
     ECDH_KeyGen_In                ECDH_KeyGen;
     ECDH_ZGen_In                  ECDH_ZGen;
@@ -320,6 +322,8 @@ typedef union
     CreatePrimary_Out              CreatePrimary;
     Create_Out                     Create;
     Duplicate_Out                  Duplicate;
+    ECC_Encrypt_Out 		   ECC_Encrypt;
+    ECC_Decrypt_Out                ECC_Decrypt;
     ECC_Parameters_Out             ECC_Parameters;
     ECDH_KeyGen_Out                ECDH_KeyGen;
     ECDH_ZGen_Out                  ECDH_ZGen;

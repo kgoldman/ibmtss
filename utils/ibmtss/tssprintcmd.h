@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -73,6 +73,8 @@ extern "C" {
     void DictionaryAttackLockReset_In_Print(DictionaryAttackLockReset_In *in, unsigned int indent);
     void DictionaryAttackParameters_In_Print(DictionaryAttackParameters_In *in, unsigned int indent);
     void Duplicate_In_Print(Duplicate_In *in, unsigned int indent);
+    void ECC_Encrypt_In_Print(ECC_Encrypt_In *in, unsigned int indent);
+    void ECC_Decrypt_In_Print(ECC_Decrypt_In *in, unsigned int indent);
     void ECC_Parameters_In_Print(ECC_Parameters_In *in, unsigned int indent);
     void ECDH_KeyGen_In_Print(ECDH_KeyGen_In *in, unsigned int indent);
     void ECDH_ZGen_In_Print(ECDH_ZGen_In *in, unsigned int indent);

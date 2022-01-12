@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -576,6 +576,42 @@ TSS_ECC_Parameters_In_Marshalu(const ECC_Parameters_In *source, uint16_t *writte
     TPM_RC rc = 0;
     if (rc == 0) {
 	rc = TSS_TPMI_ECC_CURVE_Marshalu(&source->curveID, written, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
+TSS_ECC_Encrypt_In_Marshalu(const ECC_Encrypt_In *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMI_DH_OBJECT_Marshalu(&source->keyHandle, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_MAX_BUFFER_Marshalu(&source->plainText, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMT_KDF_SCHEME_Marshalu(&source->inScheme, written, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
+TSS_ECC_Decrypt_In_Marshalu(const ECC_Decrypt_In *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMI_DH_OBJECT_Marshalu(&source->keyHandle, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_ECC_POINT_Marshalu(&source->C1, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_MAX_BUFFER_Marshalu(&source->C2, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_DIGEST_Marshalu(&source->C3, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPMT_KDF_SCHEME_Marshalu(&source->inScheme, written, buffer, size);
     }
     return rc;
 }
@@ -2174,6 +2210,42 @@ TSS_ECC_Parameters_Out_Unmarshalu(ECC_Parameters_Out *target, TPM_ST tag, BYTE *
     }
     if (rc == TPM_RC_SUCCESS) {
 	rc = TSS_TPMS_ALGORITHM_DETAIL_ECC_Unmarshalu(&target->parameters, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
+TSS_ECC_Encrypt_Out_Unmarshalu(ECC_Encrypt_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    uint32_t parameterSize = 0;
+    if (rc == TPM_RC_SUCCESS) {
+	if (tag == TPM_ST_SESSIONS) {
+	    rc = TSS_UINT32_Unmarshalu(&parameterSize, buffer, size);
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_ECC_POINT_Unmarshalu(&target->C1, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshalu(&target->C2, buffer, size);
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_DIGEST_Unmarshalu(&target->C3, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
+TSS_ECC_Decrypt_Out_Unmarshalu(ECC_Decrypt_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    uint32_t parameterSize = 0;
+    if (rc == TPM_RC_SUCCESS) {
+	if (tag == TPM_ST_SESSIONS) {
+	    rc = TSS_UINT32_Unmarshalu(&parameterSize, buffer, size);
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshalu(&target->plainText, buffer, size);
     }
     return rc;
 }

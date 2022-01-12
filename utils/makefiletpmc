@@ -4,7 +4,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2018 - 2020					#
+# (c) Copyright IBM Corporation 2018 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -317,6 +317,10 @@ dictionaryattackparameters:		ibmtss/tss.h dictionaryattackparameters.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) dictionaryattackparameters.o $(LNALIBS) -o dictionaryattackparameters
 duplicate:		ibmtss/tss.h duplicate.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) duplicate.o $(LNALIBS) -o duplicate
+eccencrypt:		ibmtss/tss.h eccencrypt.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eccencrypt.o $(LNALIBS) -o eccencrypt
+eccdecrypt:		ibmtss/tss.h eccdecrypt.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eccdecrypt.o $(LNALIBS) -o eccdecrypt
 eccparameters:		ibmtss/tss.h eccparameters.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) eccparameters.o $(LNALIBS) -o eccparameters
 ecephemeral:		ibmtss/tss.h ecephemeral.o $(LIBTSS) $(LIBTSSUTILS)

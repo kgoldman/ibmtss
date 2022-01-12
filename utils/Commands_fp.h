@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2019				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2022				*/
 /*										*/
 /********************************************************************************/
 
@@ -84,6 +84,8 @@
 #include <ibmtss/DictionaryAttackLockReset_fp.h>
 #include <ibmtss/DictionaryAttackParameters_fp.h>
 #include <ibmtss/Duplicate_fp.h>
+#include <ibmtss/ECC_Encrypt_fp.h>
+#include <ibmtss/ECC_Decrypt_fp.h>
 #include <ibmtss/ECC_Parameters_fp.h>
 #include <ibmtss/ECDH_KeyGen_fp.h>
 #include <ibmtss/ECDH_ZGen_fp.h>
@@ -257,6 +259,10 @@ TPM_RC
 ECDH_ZGen_In_Unmarshal(ECDH_ZGen_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16
 ECDH_ZGen_Out_Marshal(ECDH_ZGen_Out *source, TPMI_ST_COMMAND_TAG tag, BYTE **buffer, uint32_t *size);
+TPM_RC
+ECC_Encrypt_In_Unmarshal(ECC_Encrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
+TPM_RC
+ECC_Decrypt_In_Unmarshal(ECC_Decrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
 ECC_Parameters_In_Unmarshal(ECC_Parameters_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16

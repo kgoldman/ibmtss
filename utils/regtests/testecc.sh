@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -41,6 +41,54 @@
 #################################################################################
 
 echo ""
+echo "ECC encrypt decrypt"
+echo ""
+
+echo "Start an HMAC auth session"
+${PREFIX}startauthsession -se h > run.out
+checkSuccess $?
+
+for CURVE in ${CURVE_ALGS}
+do
+
+    echo "create an ECC ${CURVE} decryption key"
+    ${PREFIX}create  -hp 80000000 -pwdp sto -den -pwdk aaa -ecc ${CURVE} -opr tmppriv.bin -opu tmppub.bin > run.out
+    checkSuccess $?
+
+    echo "Load the key 80000001 under the primary key 80000000"
+    ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+    checkSuccess $?
+
+    for HALG in ${ITERATE_ALGS}
+    do
+
+	for SESS in "" "-se0 02000000 1"
+	do
+	    echo "encrypt ${HALG}"
+	    ${PREFIX}eccencrypt -hk 80000001 -halg ${HALG} -id msg.bin -oc1 tmpc1.bin -oc2 tmpc2.bin -oc3 tmpc3.bin > run.out
+	    checkSuccess $?
+
+	    echo "decrypt ${HALG} ${SESS}"
+	    ${PREFIX}eccdecrypt -hk 80000001 -pwdk aaa -halg ${HALG} -od tmp.txt -ic1 tmpc1.bin -ic2 tmpc2.bin -ic3 tmpc3.bin ${SESS} > run.out
+	    checkSuccess $?
+
+	    echo "Verify the decrypted result ${HALG}"
+	    diff tmp.txt msg.bin > run.out
+	    checkSuccess $?
+	done
+    done
+
+    echo "Flush the ${CURVE} decryption key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
+
+echo "Flush the session"
+${PREFIX}flushcontext -ha 02000000 > run.out
+checkSuccess $?
+
+echo ""
 echo "ECC Ephemeral"
 echo ""
 
@@ -48,7 +96,7 @@ echo ""
 echo "ECC Parameters and Ephemeral"
 echo ""
 
-for CURVE in "bnp256" "nistp256" "nistp384"
+for CURVE in ${CURVE_ALGS}
 do
 
     echo "ECC Parameters for curve ${CURVE}"
@@ -207,14 +255,14 @@ echo ""
 echo "ECC zgen2phase"
 echo ""
 
-for CURVE in "bnp256" "nistp256" "nistp384"
+for CURVE in ${CURVE_ALGS}
 do
     echo "ECC Parameters for curve ${CURVE}"
     ${PREFIX}eccparameters -cv ${CURVE} > run.out
     checkSuccess $?
 done
 
-for CURVE in "bnp256" "nistp256" "nistp384"
+for CURVE in ${CURVE_ALGS}
 do
 
     # This is just a script for a B "remote" side to create a static key
@@ -262,6 +310,11 @@ do
     checkSuccess $?
 
 done
+
+rm -rf tmp.txt
+rm -rf tmpc2.bin
+rm -rf tmpc1.bin
+rm -rf tmpc3.bin
 
 rm -rf efile.bin
 rm -rf tmprpub.bin

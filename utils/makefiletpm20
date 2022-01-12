@@ -4,7 +4,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2014 - 2020					#
+# (c) Copyright IBM Corporation 2014 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -294,17 +294,21 @@ dictionaryattacklockreset:		ibmtss/tss.h dictionaryattacklockreset.o $(LIBTSS) $
 dictionaryattackparameters:		ibmtss/tss.h dictionaryattackparameters.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) dictionaryattackparameters.o $(LNALIBS) -o dictionaryattackparameters
 duplicate:		ibmtss/tss.h duplicate.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) duplicate.o $(LNALIBS) -o duplicate 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) duplicate.o $(LNALIBS) -o duplicate
+eccencrypt:		ibmtss/tss.h eccencrypt.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eccencrypt.o $(LNALIBS) -o eccencrypt
+eccdecrypt:		ibmtss/tss.h eccdecrypt.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eccdecrypt.o $(LNALIBS) -o eccdecrypt
 eccparameters:		ibmtss/tss.h eccparameters.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) eccparameters.o $(LNALIBS) -o eccparameters 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eccparameters.o $(LNALIBS) -o eccparameters
 ecephemeral:		ibmtss/tss.h ecephemeral.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) ecephemeral.o $(LNALIBS) -o ecephemeral 
+			$(CC) $(LNFLAGS) $(LNAFLAGS) ecephemeral.o $(LNALIBS) -o ecephemeral
 encryptdecrypt:		ibmtss/tss.h encryptdecrypt.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) encryptdecrypt.o $(LNALIBS) -o encryptdecrypt	
+			$(CC) $(LNFLAGS) $(LNAFLAGS) encryptdecrypt.o $(LNALIBS) -o encryptdecrypt
 eventsequencecomplete:	ibmtss/tss.h eventsequencecomplete.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) eventsequencecomplete.o $(LNALIBS) -o eventsequencecomplete	
+			$(CC) $(LNFLAGS) $(LNAFLAGS) eventsequencecomplete.o $(LNALIBS) -o eventsequencecomplete
 evictcontrol:		ibmtss/tss.h evictcontrol.o $(LIBTSS) $(LIBTSSUTILS)
-			$(CC) $(LNFLAGS) $(LNAFLAGS) evictcontrol.o $(LNALIBS) -o evictcontrol	
+			$(CC) $(LNFLAGS) $(LNAFLAGS) evictcontrol.o $(LNALIBS) -o evictcontrol
 flushcontext:		ibmtss/tss.h flushcontext.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) flushcontext.o $(LNALIBS) -o flushcontext
 getcommandauditdigest:	ibmtss/tss.h getcommandauditdigest.o $(LIBTSS) $(LIBTSSUTILS)

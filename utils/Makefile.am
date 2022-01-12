@@ -101,7 +101,7 @@ if CONFIG_TPM20
 if !CONFIG_TSS_NOPRINT
 bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation certifyx509 changeeps changepps clear \
 	clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary \
-	dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters ecephemeral encryptdecrypt \
+	dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters eccencrypt eccdecrypt ecephemeral encryptdecrypt \
 	eventsequencecomplete evictcontrol flushcontext getcommandauditdigest getcapability getcryptolibrary \
 	getrandom gettestresult getsessionauditdigest gettime hashsequencestart hash hierarchycontrol \
 	hierarchychangeauth hmac hmacstart import importpem load loadexternal makecredential nvcertify nvchangeauth \
@@ -211,6 +211,14 @@ duplicate_LDADD = libibmtssutils.la libibmtss.la
 eccparameters_SOURCES = eccparameters.c
 eccparameters_CFLAGS = $(UTILS_CFLAGS)
 eccparameters_LDADD = libibmtssutils.la libibmtss.la
+
+eccencrypt_SOURCES = eccencrypt.c
+eccencrypt_CFLAGS = $(UTILS_CFLAGS)
+eccencrypt_LDADD = libibmtssutils.la libibmtss.la
+
+eccdecrypt_SOURCES = eccdecrypt.c
+eccdecrypt_CFLAGS = $(UTILS_CFLAGS)
+eccdecrypt_LDADD = libibmtssutils.la libibmtss.la
 
 ecephemeral_SOURCES = ecephemeral.c
 ecephemeral_CFLAGS = $(UTILS_CFLAGS)
