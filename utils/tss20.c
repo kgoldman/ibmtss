@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018 - 2020					*/
+/* (c) Copyright IBM Corporation 2018 - 2022					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -273,6 +273,8 @@ static const TSS_TABLE tssTable [] = {
     {TPM_CC_RSA_Decrypt, NULL, NULL, NULL},
     {TPM_CC_ECDH_KeyGen, NULL, NULL, NULL},
     {TPM_CC_ECDH_ZGen, NULL, NULL, NULL},
+    {TPM_CC_ECC_Encrypt, NULL, NULL, NULL},
+    {TPM_CC_ECC_Decrypt, NULL, NULL, NULL},
     {TPM_CC_ECC_Parameters, NULL, NULL, NULL},
     {TPM_CC_ZGen_2Phase, NULL, NULL, NULL},
     {TPM_CC_EncryptDecrypt, NULL, NULL, NULL},
@@ -399,6 +401,8 @@ static const TSS_PRINT_TABLE tssPrintTable [] = {
     {TPM_CC_RSA_Decrypt, (TSS_InPrintFunction_t)RSA_Decrypt_In_Print},
     {TPM_CC_ECDH_KeyGen, (TSS_InPrintFunction_t)ECDH_KeyGen_In_Print},
     {TPM_CC_ECDH_ZGen, (TSS_InPrintFunction_t)ECDH_ZGen_In_Print},
+    {TPM_CC_ECC_Encrypt, (TSS_InPrintFunction_t)ECC_Encrypt_In_Print},
+    {TPM_CC_ECC_Decrypt, (TSS_InPrintFunction_t)ECC_Decrypt_In_Print},
     {TPM_CC_ECC_Parameters, (TSS_InPrintFunction_t)ECC_Parameters_In_Print},
     {TPM_CC_ZGen_2Phase, (TSS_InPrintFunction_t)ZGen_2Phase_In_Print},
     {TPM_CC_EncryptDecrypt, (TSS_InPrintFunction_t)EncryptDecrypt_In_Print},

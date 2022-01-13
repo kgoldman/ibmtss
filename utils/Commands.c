@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2019				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2022				*/
 /*										*/
 /********************************************************************************/
 
@@ -541,6 +541,60 @@ ECDH_ZGen_In_Unmarshal(ECDH_ZGen_In *target, BYTE **buffer, uint32_t *size, TPM_
 	rc = TSS_TPM2B_ECC_POINT_Unmarshalu(&target->inPoint, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_ECDH_ZGen_inPoint;
+	}
+    }
+    return rc;
+}
+TPM_RC
+ECC_Encrypt_In_Unmarshal(ECC_Encrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    if (rc == TPM_RC_SUCCESS) {
+	target->keyHandle = handles[0];
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshalu(&target->plainText, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_ECC_Encrypt_plainText;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPMT_KDF_SCHEME_Unmarshalu(&target->inScheme, buffer, size, YES);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_ECC_Encrypt_inScheme;
+	}
+    }
+    return rc;
+}
+TPM_RC
+ECC_Decrypt_In_Unmarshal(ECC_Decrypt_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    if (rc == TPM_RC_SUCCESS) {
+	target->keyHandle = handles[0];
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_ECC_POINT_Unmarshalu(&target->C1, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_ECC_Decrypt_C1;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_MAX_BUFFER_Unmarshalu(&target->C2, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_ECC_Decrypt_C2;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_DIGEST_Unmarshalu(&target->C3, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_ECC_Decrypt_C3;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPMT_KDF_SCHEME_Unmarshalu(&target->inScheme, buffer, size, YES);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_ECC_Decrypt_inScheme;
 	}
     }
     return rc;

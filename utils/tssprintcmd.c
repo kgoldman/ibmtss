@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018 - 2019.					*/
+/* (c) Copyright IBM Corporation 2018 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -196,6 +196,22 @@ void Duplicate_In_Print(Duplicate_In *in, unsigned int indent)
     TSS_TPM2B_Print("encryptionKeyIn", indent, &in->encryptionKeyIn.b);
     printf("%*s" "symmetricAlg\n", indent, "");
     TSS_TPMT_SYM_DEF_OBJECT_Print(&in->symmetricAlg, indent);
+    return;
+}
+void ECC_Encrypt_In_Print(ECC_Encrypt_In *in, unsigned int indent)
+{
+    printf("%*s" "TPM2_ECC_Encrypt\n", indent, "");
+    TSS_TPM2B_Print("plainText", indent, &in->plainText.b);
+    TSS_TPMT_KDF_SCHEME_Print(&in->inScheme, indent);
+    return;
+}
+void ECC_Decrypt_In_Print(ECC_Decrypt_In *in, unsigned int indent)
+{
+    printf("%*s" "TPM2_ECC_Decrypt\n", indent, "");
+    TSS_TPM2B_ECC_POINT_Print("C1", &in->C1, indent);
+    TSS_TPM2B_Print("C2", indent, &in->C2.b);
+    TSS_TPM2B_Print("C3", indent, &in->C3.b);
+    TSS_TPMT_KDF_SCHEME_Print(&in->inScheme, indent);
     return;
 }
 void ECC_Parameters_In_Print(ECC_Parameters_In *in, unsigned int indent)

@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2014 - 2020					#
+# (c) Copyright IBM Corporation 2014 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -73,6 +73,7 @@ PREFIX=./
 
 export ITERATE_ALGS="sha1 sha256 sha384 sha512"
 export BAD_ITERATE_ALGS="sha256 sha384 sha512 sha1"
+export CURVE_ALGS="bnp256 nistp256 nistp384"
 
 # When going to the TPM device, don't use the resource manager
 export TPM_DEVICE="/dev/tpm0"

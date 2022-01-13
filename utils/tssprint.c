@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2020.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -620,6 +620,12 @@ void TSS_TPM_CC_Print(const char *string, TPM_CC source, unsigned int indent)
 	break;
       case TPM_CC_ECC_Parameters:
 	printf("%s TPM_CC_ECC_Parameters\n", string);
+	break;
+      case TPM_CC_ECC_Encrypt:
+	printf("%s TPM_CC_ECC_Encrypt\n", string);
+	break;
+      case TPM_CC_ECC_Decrypt:
+	printf("%s TPM_CC_ECC_Decrypt\n", string);
 	break;
 #if 0
       case TPM_CC_FirmwareRead:

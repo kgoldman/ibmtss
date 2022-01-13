@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2019				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2022				*/
 /*										*/
 /********************************************************************************/
 
@@ -360,6 +360,12 @@ const TPMA_CC_TSS    s_ccAttr [] = {
 #endif
 #if (PAD_LIST || CC_VerifySignature)
     {{0x0177, 0, 0, 0, 0, 1, 0, 0, 0}},     // TPM_CC_VerifySignature
+#endif
+#if (PAD_LIST || CC_ECC_Encrypt)
+    {{0x0199, 0, 0, 0, 0, 1, 0, 0, 0}},     // TPM_CC_ECC_Encrypt
+#endif
+#if (PAD_LIST || CC_ECC_Decrypt)
+    {{0x019a, 0, 0, 0, 0, 1, 0, 0, 0}},     // TPM_CC_ECC_Decrypt
 #endif
 #if (PAD_LIST || CC_ECC_Parameters)
     {{0x0178, 0, 0, 0, 0, 0, 0, 0, 0}},     // TPM_CC_ECC_Parameters
@@ -822,6 +828,14 @@ const COMMAND_ATTRIBUTES    s_commandAttributes [] = {
 #if (PAD_LIST || CC_VerifySignature)
     (COMMAND_ATTRIBUTES)(CC_VerifySignature            *  // 0x0177
 			 (IS_IMPLEMENTED+DECRYPT_2)),
+#endif
+#if (PAD_LIST || CC_ECC_Encrypt)
+    (COMMAND_ATTRIBUTES)(CC_ECC_Encrypt                *  // 0x0199
+			 (IS_IMPLEMENTED+DECRYPT_2+ENCRYPT_2)),
+#endif
+#if (PAD_LIST || CC_ECC_Decrypt)
+    (COMMAND_ATTRIBUTES)(CC_ECC_Decrypt                *  // 0x019a
+			 (IS_IMPLEMENTED+DECRYPT_2+HANDLE_1_USER+ENCRYPT_2)),
 #endif
 #if (PAD_LIST || CC_ECC_Parameters)
     (COMMAND_ATTRIBUTES)(CC_ECC_Parameters             *  // 0x0178

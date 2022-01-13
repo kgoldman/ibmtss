@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2021				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2022				*/
 /*										*/
 /********************************************************************************/
 
@@ -232,7 +232,7 @@
 #define  ALG_ECMQV             (ALG_NO*ALG_ECC)
 #define  ALG_SYMCIPHER         ALG_YES
 #define  ALG_KDF1_SP800_56A    (ALG_YES*ALG_ECC)
-#define  ALG_KDF2              ALG_NO
+#define  ALG_KDF2              ALG_YES
 #define  ALG_KDF1_SP800_108    ALG_YES
 #define  ALG_CTR               ALG_YES
 #define  ALG_OFB               ALG_YES
@@ -260,6 +260,8 @@
 #define  CC_DictionaryAttackLockReset     CC_YES
 #define  CC_DictionaryAttackParameters    CC_YES
 #define  CC_Duplicate                     CC_YES
+#define  CC_ECC_Encrypt                   (CC_YES*ALG_ECC)
+#define  CC_ECC_Decrypt                   (CC_YES*ALG_ECC)
 #define  CC_ECC_Parameters                (CC_YES*ALG_ECC)
 #define  CC_ECDH_KeyGen                   (CC_YES*ALG_ECC)
 #define  CC_ECDH_ZGen                     (CC_YES*ALG_ECC)
@@ -1278,9 +1280,11 @@ typedef  UINT32             TPM_CC;
 #if CC_CertifyX509 == YES
 #define  TPM_CC_CertifyX509 		      (TPM_CC)(0x00000197)
 #endif
+#define TPM_CC_ECC_Encrypt		      (TPM_CC)(0x00000199)
+#define TPM_CC_ECC_Decrypt		      (TPM_CC)(0x0000019A)
 
 /* Compile variable. May increase based on implementation. */
-#define  TPM_CC_LAST			      (TPM_CC)(0x00000197)
+#define  TPM_CC_LAST			      (TPM_CC)(0x0000019a)
 
 #ifndef CC_Vendor_TCG_Test
 #   define CC_Vendor_TCG_Test NO
@@ -1436,6 +1440,8 @@ typedef  UINT32             TPM_CC;
 					  + (ADD_FILL || CC_EncryptDecrypt2)            /* 0x00000193 */ \
 					  + (ADD_FILL || CC_PolicyNvWritten)            /* 0x0000018f */ \
 					  + (ADD_FILL || CC_CertifyX509)                /* 0x00000197 */ \
+					  + (ADD_FILL || CC_ECC_Encrypt)                /* 0x00000199 */ \
+					  + (ADD_FILL || CC_ECC_Decrypt)                /* 0x0000019a */ \
 					  )
 #define VENDOR_COMMAND_ARRAY_SIZE   ( 0				\
 				      + CC_Vendor_TCG_Test	\

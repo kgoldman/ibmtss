@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2020.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -239,6 +239,20 @@ static const MARSHAL_TABLE marshalTable [] = {
      (UnmarshalOutFunction_t)TSS_ECDH_ZGen_Out_Unmarshalu
 #ifndef TPM_TSS_NOCMDCHECK
      ,(UnmarshalInFunction_t)ECDH_ZGen_In_Unmarshal
+#endif
+    },
+    {TPM_CC_ECC_Encrypt, "TPM2_ECC_Encrypt",
+     (MarshalInFunction_t)TSS_ECC_Encrypt_In_Marshalu,
+     (UnmarshalOutFunction_t)TSS_ECC_Encrypt_Out_Unmarshalu
+#ifndef TPM_TSS_NOCMDCHECK
+     ,(UnmarshalInFunction_t)ECC_Encrypt_In_Unmarshal
+#endif
+    },
+    {TPM_CC_ECC_Decrypt, "TPM2_ECC_Decrypt",
+     (MarshalInFunction_t)TSS_ECC_Decrypt_In_Marshalu,
+     (UnmarshalOutFunction_t)TSS_ECC_Decrypt_Out_Unmarshalu
+#ifndef TPM_TSS_NOCMDCHECK
+     ,(UnmarshalInFunction_t)ECC_Decrypt_In_Unmarshal
 #endif
     },
     {TPM_CC_ECC_Parameters, "TPM2_ECC_Parameters",
