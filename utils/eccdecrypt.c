@@ -372,9 +372,9 @@ static void printUsage(void)
     printf("\t[-ipwdk\tpassword file for key, nul terminated (default empty)]\n");
     printf("\t[-halg\t(sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t-od\tdecrypt file name\n");
-    printf("\t[-ic1\tC1 ECC point file name (default do not save)]\n");
-    printf("\t[-ic2\tC2 data buffer file name (default do not save)]\n");
-    printf("\t[-ic3\tc3 integrity digest file name (default do not save)]\n");
+    printf("\t-ic1\tC1 ECC point file name\n");
+    printf("\t-ic2\tC2 data buffer file name\n");
+    printf("\t-ic3\tc3 integrity digest file name\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t01\tcontinue\n");
     printf("\t20\tcommand decrypt\n");
