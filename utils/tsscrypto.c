@@ -556,6 +556,7 @@ TPM_RC TSS_RSAGeneratePublicTokenI(void **rsa_pub_key,		/* freed by caller */
 	}
     }
 #else
+    /* See EVP_PKEY-RSA for parameter values */
     if (rc == 0) {
 	param_bld = OSSL_PARAM_BLD_new();		/* freed @2 */
 	if (param_bld == NULL) {
@@ -608,7 +609,7 @@ TPM_RC TSS_RSAGeneratePublicTokenI(void **rsa_pub_key,		/* freed by caller */
 				EVP_PKEY_PUBLIC_KEY, params);
 	if (irc != 1) {
 	    if (tssVerbose) printf("TSS_RSAGeneratePublicTokenI: "
-				   "Error in OSSL_PARAM_BLD_push_BN()\n");
+				   "Error in EVP_PKEY_fromdata()\n");
             rc = TSS_RC_RSA_KEY_CONVERT;
 	}
     }
