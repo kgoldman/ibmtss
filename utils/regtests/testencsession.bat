@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -475,6 +475,53 @@ echo "Flush the signing key"
 %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
+)
+
+echo ""
+echo "Encrypt and decrypt audit sessions"
+echo ""
+
+rem # This is a corner case, where the authorization session is a
+rem # password, not used for parameter encryption.  Two audit sessions are
+rem # used for parameter encryption.
+
+for %%S in ("" "-hs 80000000") do (
+
+    echo "StartAuthSession %%~S"
+    %TPM_EXE_PATH%startauthsession -se h -sym aes %%~S > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "StartAuthSession %%~S"
+    %TPM_EXE_PATH%startauthsession -se h -sym aes %%~S > run.out
+     IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Create Primary"
+    %TPM_EXE_PATH%createprimary -st -ecc nistp256 -se1 02000000 41 -se2 02000001 21 -v > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Flush primary key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Flush session"
+    %TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Flush session"
+    %TPM_EXE_PATH%flushcontext -ha 02000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
 )
 
 exit /B 0
