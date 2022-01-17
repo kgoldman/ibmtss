@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{CBD90144-0832-4864-A083-752E10180168}</ProjectGuid>
+    <ProjectGuid>{0E974DD9-8274-4930-BF8F-A4AC5D9151B9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>eccparameters</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>

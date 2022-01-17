@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020.				#
+REM # (c) Copyright IBM Corporation 2015 - 2022.				#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -38,6 +38,67 @@ REM #										#
 REM #############################################################################
 
 setlocal enableDelayedExpansion
+
+echo ""
+echo "ECC encrypt decrypt"
+echo ""
+
+echo "Start an HMAC auth session"
+%TPM_EXE_PATH%startauthsession -se h > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+for %%C in (bnp256 nistp256 nistp384) do (
+
+    echo "create an ECC %%C decryption key"
+    %TPM_EXE_PATH%create  -hp 80000000 -pwdp sto -den -pwdk aaa -ecc %%C -opr tmppriv.bin -opu tmppub.bin > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Load the key 80000001 under the primary key 80000000"
+    %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    for %%H in (sha1 sha256 sha384 sha512) do (
+	for %%S in ("" "-se0 02000000 1") do (
+
+	    echo "encrypt %%H"
+	    %TPM_EXE_PATH%eccencrypt -hk 80000001 -halg %%H  -id msg.bin -oc1 tmpc1.bin -oc2 tmpc2.bin -oc3 tmpc3.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "decrypt %%H %%~S"
+	    %TPM_EXE_PATH%eccdecrypt -hk 80000001 -pwdk aaa -halg %%H -od tmp.txt -ic1 tmpc1.bin -ic2 tmpc2.bin -ic3 tmpc3.bin %%~S > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+
+	    echo "Verify the decrypted result %%H"
+	    diff tmp.txt msg.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	       exit /B 1
+	    )
+	)
+    )
+
+    echo "Flush the %%C decryption key"
+    %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+)
+
+echo "Flush the session"
+%TPM_EXE_PATH%flushcontext -ha 02000000 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 
 echo ""
 echo "ECC Ephemeral"
@@ -305,6 +366,12 @@ for %%C in (bnp256 nistp256 nistp384) do (
        exit /B 1
     )
 )
+
+rm -rf tmp.txt
+rm -rf tmpc2.bin
+rm -rf tmpc1.bin
+rm -rf tmpc3.bin
+
 rm -rf efile.bin
 rm -rf tmprpub.bin
 rm -rf tmprpriv.bin
