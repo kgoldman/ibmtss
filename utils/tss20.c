@@ -3027,14 +3027,14 @@ static TPM_RC TSS_Sessions_GetDecryptSession(unsigned int *isDecrypt,
     unsigned int 	i = 0;
 
     /* count the number of command decrypt sessions */
-    *isDecrypt = 0;		/* number of sessions with decrypt set */
+    *isDecrypt = 0;				/* number of sessions with decrypt set */
     for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) &&
-	     (sessionHandle[i] != TPM_RH_NULL) &&
-	     (sessionHandle[i] != TPM_RS_PW) ;
-	     i++) {
-	if (sessionAttributes[i] & TPMA_SESSION_DECRYPT) {
-	    (*isDecrypt)++;		/* count number of decrypt sessions */
-	    *decryptSession = i;	/* record which one it was */
+	     (sessionHandle[i] != TPM_RH_NULL) ; i++) {
+	if (sessionHandle[i] != TPM_RS_PW) {	/* no decrypt for password session */
+	    if (sessionAttributes[i] & TPMA_SESSION_DECRYPT) {
+		(*isDecrypt)++;		/* count number of decrypt sessions */
+		*decryptSession = i;	/* record which one it was */
+	    }
 	}
     }
     /* how many decrypt sessions were found */
@@ -3067,12 +3067,12 @@ static TPM_RC TSS_Sessions_GetEncryptSession(unsigned int *isEncrypt,
     /* count the number of command encrypt sessions */
     *isEncrypt = 0;		/* number of sessions with encrypt set */
     for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) &&
-	     (sessionHandle[i] != TPM_RH_NULL) &&
-	     (sessionHandle[i] != TPM_RS_PW) ;
-	 i++) {
-	if (sessionAttributes[i] & TPMA_SESSION_ENCRYPT) {
-	    (*isEncrypt)++;		/* count number of encrypt sessions */
-	    *encryptSession = i;	/* record which one it was */
+	     (sessionHandle[i] != TPM_RH_NULL) ; i++) {
+	if (sessionHandle[i] != TPM_RS_PW) {	/* no encrypt for password session */
+	    if (sessionAttributes[i] & TPMA_SESSION_ENCRYPT) {
+		(*isEncrypt)++;		/* count number of encrypt sessions */
+		*encryptSession = i;	/* record which one it was */
+	    }
 	}
     }
     /* how many encrypt sessions were found */

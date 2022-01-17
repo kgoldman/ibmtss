@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -334,7 +334,41 @@ echo "Flush the signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
+echo ""
+echo "Encrypt and decrypt audit sessions"
+echo ""
 
+# This is a corner case, where the authorization session is a
+# password, not used for parameter encryption.  Two audit sessions are
+# used for parameter encryption.
+
+for SALT in "" "-hs 80000000"
+do 
+
+    echo "StartAuthSession ${SALT}"
+    ${PREFIX}startauthsession -se h -sym aes ${SALT} > run.out
+    checkSuccess $?
+
+    echo "StartAuthSession ${SALT}"
+    ${PREFIX}startauthsession -se h -sym aes ${SALT} > run.out
+    checkSuccess $?
+
+    echo "Create Primary"
+    ${PREFIX}createprimary -st -ecc nistp256 -se1 02000000 41 -se2 02000001 21 -v > run.out
+    checkSuccess $?
+
+    echo "Flush primary key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+    echo "Flush session"
+    ${PREFIX}flushcontext -ha 02000000 > run.out
+    checkSuccess $?
+
+    echo "Flush session"
+    ${PREFIX}flushcontext -ha 02000001 > run.out
+    checkSuccess $?
+done
 
 # getcapability  -cap 1 -pr 80000000
 # getcapability  -cap 1 -pr 02000000
