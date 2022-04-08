@@ -43,7 +43,7 @@ echo ""
 echo "UEFI"
 echo ""
 
-for %%F in ("dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "ubuntu1" "ubuntu2"  "ubuntu3") do (
+for %%F in ("dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "ubuntu1" "ubuntu2"  "ubuntu3" "amd635") do (
 
     echo "Power cycle to reset IMA PCR"
     %TPM_EXE_PATH%powerup > run.out
