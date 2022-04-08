@@ -416,9 +416,22 @@ typedef struct {
 */
 
 typedef struct {
-    uint64_t                          NumberOfTables;
-    TSS_EFI_CONFIGURATION_TABLE           *TableEntry;
+    uint64_t                          	NumberOfTables;
+    TSS_EFI_CONFIGURATION_TABLE		*TableEntry;
 } TSS_UEFI_HANDOFF_TABLE_POINTERS;
+
+/*
+  TSS_UEFI_HANDOFF_TABLE_POINTERS2
+
+  This structure is used in EV_EFI_HANDOFF_TABLES2 event to facilitate
+  the measurement of given configuration tables.
+*/
+
+typedef struct {
+    uint8_t 				TableDescriptionSize;
+    uint8_t				*TableDescription;
+    TSS_UEFI_HANDOFF_TABLE_POINTERS 	uefiHandoffTablePointers;
+} TSS_UEFI_HANDOFF_TABLE_POINTERS2;
 
 /* EV_EVENT_TAG */
 
@@ -451,7 +464,7 @@ typedef struct TSS_UEFI_PLATFORM_FIRMWARE_BLOB2 {
 } TSS_UEFI_PLATFORM_FIRMWARE_BLOB2;
 
 typedef union {
-    TSS_UEFI_PLATFORM_FIRMWARE_BLOB		firmwareBlob;
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB	firmwareBlob;
     TSS_UEFI_PLATFORM_FIRMWARE_BLOB2	firmwareBlob2;
 } TSSU_POST_CODE;
 
@@ -467,13 +480,15 @@ typedef struct {
 
 typedef union {
     TSS_UEFI_VARIABLE_DATA 		uefiVariableData;
-    TSS_UEFI_PLATFORM_FIRMWARE_BLOB uefiPlatformFirmwareBlob;
-    TSS_UEFI_IMAGE_LOAD_EVENT 	uefiImageLoadEvent;
-    TSS4B_BUFFER		tss4bBuffer;
-    TSS_UEFI_HANDOFF_TABLE_POINTERS uefiHandoffTablePointers;
-    TSS_UEFI_GPT_DATA		uefiGptData;
-    TSS_UEFI_TAGGED_EVENT 	taggedEventList;
-    TSS_POST_CODE_TAGGED_EVENT	postTaggedEvent;
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB 	uefiPlatformFirmwareBlob;
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB2 	uefiPlatformFirmwareBlob2;
+    TSS_UEFI_IMAGE_LOAD_EVENT 		uefiImageLoadEvent;
+    TSS4B_BUFFER			tss4bBuffer;
+    TSS_UEFI_HANDOFF_TABLE_POINTERS 	uefiHandoffTablePointers;
+    TSS_UEFI_HANDOFF_TABLE_POINTERS2 	uefiHandoffTablePointers2;
+    TSS_UEFI_GPT_DATA			uefiGptData;
+    TSS_UEFI_TAGGED_EVENT 		taggedEventList;
+    TSS_POST_CODE_TAGGED_EVENT		postTaggedEvent;
 } TSSU_EFIData;
 
 /* Externally visible API interface structure */

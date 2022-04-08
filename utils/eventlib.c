@@ -183,6 +183,12 @@ const TSS_EVENT2_CHECKHASH_TABLE event2CheckHashTable [] =
      {EV_EFI_HANDOFF_TABLES,
       TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
       NULL},
+     {EV_EFI_PLATFORM_FIRMWARE_BLOB2,
+      TSS_Event2_Checkhash_Success,		/* PCR does not contain hash of event */
+      NULL},
+     {EV_EFI_HANDOFF_TABLES2,
+      TSS_Event2_Checkhash_Success,
+      NULL},
      {EV_EFI_HCRTM_EVENT,
       NULL,
       NULL},
@@ -1493,6 +1499,8 @@ const EVENT_TYPE_TABLE eventTypeTable [] = {
     {EV_EFI_ACTION, "EV_EFI_ACTION"},
     {EV_EFI_PLATFORM_FIRMWARE_BLOB, "EV_EFI_PLATFORM_FIRMWARE_BLOB"},
     {EV_EFI_HANDOFF_TABLES, "EV_EFI_HANDOFF_TABLES"},
+    {EV_EFI_PLATFORM_FIRMWARE_BLOB2, "EV_EFI_PLATFORM_FIRMWARE_BLOB2"},
+    {EV_EFI_HANDOFF_TABLES2, "EV_EFI_HANDOFF_TABLES2"},
     {EV_EFI_HCRTM_EVENT, "EV_EFI_HCRTM_EVENT"},
     {EV_EFI_VARIABLE_AUTHORITY, "EV_EFI_VARIABLE_AUTHORITY"},
     {EV_EFI_SUPERMICRO_1, "EV_EFI_SUPERMICRO_1"}

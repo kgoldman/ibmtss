@@ -44,7 +44,7 @@ echo ""
 echo "UEFI, pre-OS"
 echo ""
 
-for FILE in "dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "ubuntu1" "ubuntu2"
+for FILE in "dell1" "hp1" "ideapad1" "deb1" "deb2" "p511" "sm1" "sm2" "ubuntu1" "ubuntu2" "amd635"
 do 
 
     echo "Power cycle to reset PCRs"

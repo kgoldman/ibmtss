@@ -1350,7 +1350,7 @@ static uint32_t TSS_EfiDevicePathHwVENDOR_ReadBuffer(TSS_UEFI_DEVICE_PATH *uefiD
 		malloc(uefiDevicePath->unionBufferLength);
 	    if (uefiDevicePath->unionBuffer == NULL) {
 		printf("TSS_EfiDevicePathHwVENDOR_ReadBuffer: Error allocating %u bytes\n",
-		       (unsigned int)(uefiDevicePath->unionBufferLength))	;
+		       (unsigned int)(uefiDevicePath->unionBufferLength));
 		rc = TSS_RC_OUT_OF_MEMORY;
 	    }
 	}
@@ -2214,8 +2214,8 @@ static void TSS_EfiDevicePathMediaRamdisk_Trace(TSS_UEFI_DEVICE_PATH *uefiDevice
 /* EV_EFI_PLATFORM_FIRMWARE_BLOB */
 
 static uint32_t TSS_EfiPlatformFirmwareBlob_ReadBuffer(TSST_EFIData *efiData,
-						      uint8_t *event, uint32_t eventSize,
-						      uint32_t pcrIndex);
+						       uint8_t *event, uint32_t eventSize,
+						       uint32_t pcrIndex);
 static void     TSS_EfiPlatformFirmwareBlob_Trace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiPlatformFirmwareBlob_ToJson(TSST_EFIData *efiData);
 
@@ -2414,6 +2414,7 @@ static void     TSS_EfiEventTag_Trace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiEventTag_ToJson(TSST_EFIData *efiData);
 
 /* EV_EFI_HANDOFF_TABLES
+   EV_EFI_HANDOFF_TABLES2
    EV_TABLE_OF_DEVICES
 */
 
@@ -2424,6 +2425,32 @@ static uint32_t TSS_EfiHandoffTables_ReadBuffer(TSST_EFIData *efiData,
 					       uint32_t pcrIndex);
 static void     TSS_EfiHandoffTables_Trace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiHandoffTables_ToJson(TSST_EFIData *efiData);
+
+static void     TSS_EfiHandoffTables2_Init(TSST_EFIData *efiData);
+static void     TSS_EfiHandoffTables2_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiHandoffTables2_ReadBuffer(TSST_EFIData *efiData,
+						uint8_t *event, uint32_t eventSize,
+						uint32_t pcrIndex);
+static void     TSS_EfiHandoffTables2_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiHandoffTables2_ToJson(TSST_EFIData *efiData);
+
+/* common code */
+
+static uint32_t
+TSS_EfiTablePointers_ReadBuffer(TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers,
+				uint8_t **event, uint32_t *eventSize,
+				uint32_t pcrIndex);
+
+
+/* EV_EFI_PLATFORM_FIRMWARE_BLOB2 */
+
+static void     TSS_EfiPlatformFirmwareBlob2_Init(TSST_EFIData *efiData);
+static void     TSS_EfiPlatformFirmwareBlob2_Free(TSST_EFIData *efiData);
+static uint32_t TSS_EfiPlatformFirmwareBlob2_ReadBuffer(TSST_EFIData *efiData,
+						       uint8_t *event, uint32_t eventSize,
+						       uint32_t pcrIndex);
+static void     TSS_EfiPlatformFirmwareBlob2_Trace(TSST_EFIData *efiData);
+static uint32_t TSS_EfiPlatformFirmwareBlob2_ToJson(TSST_EFIData *efiData);
 
 /* Table to map eventType to handling function callbacks.
 
@@ -2635,12 +2662,18 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       TSS_EfiHandoffTables_ReadBuffer,
       TSS_EfiHandoffTables_Trace,
       TSS_EfiHandoffTables_ToJson},
+     {EV_EFI_HANDOFF_TABLES2,
+      TSS_EfiHandoffTables2_Init,
+      TSS_EfiHandoffTables2_Free,
+      TSS_EfiHandoffTables2_ReadBuffer,
+      TSS_EfiHandoffTables2_Trace,
+      TSS_EfiHandoffTables2_ToJson},
      {EV_EFI_PLATFORM_FIRMWARE_BLOB2,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL},
+      TSS_EfiPlatformFirmwareBlob2_Init,
+      TSS_EfiPlatformFirmwareBlob2_Free,
+      TSS_EfiPlatformFirmwareBlob2_ReadBuffer,
+      TSS_EfiPlatformFirmwareBlob2_Trace,
+      TSS_EfiPlatformFirmwareBlob2_ToJson},
      {EV_EFI_HCRTM_EVENT,
       NULL,
       NULL,
@@ -4977,16 +5010,34 @@ static void TSS_EfiHandoffTables_Free(TSST_EFIData *efiData)
 }
 
 static uint32_t TSS_EfiHandoffTables_ReadBuffer(TSST_EFIData *efiData,
-					       uint8_t *event, uint32_t eventSize, uint32_t pcrIndex)
+						uint8_t *event, uint32_t eventSize,
+						uint32_t pcrIndex)
 {
     uint32_t rc = 0;
-    uint64_t tableCount;
     TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
 	&efiData->efiData.uefiHandoffTablePointers;
     pcrIndex = pcrIndex;
 
+    rc = TSS_EfiTablePointers_ReadBuffer(uefiHandoffTablePointers,
+					 &event, &eventSize,
+					 pcrIndex);
+    return rc;
+}
+
+/* TSS_EfiTablePointers_ReadBuffer() is common code for EV_EFI_HANDOFF_TABLES and
+   EV_EFI_HANDOFF_TABLES2 */
+
+static uint32_t
+TSS_EfiTablePointers_ReadBuffer(TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers,
+				uint8_t **event, uint32_t *eventSize,
+				uint32_t pcrIndex)
+{
+    uint32_t rc = 0;
+    uint64_t tableCount;
+
+    pcrIndex = pcrIndex;
     if (rc == 0) {
-	rc = TSS_UINT64LE_Unmarshal(&uefiHandoffTablePointers->NumberOfTables, &event, &eventSize);
+	rc = TSS_UINT64LE_Unmarshal(&uefiHandoffTablePointers->NumberOfTables, event, eventSize);
     }
     /* sanity check the lengths since the input is untrusted.  This also guarantees that a cast to
        uint32_t is safe. */
@@ -5023,10 +5074,10 @@ static uint32_t TSS_EfiHandoffTables_ReadBuffer(TSST_EFIData *efiData,
 	if (rc == 0) {
 	    rc = TSS_Array_Unmarshalu(table->VendorGuid,
 				      sizeof(table->VendorGuid),
-				      &event, &eventSize);
+				      event, eventSize);
 	}
 	if (rc == 0) {
-	    rc = TSS_UINT64LE_Unmarshal(&table->VendorTable, &event, &eventSize);
+	    rc = TSS_UINT64LE_Unmarshal(&table->VendorTable, event, eventSize);
 	}
     }
     return rc;
@@ -5052,8 +5103,173 @@ static uint32_t TSS_EfiHandoffTables_ToJson(TSST_EFIData *efiData)
     uint32_t rc = 0;
     TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
 	&efiData->efiData.uefiHandoffTablePointers;
-    uefiHandoffTablePointers  =uefiHandoffTablePointers;
+    uefiHandoffTablePointers = uefiHandoffTablePointers;
     if (rc == 0) {
     }
     return rc;
 }
+
+/* EV_EFI_HANDOFF_TABLE2S */
+
+static void TSS_EfiHandoffTables2_Init(TSST_EFIData *efiData)
+{
+    TSS_UEFI_HANDOFF_TABLE_POINTERS2 *uefiHandoffTablePointers2 =
+	&efiData->efiData.uefiHandoffTablePointers2;
+    uefiHandoffTablePointers2->TableDescription = NULL;
+    uefiHandoffTablePointers2->uefiHandoffTablePointers.TableEntry = NULL;
+    return;
+}
+
+static void TSS_EfiHandoffTables2_Free(TSST_EFIData *efiData)
+{
+    TSS_UEFI_HANDOFF_TABLE_POINTERS2 *uefiHandoffTablePointers2 =
+	&efiData->efiData.uefiHandoffTablePointers2;
+    free(uefiHandoffTablePointers2->TableDescription);
+    free(uefiHandoffTablePointers2->uefiHandoffTablePointers.TableEntry);
+    return;
+}
+
+static uint32_t TSS_EfiHandoffTables2_ReadBuffer(TSST_EFIData *efiData,
+						uint8_t *event, uint32_t eventSize,
+						uint32_t pcrIndex)
+{
+    uint32_t rc = 0;
+    TSS_UEFI_HANDOFF_TABLE_POINTERS2 *uefiHandoffTablePointers2 =
+	&efiData->efiData.uefiHandoffTablePointers2;
+    pcrIndex = pcrIndex;
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&uefiHandoffTablePointers2->TableDescriptionSize,
+				  &event, &eventSize);
+    }
+    if (rc == 0) {
+	uefiHandoffTablePointers2->TableDescription =
+	    malloc(uefiHandoffTablePointers2->TableDescriptionSize);
+	if (uefiHandoffTablePointers2->TableDescription == NULL) {
+	    printf("TSS_EfiHandoffTables2_ReadBuffer: Error allocating %u bytes\n",
+		   (unsigned int)(uefiHandoffTablePointers2->TableDescriptionSize));
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(uefiHandoffTablePointers2->TableDescription,
+				  uefiHandoffTablePointers2->TableDescriptionSize,
+				  &event, &eventSize);
+    }
+    /* the table entry read is shared between TSS_UEFI_HANDOFF_TABLE_POINTERS and
+       TSS_UEFI_HANDOFF_TABLE_POINTERS2 */
+    if (rc == 0) {
+	TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
+	    &efiData->efiData.uefiHandoffTablePointers2.uefiHandoffTablePointers;
+	rc = TSS_EfiTablePointers_ReadBuffer(uefiHandoffTablePointers,
+					     &event, &eventSize,
+					     pcrIndex);
+    }
+    return rc;
+}
+
+static void     TSS_EfiHandoffTables2_Trace(TSST_EFIData *efiData)
+{
+    uint64_t tableCount;
+    TSS_UEFI_HANDOFF_TABLE_POINTERS2 *uefiHandoffTablePointers2 =
+	&efiData->efiData.uefiHandoffTablePointers2;
+    TSS_UEFI_HANDOFF_TABLE_POINTERS *uefiHandoffTablePointers =
+	&uefiHandoffTablePointers2->uefiHandoffTablePointers;
+
+    printf("  TableDescription: %.*s\n", 
+	   (int)uefiHandoffTablePointers2->TableDescriptionSize,
+	   uefiHandoffTablePointers2->TableDescription);
+    printf("  NumberOfTables: %016" PRIx64 "\n", uefiHandoffTablePointers->NumberOfTables);
+    for (tableCount = 0 ; tableCount < uefiHandoffTablePointers->NumberOfTables ; tableCount++) {
+	TSS_EFI_CONFIGURATION_TABLE *table = uefiHandoffTablePointers->TableEntry + tableCount;
+	guid_printf("VendorGuid", table->VendorGuid);
+	printf("  VendorTable: %016" PRIx64 "\n", table->VendorTable);
+    }
+    return;
+}
+
+static uint32_t TSS_EfiHandoffTables2_ToJson(TSST_EFIData *efiData)
+{
+    uint32_t rc = 0;
+    TSS_UEFI_HANDOFF_TABLE_POINTERS2 *uefiHandoffTablePointers2 =
+	&efiData->efiData.uefiHandoffTablePointers2;
+    uefiHandoffTablePointers2  = uefiHandoffTablePointers2;
+    if (rc == 0) {
+    }
+    return rc;
+}
+
+
+/* EV_EFI_PLATFORM_FIRMWARE_BLOB2 */
+
+static void TSS_EfiPlatformFirmwareBlob2_Init(TSST_EFIData *efiData)
+{
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB2 *uefiPlatformFirmwareBlob2 =
+	&efiData->efiData.uefiPlatformFirmwareBlob2;
+    uefiPlatformFirmwareBlob2->BlobDescription = NULL;
+    return;
+}
+static void TSS_EfiPlatformFirmwareBlob2_Free(TSST_EFIData *efiData)
+{
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB2 *uefiPlatformFirmwareBlob2 =
+	&efiData->efiData.uefiPlatformFirmwareBlob2;
+    free(uefiPlatformFirmwareBlob2->BlobDescription);
+}
+static uint32_t TSS_EfiPlatformFirmwareBlob2_ReadBuffer(TSST_EFIData *efiData,
+							uint8_t *event, uint32_t eventSize,
+							uint32_t pcrIndex)
+{
+    uint32_t rc = 0;
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB2 *uefiPlatformFirmwareBlob2 =
+	&efiData->efiData.uefiPlatformFirmwareBlob2;
+    pcrIndex = pcrIndex;
+
+    if (rc == 0) {
+	rc = TSS_UINT8_Unmarshalu(&uefiPlatformFirmwareBlob2->BlobDescriptionSize,
+				  &event, &eventSize);
+    }
+    if (rc == 0) {
+	uefiPlatformFirmwareBlob2->BlobDescription =
+	    malloc(uefiPlatformFirmwareBlob2->BlobDescriptionSize);
+	if (uefiPlatformFirmwareBlob2->BlobDescription == NULL) {
+	    printf("TSS_EfiPlatformFirmwareBlob2_ReadBuffer: Error allocating %u bytes\n",
+		   (unsigned int)(uefiPlatformFirmwareBlob2->BlobDescriptionSize));
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Unmarshalu(uefiPlatformFirmwareBlob2->BlobDescription,
+				  uefiPlatformFirmwareBlob2->BlobDescriptionSize,
+				  &event, &eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT64LE_Unmarshal(&uefiPlatformFirmwareBlob2->BlobBase, &event, &eventSize);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT64LE_Unmarshal(&uefiPlatformFirmwareBlob2->BlobLength, &event, &eventSize);
+    }
+    return rc;
+}
+
+static void     TSS_EfiPlatformFirmwareBlob2_Trace(TSST_EFIData *efiData)
+{
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB2 *uefiPlatformFirmwareBlob2 =
+	&efiData->efiData.uefiPlatformFirmwareBlob2;
+
+    printf("  BlobDescription: %.*s\n", 
+	   (int)uefiPlatformFirmwareBlob2->BlobDescriptionSize,
+	   uefiPlatformFirmwareBlob2->BlobDescription);
+    printf("  BlobBase: %016" PRIx64 "\n", uefiPlatformFirmwareBlob2->BlobBase);
+    printf("  BlobLength: %016" PRIx64 "\n", uefiPlatformFirmwareBlob2->BlobLength);
+    return;
+}
+static uint32_t TSS_EfiPlatformFirmwareBlob2_ToJson(TSST_EFIData *efiData)
+{
+    uint32_t rc = 0;
+    TSS_UEFI_PLATFORM_FIRMWARE_BLOB2 *uefiPlatformFirmwareBlob2 =
+	&efiData->efiData.uefiPlatformFirmwareBlob2;
+    uefiPlatformFirmwareBlob2 = uefiPlatformFirmwareBlob2;
+    if (rc == 0) {
+    }
+    return rc;
+}
+
