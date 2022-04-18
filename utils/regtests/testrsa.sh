@@ -136,10 +136,10 @@ do
     ${PREFIX}load -hp 80000000 -ipu derrsa${BITS}pub.bin -ipr derrsa${BITS}priv.bin -pwdp sto > run.out
     checkSuccess $?
 
+    HSIZ=(${ITERATE_ALGS_SIZES})
     HALG=(${ITERATE_ALGS})
-    HSIZ=("20" "32" "48" "64")
 
-    for ((i = 0 ; i < 4 ; i++))
+    for ((i = 0 ; i < ${ITERATE_ALGS_COUNT} ; i++))
     do
 
 	echo "Decrypt/Sign with a caller specified OID - ${HALG[i]}"
@@ -306,7 +306,7 @@ echo "Encrypt with OpenSSL OAEP, decrypt with TPM"
 echo ""
 
 echo "Create OAEP encryption key"
-${PREFIX}create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha1 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out	
+${PREFIX}create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha256 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out
 checkSuccess $?
 
 echo "Load encryption key at 80000001"
@@ -314,7 +314,7 @@ ${PREFIX}load -hp 80000000 -pwdp sto -ipr tmpprivkey.bin -ipu tmppubkey.bin  > r
 checkSuccess $?
 
 echo "Encrypt using OpenSSL and the PEM public key"
-openssl rsautl -oaep -encrypt -inkey tmppubkey.pem -pubin -in policies/aaa -out enc.bin > run.out 2>&1
+openssl pkeyutl -encrypt -inkey tmppubkey.pem -pubin -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in policies/aaa -out enc.bin > run.out 2>&1
 checkSuccess $?
 
 echo "Decrypt using TPM key at 80000001"

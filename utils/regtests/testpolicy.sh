@@ -776,17 +776,17 @@ echo "Policy PCR no select"
 echo ""
 
 # create AND term for policy PCR
-# > policymakerpcr -halg sha1 -bm 0 -v -pr -of policies/policypcr.txt
+# > policymakerpcr -halg sha256 -bm 0 -v -pr -of policies/policypcr.txt
 # 0000017f00000001000403000000da39a3ee5e6b4b0d3255bfef95601890afd80709
 
 # convert to binary policy
-# > policymaker -halg sha1 -if policies/policypcr.txt -of policies/policypcrbm0.bin -pr -v
+# > policymaker -halg sha256 -if policies/policypcr.txt -of policies/policypcrbm0.bin -pr -v
 
 # 6d 38 49 38 e1 d5 8b 56 71 92 55 94 3f 06 69 66 
 # b6 fa 2c 23 
 
 echo "Create a signing key with policy PCR no select"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha1 -pol policies/policypcrbm0.bin > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha256 -pol policies/policypcrbm0.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key under the primary key"
@@ -794,11 +794,11 @@ ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Start a policy session"
-${PREFIX}startauthsession -halg sha1 -se p > run.out
+${PREFIX}startauthsession -halg sha256 -se p > run.out
 checkSuccess $?
 
 echo "Policy PCR, update with the correct digest"
-${PREFIX}policypcr -ha 03000000 -halg sha1 -bm 0 > run.out
+${PREFIX}policypcr -ha 03000000 -halg sha256 -bm 0 > run.out
 checkSuccess $?
 
 echo "Policy get digest - should be 6d 38 49 38 ... "
@@ -814,11 +814,11 @@ ${PREFIX}policyrestart -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy PCR, update with the correct digest"
-${PREFIX}policypcr -ha 03000000 -halg sha1 -bm 0 > run.out
+${PREFIX}policypcr -ha 03000000 -halg sha256 -bm 0 > run.out
 checkSuccess $?
 
 echo "PCR extend PCR 0, updates pcr counter"
-${PREFIX}pcrextend -ha 0 -halg sha1 -if policies/aaa > run.out
+${PREFIX}pcrextend -ha 0 -halg sha256 -if policies/aaa > run.out
 checkSuccess $?
 
 echo "Sign, should fail"
@@ -840,17 +840,17 @@ echo ""
 # policypcr0.txt has 20 * 00
 
 # create AND term for policy PCR
-# > policymakerpcr -halg sha1 -bm 010000 -if policies/policypcr0.txt -v -pr -of policies/policypcr.txt
+# > policymakerpcr -halg sha256 -bm 010000 -if policies/policypcr0.txt -v -pr -of policies/policypcr.txt
 # 0000017f000000010004030000016768033e216468247bd031a0a2d9876d79818f8f
 
 # convert to binary policy
-# > policymaker -halg sha1 -if policies/policypcr.txt -of policies/policypcr.bin -pr -v
+# > policymaker -halg sha256 -if policies/policypcr.txt -of policies/policypcr.bin -pr -v
 
 # 85 33 11 83 19 03 12 f5 e8 3c 60 43 34 6f 9f 37
 # 21 04 76 8e
 
 echo "Create a signing key with policy PCR PCR 16 zero"
-${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha1 -pol policies/policypcr.bin > run.out
+${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha256 -pol policies/policypcr.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key under the primary key"
@@ -862,11 +862,11 @@ ${PREFIX}pcrreset -ha 16 > run.out
 checkSuccess $?
 
 echo "Read PCR 16, should be 00 00 00 00 ..."
-${PREFIX}pcrread -ha 16 -halg sha1 > run.out
+${PREFIX}pcrread -ha 16 -halg sha256 > run.out
 checkSuccess $?
 
 echo "Start a policy session"
-${PREFIX}startauthsession -se p -halg sha1 > run.out
+${PREFIX}startauthsession -se p -halg sha256 > run.out
 checkSuccess $?
 
 echo "Sign, policy not satisfied - should fail"
@@ -874,7 +874,7 @@ ${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
 checkFailure $?
 
 echo "Policy PCR, update with the correct digest"
-${PREFIX}policypcr -ha 03000000 -halg sha1 -bm 10000 > run.out
+${PREFIX}policypcr -ha 03000000 -halg sha256 -bm 10000 > run.out
 checkSuccess $?
 
 echo "Policy get digest - should be 85 33 11 83 ..."
@@ -886,19 +886,19 @@ ${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
 checkSuccess $?
 
 echo "PCR extend PCR 16"
-${PREFIX}pcrextend -ha 16 -halg sha1 -if policies/aaa > run.out
+${PREFIX}pcrextend -ha 16 -halg sha256 -if policies/aaa > run.out
 checkSuccess $?
 
 echo "Read PCR 0, should be 1d 47 f6 8a ..."
-${PREFIX}pcrread -ha 16 -halg sha1 > run.out
+${PREFIX}pcrread -ha 16 -halg sha256 > run.out
 checkSuccess $?
 
 echo "Start a policy session"
-${PREFIX}startauthsession -se p -halg sha1 > run.out
+${PREFIX}startauthsession -se p -halg sha256 > run.out
 checkSuccess $?
 
 echo "Policy PCR, update with the wrong digest"
-${PREFIX}policypcr -ha 03000000 -halg sha1 -bm 10000 > run.out
+${PREFIX}policypcr -ha 03000000 -halg sha256 -bm 10000 > run.out
 checkSuccess $?
 
 echo "Policy get digest - should be 66 dd e5 e3"
@@ -927,21 +927,21 @@ checkSuccess $?
 #
 # policynvargs.txt (binary)
 # args = hash of 0000 0000 0000 0000 | 0000 | 0000 (eight bytes of zero | offset | op ==)
-# hash -hi n -halg sha1 -if policies/policynvargs.txt -v
-# openssl dgst -sha1 policies/policynvargs.txt
+# hash -hi n -halg sha256 -if policies/policynvargs.txt -v
+# openssl dgst -sha256 policies/policynvargs.txt
 # 2c513f149e737ec4063fc1d37aee9beabc4b4bbf
 #
 # NV authorizing index
 #
 # after defining index and NV write to set written, use 
-# ${PREFIX}nvreadpublic -ha 01000000 -nalg sha1
+# ${PREFIX}nvreadpublic -ha 01000000 -nalg sha256
 # to get name
 # 00042234b8df7cdf8605ee0a2088ac7dfe34c6566c5c
 #
 # append Name to policynvnv.txt
 #
 # convert to binary policy
-# > policymaker -halg sha1 -if policies/policynvnv.txt -of policies/policynvnv.bin -pr -v
+# > policymaker -halg sha256 -if policies/policynvnv.txt -of policies/policynvnv.bin -pr -v
 # bc 9b 4c 4f 7b 00 66 19 5b 1d d9 9c 92 7e ad 57 e7 1c 2a fc 
 #
 # file zero8.bin has 8 bytes of hex zero
@@ -951,11 +951,11 @@ echo "Policy NV, NV index authorizing"
 echo ""
 
 echo "Define a setbits index, authorizing index"
-${PREFIX}nvdefinespace -hi p -nalg sha1 -ha 01000000 -pwdn nnn -ty b > run.out
+${PREFIX}nvdefinespace -hi p -nalg sha256 -ha 01000000 -pwdn nnn -ty b > run.out
 checkSuccess $?
 
 echo "NV Read public, get Name, not written"
-${PREFIX}nvreadpublic -ha 01000000 -nalg sha1 > run.out
+${PREFIX}nvreadpublic -ha 01000000 -nalg sha256 > run.out
 checkSuccess $?
 
 echo "NV setbits to set written"
@@ -963,7 +963,7 @@ ${PREFIX}nvsetbits -ha 01000000 -pwdn nnn > run.out
 checkSuccess $?
 
 echo "NV Read public, get Name, written"
-${PREFIX}nvreadpublic -ha 01000000 -nalg sha1 > run.out
+${PREFIX}nvreadpublic -ha 01000000 -nalg sha256 > run.out
 checkSuccess $?
 
 echo "NV Read, should be zero"
@@ -971,11 +971,11 @@ ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 > run.out
 checkSuccess $?
 
 echo "Define an ordinary index, authorized index, policyNV"
-${PREFIX}nvdefinespace -hi p -nalg sha1 -ha 01000001 -pwdn nnn -sz 2 -ty o -pol policies/policynvnv.bin > run.out
+${PREFIX}nvdefinespace -hi p -nalg sha256 -ha 01000001 -pwdn nnn -sz 2 -ty o -pol policies/policynvnv.bin > run.out
 checkSuccess $?
 
 echo "NV Read public, get Name, not written"
-${PREFIX}nvreadpublic -ha 01000001 -nalg sha1 > run.out
+${PREFIX}nvreadpublic -ha 01000001 -nalg sha256 > run.out
 checkSuccess $?
 
 echo "NV write to set written"
@@ -983,7 +983,7 @@ ${PREFIX}nvwrite -ha 01000001 -pwdn nnn -ic aa > run.out
 checkSuccess $?
 
 echo "Start policy session"
-${PREFIX}startauthsession -se p -halg sha1 > run.out
+${PREFIX}startauthsession -se p -halg sha256 > run.out
 checkSuccess $?
  
 echo "NV write, policy not satisfied  - should fail"
@@ -1039,15 +1039,15 @@ echo "Policy NV Written"
 echo ""
 
 echo "Define an ordinary index, authorized index, policyNV"
-${PREFIX}nvdefinespace -hi p -nalg sha1 -ha 01000000 -pwdn nnn -sz 2 -ty o -pol policies/policywrittenset.bin > run.out  
+${PREFIX}nvdefinespace -hi p -nalg sha256 -ha 01000000 -pwdn nnn -sz 2 -ty o -pol policies/policywrittenset.bin > run.out
 checkSuccess $?
 
 echo "NV Read public, get Name, not written"
-${PREFIX}nvreadpublic -ha 01000000 -nalg sha1 > run.out  
+${PREFIX}nvreadpublic -ha 01000000 -nalg sha256 > run.out
 checkSuccess $?
 
 echo "Start policy session"
-${PREFIX}startauthsession -se p -halg sha1 > run.out
+${PREFIX}startauthsession -se p -halg sha256 > run.out
 checkSuccess $?
  
 echo "NV write, policy not satisfied  - should fail"
@@ -1067,7 +1067,7 @@ ${PREFIX}flushcontext -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Start policy session"
-${PREFIX}startauthsession -se p -halg sha1 > run.out
+${PREFIX}startauthsession -se p -halg sha256 > run.out
 checkSuccess $?
 
 echo "Policy NV Written yes, satisfy policy"
@@ -1087,7 +1087,7 @@ ${PREFIX}nvwrite -ha 01000000 -ic aa -pwdn nnn > run.out
 checkSuccess $?
 
 echo "Start policy session"
-${PREFIX}startauthsession -se p -halg sha1 > run.out
+${PREFIX}startauthsession -se p -halg sha256 > run.out
 checkSuccess $?
 
 echo "Policy NV Written yes, satisfy policy"
@@ -1103,7 +1103,7 @@ ${PREFIX}flushcontext -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Start policy session"
-${PREFIX}startauthsession -se p -halg sha1 > run.out
+${PREFIX}startauthsession -se p -halg sha256 > run.out
 checkSuccess $?
 
 echo "Policy NV Written no"
@@ -1350,12 +1350,12 @@ checkSuccess $?
 
 # test using clockrateadjust
 # policycphashhash.txt is (hex) 00000130 4000000c 000
-# hash -if policycphashhash.txt -oh policycphashhash.bin -halg sha1 -v
-# openssl dgst -sha1 policycphashhash.txt
+# hash -if policycphashhash.txt -oh policycphashhash.bin -halg sha256 -v
+# openssl dgst -sha256 policycphashhash.txt
 # cpHash is
 # b5f919bbc01f0ebad02010169a67a8c158ec12f3
 # append to policycphash.txt 00000163 + cpHash
-# policymaker -halg sha1 -if policies/policycphash.txt -of policies/policycphash.bin -pr
+# policymaker -halg sha256 -if policies/policycphash.txt -of policies/policycphash.bin -pr
 #  06 e4 6c f9 f3 c7 0f 30 10 18 7c a6 72 69 b0 84 b4 52 11 6f 
 
 echo ""
@@ -1363,7 +1363,7 @@ echo "Policy cpHash"
 echo ""
 
 echo "Set the platform policy to policy cpHash"
-${PREFIX}setprimarypolicy -hi p -pol policies/policycphash.bin -halg sha1 > run.out
+${PREFIX}setprimarypolicy -hi p -pol policies/policycphash.bin -halg sha256 > run.out
 checkSuccess $?
 
 echo "Clockrate adjust using wrong password - should fail"
@@ -1371,7 +1371,7 @@ ${PREFIX}clockrateadjust -hi p -pwdp ppp -adj 0 > run.out
 checkFailure $?
 
 echo "Start policy session"
-${PREFIX}startauthsession -se p -halg sha1 > run.out 
+${PREFIX}startauthsession -se p -halg sha256 > run.out
 checkSuccess $?
 
 echo "Clockrate adjust, policy not satisfied - should fail"
@@ -1714,7 +1714,7 @@ echo "Policy Counter Timer"
 echo ""
 
 echo "Set the platform policy to policy "
-${PREFIX}setprimarypolicy -hi p -pol policies/policycountertimer.bin -halg sha1 > run.out
+${PREFIX}setprimarypolicy -hi p -pol policies/policycountertimer.bin -halg sha256 > run.out
 checkSuccess $?
 
 echo "Clockrate adjust using wrong password - should fail"
@@ -1722,7 +1722,7 @@ ${PREFIX}clockrateadjust -hi p -pwdp ppp -adj 0 > run.out
 checkFailure $?
 
 echo "Start policy session"
-${PREFIX}startauthsession -se p -halg sha1 > run.out
+${PREFIX}startauthsession -se p -halg sha256 > run.out
 checkSuccess $?
 
 echo "Clockrate adjust, policy not satisfied - should fail"

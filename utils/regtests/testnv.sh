@@ -56,7 +56,7 @@ checkSuccess $?
 NALG=(${ITERATE_ALGS})
 BADNALG=(${BAD_ITERATE_ALGS})
 
-for ((i = 0 ; i < 4; i++))
+for ((i = 0 ; i < ${ITERATE_ALGS_COUNT}; i++))
 do
 
     for SESS in "" "-se0 02000000 1"
@@ -212,10 +212,10 @@ checkSuccess $?
 for SESS in "" "-se0 02000000 1"
 do
 
-    SZ=(20 32 48 64)
+    SZ=(${ITERATE_ALGS_SIZES})
     HALG=(${ITERATE_ALGS})
 
-    for ((i = 0 ; i < 4; i++))
+    for ((i = 0 ; i < ${ITERATE_ALGS_COUNT}; i++))
     do
 
 	echo "NV Define Space ${HALG[$i]}"

@@ -58,11 +58,11 @@ ${PREFIX}evictcontrol -ho 80000001 -hp 81800000 -hi p > run.out
 checkSuccess $?
 
 echo "Sign a digest with the transient key"
-${PREFIX}sign -hk 80000001 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 80000001 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 checkSuccess $?
 
 echo "Sign a digest with the persistent key"
-${PREFIX}sign -hk 81800000 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 81800000 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 checkSuccess $?
 
 echo "Flush the transient key"
@@ -74,11 +74,11 @@ ${PREFIX}flushcontext -ha 81800000 > run.out
 checkFailure $?
 
 echo "Sign a digest with the transient key- should fail"
-${PREFIX}sign -hk 80000001 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 80000001 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 checkFailure $?
 
 echo "Sign a digest with the persistent key"
-${PREFIX}sign -hk 81800000 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 81800000 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 checkSuccess $?
 
 echo "Flush the persistent key"
@@ -86,11 +86,11 @@ ${PREFIX}evictcontrol -ho 81800000 -hp 81800000 -hi p > run.out
 checkSuccess $?
 
 echo "Sign a digest with the persistent key - should fail"
-${PREFIX}sign -hk 81800000 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 81800000 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 checkFailure $?
 
 echo "Sign a digest with the transient key - should fail"
-${PREFIX}sign -hk 80000001 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+${PREFIX}sign -hk 80000001 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 checkFailure $?
 
 # ${PREFIX}getcapability  -cap 1 -pr 80000000

@@ -67,11 +67,11 @@ do
 	checkSuccess $?
 
 	echo "Sign a digest with the original key ${SESS}"
-	${PREFIX}sign -hk 80000001 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig ${SESS} > run.out
+	${PREFIX}sign -hk 80000001 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig ${SESS} > run.out
 	checkSuccess $?
 
 	echo "Sign a digest with the changed key"
-	${PREFIX}sign -hk 80000002 -halg sha1 -if policies/aaa -os sig.bin -pwdk xxx > run.out
+	${PREFIX}sign -hk 80000002 -halg sha256 -if policies/aaa -os sig.bin -pwdk xxx > run.out
 	checkSuccess $?
 
 	echo "Flush the key"

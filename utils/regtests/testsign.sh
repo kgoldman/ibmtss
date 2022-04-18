@@ -312,14 +312,14 @@ echo ""
 # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 
 echo "Load external just the public part of PEM RSA"
-${PREFIX}loadexternal -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
+${PREFIX}loadexternal -halg sha256 -nalg sha256 -ipem policies/rsapubkey.pem > run.out
 checkSuccess $?
 
 echo "Sign a test message with openssl RSA"
-openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin > run.out 2>&1
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin > run.out 2>&1
 
 echo "Verify the RSA signature"
-${PREFIX}verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw > run.out
+${PREFIX}verifysignature -hk 80000001 -halg sha256 -if msg.bin -is pssig.bin -raw > run.out
 checkSuccess $?
 
 echo "Flush the signing key"
@@ -338,14 +338,14 @@ for CURVE in p256 p384
 do
 
     echo "Load external just the public part of PEM ECC ${CURVE}"
-    ${PREFIX}loadexternal -halg sha1 -nalg sha1 -ipem policies/${CURVE}pubkey.pem -ecc > run.out
+    ${PREFIX}loadexternal -halg sha256 -nalg sha256 -ipem policies/${CURVE}pubkey.pem -ecc > run.out
     checkSuccess $?
 
     echo "Sign a test message with openssl ECC ${CURVE}"
-    openssl dgst -sha1 -sign policies/${CURVE}privkey.pem -out pssig.bin msg.bin > run.out 2>&1
+    openssl dgst -sha256 -sign policies/${CURVE}privkey.pem -out pssig.bin msg.bin > run.out 2>&1
 
     echo "Verify the ECC signature ${CURVE}"
-    ${PREFIX}verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw -ecc > run.out
+    ${PREFIX}verifysignature -hk 80000001 -halg sha256 -if msg.bin -is pssig.bin -raw -ecc > run.out
     checkSuccess $?
 
     echo "Flush the ECC ${CURVE} signing key"

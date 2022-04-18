@@ -72,6 +72,8 @@ PREFIX=./
 # hash algorithms to be used for testing
 
 export ITERATE_ALGS="sha1 sha256 sha384 sha512"
+export ITERATE_ALGS_SIZES="20 32 48 64"
+export ITERATE_ALGS_COUNT=4
 export BAD_ITERATE_ALGS="sha256 sha384 sha512 sha1"
 export CURVE_ALGS="bnp256 nistp256 nistp384"
 
