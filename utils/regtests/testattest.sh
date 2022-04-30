@@ -381,9 +381,8 @@ echo ""
 
 for HALG in ${ITERATE_ALGS}
 do
-
     echo "Start an audit session ${HALG}"
-    ${PREFIX}startauthsession -se h -halg  ${HALG} > run.out
+    ${PREFIX}startauthsession -se h -halg ${HALG} > run.out
     checkSuccess $?
 
     echo "PCR 16 reset"

@@ -69,12 +69,20 @@ PREFIX=./
 
 #PREFIX="valgrind ./"
 
-# hash algorithms to be used for testing
-
-export ITERATE_ALGS="sha1 sha256 sha384 sha512"
-export ITERATE_ALGS_SIZES="20 32 48 64"
-export ITERATE_ALGS_COUNT=4
-export BAD_ITERATE_ALGS="sha256 sha384 sha512 sha1"
+# Hash algorithms to be used for testing. Uncomment or set shell env variable to restrict.
+# export TPM_TSS_NODEPRECATEDALGS=1
+if [ "${TPM_TSS_NODEPRECATEDALGS}" ]; then
+	export ITERATE_ALGS="sha256 sha384 sha512"
+	export ITERATE_ALGS_SIZES="32 48 64"
+	export ITERATE_ALGS_COUNT=3
+	export BAD_ITERATE_ALGS="sha384 sha512 sha256"
+else
+	export ITERATE_ALGS="sha1 sha256 sha384 sha512"
+	export ITERATE_ALGS_SIZES="20 32 48 64"
+	export ITERATE_ALGS_COUNT=4
+	export BAD_ITERATE_ALGS="sha256 sha384 sha512 sha1"
+fi
+export ITERATE_ALGS_WITH_SHA1="sha1 sha256 sha384 sha512"
 export CURVE_ALGS="bnp256 nistp256 nistp384"
 
 # When going to the TPM device, don't use the resource manager
