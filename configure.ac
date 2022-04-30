@@ -123,6 +123,11 @@ AC_ARG_ENABLE(rmtpm,
    AM_CONDITIONAL([CONFIG_RMTPM], [test "x$enable_rmtpm" = "xyes"])
    AS_IF([test "$enable_rmtpm" != "yes"], [enable_rmtpm="no"])
 
+AC_ARG_ENABLE(nodeprecatedalgs,
+   AS_HELP_STRING([--enable-nodeprecatedalgs], [Restrict usage of SHA-1]))
+   AM_CONDITIONAL([CONFIG_TSS_NODEPRECATEDALGS], [test "x$enable_nodeprecatedalgs" = "xyes"])
+   AS_IF([test "$enable_nodeprecatedalgs" != "yes"], [enable_nodeprecatedalgs="no"])
+
 AC_CONFIG_FILES([Makefile
 		utils/Makefile
 		utils12/Makefile
@@ -131,12 +136,13 @@ AC_OUTPUT
 
 # Give some feedback
 echo   "Configuration:"
-echo   "	CFLAGS:		$CFLAGS"
-echo   "	tpm12:		$tpm12"
-echo   "	tpm20:		$tpm20"
-echo   "	hwtpm:		$enable_hwtpm"
-echo   "	rmtpm:		$enable_rmtpm"
-echo   "	nofile:		$enable_nofile"
-echo   "	noprint:	$enable_noprint"
-echo   "	nocrypto:	$enable_nocrypto"
-echo   "	noecc:		$enable_noecc"
+echo   "	CFLAGS:			$CFLAGS"
+echo   "	tpm12:			$tpm12"
+echo   "	tpm20:			$tpm20"
+echo   "	hwtpm:			$enable_hwtpm"
+echo   "	rmtpm:			$enable_rmtpm"
+echo   "	nofile:			$enable_nofile"
+echo   "	noprint:		$enable_noprint"
+echo   "	nocrypto:		$enable_nocrypto"
+echo   "	noecc:			$enable_noecc"
+echo   "	nodeprecatedalgs:	$enable_nodeprecatedalgs"

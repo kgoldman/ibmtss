@@ -60,6 +60,10 @@ if CONFIG_TSS_NOECC
 libibmtss_la_CFLAGS += -DTPM_TSS_NOECC
 endif
 
+if CONFIG_TSS_NODEPRECATEDALGS
+libibmtss_la_CFLAGS += -DTPM_TSS_NODEPRECATEDALGS
+endif
+
 libibmtss_la_CCFLAGS = -Wall -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wformat=2 -Wold-style-definition -Wno-self-assign -ggdb
 libibmtss_la_LDFLAGS = -version-info @TSSLIB_VERSION_INFO@
 
@@ -76,6 +80,10 @@ endif
 
 if CONFIG_TSS_NOECC
 libibmtssutils_la_CFLAGS += -DTPM_TSS_NOECC
+endif
+
+if CONFIG_TSS_NODEPRECATEDALGS
+libibmtssutils_la_CFLAGS += -DTPM_TSS_NODEPRECATEDALGS
 endif
 
 #current[:revision[:age]]
@@ -120,8 +128,14 @@ if !CONFIG_TSS_NOFILE
 bin_PROGRAMS += timepacket
 endif
 
+UTILS_CFLAGS =
+
 if CONFIG_TSS_NOECC
-UTILS_CFLAGS = -DTPM_TSS_NOECC
+UTILS_CFLAGS += -DTPM_TSS_NOECC
+endif
+
+if CONFIG_TSS_NODEPRECATEDALGS
+UTILS_CFLAGS += -DTPM_TSS_NODEPRECATEDALGS
 endif
 
 activatecredential_SOURCES = activatecredential.c

@@ -2313,9 +2313,11 @@ TPM_RC signRSAFromRSA(uint8_t *signature, size_t *signatureLength,
     /* map the hash algorithm to the openssl NID */
     if (rc == 0) {
 	switch (hashAlg) {
+#ifndef TPM_TSS_NODEPRECATEDALGS
 	  case TPM_ALG_SHA1:
 	    nid = NID_sha1;
 	    break;
+#endif
 	  case TPM_ALG_SHA256:
 	    nid = NID_sha256;
 	    break;
@@ -2427,10 +2429,12 @@ TPM_RC verifyRSASignatureFromRSA(unsigned char *message,
     /* map from hash algorithm to openssl nid */
     if (rc == 0) {
 	switch (halg) {
+#ifndef TPM_TSS_NODEPRECATEDALGS
 	  case TPM_ALG_SHA1:
 	    nid = NID_sha1;
 	    md = EVP_sha1();
 	    break;
+#endif
 	  case TPM_ALG_SHA256:
 	    nid = NID_sha256;
 	    md = EVP_sha256();

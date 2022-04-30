@@ -67,7 +67,7 @@ echo ""
 
 for TYPE in "1" "2"
 do
-    for HALG in ${ITERATE_ALGS}
+    for HALG in ${ITERATE_ALGS_WITH_SHA1}
     do
 
 	echo "Power cycle to reset IMA PCR"

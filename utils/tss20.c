@@ -112,6 +112,7 @@ struct TSS_HMAC_CONTEXT {
 
 /* functions for command pre- and post- processing */
 
+typedef TPM_RC (*TSS_CheckParametersFunction_t)(COMMAND_PARAMETERS *in);
 typedef TPM_RC (*TSS_PreProcessFunction_t)(TSS_CONTEXT *tssContext,
 					   COMMAND_PARAMETERS *in,
 					   EXTRA_PARAMETERS *extra);
@@ -238,11 +239,404 @@ static TPM_RC TSS_PO_NV_ReadLock(TSS_CONTEXT *tssContext,
 				 void *out,
 				 void *extra);
 
+/*
+  Functions to check for usage of deprecated algorithms.
+*/
+
+static TPM_RC TSS_CheckSha1_PublicArea(TPMT_PUBLIC *publicArea)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (publicArea->nameAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    if (rc == 0) {
+	if (((publicArea->type == TPM_ALG_RSA) || (publicArea->type == TPM_ALG_ECC)) &&
+	    (publicArea->parameters.asymDetail.scheme.scheme != TPM_ALG_NULL) &&
+	    (publicArea->parameters.asymDetail.scheme.details.anySig.hashAlg == TPM_ALG_SHA1)) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CheckSha1_SigScheme(TPMT_SIG_SCHEME *sigScheme)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (sigScheme->details.any.hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_StartAuthSession(StartAuthSession_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->authHash == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_Create(Create_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_PublicArea(&in->inPublic.publicArea);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_Load(Load_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_PublicArea(&in->inPublic.publicArea);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_LoadExternal(LoadExternal_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_PublicArea(&in->inPublic.publicArea);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_CreateLoaded(CreateLoaded_In *in)
+{
+    TPM_RC rc = 0;
+    uint32_t size = sizeof(in->inPublic.t.buffer);
+    uint8_t *buffer = in->inPublic.t.buffer;
+    TPMT_PUBLIC publicArea;
+
+    if (rc == 0) {
+	rc = TSS_TPMT_PUBLIC_Unmarshalu(&publicArea, &buffer, &size, TRUE);
+    }
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_PublicArea(&publicArea);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_Import(Import_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_PublicArea(&in->objectPublic.publicArea);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_RSA_Encrypt(RSA_Encrypt_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->inScheme.details.anySig.hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_RSA_Decrypt(RSA_Decrypt_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->inScheme.details.anySig.hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_ECC_Encrypt(ECC_Encrypt_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->inScheme.details.mgf1.hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_ECC_Decrypt(ECC_Decrypt_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->inScheme.details.mgf1.hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_Hash(Hash_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_HMAC(HMAC_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_HMAC_Start(HMAC_Start_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_HashSequenceStart(HashSequenceStart_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_Certify(Certify_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_SigScheme(&in->inScheme);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_CertifyX509(CertifyX509_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_SigScheme(&in->inScheme);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_CertifyCreation(CertifyCreation_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_SigScheme(&in->inScheme);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_Quote(Quote_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_SigScheme(&in->inScheme);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_GetSessionAuditDigest(GetSessionAuditDigest_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_SigScheme(&in->inScheme);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_GetCommandAuditDigest(GetCommandAuditDigest_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_SigScheme(&in->inScheme);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_GetTime(GetTime_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_SigScheme(&in->inScheme);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_VerifySignature(VerifySignature_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->signature.signature.any.hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_Sign(Sign_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_SigScheme(&in->inScheme);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_SetCommandCodeAuditStatus(SetCommandCodeAuditStatus_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->auditAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_PolicySigned(PolicySigned_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->auth.signature.any.hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_CreatePrimary(CreatePrimary_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_PublicArea(&in->inPublic.publicArea);
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_SetPrimaryPolicy(SetPrimaryPolicy_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->hashAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_NV_DefineSpace(NV_DefineSpace_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	if (in->publicInfo.nvPublic.nameAlg == TPM_ALG_SHA1) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+
+    return rc;
+}
+
+static TPM_RC TSS_CH_NV_Certify(NV_Certify_In *in)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_CheckSha1_SigScheme(&in->inScheme);
+    }
+
+    return rc;
+}
+
 typedef struct TSS_TABLE {
-    TPM_CC 			commandCode;
-    TSS_PreProcessFunction_t	preProcessFunction;
-    TSS_ChangeAuthFunction_t	changeAuthFunction;
-    TSS_PostProcessFunction_t 	postProcessFunction;
+    TPM_CC 				commandCode;
+    TSS_CheckParametersFunction_t	checkParametersFunction;
+    TSS_PreProcessFunction_t		preProcessFunction;
+    TSS_ChangeAuthFunction_t		changeAuthFunction;
+    TSS_PostProcessFunction_t 		postProcessFunction;
 } TSS_TABLE;
 
 /* This table indexes from the command to pre- and post- processing functions.  A missing entry is
@@ -250,118 +644,118 @@ typedef struct TSS_TABLE {
 
 static const TSS_TABLE tssTable [] = {
 				 
-    {TPM_CC_Startup, NULL, NULL, NULL},
-    {TPM_CC_Shutdown, NULL, NULL, NULL},
-    {TPM_CC_SelfTest, NULL, NULL, NULL},
-    {TPM_CC_IncrementalSelfTest, NULL, NULL, NULL},
-    {TPM_CC_GetTestResult, NULL, NULL, NULL},
-    {TPM_CC_StartAuthSession, (TSS_PreProcessFunction_t)TSS_PR_StartAuthSession, NULL, (TSS_PostProcessFunction_t)TSS_PO_StartAuthSession},
-    {TPM_CC_PolicyRestart, NULL, NULL, NULL},
-    {TPM_CC_Create, NULL, NULL, NULL},
-    {TPM_CC_Load, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_Load},
-    {TPM_CC_LoadExternal, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_LoadExternal},
-    {TPM_CC_ReadPublic, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_ReadPublic},
-    {TPM_CC_ActivateCredential, NULL, NULL, NULL},
-    {TPM_CC_MakeCredential, NULL, NULL, NULL},
-    {TPM_CC_Unseal, NULL, NULL, NULL},
-    {TPM_CC_ObjectChangeAuth, NULL, NULL, NULL},
-    {TPM_CC_CreateLoaded, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_CreateLoaded},
-    {TPM_CC_Duplicate, NULL, NULL, NULL},
-    {TPM_CC_Rewrap, NULL, NULL, NULL},
-    {TPM_CC_Import, NULL, NULL, NULL},
-    {TPM_CC_RSA_Encrypt, NULL, NULL, NULL},
-    {TPM_CC_RSA_Decrypt, NULL, NULL, NULL},
-    {TPM_CC_ECDH_KeyGen, NULL, NULL, NULL},
-    {TPM_CC_ECDH_ZGen, NULL, NULL, NULL},
-    {TPM_CC_ECC_Encrypt, NULL, NULL, NULL},
-    {TPM_CC_ECC_Decrypt, NULL, NULL, NULL},
-    {TPM_CC_ECC_Parameters, NULL, NULL, NULL},
-    {TPM_CC_ZGen_2Phase, NULL, NULL, NULL},
-    {TPM_CC_EncryptDecrypt, NULL, NULL, NULL},
-    {TPM_CC_EncryptDecrypt2, NULL, NULL, NULL},
-    {TPM_CC_Hash, NULL, NULL, NULL},
-    {TPM_CC_HMAC, NULL, NULL, NULL},
-    {TPM_CC_GetRandom, NULL, NULL, NULL},
-    {TPM_CC_StirRandom, NULL, NULL, NULL},
-    {TPM_CC_HMAC_Start, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_HMAC_Start},
-    {TPM_CC_HashSequenceStart, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_HashSequenceStart},
-    {TPM_CC_SequenceUpdate, NULL, NULL, NULL},
-    {TPM_CC_SequenceComplete, NULL,NULL, (TSS_PostProcessFunction_t)TSS_PO_SequenceComplete},
-    {TPM_CC_EventSequenceComplete, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_EventSequenceComplete},
-    {TPM_CC_Certify, NULL, NULL, NULL},
-    {TPM_CC_CertifyX509, NULL, NULL, NULL},
-    {TPM_CC_CertifyCreation, NULL, NULL, NULL},
-    {TPM_CC_Quote, NULL, NULL, NULL},
-    {TPM_CC_GetSessionAuditDigest, NULL, NULL, NULL},
-    {TPM_CC_GetCommandAuditDigest, NULL, NULL, NULL},
-    {TPM_CC_GetTime, NULL, NULL, NULL},
-    {TPM_CC_Commit, NULL, NULL, NULL},
-    {TPM_CC_EC_Ephemeral, NULL, NULL, NULL},
-    {TPM_CC_VerifySignature, NULL, NULL, NULL},
-    {TPM_CC_Sign, NULL, NULL, NULL},
-    {TPM_CC_SetCommandCodeAuditStatus, NULL, NULL, NULL},
-    {TPM_CC_PCR_Extend, NULL, NULL, NULL},
-    {TPM_CC_PCR_Event, NULL, NULL, NULL},
-    {TPM_CC_PCR_Read, NULL, NULL, NULL},
-    {TPM_CC_PCR_Allocate, NULL, NULL, NULL},
-    {TPM_CC_PCR_SetAuthPolicy, NULL, NULL, NULL},
-    {TPM_CC_PCR_SetAuthValue, NULL, NULL, NULL},
-    {TPM_CC_PCR_Reset, NULL, NULL, NULL},
-    {TPM_CC_PolicySigned, NULL, NULL, NULL},
-    {TPM_CC_PolicySecret, NULL, NULL, NULL},
-    {TPM_CC_PolicyTicket, NULL, NULL, NULL},
-    {TPM_CC_PolicyOR, NULL, NULL, NULL},
-    {TPM_CC_PolicyPCR, NULL, NULL, NULL},
-    {TPM_CC_PolicyLocality, NULL, NULL, NULL},
-    {TPM_CC_PolicyNV, NULL, NULL, NULL},
-    {TPM_CC_PolicyAuthorizeNV, NULL, NULL, NULL},
-    {TPM_CC_PolicyCounterTimer, NULL, NULL, NULL},
-    {TPM_CC_PolicyCommandCode, NULL, NULL, NULL},
-    {TPM_CC_PolicyPhysicalPresence, NULL, NULL, NULL},
-    {TPM_CC_PolicyCpHash, NULL, NULL, NULL},
-    {TPM_CC_PolicyNameHash, NULL, NULL, NULL},
-    {TPM_CC_PolicyDuplicationSelect, NULL, NULL, NULL},
-    {TPM_CC_PolicyAuthorize, NULL, NULL, NULL},
-    {TPM_CC_PolicyAuthValue, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_PolicyAuthValue},
-    {TPM_CC_PolicyPassword, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_PolicyPassword},
-    {TPM_CC_PolicyGetDigest, NULL, NULL, NULL},
-    {TPM_CC_PolicyNvWritten, NULL, NULL, NULL},
-    {TPM_CC_PolicyTemplate, NULL, NULL, NULL},
-    {TPM_CC_CreatePrimary, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_CreatePrimary},
-    {TPM_CC_HierarchyControl, NULL, NULL, NULL},
-    {TPM_CC_SetPrimaryPolicy, NULL, NULL, NULL},
-    {TPM_CC_ChangePPS, NULL, NULL, NULL},
-    {TPM_CC_ChangeEPS, NULL, NULL, NULL},
-    {TPM_CC_Clear, NULL, NULL, NULL},
-    {TPM_CC_ClearControl, NULL, NULL, NULL},
-    {TPM_CC_HierarchyChangeAuth, NULL, (TSS_ChangeAuthFunction_t)TSS_CA_HierarchyChangeAuth, NULL},
-    {TPM_CC_DictionaryAttackLockReset, NULL, NULL, NULL},
-    {TPM_CC_DictionaryAttackParameters, NULL, NULL, NULL},
-    {TPM_CC_PP_Commands, NULL, NULL, NULL},
-    {TPM_CC_SetAlgorithmSet, NULL, NULL, NULL},
-    {TPM_CC_ContextSave, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_ContextSave},
-    {TPM_CC_ContextLoad, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_ContextLoad},
-    {TPM_CC_FlushContext, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_FlushContext},
-    {TPM_CC_EvictControl, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_EvictControl},
-    {TPM_CC_ReadClock, NULL, NULL, NULL},
-    {TPM_CC_ClockSet, NULL, NULL, NULL},
-    {TPM_CC_ClockRateAdjust, NULL, NULL, NULL},
-    {TPM_CC_GetCapability, NULL, NULL, NULL},
-    {TPM_CC_TestParms, NULL, NULL, NULL},
-    {TPM_CC_NV_DefineSpace, (TSS_PreProcessFunction_t)TSS_PR_NV_DefineSpace, NULL,  (TSS_PostProcessFunction_t)TSS_PO_NV_DefineSpace},
-    {TPM_CC_NV_UndefineSpace, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_UndefineSpace},
-    {TPM_CC_NV_UndefineSpaceSpecial, NULL, (TSS_ChangeAuthFunction_t)TSS_CA_NV_UndefineSpaceSpecial, (TSS_PostProcessFunction_t)TSS_PO_NV_UndefineSpaceSpecial},
-    {TPM_CC_NV_ReadPublic, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_ReadPublic},
-    {TPM_CC_NV_Write, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_Write},
-    {TPM_CC_NV_Increment, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_Write},
-    {TPM_CC_NV_Extend, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_Write},
-    {TPM_CC_NV_SetBits, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_Write},
-    {TPM_CC_NV_WriteLock, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_WriteLock},
-    {TPM_CC_NV_GlobalWriteLock, NULL, NULL, NULL},
-    {TPM_CC_NV_Read, NULL, NULL, NULL},
-    {TPM_CC_NV_ReadLock, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_ReadLock},
-    {TPM_CC_NV_ChangeAuth, NULL, (TSS_ChangeAuthFunction_t)TSS_CA_NV_ChangeAuth, NULL},
-    {TPM_CC_NV_Certify, NULL, NULL, NULL}
+    {TPM_CC_Startup, NULL, NULL, NULL, NULL},
+    {TPM_CC_Shutdown, NULL, NULL, NULL, NULL},
+    {TPM_CC_SelfTest, NULL, NULL, NULL, NULL},
+    {TPM_CC_IncrementalSelfTest, NULL, NULL, NULL, NULL},
+    {TPM_CC_GetTestResult, NULL, NULL, NULL, NULL},
+    {TPM_CC_StartAuthSession, (TSS_CheckParametersFunction_t)TSS_CH_StartAuthSession, (TSS_PreProcessFunction_t)TSS_PR_StartAuthSession, NULL, (TSS_PostProcessFunction_t)TSS_PO_StartAuthSession},
+    {TPM_CC_PolicyRestart, NULL, NULL, NULL, NULL},
+    {TPM_CC_Create, (TSS_CheckParametersFunction_t)TSS_CH_Create, NULL, NULL, NULL},
+    {TPM_CC_Load, (TSS_CheckParametersFunction_t)TSS_CH_Load, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_Load},
+    {TPM_CC_LoadExternal, (TSS_CheckParametersFunction_t)TSS_CH_LoadExternal, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_LoadExternal},
+    {TPM_CC_ReadPublic, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_ReadPublic},
+    {TPM_CC_ActivateCredential, NULL, NULL, NULL, NULL},
+    {TPM_CC_MakeCredential, NULL, NULL, NULL, NULL},
+    {TPM_CC_Unseal, NULL, NULL, NULL, NULL},
+    {TPM_CC_ObjectChangeAuth, NULL, NULL, NULL, NULL},
+    {TPM_CC_CreateLoaded, (TSS_CheckParametersFunction_t)TSS_CH_CreateLoaded, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_CreateLoaded},
+    {TPM_CC_Duplicate, NULL, NULL, NULL, NULL},
+    {TPM_CC_Rewrap, NULL, NULL, NULL, NULL},
+    {TPM_CC_Import, (TSS_CheckParametersFunction_t)TSS_CH_Import, NULL, NULL, NULL},
+    {TPM_CC_RSA_Encrypt, (TSS_CheckParametersFunction_t)TSS_CH_RSA_Encrypt, NULL, NULL, NULL},
+    {TPM_CC_RSA_Decrypt, (TSS_CheckParametersFunction_t)TSS_CH_RSA_Decrypt, NULL, NULL, NULL},
+    {TPM_CC_ECDH_KeyGen, NULL, NULL, NULL, NULL},
+    {TPM_CC_ECDH_ZGen, NULL, NULL, NULL, NULL},
+    {TPM_CC_ECC_Encrypt, (TSS_CheckParametersFunction_t)TSS_CH_ECC_Encrypt, NULL, NULL, NULL},
+    {TPM_CC_ECC_Decrypt, (TSS_CheckParametersFunction_t)TSS_CH_ECC_Decrypt, NULL, NULL, NULL},
+    {TPM_CC_ECC_Parameters, NULL, NULL, NULL, NULL},
+    {TPM_CC_ZGen_2Phase, NULL, NULL, NULL, NULL},
+    {TPM_CC_EncryptDecrypt, NULL, NULL, NULL, NULL},
+    {TPM_CC_EncryptDecrypt2, NULL, NULL, NULL, NULL},
+    {TPM_CC_Hash, (TSS_CheckParametersFunction_t)TSS_CH_Hash, NULL, NULL, NULL},
+    {TPM_CC_HMAC, (TSS_CheckParametersFunction_t)TSS_CH_HMAC, NULL, NULL, NULL},
+    {TPM_CC_GetRandom, NULL, NULL, NULL, NULL},
+    {TPM_CC_StirRandom, NULL, NULL, NULL, NULL},
+    {TPM_CC_HMAC_Start, (TSS_CheckParametersFunction_t)TSS_CH_HMAC_Start, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_HMAC_Start},
+    {TPM_CC_HashSequenceStart, (TSS_CheckParametersFunction_t)TSS_CH_HashSequenceStart, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_HashSequenceStart},
+    {TPM_CC_SequenceUpdate, NULL, NULL, NULL, NULL},
+    {TPM_CC_SequenceComplete, NULL, NULL,NULL, (TSS_PostProcessFunction_t)TSS_PO_SequenceComplete},
+    {TPM_CC_EventSequenceComplete, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_EventSequenceComplete},
+    {TPM_CC_Certify, (TSS_CheckParametersFunction_t)TSS_CH_Certify, NULL, NULL, NULL},
+    {TPM_CC_CertifyX509, (TSS_CheckParametersFunction_t)TSS_CH_CertifyX509, NULL, NULL, NULL},
+    {TPM_CC_CertifyCreation, (TSS_CheckParametersFunction_t)TSS_CH_CertifyCreation, NULL, NULL, NULL},
+    {TPM_CC_Quote, (TSS_CheckParametersFunction_t)TSS_CH_Quote, NULL, NULL, NULL},
+    {TPM_CC_GetSessionAuditDigest, (TSS_CheckParametersFunction_t)TSS_CH_GetSessionAuditDigest, NULL, NULL, NULL},
+    {TPM_CC_GetCommandAuditDigest, (TSS_CheckParametersFunction_t)TSS_CH_GetCommandAuditDigest, NULL, NULL, NULL},
+    {TPM_CC_GetTime, (TSS_CheckParametersFunction_t)TSS_CH_GetTime, NULL, NULL, NULL},
+    {TPM_CC_Commit, NULL, NULL, NULL, NULL},
+    {TPM_CC_EC_Ephemeral, NULL, NULL, NULL, NULL},
+    {TPM_CC_VerifySignature, (TSS_CheckParametersFunction_t)TSS_CH_VerifySignature, NULL, NULL, NULL},
+    {TPM_CC_Sign, (TSS_CheckParametersFunction_t)TSS_CH_Sign, NULL, NULL, NULL},
+    {TPM_CC_SetCommandCodeAuditStatus, (TSS_CheckParametersFunction_t)TSS_CH_SetCommandCodeAuditStatus, NULL, NULL, NULL},
+    {TPM_CC_PCR_Extend, NULL, NULL, NULL, NULL},
+    {TPM_CC_PCR_Event, NULL, NULL, NULL, NULL},
+    {TPM_CC_PCR_Read, NULL, NULL, NULL, NULL},
+    {TPM_CC_PCR_Allocate, NULL, NULL, NULL, NULL},
+    {TPM_CC_PCR_SetAuthPolicy, NULL, NULL, NULL, NULL},
+    {TPM_CC_PCR_SetAuthValue, NULL, NULL, NULL, NULL},
+    {TPM_CC_PCR_Reset, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicySigned, (TSS_CheckParametersFunction_t)TSS_CH_PolicySigned, NULL, NULL, NULL},
+    {TPM_CC_PolicySecret, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyTicket, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyOR, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyPCR, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyLocality, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyNV, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyAuthorizeNV, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyCounterTimer, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyCommandCode, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyPhysicalPresence, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyCpHash, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyNameHash, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyDuplicationSelect, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyAuthorize, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyAuthValue, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_PolicyAuthValue},
+    {TPM_CC_PolicyPassword, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_PolicyPassword},
+    {TPM_CC_PolicyGetDigest, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyNvWritten, NULL, NULL, NULL, NULL},
+    {TPM_CC_PolicyTemplate, NULL, NULL, NULL, NULL},
+    {TPM_CC_CreatePrimary, (TSS_CheckParametersFunction_t)TSS_CH_CreatePrimary, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_CreatePrimary},
+    {TPM_CC_HierarchyControl, NULL, NULL, NULL, NULL},
+    {TPM_CC_SetPrimaryPolicy, (TSS_CheckParametersFunction_t)TSS_CH_SetPrimaryPolicy, NULL, NULL, NULL},
+    {TPM_CC_ChangePPS, NULL, NULL, NULL, NULL},
+    {TPM_CC_ChangeEPS, NULL, NULL, NULL, NULL},
+    {TPM_CC_Clear, NULL, NULL, NULL, NULL},
+    {TPM_CC_ClearControl, NULL, NULL, NULL, NULL},
+    {TPM_CC_HierarchyChangeAuth, NULL, NULL, (TSS_ChangeAuthFunction_t)TSS_CA_HierarchyChangeAuth, NULL},
+    {TPM_CC_DictionaryAttackLockReset, NULL, NULL, NULL, NULL},
+    {TPM_CC_DictionaryAttackParameters, NULL, NULL, NULL, NULL},
+    {TPM_CC_PP_Commands, NULL, NULL, NULL, NULL},
+    {TPM_CC_SetAlgorithmSet, NULL, NULL, NULL, NULL},
+    {TPM_CC_ContextSave, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_ContextSave},
+    {TPM_CC_ContextLoad, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_ContextLoad},
+    {TPM_CC_FlushContext, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_FlushContext},
+    {TPM_CC_EvictControl, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_EvictControl},
+    {TPM_CC_ReadClock, NULL, NULL, NULL, NULL},
+    {TPM_CC_ClockSet, NULL, NULL, NULL, NULL},
+    {TPM_CC_ClockRateAdjust, NULL, NULL, NULL, NULL},
+    {TPM_CC_GetCapability, NULL, NULL, NULL, NULL},
+    {TPM_CC_TestParms, NULL, NULL, NULL, NULL},
+    {TPM_CC_NV_DefineSpace, (TSS_CheckParametersFunction_t)TSS_CH_NV_DefineSpace, (TSS_PreProcessFunction_t)TSS_PR_NV_DefineSpace, NULL,  (TSS_PostProcessFunction_t)TSS_PO_NV_DefineSpace},
+    {TPM_CC_NV_UndefineSpace, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_UndefineSpace},
+    {TPM_CC_NV_UndefineSpaceSpecial, NULL, NULL, (TSS_ChangeAuthFunction_t)TSS_CA_NV_UndefineSpaceSpecial, (TSS_PostProcessFunction_t)TSS_PO_NV_UndefineSpaceSpecial},
+    {TPM_CC_NV_ReadPublic, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_ReadPublic},
+    {TPM_CC_NV_Write, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_Write},
+    {TPM_CC_NV_Increment, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_Write},
+    {TPM_CC_NV_Extend, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_Write},
+    {TPM_CC_NV_SetBits, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_Write},
+    {TPM_CC_NV_WriteLock, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_WriteLock},
+    {TPM_CC_NV_GlobalWriteLock, NULL, NULL, NULL, NULL},
+    {TPM_CC_NV_Read, NULL, NULL, NULL, NULL},
+    {TPM_CC_NV_ReadLock, NULL, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_NV_ReadLock},
+    {TPM_CC_NV_ChangeAuth, NULL, NULL, (TSS_ChangeAuthFunction_t)TSS_CA_NV_ChangeAuth, NULL},
+    {TPM_CC_NV_Certify, (TSS_CheckParametersFunction_t)TSS_CH_NV_Certify, NULL, NULL, NULL}
 };
 
 #ifndef TPM_TSS_NO_PRINT
@@ -650,6 +1044,10 @@ static TPM_RC TSS_Command_ChangeAuthProcessor(TSS_CONTEXT *tssContext,
 					      COMMAND_PARAMETERS *in);
 #endif	/* TPM_TSS_NOCRYPTO */
 
+#ifdef TPM_TSS_NODEPRECATEDALGS
+static TPM_RC TSS_Command_CheckParameters(TPM_CC commandCode,
+					  COMMAND_PARAMETERS *in);
+#endif
 static TPM_RC TSS_Command_PreProcessor(TSS_CONTEXT *tssContext,
 				       TPM_CC commandCode,
 				       COMMAND_PARAMETERS *in,
@@ -692,6 +1090,12 @@ TPM_RC TSS_Execute20(TSS_CONTEXT *tssContext,
 {
     TPM_RC		rc = 0;
 	
+#ifdef TPM_TSS_NODEPRECATEDALGS
+    if (rc == 0) {
+	rc = TSS_Command_CheckParameters(commandCode, in);
+    }
+#endif
+
     /* create a TSS authorization context */
     if (rc == 0) {
 	TSS_InitAuthContext(tssContext->tssAuthContext);
@@ -3758,6 +4162,38 @@ static TPM_RC TSS_CA_NV_UndefineSpaceSpecial(TSS_CONTEXT *tssContext,
 #endif	/* TPM_TSS_NOCRYPTO */
     return rc;
 }
+
+#ifdef TPM_TSS_NODEPRECATEDALGS
+static TPM_RC TSS_Command_CheckParameters(TPM_CC commandCode,
+					  COMMAND_PARAMETERS *in)
+{
+    TPM_RC 				rc = 0;
+    size_t 				index;
+    int 				found;
+    TSS_CheckParametersFunction_t	checkParametersFunction = NULL;
+
+    /* search the table for a check parameters function */
+    if (rc == 0) {
+	found = FALSE;
+	for (index = 0 ; (index < (sizeof(tssTable) / sizeof(TSS_TABLE))) && !found ; index++) {
+	    if (tssTable[index].commandCode == commandCode) {
+		found = TRUE;
+		break;	/* don't increment index if found */
+	    }
+	}
+    }
+    /* found false means there is no check parameters function.  This permits the table to be smaller
+       if desired. */
+    if ((rc == 0) && found) {
+	checkParametersFunction = tssTable[index].checkParametersFunction;
+	/* call the check parameters function if there is one */
+	if (checkParametersFunction != NULL) {
+	    rc = checkParametersFunction(in);
+	}
+    }
+    return rc;
+}
+#endif
 
 /*
   Command Pre-Processor
