@@ -182,6 +182,7 @@
 typedef union {
     ActivateCredential_In         ActivateCredential;
     CertifyCreation_In            CertifyCreation;
+    CertifyX509_In                CertifyX509;
     Certify_In                    Certify;
     ChangeEPS_In                  ChangeEPS;
     ChangePPS_In                  ChangePPS;
@@ -315,6 +316,7 @@ typedef union
 {
     ActivateCredential_Out         ActivateCredential;
     CertifyCreation_Out            CertifyCreation;
+    CertifyX509_Out                CertifyX509;
     Certify_Out                    Certify;
     Commit_Out                     Commit;
     ContextLoad_Out                ContextLoad;
