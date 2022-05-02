@@ -274,5 +274,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
     printf("\t01\tcontinue\n");
+    printf("\n");
+    printf("Depending on the build configuration, some hash algorithms may not be available.\n");
     exit(1);	
 }

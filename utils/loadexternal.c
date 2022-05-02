@@ -538,5 +538,7 @@ static void printUsage(void)
     printf("\t20\tcommand decrypt\n");
     printf("\t40\tresponse encrypt\n");
     printf("\t80\taudit\n");
+    printf("\n");
+    printf("Depending on the build configuration, some hash algorithms may not be available.\n");
     exit(1);	
 }

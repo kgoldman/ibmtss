@@ -297,5 +297,7 @@ static void printUsage(void)
     printf("\t[-pwdb\tbind password for bind handle (default empty)]\n");
     printf("\t[-sym\t(xor, aes) symmetric parameter encryption algorithm (default xor)]\n");
     printf("\t[-on\tnonceTPM file for policy session (default do not save)]\n");
+    printf("\n");
+    printf("Depending on the build configuration, some hash algorithms may not be available.\n");
     exit(1);	
 }

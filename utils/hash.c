@@ -306,5 +306,7 @@ static void printUsage(void)
     printf("\t[-ns\tno space, no text, no newlines]\n");
     printf("\t[-oh\thash file name (default do not save)]\n");
     printf("\t[-tk\tticket file name (default do not save)]\n");
+    printf("\n");
+    printf("Depending on the build configuration, some hash algorithms may not be available.\n");
     exit(1);	
 }

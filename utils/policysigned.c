@@ -452,5 +452,7 @@ static void printUsage(void)
     printf("\t[-pwdk\tsigning key password (default null)]\n");
     printf("\t[-tk\tticket file name]\n");
     printf("\t[-to\ttimeout file name]\n");
+    printf("\n");
+    printf("Depending on the build configuration, some hash algorithms may not be available.\n");
     exit(1);	
 }
