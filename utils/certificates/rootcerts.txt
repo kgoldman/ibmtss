@@ -8,8 +8,12 @@
 /home/kgold/tss2/utils/certificates/InfineonRSAChain010.pem
 /home/kgold/tss2/utils/certificates/NuvotonTPMRootCA0100.pem
 /home/kgold/tss2/utils/certificates/NuvotonTPMRootCA1110.pem
+/home/kgold/tss2/utils/certificates/NuvotonTPMRootCA1111.pem
+/home/kgold/tss2/utils/certificates/NuvotonTPMRootCA1210.pem
 /home/kgold/tss2/utils/certificates/NuvotonTPMRootCA2110.pem
+/home/kgold/tss2/utils/certificates/NuvotonTPMRootCA2112.pem
 /home/kgold/tss2/utils/certificates/NuvotonTPMRootCA2111.pem
+/home/kgold/tss2/utils/certificates/NuvotonTPMRootCA2112.pem
 /home/kgold/tss2/utils/certificates/cacert.pem
 /home/kgold/tss2/utils/certificates/cacertecc.pem
 /home/kgold/tss2/utils/certificates/gstpmroot.pem

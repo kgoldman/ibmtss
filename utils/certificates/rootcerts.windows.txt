@@ -9,6 +9,7 @@ c:/users/KennethGoldman/tpm2/utils/certificates/InfineonRSAChain010.pem
 c:/users/KennethGoldman/tpm2/utils/certificates/NuvotonTPMRootCA0100.pem
 c:/users/KennethGoldman/tpm2/utils/certificates/NuvotonTPMRootCA1110.pem
 c:/users/KennethGoldman/tpm2/utils/certificates/NuvotonTPMRootCA1111.pem
+c:/users/KennethGoldman/tpm2/utils/certificates/NuvotonTPMRootCA1210.pem
 c:/users/KennethGoldman/tpm2/utils/certificates/NuvotonTPMRootCA2110.pem
 c:/users/KennethGoldman/tpm2/utils/certificates/NuvotonTPMRootCA2111.pem
 c:/users/KennethGoldman/tpm2/utils/certificates/NuvotonTPMRootCA2112.pem
