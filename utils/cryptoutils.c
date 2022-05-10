@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018 - 2021.					*/
+/* (c) Copyright IBM Corporation 2018 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -1976,19 +1976,19 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 {
     TPM_RC 	rc = 0;
     int		irc;
-    BIGNUM 	*x = NULL;		/* freed @2 */
-    BIGNUM 	*y = NULL;		/* freed @3 */
+    BIGNUM 	*x = NULL;		/* freed @1 */
+    BIGNUM 	*y = NULL;		/* freed @2 */
     int		nid;
-    EC_GROUP 	*ecGroup = NULL;
+    EC_GROUP 	*ecGroup = NULL;	/* freed @4 */
 #if OPENSSL_VERSION_NUMBER < 0x30000000
-    EC_KEY 	*ecKey = NULL;
+    EC_KEY 	*ecKey = NULL;		/* freed @3 */
 #else
     EC_POINT		*ecPoint = NULL;
-    uint8_t		*pubBin;
+    uint8_t		*pubBin = NULL;	/* freed @7 */
     size_t		pubBinLength;
-    EVP_PKEY_CTX 	*ctx = NULL;
-    OSSL_PARAM_BLD 	*param_bld = NULL;
-    OSSL_PARAM 		*params = NULL;
+    EVP_PKEY_CTX 	*ctx = NULL;		/* freed @5 */
+    OSSL_PARAM_BLD 	*param_bld = NULL;	/* freed @8 */
+    OSSL_PARAM 		*params = NULL;		/* freed @6 */
     const char 		*curveString = NULL;
 #endif
     if (rc == 0) {
@@ -2058,7 +2058,7 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 #else
     /* see EVP_PKEY-EC.html for constants */
     if (rc == 0) {
-	ecPoint = EC_POINT_new(ecGroup);		/* freed @3 */
+	ecPoint = EC_POINT_new(ecGroup);		/* freed @4 */
 	if (ecPoint== NULL) {
 	    printf("convertEcTPMTPublicToEvpPubKey: EC_POINT_new failed\n");
 	    rc = TSS_RC_OUT_OF_MEMORY;
@@ -2083,7 +2083,7 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 	}
     }
     if (rc == 0) {
-	param_bld = OSSL_PARAM_BLD_new();		/* freed @3 */
+	param_bld = OSSL_PARAM_BLD_new();		/* freed @8 */
 	if (param_bld == NULL) {
 	    printf("convertEcTPMTPublicToEvpPubKey; "
 		   "Error in OSSL_PARAM_BLD_new\n");
@@ -2153,7 +2153,7 @@ TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,		/* freed by caller 
 	EC_KEY_free(ecKey);	/* @3 */
     }
 #else
-    OSSL_PARAM_BLD_free(param_bld);;	/* @3 */
+    OSSL_PARAM_BLD_free(param_bld);;	/* @8 */
     OSSL_PARAM_free(params); 		/* @6 */
     EVP_PKEY_CTX_free(ctx);		/* @5 */
     OPENSSL_free(pubBin);		/* @7 */
@@ -2354,7 +2354,7 @@ TPM_RC signRSAFromRSA(uint8_t *signature, size_t *signatureLength,
     }
 #else
     EVP_PKEY_CTX 	*ctx = NULL;
-    const EVP_MD 	*md;
+    const EVP_MD 	*md = NULL;
 
     if (rc == 0) {
 	ctx = EVP_PKEY_CTX_new(rsaKey, NULL);		/* freed @1 */

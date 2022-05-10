@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2021.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -72,6 +72,7 @@
 #include <ibmtss/tsscryptoh.h>
 #include <ibmtss/tsscrypto.h>
 
+LIB_EXPORT
 TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
 		      TPMI_ALG_HASH hashAlg);
 
@@ -188,7 +189,10 @@ TPM_RC TSS_Hash_GetMd(const EVP_MD **md,
 	rc =  TSS_Hash_GetOsslString(&str, hashAlg);
     }
     if (rc == 0) {
-	*md = EVP_get_digestbyname(str);
+	*md = EVP_get_digestbyname(str);	/* no free needed */
+	if (*md == NULL) {
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
     }
     return rc;
 }
