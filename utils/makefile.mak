@@ -1,10 +1,10 @@
 #################################################################################
 #										#
-#			Windows MinGW TPM2 Makefile OpenSSL 1.1.1 32-bit	#
+#			Windows MinGW TPM2 Makefile OpenSSL 32-bit		#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -53,6 +53,7 @@ CC = "c:/program files/mingw/bin/gcc.exe"
 # compile - common flags for TSS library and applications
 
 CCFLAGS += 					\
+	-Wno-deprecated-declarations		\
 	-DTPM_WINDOWS				\
 	-DTPM_TSS_NODEV				\
 	-I. 					\
