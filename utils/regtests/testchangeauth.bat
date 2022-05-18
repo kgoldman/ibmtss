@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -72,13 +72,13 @@ for %%B in ("" "-bi 80000001 -pwdb sig") do (
 	   )
 
 	echo "Sign a digest with the original key %%~S"
-	%TPM_EXE_PATH%sign -hk 80000001 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig %%~S > run.out
+	%TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig %%~S > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	   )
 
 	echo "Sign a digest with the changed key"
-	%TPM_EXE_PATH%sign -hk 80000002 -halg sha1 -if policies/aaa -os sig.bin -pwdk xxx > run.out
+	%TPM_EXE_PATH%sign -hk 80000002 -halg sha256 -if policies/aaa -os sig.bin -pwdk xxx > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	   )

@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testevict.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -63,13 +62,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Sign a digest with the transient key"
-%TPM_EXE_PATH%sign -hk 80000001 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+%TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Sign a digest with the persistent key"
-%TPM_EXE_PATH%sign -hk 81800000 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+%TPM_EXE_PATH%sign -hk 81800000 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -87,13 +86,13 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Sign a digest with the transient key- should fail"
-%TPM_EXE_PATH%sign -hk 80000001 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+%TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
 echo "Sign a digest with the persistent key"
-%TPM_EXE_PATH%sign -hk 81800000 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+%TPM_EXE_PATH%sign -hk 81800000 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -105,13 +104,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Sign a digest with the persistent key - should fail"
-%TPM_EXE_PATH%sign -hk 81800000 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+%TPM_EXE_PATH%sign -hk 81800000 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
 echo "Sign a digest with the transient key - should fail"
-%TPM_EXE_PATH%sign -hk 80000001 -halg sha1 -if policies/aaa -os sig.bin -pwdk sig > run.out
+%TPM_EXE_PATH%sign -hk 80000001 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig > run.out
 IF !ERRORLEVEL! EQU 0 (
    echo TP1 failed
    exit /B 1

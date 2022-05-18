@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -364,19 +364,19 @@ REM # > openssl genrsa -out rsaprivkey.pem -aes256 -passout pass:rrrr 2048
 REM # extract the public key
 REM # > openssl pkey -inform pem -outform pem -in rsaprivkey.pem -passin pass:rrrr -pubout -out rsapubkey.pem 
 REM # sign a test message msg.bin
-REM # > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
+REM # > openssl dgst -sha256 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 
 echo "Load external just the public part of PEM RSA"
-%TPM_EXE_PATH%loadexternal -halg sha1 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
+%TPM_EXE_PATH%loadexternal -halg sha256 -nalg sha1 -ipem policies/rsapubkey.pem > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Sign a test message with openssl RSA"
-openssl dgst -sha1 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
+openssl dgst -sha256 -sign policies/rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 
 echo "Verify the RSA signature"
-%TPM_EXE_PATH%verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw > run.out
+%TPM_EXE_PATH%verifysignature -hk 80000001 -halg sha256 -if msg.bin -is pssig.bin -raw > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -393,16 +393,16 @@ REM # extract public key
 REM # > openssl pkey -inform pem -outform pem -in p256privkey.pem -pubout -out p256pubkey.pem
 
 echo "Load external just the public part of PEM ECC"
-%TPM_EXE_PATH%loadexternal -halg sha1 -nalg sha1 -ipem policies/p256pubkey.pem -ecc > run.out
+%TPM_EXE_PATH%loadexternal -halg sha1 -nalg sha256 -ipem policies/p256pubkey.pem -ecc > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Sign a test message with openssl ECC"
-openssl dgst -sha1 -sign policies/p256privkey.pem -out pssig.bin msg.bin
+openssl dgst -sha256 -sign policies/p256privkey.pem -out pssig.bin msg.bin
 
 echo "Verify the ECC signature"
-%TPM_EXE_PATH%verifysignature -hk 80000001 -halg sha1 -if msg.bin -is pssig.bin -raw -ecc > run.out
+%TPM_EXE_PATH%verifysignature -hk 80000001 -halg sha256 -if msg.bin -is pssig.bin -raw -ecc > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

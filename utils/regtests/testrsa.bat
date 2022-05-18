@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -99,7 +99,7 @@ for %%B in (2048 3072) do (
        exit /B 1
     )
 
-    set HSIZ=20 32 48 64
+    set HSIZ=%ITERATE_ALGS_SIZES%
     set HALG=%ITERATE_ALGS%
 
     set i=0
@@ -260,7 +260,7 @@ echo "Encrypt with OpenSSL OAEP, decrypt with TPM"
 echo ""
 
 echo "Create OAEP encryption key"
-%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha1 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out	
+%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha256 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out	
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -272,7 +272,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Encrypt using OpenSSL and the PEM public key"
-openssl rsautl -oaep -encrypt -inkey tmppubkey.pem -pubin -in policies/aaa -out enc.bin > run.out
+openssl pkeyutl -encrypt -inkey tmppubkey.pem -pubin -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in policies/aaa -out enc.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

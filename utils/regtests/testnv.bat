@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testnv.bat 1301 2018-08-15 21:46:19Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -268,7 +267,7 @@ IF !ERRORLEVEL! NEQ 0 (
 
 for %%S in ("" "-se0 02000000 1") do (
 
-    set SZ=20 32 48 64
+    set SZ=%ITERATE_ALGS_SIZES%
     set HALG=%ITERATE_ALGS%
 
     set i=0
@@ -277,7 +276,7 @@ for %%S in ("" "-se0 02000000 1") do (
     for %%b in (!HALG!) do set /A i+=1 & set HALG[!i!]=%%b
     set L=!i!
 
-    for /L %%i in (1,1,!L!) do (
+    for /L %%i in (1,1,!ITERATE_ALGS_COUNT!) do (
 
 	echo "NV Define Space !HALG[%%i]!"
 	%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -ty e -nalg !HALG[%%i]! > run.out

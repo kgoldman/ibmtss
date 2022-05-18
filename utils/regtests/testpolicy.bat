@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2021					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -1040,17 +1040,17 @@ echo "Policy PCR no select"
 echo ""
 
 REM # create AND term for policy PCR
-REM # > policymakerpcr -halg sha1 -bm 0 -v -pr -of policies/policypcr.txt
-REM # 0000017f00000001000403000000da39a3ee5e6b4b0d3255bfef95601890afd80709
+REM # > policymakerpcr -halg sha256 -bm 0 -v -pr -of policies/policypcr.txt
+REM # 0000017f00000001000b03000000e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 REM 
 REM # convert to binary policy
-REM # > policymaker -halg sha1 -if policies/policypcr.txt -of policies/policypcrbm0.bin -pr -v
+REM # > policymaker -halg sha256 -if policies/policypcr.txt -of policies/policypcrbm0.bin -pr -v
 REM 
-REM # 6d 38 49 38 e1 d5 8b 56 71 92 55 94 3f 06 69 66 
-REM # b6 fa 2c 23 
+REM # 7d f0 52 f3 68 36 e4 21 76 aa a0 b8 00 a5 6e f3 
+REM # 5e d7 28 f4 6c 6c b4 cc 83 d5 60 59 49 0b a3 61 
 
 echo "Create a signing key with policy PCR no select"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha1 -pol policies/policypcrbm0.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha256 -pol policies/policypcrbm0.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1062,18 +1062,18 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Start a policy session"
-%TPM_EXE_PATH%startauthsession -halg sha1 -se p > run.out
+%TPM_EXE_PATH%startauthsession -halg sha256 -se p > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Policy PCR, update with the correct digest"
-%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha1 -bm 0 > run.out
+%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha256 -bm 0 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Policy get digest - should be 6d 38 49 38 ... "
+echo "Policy get digest - should be 7d f0 52 f3 6 ... "
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -1092,13 +1092,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy PCR, update with the correct digest"
-%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha1 -bm 0 > run.out
+%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha256 -bm 0 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "PCR extend PCR 0, updates pcr counter"
-%TPM_EXE_PATH%pcrextend -ha 0 -halg sha1 -if policies/aaa > run.out
+%TPM_EXE_PATH%pcrextend -ha 0 -halg sha256 -if policies/aaa > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1121,20 +1121,23 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-REM # policypcr0.txt has 20 * 00
+REM # policypcr0.txt has 32 * 00
 
 REM # create AND term for policy PCR
-REM # > policymakerpcr -halg sha1 -bm 10000 -if policies/policypcr0.txt -v -pr -of policies/policypcr.txt
+REM # > policymakerpcr -halg sha256 -bm 10000 -if policies/policypcr0.txt -v -pr -of policies/policypcr.txt
 
 REM # convert to binary policy
-REM # > policymaker -halg sha1 -if policies/policypcr.txt -of policies/policypcr.bin -pr -v
+REM # > policymaker -halg sha256 -if policies/policypcr.txt -of policies/policypcr.bin -pr -v
+
+REM # bf f2 d5 8e 98 13 f9 7c ef c1 4f 72 ad 81 33 bc 
+REM # 70 92 d6 52 b7 c8 77 95 92 54 af 14 0c 84 1f 36 
 
 echo ""
 echo "Policy PCR"
 echo ""
 
 echo "Create a signing key with policy PCR PCR 16 zero"
-%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha1 -pol policies/policypcr.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha256 -pol policies/policypcr.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1152,13 +1155,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Read PCR 16, should be 00 00 00 00 ..."
-%TPM_EXE_PATH%pcrread -ha 16 -halg sha1 > run.out
+%TPM_EXE_PATH%pcrread -ha 16 -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Start a policy session"
-%TPM_EXE_PATH%startauthsession -se p -halg sha1 > run.out
+%TPM_EXE_PATH%startauthsession -se p -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1170,12 +1173,12 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Policy PCR, update with the correct digest"
-%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha1 -bm 10000 > run.out
+%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha256 -bm 10000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Policy get digest - should be 85 33 11 83"
+echo "Policy get digest - should be  bf f2 d5 8e"
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -1188,30 +1191,30 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "PCR extend PCR 16"
-%TPM_EXE_PATH%pcrextend -ha 16 -halg sha1 -if policies/aaa > run.out
+%TPM_EXE_PATH%pcrextend -ha 16 -halg sha256 -if policies/aaa > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Read PCR 0, should be 1d 47 f6 8a ..."
-%TPM_EXE_PATH%pcrread -ha 16 -halg sha1 > run.out
+echo "Read PCR 0, should be c2 11 97 64 ..."
+%TPM_EXE_PATH%pcrread -ha 16 -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Start a policy session"
-%TPM_EXE_PATH%startauthsession -se p -halg sha1 > run.out
+%TPM_EXE_PATH%startauthsession -se p -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Policy PCR, update with the wrong digest"
-%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha1 -bm 10000 > run.out
+%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha256 -bm 10000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Policy get digest - should be 66 dd e5 e3"
+echo "Policy get digest - should be 76 44 f6 11"
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -1245,22 +1248,23 @@ REM # policy CC_PolicyNV || args || Name
 REM #
 REM # policynvargs.txt (binary)
 REM # args = hash of 0000 0000 0000 0000 | 0000 | 0000 (eight bytes of zero | offset | op ==)
-REM # hash -hi n -halg sha1 -if policies/policynvargs.txt -v
-REM # openssl dgst -sha1  policies/policynvargs.txt
-REM # 2c513f149e737ec4063fc1d37aee9beabc4b4bbf
+REM # hash -hi n -halg sha256 -if policies/policynvargs.txt -v
+REM # openssl dgst -sha256  policies/policynvargs.txt
+REM # 15ec7bf0b50732b49f8228e07d24365338f9e3ab994b00af08e5a3bffe55fd8b
 REM #
 REM # NV authorizing index
 REM #
 REM # after defining index and NV write to set written, use 
-REM # nvreadpublic -ha 01000000 -nalg sha1
+REM # nvreadpublic -ha 01000000 -nalg sha256
 REM # to get name
-REM # 00042234b8df7cdf8605ee0a2088ac7dfe34c6566c5c
+REM # 000b45a8f4283309cd5ef189746d7526786f712eb3df9960508ee343d3e63376bc6c
 REM #
 REM # append Name to policynvnv.txt
 REM #
 REM # convert to binary policy
-REM # > policymaker -halg sha1 -if policies/policynvnv.txt -of policies/policynvnv.bin -pr -v
-REM # bc 9b 4c 4f 7b 00 66 19 5b 1d d9 9c 92 7e ad 57 e7 1c 2a fc 
+REM # > policymaker -halg sha256 -if policies/policynvnv.txt -of policies/policynvnv.bin -pr -v
+REM # 79 d6 c0 4b d1 fc d3 bb 4c 49 c0 7c f6 f4 55 89 
+REM # d8 8d d6 45 45 20 8a 35 4c fe b6 c7 5c 41 af c8 
 REM #
 REM # file zero8.bin has 8 bytes of hex zero
 
@@ -1269,13 +1273,13 @@ echo "Policy NV, NV index authorizing"
 echo ""
 
 echo "Define a setbits index, authorizing index"
-%TPM_EXE_PATH%nvdefinespace -hi p -nalg sha1 -ha 01000000 -pwdn nnn -ty b > run.out
+%TPM_EXE_PATH%nvdefinespace -hi p -nalg sha256 -ha 01000000 -pwdn nnn -ty b > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "NV Read public, get Name, not written"
-%TPM_EXE_PATH%nvreadpublic -ha 01000000 -nalg sha1 > run.out
+%TPM_EXE_PATH%nvreadpublic -ha 01000000 -nalg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1287,7 +1291,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "NV Read public, get Name, written"
-%TPM_EXE_PATH%nvreadpublic -ha 01000000 -nalg sha1 > run.out
+%TPM_EXE_PATH%nvreadpublic -ha 01000000 -nalg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1299,13 +1303,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Define an ordinary index, authorized index, policyNV"
-%TPM_EXE_PATH%nvdefinespace -hi p -nalg sha1 -ha 01000001 -pwdn nnn -sz 2 -ty o -pol policies/policynvnv.bin > run.out
+%TPM_EXE_PATH%nvdefinespace -hi p -nalg sha256 -ha 01000001 -pwdn nnn -sz 2 -ty o -pol policies/policynvnv.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "NV Read public, get Name, not written"
-%TPM_EXE_PATH%nvreadpublic -ha 01000001 -nalg sha1 > run.out
+%TPM_EXE_PATH%nvreadpublic -ha 01000001 -nalg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1317,7 +1321,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Start policy session"
-%TPM_EXE_PATH%startauthsession -se p -halg sha1 > run.out
+%TPM_EXE_PATH%startauthsession -se p -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1340,7 +1344,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
-echo "Policy get digest, should be bc 9b 4c 4f ..."
+echo "Policy get digest, should be 79 d6 c0 4b ..."
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -1399,19 +1403,19 @@ echo "Policy NV Written"
 echo ""
 
 echo "Define an ordinary index, authorized index, policyNV"
-%TPM_EXE_PATH%nvdefinespace -hi p -nalg sha1 -ha 01000000 -pwdn nnn -sz 2 -ty o -pol policies/policywrittenset.bin > run.out  
+%TPM_EXE_PATH%nvdefinespace -hi p -nalg sha256 -ha 01000000 -pwdn nnn -sz 2 -ty o -pol policies/policywrittenset.bin > run.out  
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "NV Read public, get Name, not written"
-%TPM_EXE_PATH%nvreadpublic -ha 01000000 -nalg sha1 > run.out  
+%TPM_EXE_PATH%nvreadpublic -ha 01000000 -nalg sha256 > run.out  
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Start policy session"
-%TPM_EXE_PATH%startauthsession -se p -halg sha1 > run.out
+%TPM_EXE_PATH%startauthsession -se p -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1441,7 +1445,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Start policy session"
-%TPM_EXE_PATH%startauthsession -se p -halg sha1 > run.out
+%TPM_EXE_PATH%startauthsession -se p -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1471,7 +1475,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Start policy session"
-%TPM_EXE_PATH%startauthsession -se p -halg sha1 > run.out
+%TPM_EXE_PATH%startauthsession -se p -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1495,7 +1499,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Start policy session"
-%TPM_EXE_PATH%startauthsession -se p -halg sha1 > run.out
+%TPM_EXE_PATH%startauthsession -se p -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1799,20 +1803,22 @@ IF !ERRORLEVEL! NEQ 0 (
 
 REM # test using clockrateadjust
 REM # policycphashhash.txt is (hex) 00000130 4000000c 000
-REM # hash -if policycphashhash.txt -oh policycphashhash.bin -halg sha1 -v
-REM # openssl dgst -sha1 policycphashhash.txt
+REM # hash -if policies/policycphashhash.txt -oh policies/policycphashhash.bin -halg sha256 -v
+REM # openssl dgst -sha256 policies/policycphashhash.txt
 REM # cpHash is
-REM # b5f919bbc01f0ebad02010169a67a8c158ec12f3
+REM # 58f8c9f3300b71c97c7c6ec3e18afba176e3f582d96ab67df29acb559fc7d34f
 REM # append to policycphash.txt 00000163 + cpHash
-REM # policymaker -halg sha1 -if policies/policycphash.txt -of policies/policycphash.bin -pr
-REM #  06 e4 6c f9 f3 c7 0f 30 10 18 7c a6 72 69 b0 84 b4 52 11 6f 
+REM # policymaker -halg sha256 -if policies/policycphash.txt -of policies/policycphash.bin -pr
+REM # 1b 45 4d dc 60 e4 00 cb f1 fc 13 9c 4d df 3f 5e 
+REM # 21 39 54 ec f2 52 9d f4 b3 80 95 d2 6f e8 ac 75 
+  
 
 echo ""
 echo "Policy cpHash"
 echo ""
 
 echo "Set the platform policy to policy cpHash"
-%TPM_EXE_PATH%setprimarypolicy -hi p -pol policies/policycphash.bin -halg sha1 > run.out
+%TPM_EXE_PATH%setprimarypolicy -hi p -pol policies/policycphash.bin -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1824,7 +1830,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Start policy session"
-%TPM_EXE_PATH%startauthsession -se p -halg sha1 > run.out 
+%TPM_EXE_PATH%startauthsession -se p -halg sha256 > run.out 
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1841,7 +1847,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
  
-echo "Policy get digest, should be 06 e4 6c f9"
+echo "Policy get digest, should be 1b 45 4d dc"
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out 
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
@@ -2280,16 +2286,16 @@ REM # operand A time is 64 bits at offset 0, operation GT (2)
 REM # 0000016d 0000 0000 0000 0000 | 0000 | 0002
 REM # 
 REM # convert to binary policy
-REM # > policymaker -halg sha1 -if policies/policycountertimer.txt -of policies/policycountertimer.bin -pr -v
-REM # e6 84 81 27 55 c0 39 d3 68 63 21 c8 93 50 25 dd 
-REM # aa 26 42 9a 
+REM # > policymaker -if policies/policycountertimer.txt -of policies/policycountertimer.bin -pr -v
+REM # 8a 04 3f af 80 b0 56 0d 88 65 19 17 cf 08 a2 48 
+REM # 13 eb b8 07 00 31 0f c0 66 5a 9c 28 42 9c d7 f5 
 
 echo ""
 echo "Policy Counter Timer"
 echo ""
 
-echo "Set the platform policy to policy "
-%TPM_EXE_PATH%setprimarypolicy -hi p -pol policies/policycountertimer.bin -halg sha1 > run.out
+echo "Set the platform policy to policy"
+%TPM_EXE_PATH%setprimarypolicy -hi p -pol policies/policycountertimer.bin -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2301,7 +2307,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Start policy session"
-%TPM_EXE_PATH%startauthsession -se p -halg sha1 > run.out
+%TPM_EXE_PATH%startauthsession -se p -halg sha256 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2324,7 +2330,7 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
  
-echo "Policy get digest, should be e6 84 81 27"
+echo "Policy get digest, should be 8a 04 3f af"
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1

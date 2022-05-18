@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2021					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -777,13 +777,13 @@ echo ""
 
 # create AND term for policy PCR
 # > policymakerpcr -halg sha256 -bm 0 -v -pr -of policies/policypcr.txt
-# 0000017f00000001000403000000da39a3ee5e6b4b0d3255bfef95601890afd80709
+# 0000017f00000001000b03000000e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
 
 # convert to binary policy
 # > policymaker -halg sha256 -if policies/policypcr.txt -of policies/policypcrbm0.bin -pr -v
 
-# 6d 38 49 38 e1 d5 8b 56 71 92 55 94 3f 06 69 66 
-# b6 fa 2c 23 
+# 7d f0 52 f3 68 36 e4 21 76 aa a0 b8 00 a5 6e f3 
+# 5e d7 28 f4 6c 6c b4 cc 83 d5 60 59 49 0b a3 61 
 
 echo "Create a signing key with policy PCR no select"
 ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha256 -pol policies/policypcrbm0.bin > run.out
@@ -801,7 +801,7 @@ echo "Policy PCR, update with the correct digest"
 ${PREFIX}policypcr -ha 03000000 -halg sha256 -bm 0 > run.out
 checkSuccess $?
 
-echo "Policy get digest - should be 6d 38 49 38 ... "
+echo "Policy get digest - should be 7d f0 52 f3 6 ... "
 ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
@@ -837,17 +837,17 @@ echo ""
 echo "Policy PCR 16"
 echo ""
 
-# policypcr0.txt has 20 * 00
+# policypcr0.txt has 32 * 00
 
 # create AND term for policy PCR
 # > policymakerpcr -halg sha256 -bm 010000 -if policies/policypcr0.txt -v -pr -of policies/policypcr.txt
-# 0000017f000000010004030000016768033e216468247bd031a0a2d9876d79818f8f
+# 0000017f00000001000b0300000166687aadf862bd776c8fc18b8e9f8e20089714856ee233b3902a591d0d5f2925
 
 # convert to binary policy
 # > policymaker -halg sha256 -if policies/policypcr.txt -of policies/policypcr.bin -pr -v
 
-# 85 33 11 83 19 03 12 f5 e8 3c 60 43 34 6f 9f 37
-# 21 04 76 8e
+# bf f2 d5 8e 98 13 f9 7c ef c1 4f 72 ad 81 33 bc 
+# 70 92 d6 52 b7 c8 77 95 92 54 af 14 0c 84 1f 36 
 
 echo "Create a signing key with policy PCR PCR 16 zero"
 ${PREFIX}create -hp 80000000 -si -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sig -nalg sha256 -pol policies/policypcr.bin > run.out
@@ -877,7 +877,7 @@ echo "Policy PCR, update with the correct digest"
 ${PREFIX}policypcr -ha 03000000 -halg sha256 -bm 10000 > run.out
 checkSuccess $?
 
-echo "Policy get digest - should be 85 33 11 83 ..."
+echo "Policy get digest - should be bf f2 d5 8e ..."
 ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
@@ -889,7 +889,7 @@ echo "PCR extend PCR 16"
 ${PREFIX}pcrextend -ha 16 -halg sha256 -if policies/aaa > run.out
 checkSuccess $?
 
-echo "Read PCR 0, should be 1d 47 f6 8a ..."
+echo "Read PCR 0, should be c2 11 97 64 ..."
 ${PREFIX}pcrread -ha 16 -halg sha256 > run.out
 checkSuccess $?
 
@@ -901,7 +901,7 @@ echo "Policy PCR, update with the wrong digest"
 ${PREFIX}policypcr -ha 03000000 -halg sha256 -bm 10000 > run.out
 checkSuccess $?
 
-echo "Policy get digest - should be 66 dd e5 e3"
+echo "Policy get digest - should be 76 44 f6 11"
 ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
@@ -929,20 +929,22 @@ checkSuccess $?
 # args = hash of 0000 0000 0000 0000 | 0000 | 0000 (eight bytes of zero | offset | op ==)
 # hash -hi n -halg sha256 -if policies/policynvargs.txt -v
 # openssl dgst -sha256 policies/policynvargs.txt
-# 2c513f149e737ec4063fc1d37aee9beabc4b4bbf
+# 15ec7bf0b50732b49f8228e07d24365338f9e3ab994b00af08e5a3bffe55fd8b
 #
 # NV authorizing index
 #
 # after defining index and NV write to set written, use 
 # ${PREFIX}nvreadpublic -ha 01000000 -nalg sha256
 # to get name
-# 00042234b8df7cdf8605ee0a2088ac7dfe34c6566c5c
+# 000b45a8f4283309cd5ef189746d7526786f712eb3df9960508ee343d3e63376bc6c
 #
 # append Name to policynvnv.txt
 #
 # convert to binary policy
 # > policymaker -halg sha256 -if policies/policynvnv.txt -of policies/policynvnv.bin -pr -v
-# bc 9b 4c 4f 7b 00 66 19 5b 1d d9 9c 92 7e ad 57 e7 1c 2a fc 
+# 79 d6 c0 4b d1 fc d3 bb 4c 49 c0 7c f6 f4 55 89 
+# d8 8d d6 45 45 20 8a 35 4c fe b6 c7 5c 41 af c8 
+
 #
 # file zero8.bin has 8 bytes of hex zero
 
@@ -998,7 +1000,7 @@ echo "Policy NV to satisfy the policy"
 ${PREFIX}policynv -ha 01000000 -pwda nnn -hs 03000000 -if policies/zero8.bin -op 0 > run.out
 checkSuccess $?
 
-echo "Policy get digest, should be bc 9b 4c 4f ..."
+echo "Policy get digest, should be 79 d6 c0 4b ..."
 ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
@@ -1350,13 +1352,14 @@ checkSuccess $?
 
 # test using clockrateadjust
 # policycphashhash.txt is (hex) 00000130 4000000c 000
-# hash -if policycphashhash.txt -oh policycphashhash.bin -halg sha256 -v
-# openssl dgst -sha256 policycphashhash.txt
+# hash -if policies/policycphashhash.txt -oh policycphashhash.bin -halg sha256 -v
+# openssl dgst -sha256 policies/policycphashhash.txt
 # cpHash is
-# b5f919bbc01f0ebad02010169a67a8c158ec12f3
+# 58f8c9f3300b71c97c7c6ec3e18afba176e3f582d96ab67df29acb559fc7d34f
 # append to policycphash.txt 00000163 + cpHash
 # policymaker -halg sha256 -if policies/policycphash.txt -of policies/policycphash.bin -pr
-#  06 e4 6c f9 f3 c7 0f 30 10 18 7c a6 72 69 b0 84 b4 52 11 6f 
+# 1b 45 4d dc 60 e4 00 cb f1 fc 13 9c 4d df 3f 5e 
+# 21 39 54 ec f2 52 9d f4 b3 80 95 d2 6f e8 ac 75 
 
 echo ""
 echo "Policy cpHash"
@@ -1382,7 +1385,7 @@ echo "Policy cpHash, satisfy policy"
 ${PREFIX}policycphash -ha 03000000 -cp policies/policycphashhash.bin > run.out
 checkSuccess $?
  
-echo "Policy get digest, should be 06 e4 6c f9"
+echo "Policy get digest, should be  1b 45 4d dc"
 ${PREFIX}policygetdigest -ha 03000000 > run.out 
 checkSuccess $?
 
@@ -1705,9 +1708,9 @@ checkSuccess $?
 # 0000016d 0000 0000 0000 0000 | 0000 | 0002
 # 
 # convert to binary policy
-# > policymaker -halg sha1 -if policies/policycountertimer.txt -of policies/policycountertimer.bin -pr -v
-# e6 84 81 27 55 c0 39 d3 68 63 21 c8 93 50 25 dd 
-# aa 26 42 9a 
+# > policymaker -if policies/policycountertimer.txt -of policies/policycountertimer.bin -pr -v
+# 8a 04 3f af 80 b0 56 0d 88 65 19 17 cf 08 a2 48 
+# 13 eb b8 07 00 31 0f c0 66 5a 9c 28 42 9c d7 f5 
 
 echo ""
 echo "Policy Counter Timer"
@@ -1737,7 +1740,7 @@ echo "Policy counter timer, zero operandB, op GT satisfy policy"
 ${PREFIX}policycountertimer -ha 03000000 -if policies/zero8.bin -op 2 > run.out 
 checkSuccess $?
  
-echo "Policy get digest, should be e6 84 81 27"
+echo "Policy get digest, should be 8a 04 3f af"
 ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 

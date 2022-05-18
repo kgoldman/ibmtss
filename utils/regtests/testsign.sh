@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -309,7 +309,7 @@ echo ""
 # extract the public key
 # > openssl pkey -inform pem -outform pem -in rsaprivkey.pem -passin pass:rrrr -pubout -out rsapubkey.pem 
 # sign a test message msg.bin
-# > openssl dgst -sha1 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
+# > openssl dgst -sha256 -sign rsaprivkey.pem -passin pass:rrrr -out pssig.bin msg.bin
 
 echo "Load external just the public part of PEM RSA"
 ${PREFIX}loadexternal -halg sha256 -nalg sha256 -ipem policies/rsapubkey.pem > run.out
