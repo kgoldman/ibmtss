@@ -58,6 +58,8 @@ to enable/disable different features.
 --disable-rmtpm   - when using a hardware TPM, don't use the resource manager
 --enable-noprint  - build a TSS library without tracing or prints
 --enable-nofile   - build a TSS library that does not use files to preserve state
+		    (dependency on --disable-tpm-1.2)
+		    The utilities (not the TSS library) require file support.
 --enable-nocrypto - build a TSS library that does not require a crypto library
 		    (dependency on "--enable-nofile")
 --enable-noecc    - build a TSS library that does not require OpenSSL elliptic curve support
