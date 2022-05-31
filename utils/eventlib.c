@@ -1221,6 +1221,9 @@ TPM_RC TSS_EVENT2_Line_LE_Unmarshal(TCG_PCR_EVENT2 *target, BYTE **buffer, uint3
 
    It ignores EV_NO_ACTION events except for StartupLocality.  StartupLocality resets the simulated
    PCR 0 to the locality.
+
+   It assumes that the hash algorithm for the entire HASH_COUNT array is initialized.  Use
+   TPM_ALG_NULL for unused banks.
 */
 
 TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
@@ -1305,6 +1308,7 @@ TPM_RC TSS_EVENT2_PCR_Extend(TPMT_HA pcrs[HASH_COUNT][IMPLEMENTATION_PCR],
 						   &event2->digests.digests[i].digest,
 						   0, NULL);
 			}
+			break;	/* stop scanning pcrs[] banks on match */
 		    }
 		}
 	    }
