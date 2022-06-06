@@ -61,7 +61,7 @@ if defined soc (
 set ITERATE_ALGS=sha1 sha256 sha384 sha512
 set ITERATE_ALGS_SIZES=20 32 48 64
 set ITERATE_ALGS_COUNT=4
-set s BAD_ITERATE_ALGS=sha256 sha384 sha512 sha1
+set BAD_ITERATE_ALGS=sha256 sha384 sha512 sha1
 
 if defined mssim (
    call regtests\inittpm.bat
