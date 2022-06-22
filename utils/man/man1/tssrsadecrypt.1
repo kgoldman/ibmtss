@@ -12,23 +12,26 @@ key handle
 .TP
 [\-pwdk
 password for key (default empty)[
-.IP
+.TP
 [\-ipwdk password file for key, nul terminated (default empty)]
+.TP
 \fB\-ie\fR     encrypt file name
+.TP
 \fB\-od\fR     decrypt file name (default do not save)
+.TP
 [\-oid   (sha1, sha256, sha384 sha512)]
 .IP
 optionally add OID and PKCS1 padding to the
 encrypt data (demo of signing with arbitrary OID)
 .HP
 \fB\-se[0\-2]\fR session handle / attributes (default PWAP)
-.TP
+.IP
 01
 continue
-.TP
+.IP
 20
 command decrypt
-.TP
+.IP
 40
 response encrypt
 .PP

@@ -33,19 +33,19 @@ output ticket file name]
 .TP
 [\-ch
 output creation hash file name]
-.IP
+.TP
 [Asymmetric Key Algorithm]
-.HP
+.IP
 \fB\-rsa\fR [keybits] (default)
 .IP
 (2048 default)
-.HP
+.IP
 \fB\-ecc\fR curve
 .IP
 bnp256
 nistp256
 nistp384
-.IP
+.TP
 Key attributes
 .TP
 \fB\-bl\fR
@@ -95,10 +95,15 @@ general purpose, not storage
 .TP
 [\-kt
 (can be specified more than once)]
+.IP
 f       fixedTPM (default for primary keys and derivation parents)
+.IP
 p       fixedParent (default for primary keys and derivation parents)
+.IP
 nf      no fixedTPM (default for non\-primary keys)
+.IP
 np      no fixedParent (default for non\-primary keys)
+.IP
 ed      encrypted duplication (default not set)
 .TP
 [\-da
@@ -120,13 +125,13 @@ name hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]
 scheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]
 .HP
 \fB\-se[0\-2]\fR session handle / attributes (default PWAP)
-.TP
+.IP
 01
 continue
-.TP
+.IP
 20
 command decrypt
-.TP
+.IP
 40
 response encrypt
 .PP
