@@ -3833,7 +3833,8 @@ static void     TSS_EfiVariableAuthority_Init(TSST_EFIData *efiData)
     TSS_UEFI_VARIABLE_DATA *uefiVariableData = &efiData->efiData.uefiVariableData;
     TSS_EfiVariableData_Init(efiData);
     uefiVariableData->authoritySignatureData.SignatureData = NULL;
-    return;
+    uefiVariableData->authoritySignatureData.SignatureLength = 0;
+   return;
 }
 
 static void     TSS_EfiVariableAuthority_Free(TSST_EFIData *efiData)
