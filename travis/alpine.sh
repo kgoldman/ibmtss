@@ -18,6 +18,7 @@ apk add \
 	attr-dev \
 	autoconf \
 	automake \
+	bash \
 	diffutils \
 	libtool \
 	libxslt \
