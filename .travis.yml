@@ -65,6 +65,10 @@ matrix:
           env: DISTRO=debian:stable
           compiler: gcc
 
+        - os: linux
+          env: REPO="docker.io/library/" DISTRO="${REPO}alt:sisyphus" CONTAINER=podman CONTAINER_ARGS="--runtime=/usr/bin/crun --network=host"
+          compiler: gcc
+
 before_install:
     - CONTAINER="${CONTAINER:-docker}"
     - >
