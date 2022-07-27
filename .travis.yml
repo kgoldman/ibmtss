@@ -50,7 +50,7 @@ matrix:
           compiler: clang
 
         - os: linux
-          env: DISTRO=centos:7
+          env: DISTRO=centos:7 CONTAINER=podman CONTAINER_ARGS="--runtime=/usr/bin/crun --network=host"
           compiler: gcc
 
         - os: linux
@@ -66,18 +66,24 @@ matrix:
           compiler: gcc
 
 before_install:
-    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    - sudo add-apt-repository "deb [arch=$(dpkg --print-architecture)] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-    - sudo apt-get update
-    - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
-    - sudo rm -f /usr/local/bin/docker
-    - sudo systemctl restart docker
-    - df -hT
+    - CONTAINER="${CONTAINER:-docker}"
+    - >
+        if [ "$CONTAINER" = "podman" ]; then
+            # podman
+            . /etc/os-release
+            sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
+            wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_${VERSION_ID}/Release.key -O- | sudo apt-key add -
+            sudo apt update
+            sudo apt -y install fuse-overlayfs podman slirp4netns crun
+        fi
+    - $CONTAINER info
+
     - DIR="/usr/src/tpm2"
     - printf "FROM $DISTRO\nRUN mkdir -p $DIR\nWORKDIR $DIR\nCOPY . $DIR\n" > Dockerfile
-    - sudo docker build -t tpm2 .
+    - cat Dockerfile
+    - $CONTAINER build $CONTAINER_ARGS -t tpm2 .
 
 script:
     - INSTALL="${DISTRO%%:*}"
     - INSTALL="${INSTALL%%/*}"
-    - sudo docker run -t tpm2 /bin/sh -c "cd travis && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ARCH=\"$ARCH\" CC=\"$CC\" ./$INSTALL.sh && if [ ! \"$VARIANT\" ]; then ../travis/install-ibmtpm.sh; fi && CC=\"$CC\" VARIANT=\"$VARIANT\" ../build.sh"
+    - $CONTAINER run $CONTAINER_ARGS -t tpm2 /bin/sh -c "cd travis && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ARCH=\"$ARCH\" CC=\"$CC\" ./$INSTALL.sh && if [ ! \"$VARIANT\" ]; then ../travis/install-ibmtpm.sh; fi && CC=\"$CC\" VARIANT=\"$VARIANT\" ../build.sh"
