@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ex
 
-version=1637
+version=1682
 
 wget --no-check-certificate https://sourceforge.net/projects/ibmswtpm2/files/ibmtpm${version}.tar.gz/download
 mkdir -p ibmtpm$version
