@@ -7,6 +7,8 @@ if [ -z "$CC" ]; then
 	exit 1
 fi
 
+[ "$CC" = "gcc" ] || CC="gcc $CC"
+
 # debian.*.sh must be run first
 if [ "$ARCH" ]; then
 	ARCH=":$ARCH"
