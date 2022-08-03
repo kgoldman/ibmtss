@@ -710,6 +710,9 @@ void TSS_TPM_CC_Print(const char *string, TPM_CC source, unsigned int indent)
       case TPM_CC_EncryptDecrypt2:
 	printf("%s TPM_CC_EncryptDecrypt2\n", string);
 	break;
+      case TPM_CC_CertifyX509:
+	printf("%s TPM_CC_CertifyX509\n", string);
+	break;
 #if 0
       case TPM_CC_AC_GetCapability:
 	printf("%s TPM_CC_AC_GetCapability\n", string);
@@ -1040,9 +1043,7 @@ void TSS_TPMA_OBJECT_Print(const char *string, TPMA_OBJECT source, unsigned int 
     if (source.val & TPMA_OBJECT_DECRYPT) printf("%*s%s: decrypt\n", indent, "", string);
     if (source.val & TPMA_OBJECT_SIGN) printf("%*s%s: sign\n", indent, "", string);
     return;
-}
-
-/* Table 32 - Definition of (UINT8) TPMA_SESSION Bits <IN/OUT> */
+}/* Table 32 - Definition of (UINT8) TPMA_SESSION Bits <IN/OUT> */
 
 void TSS_TPMA_SESSION_Print(TPMA_SESSION source, unsigned int indent)
 {

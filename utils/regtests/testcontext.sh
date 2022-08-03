@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -65,7 +65,7 @@ ${PREFIX}verifysignature -hk 80000001 -halg sha256 -if msg.bin -is sig.bin > run
 checkSuccess $?
 
 echo "Save context for the key"
-${PREFIX}contextsave -ha 80000001 -of tmp.bin > run.out
+${PREFIX}contextsave -ha 80000001 -of tmp.bin -v > run.out
 checkSuccess $?
 
 echo "Sign to verify that the original key is not flushed"
@@ -81,7 +81,7 @@ ${PREFIX}sign -hk 80000001 -halg sha256 -if msg.bin -os sig.bin -pwdk sig -se0 0
 checkFailure $?
 
 echo "Load context"
-${PREFIX}contextload -if tmp.bin > run.out
+${PREFIX}contextload -if tmp.bin -v > run.out
 checkSuccess $?
 
 echo "Sign with the loaded context"

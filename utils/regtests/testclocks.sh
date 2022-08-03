@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testclocks.sh 1115 2017-12-13 23:35:20Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2022				        #
 # 										#
 # All rights reserved.								#
 # 										#
@@ -53,7 +52,7 @@ for SESS in "" "-se0 02000000 1"
 do
 
     echo "Read Clock"
-    ${PREFIX}readclock -oclock tmpclk.bin > run.out
+    ${PREFIX}readclock -oclock tmpclk.bin -otime tmptime.bin -v > run.out
     checkSuccess $?
 
     echo "Clock set, current time ${SESS} - should fail"
@@ -61,14 +60,14 @@ do
     checkFailure $?
 
     echo "Clock set, time plus 20 sec ${SESS}"
-    ${PREFIX}clockset -iclock tmpclk.bin -addsec 20 ${SESS} > run.out
+    ${PREFIX}clockset -iclock tmpclk.bin -addsec 20 ${SESS} -v > run.out
     checkSuccess $?
 
-    for ADJ in -3 0 3
+    for ADJ in -3 -2 -1 0 1 2 3
     do
 
 	echo "Clock rate adjust ${ADJ} ${SESS}"
-	${PREFIX}clockrateadjust -adj ${ADJ} ${SESS} > run.out
+	${PREFIX}clockrateadjust -adj ${ADJ} ${SESS} -v > run.out
 	checkSuccess $?
 
     done
@@ -77,7 +76,7 @@ do
     do
 
 	echo "Clock rate adjust ${ADJ} ${SESS} - should fail"
-	${PREFIX}clockrateadjust -adj ${ADJ} ${SESS} > run.out
+	${PREFIX}clockrateadjust -adj ${ADJ} ${SESS} -v > run.out
 	checkFailure $?
 
     done
@@ -89,3 +88,4 @@ ${PREFIX}flushcontext -ha 02000000 > run.out
 checkSuccess $?
 
 rm -f tmpclk.bin
+rm -f tmptime.bin

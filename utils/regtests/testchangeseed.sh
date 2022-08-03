@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testchangeseed.sh 1277 2018-07-23 20:30:23Z kgoldman $	#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -50,7 +49,7 @@ ${PREFIX}flushcontext -ha 80000000 > run.out
 checkSuccess $?
 
 echo "Change PPS, no password"
-${PREFIX}changepps > run.out
+${PREFIX}changepps -v > run.out
 checkSuccess $?
 
 echo "Set platform hierarchy auth"
@@ -109,7 +108,7 @@ ${PREFIX}flushcontext -ha 80000000 > run.out
 checkSuccess $?
 
 echo "Change EPS, no password"
-${PREFIX}changeeps > run.out
+${PREFIX}changeeps -v > run.out
 checkSuccess $?
 
 echo "Create a primary key - endorsement hierarchy"

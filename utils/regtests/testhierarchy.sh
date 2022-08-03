@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testhierarchy.sh 990 2017-04-19 13:31:24Z kgoldman $	#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -142,11 +141,11 @@ echo "Hierarchy Control"
 echo ""
 
 echo "Enable the owner hierarchy"
-${PREFIX}hierarchycontrol -hi p -he o > run.out
+${PREFIX}hierarchycontrol -hi p -he o -v > run.out
 checkSuccess $?
 
 echo "Change the platform hierarchy password"
-${PREFIX}hierarchychangeauth -hi p -pwdn ppp > run.out
+${PREFIX}hierarchychangeauth -hi p -pwdn ppp -v > run.out
 checkSuccess $?
 
 echo "Enable the owner hierarchy - no platform hierarchy password, should fail"
@@ -206,11 +205,11 @@ ${PREFIX}readpublic -ho 80000001 > run.out
 checkSuccess $?
 
 echo "ClearControl disable"
-${PREFIX}clearcontrol -hi p -state 1 > run.out
+${PREFIX}clearcontrol -hi p -state 1 -v > run.out
 checkSuccess $?
 
 echo "Clear - should fail"
-${PREFIX}clear -hi p > run.out
+${PREFIX}clear -hi p -v > run.out
 checkFailure $?
 
 echo "ClearControl enable"

@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -143,7 +143,7 @@ ${PREFIX}nvwrite -ha 01000003 -pwdn nnn -if policies/aaa > run.out
 checkFailure $?
 
 echo "Shutdown state"
-${PREFIX}shutdown -s > run.out
+${PREFIX}shutdown -s -v > run.out
 checkSuccess $?
 
 echo "Power cycle"

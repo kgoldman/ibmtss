@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testbind.sh 1277 2018-07-23 20:30:23Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -50,7 +49,7 @@ echo "Bind session to Primary Key"
 echo ""
 
 echo "Bind session bound to primary key at 80000000"
-${PREFIX}startauthsession -se h -bi 80000000 -pwdb sto > run.out
+${PREFIX}startauthsession -se h -bi 80000000 -pwdb sto -v > tmp.out
 checkSuccess $?
 
 echo "Create storage key using that bind session, same object 80000000"

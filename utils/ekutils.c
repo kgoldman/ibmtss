@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2021.					*/
+/* (c) Copyright IBM Corporation 2016 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -1145,7 +1145,7 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
     if (rc == 0) {
 	pkey = X509_get_pubkey(ekCertificate);		/* freed @2 */
 	if (pkey == NULL) {
-#ifndef TPM_TSS_NORSA
+#ifdef TPM_TPM12
 	    if (tssUtilsVerbose) printf("convertCertificatePubKey: "
 				"Could not extract public key from X509 certificate, "
 				"may be TPM 1.2\n");
@@ -1154,12 +1154,10 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
 	    rc = convertCertificatePubKey12(modulusBin,	/* freed by caller */
 					    modulusBytes,
 					    ekCertificate);
-#else
+#endif	/* TPM_TPM12 */
 	    printf("convertCertificatePubKey: Could not extract X509_PUBKEY public key "
 		   "from X509 certificate\n");
 	    rc =  TPM_RC_INTEGRITY;
-#endif /* TPM_TSS_NORSA */
-
 	}
 	else {
 	    if (rc == 0) {
@@ -1275,13 +1273,14 @@ TPM_RC convertCertificatePubKey(uint8_t **modulusBin,	/* freed by caller */
     return rc;
 }
 
-#ifndef TPM_TSS_NORSA
+#ifdef TPM_TPM12
 
 TPM_RC convertCertificatePubKey12(uint8_t **modulusBin,	/* freed by caller */
 				  int *modulusBytes,
 				  X509 *ekCertificate)
 {
     TPM_RC		rc = 0;
+#ifndef TPM_TSS_NORSA
     int			irc;
     X509_PUBKEY 	*pubkey = NULL;
     ASN1_OBJECT 	*ppkalg = NULL;			/* ignore OID */
@@ -1334,10 +1333,13 @@ TPM_RC convertCertificatePubKey12(uint8_t **modulusBin,	/* freed by caller */
 	TSS_PrintAll("convertCertificatePubKey12", *modulusBin, *modulusBytes);
     }
     TSS_RsaFree(rsaKey);		/* @1 */
+#else  /* TPM_TSS_NORSA */
+    rc = TPM_RC_INTEGRITY;
+#endif /* TPM_TSS_NORSA */
     return rc;
 }
 
-#endif /* TPM_TSS_NORSA */
+#endif /* TPM_TPM12 */
 
 #ifndef TPM_TSS_NOFILE		/* stdout is a file descriptor */
 

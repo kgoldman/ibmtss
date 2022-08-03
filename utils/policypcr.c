@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
 	printUsage();
     }
     if (pcrmask == 0xffffffff) {
-	printf("Missing handle parameter -bm\n");
+	printf("Missing pcr mask parameter -bm\n");
 	printUsage();
     }
     if (rc == 0) {

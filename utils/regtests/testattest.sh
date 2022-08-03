@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -57,7 +57,7 @@ ${PREFIX}load -hp 80000000 -ipr signeccnistp256priv.bin -ipu signeccnistp256pub.
 checkSuccess $?
 
 echo "NV Define Space"
-${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 > run.out
+${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at or +at ppr > run.out
 checkSuccess $?
 
 echo "NV Read Public, unwritten Name"
@@ -87,7 +87,7 @@ do
 	    fi
 
 	    echo "Signing Key Self Certify ${HALG} ${SALG} ${SESS}"
-	    ${PREFIX}certify -hk ${HANDLE} -ho 80000001 -halg ${HALG} -pwdk sig -pwdo sig ${SESS} -os sig.bin -oa tmp.bin -qd policies/aaa -salg ${SALG} > run.out
+	    ${PREFIX}certify -hk ${HANDLE} -ho 80000001 -halg ${HALG} -pwdk sig -pwdo sig ${SESS} -os sig.bin -oa tmp.bin -qd policies/aaa -salg ${SALG} -v > run.out
 	    checkSuccess $?
 
 	    echo "Verify the ${SALG} signature ${HALG}"
@@ -95,7 +95,7 @@ do
 	    checkSuccess $?
 
 	    echo "Quote ${HALG} ${SALG} ${SALG} ${SESS}"
-	    ${PREFIX}quote -hp 0 -hk ${HANDLE} -halg ${HALG} -palg ${HALG} -pwdk sig ${SESS} -os sig.bin -oa tmp.bin -qd policies/aaa -salg ${SALG} > run.out
+	    ${PREFIX}quote -hp 0 -hk ${HANDLE} -halg ${HALG} -palg ${HALG} -pwdk sig ${SESS} -os sig.bin -oa tmp.bin -qd policies/aaa -salg ${SALG} -v > run.out
 	    checkSuccess $?
 
 	    echo "Verify the ${SALG} signature ${HALG}"
@@ -103,7 +103,7 @@ do
 	    checkSuccess $?
 
 	    echo "Get Time ${HALG} ${SALG} ${SESS}"
-	    ${PREFIX}gettime -hk ${HANDLE} -halg ${HALG} -pwdk sig ${SESS} -os sig.bin -oa tmp.bin -qd policies/aaa -salg ${SALG} > run.out
+	    ${PREFIX}gettime -hk ${HANDLE} -halg ${HALG} -pwdk sig ${SESS} -os sig.bin -oa tmp.bin -qd policies/aaa -salg ${SALG} -v > run.out
 	    checkSuccess $?
 
 	    echo "Verify the ${SALG} signature ${HALG}"
@@ -111,7 +111,7 @@ do
 	    checkSuccess $?
 
 	    echo "NV Certify ${HALG} ${SALG} ${SESS}"
-	    ${PREFIX}nvcertify -ha 01000000 -pwdn nnn -hk ${HANDLE} -pwdk sig -halg ${HALG} -sz 16 ${SESS} -os sig.bin -oa tmp.bin -salg ${SALG} > run.out
+	    ${PREFIX}nvcertify -ha 01000000 -pwdn nnn -hk ${HANDLE} -pwdk sig -halg ${HALG} -sz 16 ${SESS} -off 0 -os sig.bin -oa tmp.bin -salg ${SALG} -od tmpcert.bin -v > run.out
 	    checkSuccess $?
 
 	    echo "Verify the ${SALG} signature ${HALG}"
@@ -119,11 +119,11 @@ do
 	    checkSuccess $?
 
 	    echo "Set command audit digest ${HALG}"
-	    ${PREFIX}setcommandcodeauditstatus -hi p -halg null -clr 00000144 > run.out
+	    ${PREFIX}setcommandcodeauditstatus -hi p -halg null -clr 00000144 -v > run.out
 	    checkSuccess $?
 
 	    echo "Get command audit digest ${HALG} ${SALG} ${SESS}"
-	    ${PREFIX}getcommandauditdigest -hk ${HANDLE} -halg ${HALG} ${SESS} -pwdk sig -os sig.bin -oa tmp.bin -qd policies/aaa -salg ${SALG} > run.out
+	    ${PREFIX}getcommandauditdigest -hk ${HANDLE} -halg ${HALG} ${SESS} -pwdk sig -os sig.bin -oa tmp.bin -qd policies/aaa -salg ${SALG} -v > run.out
 	    checkSuccess $?
 
 	    echo "Verify the ${SALG} signature ${HALG}"
@@ -268,7 +268,7 @@ do
 	checkWarning $? "Interaction between bind and audit session response HMAC may not be fixed"
 
 	echo "Get Session Audit Digest ${HALG}"
-	${PREFIX}getsessionauditdigest -hs 02000000 -hk 80000001 -pwdk sig -halg ${HALG} -os sig.bin -oa tmp.bin -qd policies/aaa > run.out
+	${PREFIX}getsessionauditdigest -hs 02000000 -hk 80000001 -pwdk sig -halg ${HALG} -os sig.bin -oa tmp.bin -qd policies/aaa -v > run.out
 	checkSuccess $?
 
 	echo "Verify the signature ${HALG}"
@@ -348,7 +348,7 @@ ${PREFIX}load -hp 80000000 -ipr signrsa2048priv.bin -ipu signrsa2048pub.bin -pwd
 checkSuccess $?
 
 echo "Certify the creation data for the primary key 80000000"
-${PREFIX}certifycreation -ho 80000000 -hk 80000001 -pwdk sig -tk pritk.bin -ch prich.bin -os sig.bin -oa tmp.bin > run.out
+${PREFIX}certifycreation -ho 80000000 -hk 80000001 -pwdk sig -tk pritk.bin -ch prich.bin -os sig.bin -oa tmp.bin -v > run.out
 checkSuccess $?
 
 echo "Verify the signature"
@@ -434,6 +434,7 @@ rm -f tmpdigestg.bin
 rm -f sig.bin
 rm -f tmp.bin
 rm -f tmphkey.bin
+rm -f tmpcert.bin
 
 exit ${WARN}
 

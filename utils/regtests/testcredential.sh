@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2021					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -56,7 +56,7 @@ ${PREFIX}getrandom -by 32 -of tmpcredin.bin > run.out
 checkSuccess $?
 
 echo "Load the storage key under the primary key, 80000001"
-${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
+${PREFIX}load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto -v > run.out
 checkSuccess $?
 
 echo "Create a restricted signing key under the primary key"
@@ -68,7 +68,7 @@ ${PREFIX}load -hp 80000000 -ipr tmprpriv.bin -ipu tmprpub.bin -pwdp sto > run.ou
 checkSuccess $?
 
 echo "Encrypt the credential using makecredential"
-${PREFIX}makecredential -ha 80000001 -icred tmpcredin.bin -in h80000002.bin -ocred tmpcredenc.bin -os tmpsecret.bin > run.out
+${PREFIX}makecredential -ha 80000001 -icred tmpcredin.bin -in h80000002.bin -ocred tmpcredenc.bin -os tmpsecret.bin -v > run.out
 checkSuccess $?
 
 echo "Start a policy session"
@@ -80,7 +80,7 @@ ${PREFIX}policycommandcode -ha 03000000 -cc 00000147 > run.out
 checkSuccess $?
 
 echo "Activate credential"
-${PREFIX}activatecredential -ha 80000002 -hk 80000001 -icred tmpcredenc.bin -is tmpsecret.bin -pwdk sto -ocred tmpcreddec.bin -se0 03000000 0 > run.out
+${PREFIX}activatecredential -ha 80000002 -hk 80000001 -icred tmpcredenc.bin -is tmpsecret.bin -pwdk sto -ocred tmpcreddec.bin -se0 03000000 0 -v > run.out
 checkSuccess $?
 
 echo "Check the decrypted result"
@@ -292,6 +292,10 @@ NVNAME=(
 
 	echo "Create an ${CALG[i]} EK certificate"
 	${PREFIX}createekcert -high ${CALG[i]} -cakey cakey.pem -capwd rrrr -pwdp ppp -pwde eee -of tmp.der > run.out
+	checkSuccess $?
+
+	echo "Read the certificate at ${CIDX[i]}"
+	${PREFIX}nvread -ha ${CIDX[i]} -cert  -ocert tmpcert.bin > run.out
 	checkSuccess $?
 
 	echo "Read the ${CALG[i]} EK certificate"
@@ -608,7 +612,21 @@ NVNAME=(
     ${PREFIX}hierarchychangeauth -hi e -pwda eee > run.out
     checkSuccess $?
 
+    echo ""
+    echo "writeapp demo"
+    echo ""
+
+    echo "writeapp"
+    ${PREFIX}writeapp -v > run.out
+    checkSuccess $?
+
+    echo "writeapp"
+    ${PREFIX}writeapp -pwsess > run.out
+    checkSuccess $?
+
 fi
+
+# writeapp demo depends on EK certificates
 
 echo ""
 echo "Low range EK certificates are now provisioned in NV"
@@ -621,6 +639,7 @@ rm -f tmprpub.bin
 rm -f tmpcredenc.bin
 rm -f tmpsecret.bin
 rm -f tmpcreddec.bin
+rm -f tmpcert.bin
 
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000

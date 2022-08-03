@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 	    in.authHandle = TPM_RH_PLATFORM;  
 	}
 	else {
-	    printf("\n");
+	    printf("-hia has bad parameter %c\n", hierarchyAuthChar);
 	    printUsage();
 	}
     }

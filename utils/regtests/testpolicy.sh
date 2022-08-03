@@ -68,7 +68,7 @@ checkSuccess $?
 # 0f0a 7d13 dfd8 3b77 70cc bcd1 aa80 d811
 
 echo "Start a policy session"
-${PREFIX}startauthsession -se p > run.out
+${PREFIX}startauthsession -se p -v > run.out
 checkSuccess $?
 
 echo "Sign a digest - policy, should fail"
@@ -76,7 +76,7 @@ ${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
 checkFailure $?
 
 echo "Policy command code - sign"
-${PREFIX}policycommandcode -ha 03000000 -cc 15d > run.out
+${PREFIX}policycommandcode -ha 03000000 -cc 15d -v > run.out
 checkSuccess $?
 
 echo "Policy get digest - should be cc69 ..."
@@ -110,7 +110,7 @@ ${PREFIX}quote -hp 0 -hk 80000001 -os sig.bin -se0 03000000 1 > run.out
 checkFailure $?
 
 echo "Policy restart, set back to zero"
-${PREFIX}policyrestart -ha 03000000 > run.out 
+${PREFIX}policyrestart -ha 03000000 -v > run.out 
 checkSuccess $?
 
 # echo "Flush the session"
@@ -168,7 +168,7 @@ ${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 1 > run.out
 checkFailure $?
 
 echo "Policy password"
-${PREFIX}policypassword -ha 03000000 > run.out
+${PREFIX}policypassword -ha 03000000 -v > run.out
 checkSuccess $?
 
 echo "Sign a digest - policy, no password should fail"
@@ -190,7 +190,7 @@ ${PREFIX}policycommandcode -ha 03000000 -cc 15d > run.out
 checkSuccess $?
 
 echo "Policy authvalue"
-${PREFIX}policyauthvalue -ha 03000000 > run.out
+${PREFIX}policyauthvalue -ha 03000000 -v > run.out
 checkSuccess $?
 
 echo "Sign a digest - policy, no password should fail"
@@ -352,11 +352,11 @@ do
     checkFailure $?
 
     echo "Policy signed, sign with PEM key - $HALG"
-    ${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg $HALG -pwdk rrrr > run.out
+    ${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg $HALG -pwdk rrrr -v > run.out
     checkSuccess $?
 
     echo "Get policy digest"
-    ${PREFIX}policygetdigest -ha 03000000 -of tmppol.bin > run.out
+    ${PREFIX}policygetdigest -ha 03000000 -of tmppol.bin -v > run.out
     checkSuccess $?
 
     echo "Sign a digest - policy signed"
@@ -395,7 +395,7 @@ do
     checkSuccess $?
 
     echo "Policy ticket"
-    ${PREFIX}policyticket -ha 03000000 -to to.bin -na ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin > run.out
+    ${PREFIX}policyticket -ha 03000000 -to to.bin -na ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin -v > run.out
     checkSuccess $?
 
     echo "Sign a digest - policy ticket"
@@ -473,7 +473,7 @@ ${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -se0 03000000 0 > run.out
 checkFailure $?
 
 echo "Policy Secret with PWAP session, create a ticket"
-${PREFIX}policysecret -ha 4000000c -hs 03000000 -pwde ppp -in noncetpm.bin -exp -200 -tk tkt.bin -to to.bin > run.out
+${PREFIX}policysecret -ha 4000000c -hs 03000000 -pwde ppp -in noncetpm.bin -exp -200 -tk tkt.bin -to to.bin -v > run.out
 checkSuccess $?
 
 echo "Sign a digest - policy secret"
@@ -598,7 +598,7 @@ echo ""
 # 63 d2 87 d2 33 ec 49 0e 7a be 88 f1 ef 94 5d 5c 
 
 echo "Load the RSA openssl key pair in the NULL hierarchy 80000001"
-${PREFIX}loadexternal -rsa -ider policies/rsaprivkey.der -pwdk rrrr > run.out
+${PREFIX}loadexternal -rsa -ider policies/rsaprivkey.der -pwdk rrrr -v > run.out
 checkSuccess $?
 
 echo "Create a signing key under the primary key - policy secret of object 80000001"
@@ -706,7 +706,7 @@ ${PREFIX}verifysignature -hk 80000001 -halg sha256 -if policies/policyccsign.bin
 checkSuccess $?
 
 echo "Policy authorize using the ticket"
-${PREFIX}policyauthorize -ha 03000000 -appr policies/policyccsign.bin -skn ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin > run.out
+${PREFIX}policyauthorize -ha 03000000 -appr policies/policyccsign.bin -skn ${TPM_DATA_DIR}/h80000001.bin -tk tkt.bin -v > run.out
 checkSuccess $?
 
 echo "Get policy digest, should be policy authorize"
@@ -736,7 +736,7 @@ echo "Set Primary Policy"
 echo ""
 
 echo "Platform policy empty"
-${PREFIX}setprimarypolicy -hi p > run.out
+${PREFIX}setprimarypolicy -hi p -v > run.out
 checkSuccess $?
 
 echo "Platform policy empty, bad password"
@@ -798,7 +798,7 @@ ${PREFIX}startauthsession -halg sha256 -se p > run.out
 checkSuccess $?
 
 echo "Policy PCR, update with the correct digest"
-${PREFIX}policypcr -ha 03000000 -halg sha256 -bm 0 > run.out
+${PREFIX}policypcr -ha 03000000 -halg sha256 -bm 0 -v > run.out
 checkSuccess $?
 
 echo "Policy get digest - should be 7d f0 52 f3 6 ... "
@@ -997,7 +997,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy NV to satisfy the policy"
-${PREFIX}policynv -ha 01000000 -pwda nnn -hs 03000000 -if policies/zero8.bin -op 0 > run.out
+${PREFIX}policynv -ha 01000000 -pwda nnn -hs 03000000 -if policies/zero8.bin -op 0 -off 0 -v > run.out
 checkSuccess $?
 
 echo "Policy get digest, should be 79 d6 c0 4b ..."
@@ -1057,7 +1057,7 @@ ${PREFIX}nvwrite -ha 01000000 -ic aa -se0 03000000 1 > run.out
 checkFailure $?
 
 echo "Policy NV Written no, does not satisfy policy"
-${PREFIX}policynvwritten -hs 03000000 -ws n > run.out  
+${PREFIX}policynvwritten -hs 03000000 -ws n -v > run.out  
 checkSuccess $?
 
 echo "NV write, policy not satisfied - should fail"
@@ -1260,7 +1260,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy OR"
-${PREFIX}policyor -ha 03000000 -if policies/policywrittenclrsigned.bin -if policies/policywrittensetsigned.bin > run.out
+${PREFIX}policyor -ha 03000000 -if policies/policywrittenclrsigned.bin -if policies/policywrittensetsigned.bin -v > run.out
 checkSuccess $?
 
 echo "Should be policy OR final value 06 00 ae 34 "
@@ -1382,7 +1382,7 @@ ${PREFIX}clockrateadjust -hi p -pwdp ppp -adj 0 -se0 03000000 1 > run.out
 checkFailure $?
 
 echo "Policy cpHash, satisfy policy"
-${PREFIX}policycphash -ha 03000000 -cp policies/policycphashhash.bin > run.out
+${PREFIX}policycphash -ha 03000000 -cp policies/policycphashhash.bin -v > run.out
 checkSuccess $?
  
 echo "Policy get digest, should be  1b 45 4d dc"
@@ -1437,7 +1437,7 @@ ${PREFIX}load -hp 80000000 -pwdp sto -ipu tmpstpub.bin -ipr tmpstpriv.bin > run.
 checkSuccess $?
 
 echo "Import a signing key SI under the primary key 80000000, with policy duplication select"
-${PREFIX}importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policydupsel-no.bin > run.out
+${PREFIX}importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -scheme rsassa -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policydupsel-no.bin > run.out
 checkSuccess $?
 
 echo "Load the signing key SI at 80000002"
@@ -1457,7 +1457,7 @@ ${PREFIX}startauthsession -se p > run.out
 checkSuccess $?
 
 echo "Policy duplication select, object SI 80000002 to new parent NP 80000001"
-${PREFIX}policyduplicationselect -ha 03000000 -inpn h80000001.bin -ion h80000002.bin > run.out
+${PREFIX}policyduplicationselect -ha 03000000 -inpn h80000001.bin -ion h80000002.bin -v > run.out
 checkSuccess $?
 
 echo "Get policy digest, should be 5f 55 ba 2b ...."
@@ -1660,7 +1660,7 @@ ${PREFIX}startauthsession -se p > run.out
 checkSuccess $?
 
 echo "Policy name hash, object SI 80000001"
-${PREFIX}policynamehash -ha 03000000 -nh policies/pnhnamehash.bin > run.out
+${PREFIX}policynamehash -ha 03000000 -nh policies/pnhnamehash.bin -v > run.out
 checkSuccess $?
 
 echo "Get policy digest,should be policy to approve, 96 30 f9 00"
@@ -1733,7 +1733,11 @@ ${PREFIX}clockrateadjust -hi p -adj 0 -se0 03000000 1 > run.out
 checkFailure $?
 
 echo "Policy counter timer, zero operandB, op EQ satisfy policy - should fail"
-${PREFIX}policycountertimer -ha 03000000 -if policies/zero8.bin -op 0 > run.out
+${PREFIX}policycountertimer -ha 03000000 -if policies/zero8.bin -op 0 -v > run.out
+checkFailure $?
+ 
+echo "Policy counter timer, operandB 1111, op EQ satisfy policy - should fail"
+${PREFIX}policycountertimer -ha 03000000 -ic 1111 -off 1 -if policies/zero8.bin -op 0 -v > run.out
 checkFailure $?
  
 echo "Policy counter timer, zero operandB, op GT satisfy policy"

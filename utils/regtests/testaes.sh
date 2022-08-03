@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testaes.sh 1301 2018-08-15 21:46:19Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -57,7 +56,7 @@ do
     checkSuccess $?
 
     echo "Encrypt using the symmetric cipher key ${SESS}"
-    ${PREFIX}encryptdecrypt -hk 80000001 -if msg.bin -of enc.bin -pwdk aes ${SESS} > run.out
+    ${PREFIX}encryptdecrypt -hk 80000001 -if msg.bin -of enc.bin -pwdk aes ${SESS} -v > run.out
     checkSuccess $?
 
     echo "Decrypt using the symmetric cipher key ${SESS}"

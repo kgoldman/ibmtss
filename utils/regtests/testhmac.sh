@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -72,11 +72,11 @@ do
 	checkSuccess $?
 
 	echo "HMAC ${HALG} sequence update ${SESS}"
-	${PREFIX}sequenceupdate -hs 80000002 -pwds aaa -if msg.bin ${SESS} > run.out
+	${PREFIX}sequenceupdate -hs 80000002 -pwds aaa -if msg.bin ${SESS} -v > run.out
 	checkSuccess $?
 
 	echo "HMAC ${HALG} sequence complete ${SESS}"
-	${PREFIX}sequencecomplete -hs 80000002 -pwds aaa -of tmp.bin ${SESS} > run.out
+	${PREFIX}sequencecomplete -hs 80000002 -pwds aaa -of tmp.bin ${SESS} -v > run.out
 	checkSuccess $?
 
 	echo "Verify the HMAC ${HALG} using the two methods"
@@ -100,11 +100,11 @@ do
 	checkSuccess $?
 
 	echo "HMAC ${HALG} using the keyed hash primary key ${SESS}"
-	${PREFIX}hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khp -halg ${HALG} ${SESS} > run.out
+	${PREFIX}hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khp -halg ${HALG} ${SESS} -v > run.out
 	checkSuccess $?
 
 	echo "HMAC ${HALG} start using the keyed hash primary key ${SESS}"
-	${PREFIX}hmacstart -hk 80000001 -pwdk khp -pwda aaa ${SESS} -halg ${HALG} > run.out
+	${PREFIX}hmacstart -hk 80000001 -pwdk khp -pwda aaa ${SESS} -halg ${HALG} -v > run.out
 	checkSuccess $?
 
 	echo "HMAC ${HALG} sequence update ${SESS}"
@@ -136,38 +136,42 @@ do
     for SESS in "" "-se0 02000000 1"
     do
 
-	echo "Hash ${HALG} in one call, data from file"
-	${PREFIX}hash -hi p -halg ${HALG} -if policies/aaa -oh tmp.bin > run.out
-	checkSuccess $?
+	for HIER in "p" "e" "o" 
+	do
 
-	echo "Verify the hash ${HALG}"
-	diff tmp.bin policies/${HALG}aaa.bin > run.out
-	checkSuccess $?
+	    echo "Hash ${HALG} in one call, data from file"
+	    ${PREFIX}hash -hi ${HIER}  -halg ${HALG} -if policies/aaa -oh tmp.bin -v > run.out
+	    checkSuccess $?
 
-	echo "Hash ${HALG} in one call, data on command line"
-	${PREFIX}hash -hi p -halg ${HALG} -ic aaa -oh tmp.bin > run.out
-	checkSuccess $?
+	    echo "Verify the hash ${HALG}"
+	    diff tmp.bin policies/${HALG}aaa.bin > run.out
+	    checkSuccess $?
 
-	echo "Verify the hash ${HALG}"
-	diff tmp.bin policies/${HALG}aaa.bin > run.out
-	checkSuccess $?
+	    echo "Hash ${HALG} in one call, data on command line"
+	    ${PREFIX}hash -hi ${HIER} -halg ${HALG} -ic aaa -oh tmp.bin > run.out
+	    checkSuccess $?
 
-	echo "Hash ${HALG} sequence start"
-	${PREFIX}hashsequencestart -halg ${HALG} -pwda aaa > run.out
-	checkSuccess $?
+	    echo "Verify the hash ${HALG}"
+	    diff tmp.bin policies/${HALG}aaa.bin > run.out
+	    checkSuccess $?
 
-	echo "Hash ${HALG} sequence update ${SESS}"
-	${PREFIX}sequenceupdate -hs 80000001 -pwds aaa -if policies/aaa ${SESS} > run.out
-	checkSuccess $?
+	    echo "Hash ${HALG} sequence start"
+	    ${PREFIX}hashsequencestart -halg ${HALG} -pwda aaa > run.out
+	    checkSuccess $?
 
-	echo "Hash ${HALG} sequence complete ${SESS}"
-	${PREFIX}sequencecomplete -hi p -hs 80000001 -pwds aaa -of tmp.bin ${SESS} > run.out
-	checkSuccess $?
+	    echo "Hash ${HALG} sequence update ${SESS}"
+	    ${PREFIX}sequenceupdate -hs 80000001 -pwds aaa -if policies/aaa ${SESS} > run.out
+	    checkSuccess $?
 
-	echo "Verify the ${HALG} hash"
-	diff tmp.bin policies/${HALG}aaa.bin > run.out
-	checkSuccess $?
+	    echo "Hash ${HALG} sequence complete ${SESS}"
+	    ${PREFIX}sequencecomplete -hi ${HIER} -hs 80000001 -pwds aaa -of tmp.bin ${SESS} > run.out
+	    checkSuccess $?
 
+	    echo "Verify the ${HALG} hash"
+	    diff tmp.bin policies/${HALG}aaa.bin > run.out
+	    checkSuccess $?
+
+	done
     done
 done
 

@@ -8,7 +8,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2016 - 2020					#
+# (c) Copyright IBM Corporation 2016 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -54,14 +54,14 @@ fi
 
 # NV index name after written
 
-# 000b 
-# 5e8e bdf0 4581 9419 070c 7d57 77bf eb61 
-# ffac 4996 ea4b 6fba de6d a42b 632d 4918   
+# 000b
+# 5e8e bdf0 4581 9419 070c 7d57 77bf eb61
+# ffac 4996 ea4b 6fba de6d a42b 632d 4918
 
 # PolicyAuthorizeNV with above Name
-                              
-# 66 1f a1 02 db cd c2 f6 a0 61 7b 33 a0 ee 6d 95 
-# ab f6 2c 76 b4 98 b2 91 10 0d 30 91 19 f4 11 fa 
+
+# 66 1f a1 02 db cd c2 f6 a0 61 7b 33 a0 ee 6d 95
+# ab f6 2c 76 b4 98 b2 91 10 0d 30 91 19 f4 11 fa
 
 # Policy in NV index 01000000
 # signing key 80000001 
@@ -85,7 +85,7 @@ checkSuccess $?
 echo "NV Define Space"
 ${PREFIX}nvdefinespace -hi o -ha 01000000 -sz 50 > run.out
 checkSuccess $?
-    
+
 echo "NV not written, policyauthorizenv - should fail"
 ${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000 > run.out
 checkFailure $?
@@ -107,7 +107,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy Authorize NV against 01000000"
-${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000 > run.out
+${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000 -v > run.out
 checkSuccess $?
 
 echo "Policy get digest - should be 66 1f ..."
@@ -144,6 +144,14 @@ checkSuccess $?
 
 echo "Policy Authorize NV against 01000000 - should fail"
 ${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000 > run.out
+checkFailure $?
+
+echo "Policy Authorize NV against 01000000, owner auth - should fail"
+${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000 -hi o > run.out
+checkFailure $?
+
+echo "Policy Authorize NV against 01000000, platform auth - should fail"
+${PREFIX}policyauthorizenv -ha 01000000 -hs 03000000 -hi p > run.out
 checkFailure $?
 
 echo "NV Undefine Space"
@@ -197,7 +205,7 @@ ${PREFIX}startauthsession -se p > run.out
 checkSuccess $?
 
 echo "Policy Template"
-${PREFIX}policytemplate -ha 03000000 -te policies/policytemplate.bin > run.out
+${PREFIX}policytemplate -ha 03000000 -te policies/policytemplate.bin -v > run.out
 checkSuccess $?
 
 echo "Policy get digest - should be fb 94 ... "

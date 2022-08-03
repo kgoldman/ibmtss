@@ -1279,8 +1279,13 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 	    memset(&authC[i]->nonce.b.buffer, 0, 16);
 #endif	/* TPM_TSS_NOCRYPTO */
 	}
+	if (tssVverbose) {
+	    authC[i]->sessionHandle = sessionHandle[i];
+	    authC[i]->sessionAttributes.val = sessionAttributes[i];
+	    TSS_TPMS_AUTH_COMMAND_Print(authC[i], 8);
+	}
     }
-    
+
 #ifndef TPM_TSS_NOCRYPTO
     /* Step 4: Calculate the HMAC key */
     for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) && (sessionHandle[i] != TPM_RH_NULL) ; i++) {
@@ -1390,6 +1395,10 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
     /* Step 12: process the response continue flag */
     for (i = 0 ; (rc == 0) && (i < MAX_SESSION_NUM) && (sessionHandle[i] != TPM_RH_NULL) ; i++) {
 	if (sessionHandle[i] != TPM_RS_PW) {
+	    if (tssVverbose) {
+		TSS_TPMS_AUTH_RESPONSE_Print(authR[i], 8);
+
+	    }
 	    if (tssVverbose) printf("TSS_Execute_valist: Step 12: process continue flag %08x\n",
 				    sessionHandle[i]);
 	    rc = TSS_HmacSession_Continue(tssContext, session[i], authR[i]);

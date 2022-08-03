@@ -199,7 +199,7 @@ int main(int argc, char *argv[])
 	    in.authHandle = nvIndex;
 	}
 	else {
-	    printf("\n");
+	    printf("-hia has bad parameter %c\n", hierarchyAuthChar);
 	    printUsage();
 	}
     }

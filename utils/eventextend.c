@@ -108,7 +108,6 @@ int main(int argc, char * argv[])
 	    else {
 		printf("-if option needs a value\n");
 		printUsage();
-		exit(2);
 	    }
 	}
 	else if (strcmp(argv[i],"-tpm") == 0) {
@@ -592,6 +591,6 @@ static void printUsage(void)
     printf("\t[-ns\tno space, no text, no newlines when tracing PCRs and boot aggregate]\n");
     printf("\t[-v\tverbose tracing]\n");
     printf("\n");
-   exit(-1);
+    exit(-1);
 }
 

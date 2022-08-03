@@ -490,6 +490,8 @@ void TSS_RsaFree(void *rsaKey)
    Use TSS_RSAGeneratePublicTokenI().
 */
 
+#ifndef TPM_TSS_NODEPRECATED
+
 TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
 				  const unsigned char *narr,    /* public modulus */
 				  uint32_t nbytes,
@@ -504,6 +506,8 @@ TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
 				     ebytes);
     return rc;
 }
+
+#endif /* TPM_TSS_NODEPRECATED */
 
 /* TSS_RSAGeneratePublicTokenI() generates an RSA key token from n and e
 

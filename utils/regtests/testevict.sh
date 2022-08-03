@@ -53,7 +53,7 @@ ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Make the signing key persistent"
-${PREFIX}evictcontrol -ho 80000001 -hp 81800000 -hi p > run.out
+${PREFIX}evictcontrol -ho 80000001 -hp 81800000 -hi p -v > run.out
 checkSuccess $?
 
 echo "Sign a digest with the transient key"
@@ -65,7 +65,7 @@ ${PREFIX}sign -hk 81800000 -halg sha256 -if policies/aaa -os sig.bin -pwdk sig >
 checkSuccess $?
 
 echo "Flush the transient key"
-${PREFIX}flushcontext -ha 80000001 > run.out
+${PREFIX}flushcontext -ha 80000001 -v > run.out
 checkSuccess $?
 
 echo "Flush the persistent key - should fail"

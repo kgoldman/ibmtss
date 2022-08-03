@@ -107,11 +107,11 @@ do
     checkSuccess $?
 
     echo "RSA encrypt with the $BITS encryption key"
-    ${PREFIX}rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+    ${PREFIX}rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin -v > run.out
     checkSuccess $?
 
     echo "RSA decrypt with the ${BITS} decryption key"
-    ${PREFIX}rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin -pwdk dec > run.out
+    ${PREFIX}rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin -pwdk dec -v > run.out
     checkSuccess $?
 
     echo "Verify the decrypt result"

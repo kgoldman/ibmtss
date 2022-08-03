@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2016 - 2019					#
+# (c) Copyright IBM Corporation 2016 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -114,6 +114,14 @@ checkSuccess $?
 echo "Platform read does not affect count"
 ${PREFIX}nvread -ha 01000000 -hia p -sz 8 -id 0 1 > run.out
 checkSuccess $?
+
+echo "Platform read does not affect count, expect failure"
+${PREFIX}nvread -ha 01000000 -hia p -sz 8 -id 0 10 > run.out
+checkFailure $?
+
+echo "Platform read does not affect count, expect failure"
+${PREFIX}nvread -ha 01000000 -hia p -sz 8 -id 10 1 > run.out
+checkFailure $?
 
 echo "Platform read does not affect count, should succeed"
 ${PREFIX}nvread -ha 01000000 -hia p -sz 8 -id 0 1 > run.out

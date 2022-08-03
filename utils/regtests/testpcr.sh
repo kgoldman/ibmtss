@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2019					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -207,18 +207,18 @@ do
     echo ""
 
     echo "PCR Reset banks ${BANKS[i]}"
-    ${PREFIX}pcrreset -ha 16 > run.out
+    ${PREFIX}pcrreset -ha 16 -v > run.out
     checkSuccess $?
 
     echo "PCR Extend ${EXTEND[i]}"
-    ${PREFIX}pcrextend -ha 16 ${EXTEND[i]} -if policies/aaa > run.out
+    ${PREFIX}pcrextend -ha 16 ${EXTEND[i]} -if policies/aaa -v > run.out
     checkSuccess $?
 
     for HALG in ${BANKS[i]}
     do
     
 	echo "PCR Read ${HALG}"
-	${PREFIX}pcrread -ha 16 -halg ${HALG} -of tmp.bin > run.out
+	${PREFIX}pcrread -ha 16 -halg ${HALG} -of tmp.bin -v > run.out
 	checkSuccess $?
 
 	echo "Verify the read data ${HALG}"
@@ -236,7 +236,7 @@ do
     checkSuccess $?
 
     echo "PCR Event ${EVENT[i]}"
-    ${PREFIX}pcrevent -ha 16 -if policies/aaa ${EVENT[i]} > run.out
+    ${PREFIX}pcrevent -ha 16 -if policies/aaa ${EVENT[i]} -v > run.out
     checkSuccess $?
 
     for HALG in ${BANKS[i]}
@@ -265,11 +265,11 @@ do
     checkSuccess $?
 
     echo "Event sequence start, alg null"
-    ${PREFIX}hashsequencestart -halg null -pwda aaa > run.out
+    ${PREFIX}hashsequencestart -halg null -pwda aaa -v > run.out
     checkSuccess $?
 
     echo "Event Sequence Complete"
-    ${PREFIX}eventsequencecomplete -hs 80000000 -pwds aaa -ha 16 -if policies/aaa ${EVENT[i]} > run.out
+    ${PREFIX}eventsequencecomplete -hs 80000000 -pwds aaa -ha 16 -if policies/aaa ${EVENT[i]} -v > run.out
     checkSuccess $?
 
     for HALG in ${BANKS[i]}

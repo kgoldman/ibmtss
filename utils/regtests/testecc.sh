@@ -65,11 +65,11 @@ do
 	for SESS in "" "-se0 02000000 1"
 	do
 	    echo "encrypt ${HALG}"
-	    ${PREFIX}eccencrypt -hk 80000001 -halg ${HALG} -id msg.bin -oc1 tmpc1.bin -oc2 tmpc2.bin -oc3 tmpc3.bin > run.out
+	    ${PREFIX}eccencrypt -hk 80000001 -halg ${HALG} -id msg.bin -oc1 tmpc1.bin -oc2 tmpc2.bin -oc3 tmpc3.bin -v > run.out
 	    checkSuccess $?
 
 	    echo "decrypt ${HALG} ${SESS}"
-	    ${PREFIX}eccdecrypt -hk 80000001 -pwdk aaa -halg ${HALG} -od tmp.txt -ic1 tmpc1.bin -ic2 tmpc2.bin -ic3 tmpc3.bin ${SESS} > run.out
+	    ${PREFIX}eccdecrypt -hk 80000001 -pwdk aaa -halg ${HALG} -od tmp.txt -ic1 tmpc1.bin -ic2 tmpc2.bin -ic3 tmpc3.bin ${SESS} -v > run.out
 	    checkSuccess $?
 
 	    echo "Verify the decrypted result ${HALG}"
@@ -100,7 +100,7 @@ for CURVE in ${CURVE_ALGS}
 do
 
     echo "ECC Parameters for curve ${CURVE}"
-    ${PREFIX}eccparameters -cv ${CURVE} > run.out
+    ${PREFIX}eccparameters -cv ${CURVE} -v > run.out
     checkSuccess $?
 
     for ATTR in "-si" "-sir"
@@ -113,7 +113,7 @@ do
     done
 
     echo "EC Ephemeral for curve ${CURVE}"
-    ${PREFIX}ecephemeral -ecc ${CURVE} > run.out
+    ${PREFIX}ecephemeral -ecc ${CURVE} -v > run.out
     checkSuccess $?
 
 done
@@ -153,7 +153,7 @@ do
     	# checkSuccess $?
 	
 	echo "Create new point E, based on point-multiply of TPM's commit random scalar and Generator point ${SESS}"
-	${PREFIX}commit -hk 80000001 -Ef efile.bin -pwdk siga ${SESS} > run.out
+	${PREFIX}commit -hk 80000001 -Ef efile.bin -pwdk siga ${SESS} -v > run.out
 	checkSuccess $?
 
         # copy efile as new p1 - for hash operation
@@ -302,7 +302,7 @@ do
     checkSuccess $?
 
     echo "Execute zgen2phase for curve ${CURVE}"
-    ${PREFIX}zgen2phase -hk 80000001 -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin > run.out
+    ${PREFIX}zgen2phase -hk 80000001 -pwdk "" -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin -z1 tmpz1.bin -z2 tmpz2.bin  -v > run.out
     checkSuccess $?
 
     echo "Flush the key"
@@ -334,6 +334,8 @@ rm -rf QsApub.bin
 rm -rf QeApt.bin
 rm -rf counter.bin
 rm -rf QsBpt.bin
+rm -r tmpz1.bin
+rm -r tmpz2.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 02000000

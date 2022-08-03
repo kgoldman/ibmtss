@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2020					*/
+/* (c) Copyright IBM Corporation 2015 - 2022					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -4034,7 +4034,7 @@ TSS_TPM2B_CREATION_DATA_Unmarshalu(TPM2B_CREATION_DATA *target, BYTE **buffer, u
     }
     return rc;
 }
-#ifndef TPM_TSS_NOCMDCHECK
+#ifndef TPM_TSS_NODEPRECATED
 
 /* Deprecated functions that use a sized value for the size parameter.  The recommended functions
    use an unsigned value.
@@ -5007,6 +5007,6 @@ TPM_RC TPM2B_CREATION_DATA_Unmarshal(TPM2B_CREATION_DATA *target, BYTE **buffer,
     return TSS_TPM2B_CREATION_DATA_Unmarshalu(target, buffer, (uint32_t *)size);
 }
 
-#endif 	/* TPM_TSS_NOCMDCHECK */
+#endif 	/* TPM_TSS_NODEPRECATED */
 
 #endif /* TPM_TPM20 */

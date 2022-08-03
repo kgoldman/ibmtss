@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (authHandle == 0) {
-	printf("Missing authorizing entity handle parameter -hs\n");
+	printf("Missing authorizing entity handle parameter -ha\n");
 	printUsage();
     }
     if (policySession == 0) {

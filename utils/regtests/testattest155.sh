@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2019 - 2020					#
+# (c) Copyright IBM Corporation 2019 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -56,7 +56,7 @@ ${PREFIX}load -hp 80000000 -ipr signeccnistp256priv.bin -ipu signeccnistp256pub.
 checkSuccess $?
 
 echo "NV Define Space"
-${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 > run.out
+${PREFIX}nvdefinespace -hi o +at or +at ppr -ha 01000000 -pwdn nnn -sz 16 > run.out
 checkSuccess $?
 
 echo "NV Read Public, unwritten Name"
@@ -85,26 +85,32 @@ do
 		HANDLE=80000002
 	    fi
 
-	    echo "NV Certify a digest ${HALG} ${SALG} ${SESS}"
-	    ${PREFIX}nvcertify -ha 01000000 -pwdn nnn -hk ${HANDLE} -pwdk sig -halg ${HALG} -sz 0 ${SESS} -os sig.bin -oa tmp.bin -salg ${SALG} -od tmpdigest1.bin > run.out
-	    checkSuccess $?
+	    for HIA in "-pwdn nnn" "-hia o" "-hia p"
+	    do
 
-	    echo "Verify the ${SALG} signature ${HALG}"
-	    ${PREFIX}verifysignature -hk ${HANDLE} -halg ${HALG} -if tmp.bin -is sig.bin > run.out
-	    checkSuccess $?
+		# index auth uses -pwdn, hierarchy auths are empty
 
-	    echo "NV read"
-	    ${PREFIX}nvread -ha 01000000 -pwdn nnn -of tmpdata.bin > run.out
-	    checkSuccess $?
+		echo "NV Certify a digest ${HIA} ${HALG} ${SALG} ${SESS}"
+		${PREFIX}nvcertify ${HIA} -ha 01000000 -hk ${HANDLE} -pwdk sig -halg ${HALG} -sz 0 ${SESS} -os sig.bin -oa tmp.bin -salg ${SALG} -od tmpdigest1.bin > run.out
+		checkSuccess $?
 
-	    echo "Digest the hashed and certified NV data ${HALG}"
-	    ${PREFIX}hash -halg ${HALG} -if tmpdata.bin -oh tmpdigest2.bin
-	    checkSuccess $?
+		echo "Verify the ${SALG} signature ${HALG}"
+		${PREFIX}verifysignature -hk ${HANDLE} -halg ${HALG} -if tmp.bin -is sig.bin > run.out
+		checkSuccess $?
 
-	    echo "Check the digest ${HALG} results"
-	    diff tmpdigest1.bin tmpdigest2.bin
-	    checkSuccess $?
+		echo "NV read"
+		${PREFIX}nvread -ha 01000000 -pwdn nnn -of tmpdata.bin > run.out
+		checkSuccess $?
 
+		echo "Digest the hashed and certified NV data ${HALG}"
+		${PREFIX}hash -halg ${HALG} -if tmpdata.bin -oh tmpdigest2.bin
+		checkSuccess $?
+
+		echo "Check the digest ${HALG} results"
+		diff tmpdigest1.bin tmpdigest2.bin
+		checkSuccess $?
+
+	    done
 	done
     done
 done

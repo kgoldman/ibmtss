@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	}
     }
     if (inputFilename == NULL) {
-	printf("Missing private key parameter -if\n");
+	printf("Missing input parameter -if\n");
 	printUsage();
     }
     if (rc == 0) {

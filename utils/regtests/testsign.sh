@@ -62,11 +62,11 @@ do
 	do
 
 	    echo "Sign a digest - $HALG $SCHEME $BITS"
-	    ${PREFIX}sign -hk 80000001 -halg $HALG -scheme $SCHEME -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa${BITS}pub.bin > run.out
+	    ${PREFIX}sign -hk 80000001 -halg $HALG -salg rsa -scheme $SCHEME -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa${BITS}pub.bin -v > run.out
 	    checkSuccess $?
 
 	    echo "Verify the signature using the TPM - $HALG"
-	    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
+	    ${PREFIX}verifysignature -hk 80000001 -halg $HALG -rsa -if policies/aaa -is sig.bin > run.out
 	    checkSuccess $?
 
 	    echo "Verify the signature using PEM - $HALG"
@@ -132,13 +132,13 @@ do
     do
 
 	echo "Sign a digest - $HALG"
-	${PREFIX}sign -hk 80000001 -halg $HALG -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
+	${PREFIX}sign -hk 80000001 -halg $HALG -salg ecc -scheme ecdsa -if policies/aaa -os sig.bin -pwdk sig > run.out
 	checkSuccess $?
 
 	echo "Verify the ECC signature using the TPM - $HALG"
-	${PREFIX}verifysignature -hk 80000001 -halg $HALG -ecc -if policies/aaa -is sig.bin > run.out
+	${PREFIX}verifysignature -hk 80000001 -halg $HALG -if policies/aaa -is sig.bin > run.out
 	checkSuccess $?
-	
+
 	echo "Verify the signature using PEM - $HALG"
 	${PREFIX}verifysignature -ipem signecc${CURVE}pub.pem -halg $HALG -if policies/aaa -is sig.bin > run.out
 	checkSuccess $?
@@ -375,7 +375,7 @@ do
     checkSuccess $?
 
     echo "Sign a digest with a restricted signing key and ticket"
-    ${PREFIX}sign -hk 80000001 -halg ${HALG} -salg hmac -if msg.bin -tk tkt.bin -os sig.bin -pwdk khk > run.out
+    ${PREFIX}sign -hk 80000001 -halg ${HALG} -salg hmac -scheme hmac -if msg.bin -tk tkt.bin -os sig.bin -pwdk khk > run.out
     checkSuccess $?
 
     echo "Sign a digest with a restricted signing key and no ticket - should fail"
@@ -417,6 +417,20 @@ do
     checkSuccess $?
 
 done
+
+echo ""
+echo "signapp demo"
+echo ""
+
+echo "signapp basic"
+${PREFIX}signapp -ic xxx -v > run.out
+checkSuccess $?
+
+echo "signapp password session"
+${PREFIX}signapp -ic xxx -pwsess > run.out
+checkSuccess $?
+
+# cleanup
 
 rm -f tmpkeypairrsa2048.pem
 rm -f tmpkeypairrsa2048.der

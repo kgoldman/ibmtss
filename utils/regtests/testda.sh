@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#		$Id: testda.sh 1277 2018-07-23 20:30:23Z kgoldman $		#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2018					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -54,7 +53,7 @@ ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
 checkSuccess $?
 
 echo "Set DA recovery time to 0, disables DA"
-${PREFIX}dictionaryattackparameters -nrt 0 > run.out
+${PREFIX}dictionaryattackparameters -nrt 0 -v  > run.out
 checkSuccess $?
 
 echo "Sign a digest with bad password - should fail"
@@ -78,7 +77,7 @@ ${PREFIX}sign -hk 80000001 -if msg.bin -os sig.bin -pwdk sig > run.out
 checkFailure $?
 
 echo "Reset DA lock"
-${PREFIX}dictionaryattacklockreset > run.out
+${PREFIX}dictionaryattacklockreset -v > run.out
 checkSuccess $?
 
 echo "Sign a digest with good password"

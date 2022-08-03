@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -70,7 +70,7 @@ do
 	checkSuccess $?
 
 	echo "Read the signing key 80000002 public area"
-	${PREFIX}readpublic -ho 80000002 -opu tmppub2.bin > run.out
+	${PREFIX}readpublic -ho 80000002 -opu tmppub2.bin -v > run.out
 	checkSuccess $?
 
 	echo "Flush the signing key 80000002"

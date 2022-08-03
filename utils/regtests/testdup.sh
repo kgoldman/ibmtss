@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2021					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -98,7 +98,7 @@ do
 	    checkSuccess $?
 
 	    echo "Verify the signature, $HALG"
-	    ${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is tmpsig.bin > run.out
+	    ${PREFIX}verifysignature -hk 80000002 -halg $HALG -if policies/aaa -is tmpsig.bin -v > run.out
 	    checkSuccess $?
 
 	    echo "Start a policy session"
@@ -118,7 +118,7 @@ do
 	    checkSuccess $?
 
 	    echo "Duplicate K2 under ${SALG[i]} K1, ${ENC}"
-	    ${PREFIX}duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin ${ENC} -se0 03000000 1 > run.out
+	    ${PREFIX}duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin ${ENC} -se0 03000000 1 -v > run.out
 	    checkSuccess $?
 
 	    echo "Flush the original K2 to free object slot for import"
@@ -126,7 +126,7 @@ do
 	    checkSuccess $?
 
 	    echo "Import K2 under ${SALG[i]} K1, ${ENC}"
-	    ${PREFIX}import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin ${ENC} -opr tmppriv.bin > run.out
+	    ${PREFIX}import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin ${ENC} -opr tmppriv.bin -v > run.out
 	    checkSuccess $?
 
 	    echo "Sign under K2, $HALG - should fail"
@@ -256,7 +256,7 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 	    do
 
 		echo "Import the signing key under the parent key ${PARENT} ${HALG}"
-		${PREFIX}importpem -hp ${PARENT} -pwdp sto -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} > run.out
+		${PREFIX}importpem -hp ${PARENT} -pwdp sto -rsa -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg ${HALG} -nalg sha256 > run.out
 		checkSuccess $?
 
 		echo "Load the TPM signing key"
@@ -373,7 +373,7 @@ ${PREFIX}create -hp 80000000 -st -kt f -kt p -opr tmpk2priv.bin -opu tmpk2pub.bi
 checkSuccess $?
 
 echo "Load the storage key K1 80000001 public key "
-${PREFIX}loadexternal -hi p -ipu storersa2048pub.bin > run.out
+${PREFIX}loadexternal -hi p -ipu storersa2048pub.bin -v > run.out
 checkSuccess $?
 
 echo "Create a signing key O1 with policy"
@@ -426,7 +426,7 @@ ${PREFIX}loadexternal -hi p -ipu tmpk2pub.bin > run.out
 checkSuccess $?
 
 echo "Rewrap O1 from K1 80000001 to K2 80000002 "
-${PREFIX}rewrap -ho 80000001 -hn 80000002 -pwdo sto -id tmpdup.bin -in tmpo1name.bin -iss tmpss.bin -od tmpdup.bin -oss tmpss.bin > run.out
+${PREFIX}rewrap -ho 80000001 -hn 80000002 -pwdo sto -id tmpdup.bin -in tmpo1name.bin -iss tmpss.bin -od tmpdup.bin -oss tmpss.bin -v > run.out
 checkSuccess $?
 
 echo "Flush old key K1 80000001"
@@ -595,7 +595,7 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 	checkSuccess $?
 
 	echo "Target: Unseal the AES key"
-	${PREFIX}unseal -ha 80000002 -of tmpaeskeytgt.bin > run.out
+	${PREFIX}unseal -ha 80000002 -of tmpaeskeytgt.bin -v > run.out
 	checkSuccess $?
 
 # A real target would not have access to tmpaeskeysrc.bin for the compare

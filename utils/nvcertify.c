@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -105,6 +105,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-pwdn option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-hia") == 0) {
+	    i++;
+	    if (i < argc) {
+		hierarchyAuthChar = argv[i][0];
+	    }
+	    else {
+		printf("Missing parameter for -hia\n");
 		printUsage();
 	    }
 	}
@@ -311,16 +321,16 @@ int main(int argc, char *argv[])
     /* Authorization handle */
     if (rc == 0) {
 	if (hierarchyAuthChar == 'o') {
-	    in.authHandle = TPM_RH_OWNER;  
+	    in.authHandle = TPM_RH_OWNER;
 	}
 	else if (hierarchyAuthChar == 'p') {
-	    in.authHandle = TPM_RH_PLATFORM;  
+	    in.authHandle = TPM_RH_PLATFORM;
 	}
 	else if (hierarchyAuthChar == 0) {
 	    in.authHandle = nvIndex;
 	}
 	else {
-	    printf("\n");
+	    printf("-hia has bad parameter %c\n", hierarchyAuthChar);
 	    printUsage();
 	}
     }
@@ -429,6 +439,7 @@ static void printUsage(void)
     printf("\n");
     printf("Runs TPM2_NV_Certify\n");
     printf("\n");
+    printf("\t[-hia\thierarchy authorization (o, p)(default index authorization)]\n");
     printf("\t-ha\tNV index handle\n");
     printf("\t[-pwdn\tpassword for NV index (default empty)]\n");
     printf("\t-hk\tcertifying key handle\n");

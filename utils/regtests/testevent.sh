@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2021                                            #
+# (c) Copyright IBM Corporation 2021 - 2022                                     #
 # 										#
 # All rights reserved.								#
 # 										#
@@ -83,7 +83,7 @@ do
 	checkSuccess $?
 
 	echo "IMA ${HALG} Test Log type ${TYPE} extend"
-	${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ty ${TYPE}  -checkhash > run.out
+	${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ty ${TYPE}  -checkhash -v > run.out
 	checkSuccess $?
 
 	echo "PCR read ${HALG}"

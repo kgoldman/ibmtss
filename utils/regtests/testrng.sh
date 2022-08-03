@@ -6,9 +6,8 @@
 #			TPM2 regression test					#
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
-#	$Id: testrng.sh 979 2017-04-04 17:57:18Z kgoldman $			#
 #										#
-# (c) Copyright IBM Corporation 2015, 2016					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -46,7 +45,7 @@ echo "Random Number Generator"
 echo ""
 
 echo "Stir Random"
-${PREFIX}stirrandom -if policies/aaa > run.out
+${PREFIX}stirrandom -if policies/aaa -v > run.out
 checkSuccess $?
 
 echo "Get Random"

@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2020.					*/
+/* (c) Copyright IBM Corporation 2015 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -37,6 +37,7 @@
 /********************************************************************************/
 
 #ifdef TPM_POSIX
+#ifndef TPM_TSS_NODEV
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -225,4 +226,5 @@ TPM_RC TSS_Dev_Close(TSS_CONTEXT *tssContext)
     return 0;
 }
 
+#endif	/* TPM_TSS_NODEV */
 #endif	/* TPM_POSIX */

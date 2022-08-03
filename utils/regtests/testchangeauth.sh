@@ -59,7 +59,7 @@ do
 	checkSuccess $?
 
 	echo "Object change auth, change password to xxx ${SESS}"
-	${PREFIX}objectchangeauth -ho 80000001 -pwdo sig -pwdn xxx -hp 80000000 -opr tmppriv.bin ${SESS} > run.out
+	${PREFIX}objectchangeauth -ho 80000001 -pwdo sig -pwdn xxx -hp 80000000 -opr tmppriv.bin ${SESS} -v > run.out
 	checkSuccess $?
 
 	echo "Load the signing key with the changed auth ${SESS}"
@@ -102,7 +102,7 @@ RANDOM_PASSWORD=`${PREFIX}getrandom -by 16 -ns -nz -of tmppwd.bin`
 echo " INFO: Random password ${RANDOM_PASSWORD}"
 
 echo "Object change auth, change password to ${RANDOM_PASSWORD}"
-${PREFIX}objectchangeauth -hp 80000000 -ho 80000001 -pwdo dec -ipwdn tmppwd.bin -opr tmppriv.bin > run.out
+${PREFIX}objectchangeauth -hp 80000000 -ho 80000001 -pwdo dec -ipwdn tmppwd.bin -opr tmppriv.bin -v > run.out
 checkSuccess $?
 
 echo "Load the decryption key with the changed auth 800000002"

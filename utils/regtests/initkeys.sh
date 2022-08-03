@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2022					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -44,7 +44,7 @@ echo -n "1234567890123456" > msg.bin
 touch zero.bin
 
 # try to undefine any NV index left over from a previous test.  Do not check for errors.
-${PREFIX}nvundefinespace -hi p -ha 01000000 > run.out
+${PREFIX}nvundefinespace -hi p -ha 01000000 -v > run.out
 ${PREFIX}nvundefinespace -hi p -ha 01000000 -pwdp ppp > run.out
 ${PREFIX}nvundefinespace -hi p -ha 01000001 > run.out
 ${PREFIX}nvundefinespace -hi o -ha 01000002 > run.out
@@ -66,7 +66,7 @@ for ((i = 0 ; i < 2 ; i++))
 do
 
     echo "Create an RSA ${BITS[i]} ${SHALG[i]} storage key under the primary key"
-    ${PREFIX}create -hp 80000000 -rsa ${BITS[i]} -halg ${SHALG[i]} -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa${BITS[i]}priv.bin -opu storersa${BITS[i]}pub.bin -tk storersa${BITS[i]}tk.bin -ch storersa${BITS[i]}ch.bin -pwdp sto -pwdk sto > run.out
+    ${PREFIX}create -hp 80000000 -rsa ${BITS[i]} -halg ${SHALG[i]} -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa${BITS[i]}priv.bin -opu storersa${BITS[i]}pub.bin -tk storersa${BITS[i]}tk.bin -ch storersa${BITS[i]}ch.bin -pwdp sto -pwdk sto -v > run.out
     checkSuccess $?
 
     echo "Create an RSA ${BITS[i]} ${SHALG[i]} unrestricted signing key under the primary key"

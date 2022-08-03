@@ -126,6 +126,8 @@ printUsage ()
     echo "-30 Attestation - rev 155"
     echo "-31 X509 - rev 155"
     echo "-32 Get Capability"
+    echo "-33 Usage Help"
+    echo "-34 Nuvoton commands"
     echo "-35 Shutdown (only run for simulator)"
     echo "-40 Tests under development (not part of all)"
     echo "-50 Change seed"
@@ -562,6 +564,22 @@ main ()
     fi
     if [ "$1" == "-a" ] || [ "$1" == "-32" ]; then
     	./regtests/testgetcap.sh
+    	RC=$?
+	if [ $RC -ne 0 ]; then
+	    exit 255
+	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-33" ]; then
+    	./regtests/testhelp.sh
+    	RC=$?
+	if [ $RC -ne 0 ]; then
+	    exit 255
+	fi
+	((I++))
+    fi
+    if [ "$1" == "-a" ] || [ "$1" == "-34" ]; then
+    	./regtests/testntc.sh
     	RC=$?
 	if [ $RC -ne 0 ]; then
 	    exit 255

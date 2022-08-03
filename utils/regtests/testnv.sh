@@ -62,20 +62,24 @@ do
     do
 
 	echo "NV Define Space ${NALG[$i]}"
-	${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 -nalg ${NALG[$i]} > run.out
+	${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 -nalg ${NALG[$i]} +at ppw +at ow -v > run.out
 	checkSuccess $?
 
 	echo "NV Read Public, unwritten Name  bad Name algorithm ${BADNALG[$i]} - should fail"
-	${PREFIX}nvreadpublic -ha 01000000 -nalg ${BADNALG[$i]} > run.out
+	${PREFIX}nvreadpublic -ha 01000000 -nalg ${BADNALG[$i]} -v > run.out
 	checkFailure $?
 
 	echo "NV read - should fail before write ${SESS}"
-	${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 16 ${SESS} > run.out
+	${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 16 ${SESS} -v > run.out
 	checkFailure $?
 
 	echo "NV write ${SESS}"
-	${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa ${SESS} > run.out
+	${PREFIX}nvwrite -ha 01000000 -pwdn nnn -if policies/aaa ${SESS} -v > run.out
 	checkSuccess $?
+
+	echo "Write lock, should fail ${SESS}"
+	${PREFIX}nvwritelock -ha 01000000 -pwdn nnn ${SESS} -v > run.out  
+	checkFailure $?
 
 	echo "NV read ${SESS}"
 	${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 3 -of tmp.bin ${SESS} > run.out
@@ -93,8 +97,28 @@ do
 	${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 17 -of tmp.bin ${SESS} > run.out
 	checkFailure $?
 
+	echo "NV platform write ${SESS}"
+	${PREFIX}nvwrite -hia p -ha 01000000 -if policies/aaa ${SESS} -v > run.out
+	checkSuccess $?
+
+	echo "NV owner write ${SESS}"
+	${PREFIX}nvwrite -hia o -ha 01000000 -if policies/aaa ${SESS} -v > run.out
+	checkSuccess $?
+
+	echo "nvextend ${SESS}, should fail"
+	${PREFIX}nvextend -ha 01000000  -pwdn nnn -ic xxx ${SESS} > run.out
+	checkFailure $?
+
+	echo "nvincrement ${SESS}, should fail"
+	${PREFIX}nvincrement -ha 01000000 -pwdn nnn ${SESS} > run.out
+	checkFailure $?
+
+	echo "nvsetbits ${SESS}, should fail"
+	${PREFIX}nvsetbits -ha 01000000  -pwdn nnn -bit 0 ${SESS} > run.out
+	checkFailure $?
+
 	echo "NV Undefine Space"
-	${PREFIX}nvundefinespace -hi o -ha 01000000 > run.out
+	${PREFIX}nvundefinespace -hi o -ha 01000000 -v > run.out
 	checkSuccess $?
 
     done
@@ -132,7 +156,7 @@ do
     checkFailure $?
 
     echo "Set bits 0, 16, 32, 48 ${SESS}" 
-    ${PREFIX}nvsetbits -ha 01000000 -pwdn nnn -bit 0 -bit 16 -bit 32 -bit 48 ${SESS} > run.out
+    ${PREFIX}nvsetbits -ha 01000000 -pwdn nnn -bit 0 -bit 16 -bit 32 -bit 48 ${SESS} -v > run.out
     checkSuccess $?
 
     echo "Read the set bits ${SESS}" 
@@ -142,6 +166,10 @@ do
     echo "Verify the read data"
     diff policies/bits48321601.bin tmp.bin > run.out
     checkSuccess $?
+
+    echo "Read lock ${SESS}, should fail"
+    ${PREFIX}nvreadlock -ha 01000000 -pwdn nnn ${SESS} -v > run.out 
+    checkFailure $?
 
     echo "NV Undefine Space"
     ${PREFIX}nvundefinespace -hi o -ha 01000000 > run.out
@@ -177,7 +205,7 @@ do
     checkFailure $?
 
     echo "Increment the count ${SESS}" 
-    ${PREFIX}nvincrement -ha 01000000 -pwdn nnn  ${SESS} > run.out
+    ${PREFIX}nvincrement -ha 01000000 -pwdn nnn  ${SESS} -v > run.out
     checkSuccess $?
 
     echo "Read the count ${SESS}" 
@@ -230,7 +258,7 @@ do
 	checkFailure $?
 
 	echo "NV extend ${SESS}"
-	${PREFIX}nvextend -ha 01000000 -pwdn nnn -if policies/aaa ${SESS} > run.out
+	${PREFIX}nvextend -ha 01000000 -pwdn nnn -if policies/aaa ${SESS} -v > run.out
 	checkSuccess $?
 
 	echo "NV read size ${SZ[$i]} ${SESS}"
@@ -378,7 +406,7 @@ for SESS in "" "-se0 02000000 1"
 do
 
     echo "NV Define Space with write define"
-    ${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at wd > run.out
+    ${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at wd +at ow > run.out
     checkSuccess $?
 
     echo "NV Read Public, unwritten Name"
@@ -394,7 +422,11 @@ do
     checkSuccess $?
 
     echo "Write lock ${SESS}"
-    ${PREFIX}nvwritelock -ha 01000000 -pwdn nnn ${SESS} > run.out  
+    ${PREFIX}nvwritelock -ha 01000000 -pwdn nnn ${SESS} -v > run.out  
+    checkSuccess $?
+
+    echo "Write lock, owner auth ${SESS}"
+    ${PREFIX}nvwritelock -ha 01000000 -hia o ${SESS} -v > run.out  
     checkSuccess $?
 
     echo "NV write ${SESS} - should fail"
@@ -427,7 +459,7 @@ for SESS in "" "-se0 02000000 1"
 do
 
     echo "NV Define Space with read stclear"
-    ${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at rst > run.out
+    ${PREFIX}nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at rst +at ow > run.out
     checkSuccess $?
 
     echo "NV Read Public, unwritten Name"
@@ -442,8 +474,12 @@ do
     ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 16 ${SESS} > run.out
     checkSuccess $?
 
-     echo "Read lock ${SESS}"
-    ${PREFIX}nvreadlock -ha 01000000 -pwdn nnn ${SESS} > run.out 
+    echo "Read lock ${SESS}"
+    ${PREFIX}nvreadlock -ha 01000000 -pwdn nnn ${SESS} -v > run.out 
+    checkSuccess $?
+
+    echo "Read lock owner auth ${SESS}"
+    ${PREFIX}nvreadlock -ha 01000000 -hia o ${SESS} -v > run.out 
     checkSuccess $?
 
     echo "NV write ${SESS}"
@@ -491,9 +527,17 @@ do
     ${PREFIX}nvwrite -ha 01000001 -pwdn nnn -if policies/aaa ${SESS} > run.out
     checkSuccess $?
 
-    echo "NV global lock"
-    ${PREFIX}nvglobalwritelock -hia p > run.out
+    echo "NV global lock, platform hierarchy, should fail"
+    ${PREFIX}nvglobalwritelock -hia p -pwd "" -v ${SESS} > run.out
     checkSuccess $?
+
+    echo "NV global lock"
+    ${PREFIX}nvglobalwritelock -hia o -pwd "" -v ${SESS} > run.out
+    checkSuccess $?
+
+    echo "NV global lock - bad password, should fail"
+    ${PREFIX}nvglobalwritelock -hia o -pwd xxx -v ${SESS} > run.out
+    checkFailure $?
 
     echo "NV Read Public, 01000000, locked"
     ${PREFIX}nvreadpublic -ha 01000000 > run.out
@@ -568,20 +612,36 @@ do
     ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 16 ${SESS} > run.out
     checkSuccess $?
 
-    echo "Start a policy session"
+    echo "Start a policy session 03000001"
     ${PREFIX}startauthsession -se p > run.out
     checkSuccess $?
 
-    echo "Policy command code"    
+    echo "Policy command code"
     ${PREFIX}policycommandcode -ha 03000001 -cc 0000013b > run.out
     checkSuccess $?
 
-    echo "Policy authvalue"    
+    echo "Policy authvalue"
     ${PREFIX}policyauthvalue -ha 03000001 > run.out
     checkSuccess $?
 
-    echo "NV Change authorization"
-    ${PREFIX}nvchangeauth -ha 01000000 -pwdo nnn -pwdn xxx -se0 03000001 1 > run.out 
+    echo "NV Change authorization to empty"
+    ${PREFIX}nvchangeauth -ha 01000000 -pwdo nnn -se0 03000001 1 -v > run.out
+    checkSuccess $?
+
+    echo "Retart a policy session 03000001"
+    ${PREFIX}policyrestart -ha 03000001 > run.out
+    checkSuccess $?
+
+    echo "Policy command code"
+    ${PREFIX}policycommandcode -ha 03000001 -cc 0000013b > run.out
+    checkSuccess $?
+
+    echo "Policy authvalue" 
+    ${PREFIX}policyauthvalue -ha 03000001 > run.out
+    checkSuccess $?
+
+    echo "NV Change authorization to xxx"
+    ${PREFIX}nvchangeauth -ha 01000000 -pwdn xxx -se0 03000001 1 -v > run.out 
     checkSuccess $?
 
     echo "NV write ${SESS}, old auth - should fail"
@@ -676,7 +736,7 @@ do
     checkFailure $?
 
     echo "Undefine space special - should fail"
-    ${PREFIX}nvundefinespacespecial -ha 01000000 -se0 03000000 1 -pwdn nnn > run.out
+    ${PREFIX}nvundefinespacespecial -ha 01000000 -se0 03000000 1 -pwdn nnn -v > run.out
     checkFailure $?
 
     echo "Policy command code, NV undefine space special"
