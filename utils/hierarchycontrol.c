@@ -281,7 +281,7 @@ static void printUsage(void)
     printf("\n");
     printf("\t-hi\tauthhandle hierarchy (e, o, p)\n");
     printf("\t-he\tenable hierarchy (e, o, p, n)\n");
-    printf("\t\te\tendorsement, o owner, p platform, n null\n");
+    printf("\t\te\tendorsement, o owner, p platform, n platform NV\n");
     printf("\t[-pwda\tauthorization password (default empty)]\n");
     printf("\t[-state\t(0 to disable, 1 to enable) (default enable)]\n");
     printf("\n");
