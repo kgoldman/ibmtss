@@ -1280,9 +1280,10 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
 #endif	/* TPM_TSS_NOCRYPTO */
 	}
 	if (tssVverbose) {
-	    authC[i]->sessionHandle = sessionHandle[i];
-	    authC[i]->sessionAttributes.val = sessionAttributes[i];
-	    TSS_TPMS_AUTH_COMMAND_Print(authC[i], 8);
+	    TPMA_SESSION attributes;
+	    attributes.val = (uint8_t)sessionAttributes[i];	/* upper bytes already masked */
+	    TSS_TPM_HANDLE_Print("sessionHandle", sessionHandle[i], 8);	
+	    TSS_TPMA_SESSION_Print(attributes, 8);
 	}
     }
 
