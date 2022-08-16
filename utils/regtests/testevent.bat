@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2020 - 2021                                 #
+REM # (c) Copyright IBM Corporation 2020 - 2022                                 #
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -90,7 +90,7 @@ for %%T in ( "1" "2") do (
 	)
 
 	echo "IMA %%H Test Log type %%T extend"
-	%TPM_EXE_PATH%imaextend -le -if imatest.log -tpm -halg %%H -ty %%T  -checkhash > run.out
+	%TPM_EXE_PATH%imaextend -le -if imatest.log -tpm -halg %%H -ty %%T  -checkhash -v > run.out
     	IF !ERRORLEVEL! NEQ 0 (
             exit /B 1
 	)

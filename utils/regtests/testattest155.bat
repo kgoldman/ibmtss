@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2019 - 2020					#
+REM # (c) Copyright IBM Corporation 2019 - 20202				#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -59,7 +59,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "NV Define Space"
-%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 > run.out
+%TPM_EXE_PATH%nvdefinespace -hi o +at or +at ppr -ha 01000000 -pwdn nnn -sz 16 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -93,38 +93,40 @@ for %%S in ("" "-se0 02000000 1") do (
 		)
 		IF "%%A" == "ecc" (
 		   set K=80000002
-		)		
+		)
 
-	    echo "NV Certify a digest %%H %%A %%~S"
-	    %TPM_EXE_PATH%nvcertify -ha 01000000 -pwdn nnn -hk !K! -pwdk sig -halg %%H -sz 0 %%~S -os sig.bin -oa tmp.bin -salg %%A -od tmpdigest1.bin > run.out
-	    IF !ERRORLEVEL! NEQ 0 (
-	       exit /B 1
+	    for %%P in ("-pwdn nnn" "-hia o" "-hia p") do (
+
+	    	echo "NV Certify a digest %%~P %%H %%A %%~S"
+		%TPM_EXE_PATH%nvcertify %%~P -ha 01000000 -hk !K! -pwdk sig -halg %%H -sz 0 %%~S -os sig.bin -oa tmp.bin -salg %%A -od tmpdigest1.bin > run.out
+		IF !ERRORLEVEL! NEQ 0 (
+		exit /B 1
+		)
+
+	    	echo "Verify the %%A signature %%H"
+		%TPM_EXE_PATH%verifysignature -hk !K! -halg %%H -if tmp.bin -is sig.bin > run.out
+		IF !ERRORLEVEL! NEQ 0 (
+		exit /B 1
+		)
+
+		echo "NV read"
+		%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -of tmpdata.bin > run.out
+		IF !ERRORLEVEL! NEQ 0 (
+		exit /B 1
+		)
+
+		echo "Digest the hashed and certified NV data %%H"
+		%TPM_EXE_PATH%hash -halg %%H -if tmpdata.bin -oh tmpdigest2.bin
+		IF !ERRORLEVEL! NEQ 0 (
+		exit /B 1
+		)
+
+	    	echo "Check the digest %%H results"
+		diff tmpdigest1.bin tmpdigest2.bin
+		IF !ERRORLEVEL! NEQ 0 (
+		exit /B 1
+		)
 	    )
-
-	    echo "Verify the %%A signature %%H"
-	    %TPM_EXE_PATH%verifysignature -hk !K! -halg %%H -if tmp.bin -is sig.bin > run.out
-	    IF !ERRORLEVEL! NEQ 0 (
-	       exit /B 1
-	    )
-
-	    echo "NV read"
-	    %TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -of tmpdata.bin > run.out
-	    IF !ERRORLEVEL! NEQ 0 (
-	       exit /B 1
-	    )
-
-	    echo "Digest the hashed and certified NV data %%H"
-	    %TPM_EXE_PATH%hash -halg %%H -if tmpdata.bin -oh tmpdigest2.bin
-	    IF !ERRORLEVEL! NEQ 0 (
-	       exit /B 1
-	    )
-
-	    echo "Check the digest %%H results"
-	    diff tmpdigest1.bin tmpdigest2.bin
-	    IF !ERRORLEVEL! NEQ 0 (
-	       exit /B 1
-	    )
-
 	)
     )
 )

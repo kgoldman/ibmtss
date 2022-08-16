@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -181,7 +181,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Shutdown state"
-%TPM_EXE_PATH%shutdown -s > run.out
+%TPM_EXE_PATH%shutdown -s -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

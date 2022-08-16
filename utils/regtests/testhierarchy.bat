@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testhierarchy.bat 507 2016-03-08 22:35:47Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -219,13 +218,13 @@ echo "Hierarchy Control"
 echo ""
 
 echo "Enable the owner hierarchy"
-%TPM_EXE_PATH%hierarchycontrol -hi p -he o > run.out
+%TPM_EXE_PATH%hierarchycontrol -hi p -he o -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Change the platform hierarchy password"
-%TPM_EXE_PATH%hierarchychangeauth -hi p -pwdn ppp > run.out
+%TPM_EXE_PATH%hierarchychangeauth -hi p -pwdn ppp -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -313,13 +312,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "ClearControl disable"
-%TPM_EXE_PATH%clearcontrol -hi p -state 1 > run.out
+%TPM_EXE_PATH%clearcontrol -hi p -state 1 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Clear - should fail"
-%TPM_EXE_PATH%clear -hi p > run.out
+%TPM_EXE_PATH%clear -hi p -v > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )

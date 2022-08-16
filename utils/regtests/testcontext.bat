@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -68,7 +68,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Save context for the key"
-%TPM_EXE_PATH%contextsave -ha 80000001 -of tmp.bin > run.out
+%TPM_EXE_PATH%contextsave -ha 80000001 -of tmp.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -92,7 +92,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Load context"
-%TPM_EXE_PATH%contextload -if tmp.bin > run.out
+%TPM_EXE_PATH%contextload -if tmp.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

@@ -67,13 +67,13 @@ for %%C in (bnp256 nistp256 nistp384) do (
 	for %%S in ("" "-se0 02000000 1") do (
 
 	    echo "encrypt %%H"
-	    %TPM_EXE_PATH%eccencrypt -hk 80000001 -halg %%H  -id msg.bin -oc1 tmpc1.bin -oc2 tmpc2.bin -oc3 tmpc3.bin > run.out
+	    %TPM_EXE_PATH%eccencrypt -hk 80000001 -halg %%H  -id msg.bin -oc1 tmpc1.bin -oc2 tmpc2.bin -oc3 tmpc3.bin -v > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
 
 	    echo "decrypt %%H %%~S"
-	    %TPM_EXE_PATH%eccdecrypt -hk 80000001 -pwdk aaa -halg %%H -od tmp.txt -ic1 tmpc1.bin -ic2 tmpc2.bin -ic3 tmpc3.bin %%~S > run.out
+	    %TPM_EXE_PATH%eccdecrypt -hk 80000001 -pwdk aaa -halg %%H -od tmp.txt -ic1 tmpc1.bin -ic2 tmpc2.bin -ic3 tmpc3.bin %%~S -v > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
@@ -111,7 +111,7 @@ echo ""
 for %%C in (bnp256 nistp256 nistp384) do (
 
     echo "ECC Parameters for curve %%C"
-    %TPM_EXE_PATH%eccparameters -cv %%C > run.out
+    %TPM_EXE_PATH%eccparameters -cv %%C -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -127,7 +127,7 @@ for %%C in (bnp256 nistp256 nistp384) do (
     )
 
     echo "EC Ephemeral for curve %%C"
-    %TPM_EXE_PATH%ecephemeral -ecc %%C > run.out
+    %TPM_EXE_PATH%ecephemeral -ecc %%C -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -171,7 +171,7 @@ for %%K in ("-dau" "-dar") do (
     	REM %TPM_EXE_PATH%commit -hk 80000001 -pt p1.bin -s2 s2.bin -y2 y2_a.bin -Kf kfile.bin -Lf lfile.bin -Ef efile.bin -pwdk siga > run.out
 	
 	echo "Create new point E, based on point-multiply of TPM's commit random scalar and Generator point %%~S"
-	%TPM_EXE_PATH%commit -hk 80000001 -Ef efile.bin -pwdk siga  %%~S > run.out
+	%TPM_EXE_PATH%commit -hk 80000001 -Ef efile.bin -pwdk siga  %%~S -v > run.out
     	IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
     	)
@@ -355,7 +355,7 @@ for %%C in (bnp256 nistp256 nistp384) do (
     )
 
     echo "Execute zgen2phase for curve %%C"
-    %TPM_EXE_PATH%zgen2phase -hk 80000001 -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin > run.out
+    %TPM_EXE_PATH%zgen2phase -hk 80000001 -pwdk "" -scheme ecdh -qsb QsBpt.bin -qeb QeBpt.bin -cf counter.bin -z1 tmpz1.bin -z2 tmpz2.bin -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

@@ -78,7 +78,7 @@ do
 	checkSuccess $?
 
 	echo "Write lock, should fail ${SESS}"
-	${PREFIX}nvwritelock -ha 01000000 -pwdn nnn ${SESS} -v > run.out  
+	${PREFIX}nvwritelock -ha 01000000 -pwdn nnn ${SESS} -v > run.out
 	checkFailure $?
 
 	echo "NV read ${SESS}"
@@ -155,11 +155,11 @@ do
     ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 16  ${SESS} > run.out
     checkFailure $?
 
-    echo "Set bits 0, 16, 32, 48 ${SESS}" 
+    echo "Set bits 0, 16, 32, 48 ${SESS}"
     ${PREFIX}nvsetbits -ha 01000000 -pwdn nnn -bit 0 -bit 16 -bit 32 -bit 48 ${SESS} -v > run.out
     checkSuccess $?
 
-    echo "Read the set bits ${SESS}" 
+    echo "Read the set bits ${SESS}"
     ${PREFIX}nvread -ha 01000000 -pwdn nnn -sz 8 -of tmp.bin ${SESS} > run.out
     checkSuccess $?
 
@@ -168,7 +168,7 @@ do
     checkSuccess $?
 
     echo "Read lock ${SESS}, should fail"
-    ${PREFIX}nvreadlock -ha 01000000 -pwdn nnn ${SESS} -v > run.out 
+    ${PREFIX}nvreadlock -ha 01000000 -pwdn nnn ${SESS} -v > run.out
     checkFailure $?
 
     echo "NV Undefine Space"
@@ -422,11 +422,11 @@ do
     checkSuccess $?
 
     echo "Write lock ${SESS}"
-    ${PREFIX}nvwritelock -ha 01000000 -pwdn nnn ${SESS} -v > run.out  
+    ${PREFIX}nvwritelock -ha 01000000 -pwdn nnn ${SESS} -v > run.out
     checkSuccess $?
 
     echo "Write lock, owner auth ${SESS}"
-    ${PREFIX}nvwritelock -ha 01000000 -hia o ${SESS} -v > run.out  
+    ${PREFIX}nvwritelock -ha 01000000 -hia o ${SESS} -v > run.out
     checkSuccess $?
 
     echo "NV write ${SESS} - should fail"
@@ -475,7 +475,7 @@ do
     checkSuccess $?
 
     echo "Read lock ${SESS}"
-    ${PREFIX}nvreadlock -ha 01000000 -pwdn nnn ${SESS} -v > run.out 
+    ${PREFIX}nvreadlock -ha 01000000 -pwdn nnn ${SESS} -v > run.out
     checkSuccess $?
 
     echo "Read lock owner auth ${SESS}"
@@ -527,11 +527,11 @@ do
     ${PREFIX}nvwrite -ha 01000001 -pwdn nnn -if policies/aaa ${SESS} > run.out
     checkSuccess $?
 
-    echo "NV global lock, platform hierarchy, should fail"
+    echo "NV global lock, platform hierarchy ${SESS}"
     ${PREFIX}nvglobalwritelock -hia p -pwd "" -v ${SESS} > run.out
     checkSuccess $?
 
-    echo "NV global lock"
+    echo "NV global lock, owner auth ${SESS}"
     ${PREFIX}nvglobalwritelock -hia o -pwd "" -v ${SESS} > run.out
     checkSuccess $?
 

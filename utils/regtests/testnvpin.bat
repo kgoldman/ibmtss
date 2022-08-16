@@ -4,7 +4,7 @@ REM #			TPM2 regression test					    #
 REM #			     Written by Ken Goldman				    #
 REM #		       IBM Thomas J. Watson Research Center			    #
 REM #										    #
-REM # (c) Copyright IBM Corporation 2016 - 2019					    #
+REM # (c) Copyright IBM Corporation 2016 - 2022					    #
 REM # 										    #
 REM # All rights reserved.							    #
 REM # 										    #
@@ -132,6 +132,18 @@ IF !ERRORLEVEL! NEQ 0 (
 echo "Platform read does not affect count"
 %TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 -id 0 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Platform read does not affect count, expect failure"
+%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 -id 0 10 > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "Platform read does not affect count, expect failure"
+%TPM_EXE_PATH%nvread -ha 01000000 -hia p -sz 8 -id 10 1 > run.out
+IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 

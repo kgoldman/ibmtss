@@ -4,7 +4,7 @@ REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
 REM										#
-REM (c) Copyright IBM Corporation 2015 - 2019					#
+REM (c) Copyright IBM Corporation 2015 - 2022					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -222,13 +222,13 @@ for /L %%i in (1,1,!L!) do (
     echo ""
 
     echo "PCR Reset"
-    %TPM_EXE_PATH%pcrreset -ha 16 > run.out
+    %TPM_EXE_PATH%pcrreset -ha 16 -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
       exit /B 1
       )
 
     echo "PCR Extend !EXTEND[%%i]!"
-    %TPM_EXE_PATH%pcrextend -ha 16 !EXTEND[%%i]! -if policies/aaa > run.out
+    %TPM_EXE_PATH%pcrextend -ha 16 !EXTEND[%%i]! -if policies/aaa -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
       exit /B 1
       )
@@ -236,7 +236,7 @@ for /L %%i in (1,1,!L!) do (
     for %%H in (!BANKS[%%i]!) do (
 
     	echo "PCR Read %%H"
-    	%TPM_EXE_PATH%pcrread -ha 16 -halg %%H -of tmp.bin > run.out
+    	%TPM_EXE_PATH%pcrread -ha 16 -halg %%H -of tmp.bin -v > run.out
     	IF !ERRORLEVEL! NEQ 0 (
       	    exit /B 1
       	)
@@ -259,7 +259,7 @@ for /L %%i in (1,1,!L!) do (
     )
 
     echo "PCR Event !EVENT[%%i]!"
-    %TPM_EXE_PATH%pcrevent -ha 16 -if policies/aaa !EVENT[%%i]! > run.out
+    %TPM_EXE_PATH%pcrevent -ha 16 -if policies/aaa !EVENT[%%i]! -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -296,13 +296,13 @@ for /L %%i in (1,1,!L!) do (
     )
 
     echo "Event sequence start, alg null"
-    %TPM_EXE_PATH%hashsequencestart -halg null -pwda aaa > run.out
+    %TPM_EXE_PATH%hashsequencestart -halg null -pwda aaa -v > run.out
         IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
     )
 
     echo "Event Sequence Complete"
-    %TPM_EXE_PATH%eventsequencecomplete -hs 80000000 -pwds aaa -ha 16 -if policies/aaa !EVENT[%%i]! > run.out
+    %TPM_EXE_PATH%eventsequencecomplete -hs 80000000 -pwds aaa -ha 16 -if policies/aaa !EVENT[%%i]! -v > run.out
         IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
     )
@@ -314,7 +314,7 @@ for /L %%i in (1,1,!L!) do (
 	    IF !ERRORLEVEL! NEQ 0 (
 	    exit /B 1
 	)
-	
+
 	echo "PCR Read %%H"
 	%TPM_EXE_PATH%pcrread -ha 16 -halg %%H -of tmp%%H.bin > run.out
 	    IF !ERRORLEVEL! NEQ 0 (

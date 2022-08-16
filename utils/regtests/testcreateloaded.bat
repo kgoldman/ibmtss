@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -51,7 +51,7 @@ for %%H in ("40000001" "4000000c" "4000000b") do (
     for %%A in ("-rsa 2048" "-rsa 3072" "-ecc nistp256" "-ecc nistp384" "-ecc bnp256" "-rsa") do (
 
     	echo "CreateLoaded primary key, parent %%~H %%~A"
-	%TPM_EXE_PATH%createloaded -hp %%~H %%~A -st -kt f -kt p -pwdk ppp > run.out
+	%TPM_EXE_PATH%createloaded -hp %%~H %%~A -st -kt f -kt p -pwdk ppp -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
        	exit /B 1
 	)

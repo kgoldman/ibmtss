@@ -5,7 +5,7 @@ REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #		$Id: testclocks.bat 1292 2018-08-01 17:27:24Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2018					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -53,13 +53,13 @@ IF !ERRORLEVEL! NEQ 0 (
 for %%S in ("" "-se0 02000000 1") do (
 
     echo "Read Clock"
-    %TPM_EXE_PATH%readclock -oclock tmpclk.bin > run.out
+    %TPM_EXE_PATH%readclock -oclock tmpclk.bin -otime tmptime.bin -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
 
     echo "Clock set, time 0 %%~S - should fail"
-    %TPM_EXE_PATH%clockset -iclock tmpclk.bin %%~S > run.out
+    %TPM_EXE_PATH%clockset -iclock tmpclk.bin %%~S -v > run.out
     IF !ERRORLEVEL! EQU 0 (
         exit /B 1
     )
@@ -73,7 +73,7 @@ for %%S in ("" "-se0 02000000 1") do (
     for %%A in (-3 0 3) do (
 
 	echo "Clock rate adjust %%A %%~S"
-	%TPM_EXE_PATH%clockrateadjust -adj %%A %%~S > run.out
+	%TPM_EXE_PATH%clockrateadjust -adj %%A %%~S -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	    exit /B 1
 	)

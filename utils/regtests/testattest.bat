@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2018 - 2020					#
+REM # (c) Copyright IBM Corporation 2018 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -56,7 +56,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "NV Define Space"
-%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 > run.out
+%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at or +at ppr > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -93,7 +93,7 @@ for %%S in ("" "-se0 02000000 1") do (
 		)		
 
 		echo "Signing Key Self Certify %%H %%A %%~S"
-		%TPM_EXE_PATH%certify -hk !K! -ho 80000001 -halg %%H -pwdk sig -pwdo sig %%~S -os sig.bin -oa tmp.bin -qd policies/aaa -salg %%A > run.out
+		%TPM_EXE_PATH%certify -hk !K! -ho 80000001 -halg %%H -pwdk sig -pwdo sig %%~S -os sig.bin -oa tmp.bin -qd policies/aaa -salg %%A -v > run.out
 		IF !ERRORLEVEL! NEQ 0 (
 		exit /B 1
 		)
@@ -105,7 +105,7 @@ for %%S in ("" "-se0 02000000 1") do (
 		)
 	
 		echo "Quote %%H %%A %%~S"
-		%TPM_EXE_PATH%quote -hp 0 -hk !K! -halg %%H -palg %%H -pwdk sig %%~S -os sig.bin -oa tmp.bin -qd policies/aaa -salg %%A > run.out
+		%TPM_EXE_PATH%quote -hp 0 -hk !K! -halg %%H -palg %%H -pwdk sig %%~S -os sig.bin -oa tmp.bin -qd policies/aaa -salg %%A -v > run.out
 		IF !ERRORLEVEL! NEQ 0 (
 		exit /B 1
 		)
@@ -117,7 +117,7 @@ for %%S in ("" "-se0 02000000 1") do (
 		)
 	
 		echo "Get Time %%H %%A %%~S"
-		%TPM_EXE_PATH%gettime -hk !K! -halg %%H -pwdk sig %%~S -os sig.bin -oa tmp.bin -qd policies/aaa -salg %%A > run.out
+		%TPM_EXE_PATH%gettime -hk !K! -halg %%H -pwdk sig %%~S -os sig.bin -oa tmp.bin -qd policies/aaa -salg %%A -v > run.out
 		IF !ERRORLEVEL! NEQ 0 (
 		exit /B 1
 		)
@@ -129,7 +129,7 @@ for %%S in ("" "-se0 02000000 1") do (
 		)
 	
 		echo "NV Certify %%H %%A %%~S"
-		%TPM_EXE_PATH%nvcertify -ha 01000000 -pwdn nnn -hk !K! -pwdk sig -halg %%H -sz 16 %%~S -os sig.bin -oa tmp.bin -salg %%A > run.out
+		%TPM_EXE_PATH%nvcertify -ha 01000000 -pwdn nnn -hk !K! -pwdk sig -halg %%H -sz 16 %%~S -os sig.bin -oa tmp.bin -salg %%A -od tmpcert.bin -v > run.out
 		IF !ERRORLEVEL! NEQ 0 (
 		exit /B 1
 		)
@@ -141,13 +141,13 @@ for %%S in ("" "-se0 02000000 1") do (
 		)
 	
 		echo "Set command audit digest ${HALG}"
-		%TPM_EXE_PATH%setcommandcodeauditstatus -hi p -halg null -clr 00000144 > run.out
+		%TPM_EXE_PATH%setcommandcodeauditstatus -hi p -halg null -clr 00000144 -v > run.out
 		IF !ERRORLEVEL! NEQ 0 (
 		exit /B 1
 		)
 
 		echo "Get command audit digest %%H %%A %%~S"
-		%TPM_EXE_PATH%getcommandauditdigest -hk !K! -halg %%H %%~S -pwdk sig -os sig.bin -oa tmp.bin -qd policies/aaa -salg %%A > run.out
+		%TPM_EXE_PATH%getcommandauditdigest -hk !K! -halg %%H %%~S -pwdk sig -os sig.bin -oa tmp.bin -qd policies/aaa -salg %%A -v > run.out
 		IF !ERRORLEVEL! NEQ 0 (
 		exit /B 1
 		)
@@ -348,7 +348,7 @@ for %%B in ("" "-bi 80000001 -pwdb sig") do (
     )
 
     echo "Get Session Audit Digest %%H"
-    %TPM_EXE_PATH%getsessionauditdigest -hs 02000000 -hk 80000001 -pwdk sig -halg %%H -os sig.bin -oa tmp.bin -qd policies/aaa > run.out
+    %TPM_EXE_PATH%getsessionauditdigest -hs 02000000 -hk 80000001 -pwdk sig -halg %%H -os sig.bin -oa tmp.bin -qd policies/aaa -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -454,7 +454,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Certify the creation data for the primary key 80000000"
-%TPM_EXE_PATH%certifycreation -ho 80000000 -hk 80000001 -pwdk sig -tk pritk.bin -ch prich.bin -os sig.bin -oa tmp.bin > run.out
+%TPM_EXE_PATH%certifycreation -ho 80000000 -hk 80000001 -pwdk sig -tk pritk.bin -ch prich.bin -os sig.bin -oa tmp.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -573,6 +573,7 @@ rm -f tmpdigestr.bin
 rm -f tmpdigestg.bin
 rm -f sig.bin
 rm -f tmp.bin
+rm -f tmpcert.bin
 
 exit /B 0
 

@@ -61,13 +61,13 @@ for %%B in (2048 3072) do (
     )
 
     echo "RSA encrypt with the %%B encryption key"
-    %TPM_EXE_PATH%rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+    %TPM_EXE_PATH%rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
     echo "RSA decrypt with the %%B decryption key"
-    %TPM_EXE_PATH%rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin -pwdk dec > run.out
+    %TPM_EXE_PATH%rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin -pwdk dec -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

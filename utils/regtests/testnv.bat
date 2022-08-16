@@ -67,26 +67,32 @@ for /L %%i in (1,1,!L!) do (
     for %%S in ("" "-se0 02000000 1") do (
 
 	echo "NV Define Space !NALG[%%i]!"
-	%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 -nalg !NALG[%%i]! > run.out
+	%TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 -nalg !NALG[%%i]! +at ppw +at ow -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
 
 	echo "NV Read Public, unwritten Name  bad Name algorithm !BADNALG[%%i]! - should fail"
-	%TPM_EXE_PATH%nvreadpublic -ha 01000000 -nalg !BADNALG[%%i]! > run.out
+	%TPM_EXE_PATH%nvreadpublic -ha 01000000 -nalg !BADNALG[%%i]! -v > run.out
     	IF !ERRORLEVEL! EQU 0 (
        	  exit /B 1
     	)
 
 	echo "NV read - should fail before write %%~S"
-	%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 16 %%~S > run.out
+	%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 16 %%~S >-v  run.out
 	IF !ERRORLEVEL! EQU 0 (
 	  exit /B 1
 	)
 
 	echo "NV write %%~S"
-	%TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa %%~S > run.out
+	%TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa %%~S -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "Write lock, should fail %%~S"
+	${PREFIX}nvwritelock -ha 01000000 -pwdn nnn %%~S -v > run.out  
+	IF !ERRORLEVEL! EQU 0 (
 	   exit /B 1
 	)
 
@@ -110,6 +116,36 @@ for /L %%i in (1,1,!L!) do (
 
 	echo "NV read, invalid size - should fail %%~S"
 	%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 17 -of tmp.bin %%~S > run.out
+	IF !ERRORLEVEL! EQU 0 (
+	   exit /B 1
+	)
+
+	echo "NV platform write %%~S"
+	%TPM_EXE_PATH%nvwrite -hia p -ha 01000000 -if policies/aaa %%~S -v > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "NV owner write %%~S"
+	%TPM_EXE_PATH%nvwrite -hia o -ha 01000000 -if policies/aaa %%~S -v > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	   exit /B 1
+	)
+
+	echo "nvextend %%~S, should fail"
+	%TPM_EXE_PATH%nvextend -ha 01000000  -pwdn nnn -ic xxx %%~S > run.out
+	IF !ERRORLEVEL! EQU 0 (
+	   exit /B 1
+	)
+
+	echo "nvincrement %%~S, should fail"
+	%TPM_EXE_PATH%nvincrement -ha 01000000 -pwdn nnn %%~S > run.out
+	IF !ERRORLEVEL! EQU 0 (
+	   exit /B 1
+	)
+
+	echo "nvsetbits %%~S, should fail"
+	%TPM_EXE_PATH%nvsetbits -ha 01000000  -pwdn nnn -bit 0 %%~S > run.out
 	IF !ERRORLEVEL! EQU 0 (
 	   exit /B 1
 	)
@@ -166,7 +202,7 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "Set bits 0, 16, 32, 48 %%~S" 
-    %TPM_EXE_PATH%nvsetbits -ha 01000000 -pwdn nnn -bit 0 -bit 16 -bit 32 -bit 48 %%~S > run.out
+    %TPM_EXE_PATH%nvsetbits -ha 01000000 -pwdn nnn -bit 0 -bit 16 -bit 32 -bit 48 %%~S -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -180,6 +216,12 @@ for %%S in ("" "-se0 02000000 1") do (
     echo "Verify the read data"
     diff policies/bits48321601.bin tmp.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Read lock %%~S, should fail"
+    %TPM_EXE_PATH%nvreadlock -ha 01000000 -pwdn nnn %%~S -v > run.out 
+    IF !ERRORLEVEL! EQU 0 (
        exit /B 1
     )
 
@@ -297,7 +339,7 @@ for %%S in ("" "-se0 02000000 1") do (
 	)
 
 	echo "NV extend %%~S"
-	%TPM_EXE_PATH%nvextend -ha 01000000 -pwdn nnn -if policies/aaa %%~S > run.out
+	%TPM_EXE_PATH%nvextend -ha 01000000 -pwdn nnn -if policies/aaa %%~S -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
    	   exit /B 1
 	)
@@ -498,7 +540,7 @@ IF !ERRORLEVEL! NEQ 0 (
 for %%S in ("" "-se0 02000000 1") do (
 
     echo "NV Define Space with write define"
-    %TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at wd > run.out
+    %TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at wd +at ow > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -522,13 +564,19 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
     echo "Write lock %%~S"
-    %TPM_EXE_PATH%nvwritelock -ha 01000000 -pwdn nnn %%~S > run.out  
+    %TPM_EXE_PATH%nvwritelock -ha 01000000 -pwdn nnn %%~S -v > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Write lock, owner auth %%~S"
+    %TPM_EXE_PATH%nvwritelock -ha 01000000 -hia o %%~S -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
     echo "NV write %%~S - should fail"
-    %TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa %%~S > run.out
+    %TPM_EXE_PATH%nvwrite -ha 01000000 -pwdn nnn -if policies/aaa %%~S -v > run.out
     IF !ERRORLEVEL! EQU 0 (
        exit /B 1
     )
@@ -566,7 +614,7 @@ IF !ERRORLEVEL! NEQ 0 (
 for %%S in ("" "-se0 02000000 1") do (
 
     echo "NV Define Space with read stclear"
-    %TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at rst > run.out
+    %TPM_EXE_PATH%nvdefinespace -hi o -ha 01000000 -pwdn nnn -sz 16 +at rst +at ow > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -590,7 +638,13 @@ for %%S in ("" "-se0 02000000 1") do (
     )
 
      echo "Read lock %%~S"
-    %TPM_EXE_PATH%nvreadlock -ha 01000000 -pwdn nnn %%~S > run.out 
+    %TPM_EXE_PATH%nvreadlock -ha 01000000 -pwdn nnn %%~S -v > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Read lock owner auth  %%~S"
+    %TPM_EXE_PATH%nvreadlock -ha 01000000 -hia o  %%~S -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -657,8 +711,14 @@ for %%S in ("" "-se0 02000000 1") do (
        exit /B 1
     )
 
-    echo "NV global lock"
-    %TPM_EXE_PATH%nvglobalwritelock -hia p > run.out
+    echo "NV global lock, platform hierarchy %%~S"
+    %TPM_EXE_PATH%nvglobalwritelock -hia p -v %%~S> run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "NV global lock, owner auth %%~S"
+    %TPM_EXE_PATH%nvglobalwritelock -hia o -v %%~S> run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -765,26 +825,50 @@ for %%S in ("" "-se0 02000000 1") do (
        exit /B 1
     )
 
-    echo "Start a policy session"
+    echo "Start a policy session 03000001"
     %TPM_EXE_PATH%startauthsession -se p > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "Policy command code"    
+    echo "Policy command code"
     %TPM_EXE_PATH%policycommandcode -ha 03000001 -cc 0000013b > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "Policy authvalue"    
+    echo "Policy authvalue"
     %TPM_EXE_PATH%policyauthvalue -ha 03000001 > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
 
-    echo "NV Change authorization"
-    %TPM_EXE_PATH%nvchangeauth -ha 01000000 -pwdo nnn -pwdn xxx -se0 03000001 1 > run.out 
+    echo "NV Change authorization to empty"
+    %TPM_EXE_PATH%nvchangeauth -ha 01000000 -pwdo nnn -se0 03000001 1 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Retart a policy session 03000001"
+    %TPM_EXE_PATH%policyrestart -ha 03000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Policy command code"
+    %TPM_EXE_PATH%policycommandcode -ha 03000001 -cc 0000013b > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "Policy authvalue"
+    %TPM_EXE_PATH%policyauthvalue -ha 03000001 > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
+
+    echo "NV Change authorization to xxx"
+    %TPM_EXE_PATH%nvchangeauth -ha 01000000 -pwdn xxx -se0 03000001 1 -v > run.out 
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )
@@ -912,7 +996,7 @@ for %%P in (policyauthvalue policypassword) do (
     )
 
     echo "Undefine space special - should fail"
-    %TPM_EXE_PATH%nvundefinespacespecial -ha 01000000 -pwdn nnn > run.out
+    %TPM_EXE_PATH%nvundefinespacespecial -ha 01000000 -pwdn nnn -v > run.out
     IF !ERRORLEVEL! EQU 0 (
        exit /B 1
     )

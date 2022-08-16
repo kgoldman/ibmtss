@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2018 - 2020					#
+REM # (c) Copyright IBM Corporation 2018 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -77,13 +77,13 @@ for %%H in (%ITERATE_ALGS%) do (
 	)
 
 	echo "HMAC %%H sequence update %%~S"
-	%TPM_EXE_PATH%sequenceupdate -hs 80000002 -pwds aaa -if msg.bin %%~S > run.out
+	%TPM_EXE_PATH%sequenceupdate -hs 80000002 -pwds aaa -if msg.bin %%~S -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
 
 	echo "HMAC %%H sequence complete %%~S"
-	%TPM_EXE_PATH%sequencecomplete -hs 80000002 -pwds aaa -of tmp.bin %%~S > run.out
+	%TPM_EXE_PATH%sequencecomplete -hs 80000002 -pwds aaa -of tmp.bin %%~S -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
@@ -119,13 +119,13 @@ for %%H in (%ITERATE_ALGS%) do (
 	)
 
 	echo "HMAC %%H using the keyed hash primary key %%~S"
-	%TPM_EXE_PATH%hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khp -halg %%H %%~S > run.out
+	%TPM_EXE_PATH%hmac -hk 80000001 -if msg.bin -os sig.bin -pwdk khp -halg %%H %%~S -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
 
 	echo "HMAC %%H start using the keyed hash primary key %%~S"
-	%TPM_EXE_PATH%hmacstart -hk 80000001 -pwdk khp -pwda aaa %%~S -halg %%H > run.out
+	%TPM_EXE_PATH%hmacstart -hk 80000001 -pwdk khp -pwda aaa %%~S -halg %%H -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	)
@@ -164,54 +164,56 @@ for %%H in (%ITERATE_ALGS%) do (
 
     for %%S in ("" "-se0 02000000 1") do (
 
-	echo "Hash %%H in one call, data from file"
-	%TPM_EXE_PATH%hash -hi p -halg %%H -if policies/aaa -oh tmp.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	   exit /B 1
-	)
+    	for %%R in ("p" "e" "o") do (
 
-	echo "Verify the hash %%H"
-	diff tmp.bin policies/%%Haaa.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	   exit /B 1
-	)
+	    echo "Hash %%H in one call, data from file"
+	    %TPM_EXE_PATH%hash -hi %%R -halg %%H -if policies/aaa -oh tmp.bin -v > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	    )
 
-	echo "Hash %%H in one cal, data on command linel"
-	%TPM_EXE_PATH%hash -hi p -halg %%H -ic aaa -oh tmp.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	   exit /B 1
-	)
+	    echo "Verify the hash %%H"
+	    diff tmp.bin policies/%%Haaa.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	    )
 
-	echo "Verify the hash %%H"
-	diff tmp.bin policies/%%Haaa.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	   exit /B 1
-	)
+	    echo "Hash %%H in one cal, data on command line"
+	    %TPM_EXE_PATH%hash -hi %%R -halg %%H -ic aaa -oh tmp.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	    )
 
-	echo "Hash %%H sequence start"
-	%TPM_EXE_PATH%hashsequencestart -halg %%H -pwda aaa > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	   exit /B 1
-	)
+	    echo "Verify the hash %%H"
+	    diff tmp.bin policies/%%Haaa.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	    )
 
-	echo "Hash %%H sequence update %%~S"
-	%TPM_EXE_PATH%sequenceupdate -hs 80000001 -pwds aaa -if policies/aaa %%~S > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	   exit /B 1
-	)
+	    echo "Hash %%H sequence start"
+	    %TPM_EXE_PATH%hashsequencestart -halg %%H -pwda aaa > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	    )
 
-	echo "Hash %%H sequence complete %%~S"
-	%TPM_EXE_PATH%sequencecomplete -hi p -hs 80000001 -pwds aaa -of tmp.bin %%~S > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	   exit /B 1
-	)
+	    echo "Hash %%H sequence update %%~S"
+	    %TPM_EXE_PATH%sequenceupdate -hs 80000001 -pwds aaa -if policies/aaa %%~S > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	    )
 
-	echo "Verify the %%H hash"
-	diff tmp.bin policies/%%Haaa.bin > run.out
-	IF !ERRORLEVEL! NEQ 0 (
-	   exit /B 1
-	)
+	    echo "Hash %%H sequence complete %%~S"
+	    %TPM_EXE_PATH%sequencecomplete -hi %%R -hs 80000001 -pwds aaa -of tmp.bin %%~S > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	    )
 
+	    echo "Verify the %%H hash"
+	    diff tmp.bin policies/%%Haaa.bin > run.out
+	    IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	    )
+	)
     )
 )
 

@@ -3,9 +3,8 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: testrng.bat 480 2015-12-29 22:41:45Z kgoldman $	#
 REM										#
-REM (c) Copyright IBM Corporation 2015						#
+REM (c) Copyright IBM Corporation 2015 - 2022					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -45,7 +44,7 @@ echo "Random Number Generator"
 echo ""
 
 echo "Stir Random"
-%TPM_EXE_PATH%stirrandom -if policies/aaa > run.out
+%TPM_EXE_PATH%stirrandom -if policies/aaa -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )

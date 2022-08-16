@@ -5,7 +5,7 @@ REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #		$Id: testda.bat 1278 2018-07-23 21:20:42Z kgoldman $		#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -57,7 +57,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Set DA recovery time to 0, disables DA"
-%TPM_EXE_PATH%dictionaryattackparameters -nrt 0 > run.out
+%TPM_EXE_PATH%dictionaryattackparameters -nrt 0 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -93,7 +93,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Reset DA lock"
-%TPM_EXE_PATH%dictionaryattacklockreset > run.out
+%TPM_EXE_PATH%dictionaryattacklockreset -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -67,15 +67,15 @@ for %%N in (%ITERATE_ALGS%) do (
         IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
         )
-    
+
         echo "Load the signing key 80000002 under the storage key 80000001 %%~S"
         %TPM_EXE_PATH%load -hp 80000001 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto %%~S > run.out
         IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
         )
-    
+
 	echo "Read the signing key 80000002 public area"
-	%TPM_EXE_PATH%readpublic -ho 80000002 -opu tmppub2.bin > run.out
+	%TPM_EXE_PATH%readpublic -ho 80000002 -opu tmppub2.bin -v > run.out
         IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
         )
@@ -85,19 +85,19 @@ for %%N in (%ITERATE_ALGS%) do (
         IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
         )
-    
+
         echo "Load external just the storage key public part 80000002 %%N"
         %TPM_EXE_PATH%loadexternal -halg sha256 -nalg %%N -ipu storersa2048pub.bin > run.out
         IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
         )
-    
+
         echo "Flush the public key 80000002"
         %TPM_EXE_PATH%flushcontext -ha 80000002 > run.out
         IF !ERRORLEVEL! NEQ 0 (
            exit /B 1
         )
-    
+
 	echo "Load external, signing key public part 80000002 %%N"
 	%TPM_EXE_PATH%loadexternal -halg sha256 -nalg %%N -ipu tmppub2.bin > run.out
         IF !ERRORLEVEL! NEQ 0 (

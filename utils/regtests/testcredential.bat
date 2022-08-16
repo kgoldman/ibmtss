@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2021					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -57,7 +57,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the storage key under the primary key, 80000001"
-%TPM_EXE_PATH%load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto > run.out
+%TPM_EXE_PATH%load -hp 80000000 -ipr storersa2048priv.bin -ipu storersa2048pub.bin -pwdp sto -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -75,7 +75,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Encrypt the credential using makecredential"
-%TPM_EXE_PATH%makecredential -ha 80000001 -icred tmpcredin.bin -in h80000002.bin -ocred tmpcredenc.bin -os tmpsecret.bin > run.out
+%TPM_EXE_PATH%makecredential -ha 80000001 -icred tmpcredin.bin -in h80000002.bin -ocred tmpcredenc.bin -os tmpsecret.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -93,7 +93,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Activate credential"
-%TPM_EXE_PATH%activatecredential -ha 80000002 -hk 80000001 -icred tmpcredenc.bin -is tmpsecret.bin -pwdk sto -ocred tmpcreddec.bin -se0 03000000 0 > run.out
+%TPM_EXE_PATH%activatecredential -ha 80000002 -hk 80000001 -icred tmpcredenc.bin -is tmpsecret.bin -pwdk sto -ocred tmpcreddec.bin -se0 03000000 0 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -248,6 +248,12 @@ for /L %%i in (1,1,!L!) do (
 
     echo "Create an !CALG[%%i]! EK certificate"
     %TPM_EXE_PATH%createekcert -high -rsa !CALG[%%i]! -cakey cakey.pem -capwd rrrr -pwdp ppp -pwde eee -of tmp.der > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Read the certificate at !CIDX[%%i]! "
+    %TPM_EXE_PATH%nvread -ha !CIDX[%%i]! -cert -ocert tmpcert.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -707,6 +713,18 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo ""
+echo "writeapp demo"
+echo ""
+
+echo "writeapp"
+${PREFIX}writeapp -v > run.out
+checkSuccess $?
+
+echo "writeapp"
+${PREFIX}writeapp -pwsess > run.out
+checkSuccess $?
+
+echo ""
 echo "Low range EK certificates are now provisioned in NV"
 echo ""
 
@@ -717,6 +735,7 @@ rm -f tmprpub.bin
 rm -f tmpcredenc.bin
 rm -f tmpsecret.bin
 rm -f tmpcreddec.bin
+rm -f tmpcert.bin
 
 REM %TPM_EXE_PATH%getcapability -cap 1 -pr 80000000
 REM %TPM_EXE_PATH%getcapability -cap 1 -pr 02000000

@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testpolicy138.sh 793 2016-11-10 21:27:40Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2016					#
+REM # (c) Copyright IBM Corporation 2016 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -37,23 +36,23 @@ REM # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE	#
 REM # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.	#
 REM #										#
 REM #############################################################################
-REM 
+REM
 REM # Policy command code - sign
-REM 
+REM
 REM # cc69 18b2 2627 3b08 f5bd 406d 7f10 cf16
 REM # 0f0a 7d13 dfd8 3b77 70cc bcd1 aa80 d811
-REM 
+REM
 REM # NV index name after written
-REM 
-REM # 000b 
-REM # 5e8e bdf0 4581 9419 070c 7d57 77bf eb61 
-REM # ffac 4996 ea4b 6fba de6d a42b 632d 4918   
-REM 
+REM
+REM # 000b
+REM # 5e8e bdf0 4581 9419 070c 7d57 77bf eb61
+REM # ffac 4996 ea4b 6fba de6d a42b 632d 4918
+REM
 REM # Policy Authorize NV with above Name
-REM                               
-REM # 66 1f a1 02 db cd c2 f6 a0 61 7b 33 a0 ee 6d 95 
-REM # ab f6 2c 76 b4 98 b2 91 10 0d 30 91 19 f4 11 fa 
-REM 
+REM
+REM # 66 1f a1 02 db cd c2 f6 a0 61 7b 33 a0 ee 6d 95
+REM # ab f6 2c 76 b4 98 b2 91 10 0d 30 91 19 f4 11 fa
+REM
 REM # Policy in NV index 01000000
 REM # signing key 80000001 
 
@@ -118,7 +117,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy Authorize NV against 01000000"
-%TPM_EXE_PATH%policyauthorizenv -ha 01000000 -hs 03000000 > run.out
+%TPM_EXE_PATH%policyauthorizenv -ha 01000000 -hs 03000000 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -173,6 +172,18 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "Policy Authorize NV against 01000000 - should fail"
 %TPM_EXE_PATH%policyauthorizenv -ha 01000000 -hs 03000000 > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "Policy Authorize NV against 01000000, owner auth - should fail"
+%TPM_EXE_PATH%policyauthorizenv -ha 01000000 -hs 03000000 -hi o > run.out
+IF !ERRORLEVEL! EQU 0 (
+    exit /B 1
+)
+
+echo "Policy Authorize NV against 01000000, platform auth - should fail"
+%TPM_EXE_PATH%policyauthorizenv -ha 01000000 -hs 03000000 -hi p > run.out
 IF !ERRORLEVEL! EQU 0 (
     exit /B 1
 )
@@ -238,7 +249,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy Template"
-%TPM_EXE_PATH%policytemplate -ha 03000000 -te policies/policytemplate.bin > run.out
+%TPM_EXE_PATH%policytemplate -ha 03000000 -te policies/policytemplate.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

@@ -70,7 +70,7 @@ IF !ERRORLEVEL! NEQ 0 (
 REM sign with correct policy command code
 
 echo "Start a policy session"
-%TPM_EXE_PATH%startauthsession -se p > run.out
+%TPM_EXE_PATH%startauthsession -se p -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -82,7 +82,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Policy command code - sign"
-%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 15d > run.out
+%TPM_EXE_PATH%policycommandcode -ha 03000000 -cc 15d -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -126,7 +126,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Policy restart, set back to zero"
-%TPM_EXE_PATH%policyrestart -ha 03000000 > run.out 
+%TPM_EXE_PATH%policyrestart -ha 03000000 -v > run.out 
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -188,7 +188,7 @@ IF !ERRORLEVEL! NEQ 0 (
 REM # policypassword
 
 echo "Policy restart, set back to zero"
-%TPM_EXE_PATH%policyrestart -ha 03000000 > run.out 
+%TPM_EXE_PATH%policyrestart -ha 03000000 -v > run.out 
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -245,7 +245,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy authvalue"
-%TPM_EXE_PATH%policyauthvalue -ha 03000000 > run.out
+%TPM_EXE_PATH%policyauthvalue -ha 03000000 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -451,13 +451,13 @@ for %%H in (%ITERATE_ALGS%) do (
     )
 
     echo "Policy signed - sign with PEM key - %%H"
-    %TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg %%H -pwdk rrrr > run.out
+    %TPM_EXE_PATH%policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg %%H -pwdk rrrr -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
     )
 
     echo "Get policy digest"
-    %TPM_EXE_PATH%policygetdigest -ha 03000000 -of tmppol.bin > run.out
+    %TPM_EXE_PATH%policygetdigest -ha 03000000 -of tmppol.bin -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
     )
@@ -514,7 +514,7 @@ for %%H in (%ITERATE_ALGS%) do (
     )
 
     echo "Policy ticket"
-    %TPM_EXE_PATH%policyticket -ha 03000000 -to to.bin -na h80000001.bin -tk tkt.bin > run.out
+    %TPM_EXE_PATH%policyticket -ha 03000000 -to to.bin -na h80000001.bin -tk tkt.bin -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
     )
@@ -622,7 +622,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Policy Secret with PWAP session, create a ticket"
-%TPM_EXE_PATH%policysecret -ha 4000000c -hs 03000000 -pwde ppp -in noncetpm.bin -exp -200 -tk tkt.bin -to to.bin > run.out
+%TPM_EXE_PATH%policysecret -ha 4000000c -hs 03000000 -pwde ppp -in noncetpm.bin -exp -200 -tk tkt.bin -to to.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -792,7 +792,7 @@ REM # 4b 7f ca c2 b7 c3 ac a2 7c 5c da 9c 71 e6 75 28
 REM # 63 d2 87 d2 33 ec 49 0e 7a be 88 f1 ef 94 5d 5c 
 
 echo "Load the RSA openssl key pair in the NULL hierarchy 80000001"
-%TPM_EXE_PATH%loadexternal -rsa -ider policies/rsaprivkey.der -pwdk rrrr > run.out
+%TPM_EXE_PATH%loadexternal -rsa -ider policies/rsaprivkey.der -pwdk rrrr -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -942,7 +942,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy authorize using the ticket"
-%TPM_EXE_PATH%policyauthorize -ha 03000000 -appr policyapproved.bin -skn h80000001.bin -tk tkt.bin > run.out
+%TPM_EXE_PATH%policyauthorize -ha 03000000 -appr policyapproved.bin -skn h80000001.bin -tk tkt.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -982,7 +982,7 @@ echo "Set Primary Policy"
 echo ""
 
 echo "Platform policy empty"
-%TPM_EXE_PATH%setprimarypolicy -hi p > run.out
+%TPM_EXE_PATH%setprimarypolicy -hi p -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1068,7 +1068,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy PCR, update with the correct digest"
-%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha256 -bm 0 > run.out
+%TPM_EXE_PATH%policypcr -ha 03000000 -halg sha256 -bm 0 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1339,7 +1339,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy NV to satisfy the policy"
-%TPM_EXE_PATH%policynv -ha 01000000 -pwda nnn -hs 03000000 -if policies/zero8.bin -op 0 > run.out
+%TPM_EXE_PATH%policynv -ha 01000000 -pwda nnn -hs 03000000 -if policies/zero8.bin -op 0 -off 0 > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1427,7 +1427,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Policy NV Written no, does not satisfy policy"
-%TPM_EXE_PATH%policynvwritten -hs 03000000 -ws n > run.out  
+%TPM_EXE_PATH%policynvwritten -hs 03000000 -ws n -v > run.out  
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1683,7 +1683,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy OR"
-%TPM_EXE_PATH%policyor -ha 03000000 -if policies/policywrittenclrsigned.bin -if policies/policywrittensetsigned.bin > run.out
+%TPM_EXE_PATH%policyor -ha 03000000 -if policies/policywrittenclrsigned.bin -if policies/policywrittensetsigned.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1842,7 +1842,7 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Policy cpHash, satisfy policy"
-%TPM_EXE_PATH%policycphash -ha 03000000 -cp policies/policycphashhash.bin > run.out
+%TPM_EXE_PATH%policycphash -ha 03000000 -cp policies/policycphashhash.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1913,7 +1913,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Import a signing key SI under the primary key 80000000, with policy duplication select"
-%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policydupsel-no.bin > run.out
+%TPM_EXE_PATH%importpem -hp 80000000 -pwdp sto -ipem policies/rsaprivkey.pem -si -scheme rsassa -pwdk rrrr -opr tmpsipriv.bin -opu tmpsipub.bin -pol policies/policydupsel-no.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -1943,7 +1943,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy duplication select, object SI 80000002 to new parent NP 80000001"
-%TPM_EXE_PATH%policyduplicationselect -ha 03000000 -inpn h80000001.bin -ion h80000002.bin > run.out
+%TPM_EXE_PATH%policyduplicationselect -ha 03000000 -inpn h80000001.bin -ion h80000002.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2218,7 +2218,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Policy name hash, object SI 80000001"
-%TPM_EXE_PATH%policynamehash -ha 03000000 -nh policies/pnhnamehash.bin > run.out
+%TPM_EXE_PATH%policynamehash -ha 03000000 -nh policies/pnhnamehash.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -2319,17 +2319,23 @@ IF !ERRORLEVEL! EQU 0 (
 )
 
 echo "Policy counter timer, zero operandB, op EQ satisfy policy - should fail"
-%TPM_EXE_PATH%policycountertimer -ha 03000000 -if policies/zero8.bin -op 0 > run.out
+%TPM_EXE_PATH%policycountertimer -ha 03000000 -if policies/zero8.bin -op 0 -v > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
- 
+
 echo "Policy counter timer, zero operandB, op GT satisfy policy"
 %TPM_EXE_PATH%policycountertimer -ha 03000000 -if policies/zero8.bin -op 2 > run.out 
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
- 
+
+echo "Policy counter timer, operandB 1111, op EQ satisfy policy - should fail"
+%TPM_EXE_PATH%policycountertimer -ha 03000000 -ic 1111 -off 1 -if policies/zero8.bin -op 0 -v > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
 echo "Policy get digest, should be 8a 04 3f af"
 %TPM_EXE_PATH%policygetdigest -ha 03000000 > run.out
 IF !ERRORLEVEL! NEQ 0 (

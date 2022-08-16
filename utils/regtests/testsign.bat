@@ -61,35 +61,35 @@ for %%B in (2048 3072) do (
     	for %%S in (rsassa rsapss) do (
 
 	    echo "Sign a digest - %%H %%S %%B"
-	    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -scheme %%S -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa%%Bpub.bin  > run.out
+	    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg rsa -scheme %%S -if policies/aaa -os sig.bin -pwdk sig -ipu signrsa%%Bpub.bin -v > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
-	
+
 	    echo "Verify the signature signature using the TPM - %%H"
-	    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if policies/aaa -is sig.bin > run.out
+	    %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -rsa -if policies/aaa -is sig.bin > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
-	
+
 	    echo "Verify the signature using PEM - %%H"
 	    %TPM_EXE_PATH%verifysignature -ipem signrsa%%Bpub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
-	
+
 	    echo "Read the public part"
 	    %TPM_EXE_PATH%readpublic -ho 80000001 -opem tmppub.pem > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
-	
+
 	    echo "Verify the signature using readpublic PEM - %%H"
 	    %TPM_EXE_PATH%verifysignature -ipem tmppub.pem -halg %%H -if policies/aaa -is sig.bin > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	       exit /B 1
 	    )
-	
+
 	    echo "Load the openssl key pair in the NULL hierarchy - %%H %%S %%B"
 	    %TPM_EXE_PATH%loadexternal -halg %%H -scheme %%S -ider tmpkeypairrsa%%B.der > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
@@ -148,13 +148,13 @@ for %%C in ("nistp256" "nistp384") do (
     for %%H in (%ITERATE_ALGS%) do (
 
         echo "Sign a digest - %%H"
-        %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg ecc -if policies/aaa -os sig.bin -pwdk sig > run.out
+        %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg ecc -scheme ecdsa -if policies/aaa -os sig.bin -pwdk sig > run.out
         IF !ERRORLEVEL! NEQ 0 (
             exit /B 1
         )
 
         echo "Verify the ECC signature using the TPM - %%H"
-        %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -ecc -if policies/aaa -is sig.bin  > run.out
+        %TPM_EXE_PATH%verifysignature -hk 80000001 -halg %%H -if policies/aaa -is sig.bin  > run.out
         IF !ERRORLEVEL! NEQ 0 (
             exit /B 1
         )
@@ -438,7 +438,7 @@ for %%H in (%ITERATE_ALGS%) do (
     )
 
     echo "Sign a digest with a restricted signing key and ticket"
-    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg hmac -if msg.bin -tk tkt.bin -os sig.bin -pwdk khk > run.out
+    %TPM_EXE_PATH%sign -hk 80000001 -halg %%H -salg hmac -scheme hmac -if msg.bin -tk tkt.bin -os sig.bin -pwdk khk > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -485,7 +485,7 @@ for %%H in (%ITERATE_ALGS%) do (
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
-    
+
     echo "Flush the signing key 80000001 "
     %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
     IF !ERRORLEVEL! NEQ 0 (
@@ -493,6 +493,22 @@ for %%H in (%ITERATE_ALGS%) do (
     )
 
 )
+
+echo ""
+echo "signapp demo"
+echo ""
+
+echo "signapp basic"
+%TPM_EXE_PATH%signapp -ic xxx -v > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
+
+echo "signapp password session"
+%TPM_EXE_PATH%signapp -ic xxx -pwsess > run.out
+    IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
 
 rm tmpkeypairrsa2048.pem
 rm tmpkeypairrsa2048.der

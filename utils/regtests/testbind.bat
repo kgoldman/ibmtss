@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #	$Id: testbind.bat 1278 2018-07-23 21:20:42Z kgoldman $			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -50,7 +49,7 @@ echo "Bind session to Primary Key"
 echo ""
 
 echo "Bind session bound to primary key at 80000000"
-%TPM_EXE_PATH%startauthsession -se h -bi 80000000 -pwdb sto > run.out
+%TPM_EXE_PATH%startauthsession -se h -bi 80000000 -pwdb sto -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

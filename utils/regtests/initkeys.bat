@@ -4,7 +4,7 @@ REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
 REM										#
-REM (c) Copyright IBM Corporation 2015 - 2020					#
+REM (c) Copyright IBM Corporation 2015 - 2022					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -43,7 +43,7 @@ echo | set /p="1234567890123456" > msg.bin
 touch zero.bin
 
 REM try to undefine any NV index left over from a previous test.  Do not check for errors.
-%TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 > run.out
+%TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 -v > run.out
 %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000000 -pwdp ppp > run.out
 %TPM_EXE_PATH%nvundefinespace -hi p -ha 01000001 > run.out
 %TPM_EXE_PATH%nvundefinespace -hi o -ha 01000002 > run.out
@@ -77,7 +77,7 @@ set L=!i!
 for /L %%i in (1,1,!L!) do (
 
     echo "Create an RSA !BITS[%%i]! !SHALG[%%i]! storage key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa!BITS[%%i]!priv.bin -opu storersa!BITS[%%i]!pub.bin -tk storersa!BITS[%%i]!tk.bin -ch storersa!BITS[%%i]!ch.bin -pwdp sto -pwdk sto > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa!BITS[%%i]!priv.bin -opu storersa!BITS[%%i]!pub.bin -tk storersa!BITS[%%i]!tk.bin -ch storersa!BITS[%%i]!ch.bin -pwdp sto -pwdk sto -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

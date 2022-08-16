@@ -3,9 +3,8 @@ REM										#
 REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
-REM		$Id: inittpm.bat 1276 2018-07-23 19:25:13Z kgoldman $		#
 REM										#
-REM (c) Copyright IBM Corporation 2015, 2018					#
+REM (c) Copyright IBM Corporation 2015 - 2022					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -47,7 +46,13 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Startup"
-%TPM_EXE_PATH%startup -c -v > run.out
+%TPM_EXE_PATH%startup -c -st -v > run.out
+IF !ERRORLEVEL! NEQ 0 (
+  exit /B 1
+)
+
+echo "Startup"
+%TPM_EXE_PATH%startup -sto -v -loc 1 > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
@@ -59,7 +64,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Allocate PCRs for SHA-1, SHA-256, SHA-384 SHA-512 PCRs"
-%TPM_EXE_PATH%pcrallocate +sha1 +sha256 +sha384 +sha512 > run.out
+%TPM_EXE_PATH%pcrallocate +sha1 +sha256 +sha384 +sha512 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )

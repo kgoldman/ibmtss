@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2019 - 2020                                 #
+REM # (c) Copyright IBM Corporation 2019 - 2022                                 #
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -46,7 +46,7 @@ echo "Get Capability"
 echo ""
 
 echo "Get Capability TPM_CAP_ALGS"
-%TPM_EXE_PATH%getcapability -cap 0 > run.out
+%TPM_EXE_PATH%getcapability -cap 0 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -56,109 +56,109 @@ echo "Get Capability TPM_CAP_HANDLES"
 echo ""
 
 echo "TPM_HT_PCR"
-%TPM_EXE_PATH%getcapability -cap 1 -pr 00000000 > run.out
+%TPM_EXE_PATH%getcapability -cap 1 -pr 00000000 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "TPM_HT_NV_INDEX"
-%TPM_EXE_PATH%getcapability -cap 1 -pr 01000000 > run.out
+%TPM_EXE_PATH%getcapability -cap 1 -pr 01000000 -v >  run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "TPM_HT_LOADED_SESSION"
-%TPM_EXE_PATH%getcapability -cap 1 -pr 02000000 > run.out
+%TPM_EXE_PATH%getcapability -cap 1 -pr 02000000 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
-echo "TPM_HT_SAVED_SESSION"			  
-%TPM_EXE_PATH%getcapability -cap 1 -pr 03000000 > run.out
+
+echo "TPM_HT_SAVED_SESSION"
+%TPM_EXE_PATH%getcapability -cap 1 -pr 03000000 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
-echo "TPM_HT_PERMANENT"			  
-%TPM_EXE_PATH%getcapability -cap 1 -pr 40000000 > run.out
+
+echo "TPM_HT_PERMANENT"
+%TPM_EXE_PATH%getcapability -cap 1 -pr 40000000 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
-echo "TPM_HT_TRANSIENT"			  
-%TPM_EXE_PATH%getcapability -cap 1 -pr 80000000  > run.out
+
+echo "TPM_HT_TRANSIENT"
+%TPM_EXE_PATH%getcapability -cap 1 -pr 80000000 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
-echo "TPM_HT_PERSISTENT"			  
-%TPM_EXE_PATH%getcapability -cap 1 -pr 81000000 > run.out
+
+echo "TPM_HT_PERSISTENT"
+%TPM_EXE_PATH%getcapability -cap 1 -pr 81000000 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
+
 echo "Get Capability TPM_CAP_COMMANDS"
-%TPM_EXE_PATH%getcapability -cap 2 > run.out
+%TPM_EXE_PATH%getcapability -cap 2 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
+
 echo "Get Capability TPM_CAP_PP_COMMANDS"
-%TPM_EXE_PATH%getcapability -cap 3 > run.out
+%TPM_EXE_PATH%getcapability -cap 3 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
+
 echo "Get Capability TPM_CAP_AUDIT_COMMANDS"
-%TPM_EXE_PATH%getcapability -cap 4 > run.out
+%TPM_EXE_PATH%getcapability -cap 4 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Get Capability TPM_CAP_PCRS"
-%TPM_EXE_PATH%getcapability -cap 5 > run.out
+%TPM_EXE_PATH%getcapability -cap 5 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
+
 echo ""
 echo "Get Capability TPM_CAP_TPM_PROPERTIES"
 echo ""
 
 echo "Get Capability TPM_CAP_TPM_PROPERTIES 100"
-%TPM_EXE_PATH%getcapability -cap 6 -pr 100 > run.out
+%TPM_EXE_PATH%getcapability -cap 6 -pr 100 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
+
 echo "Get Capability TPM_CAP_TPM_PROPERTIES 200"
-%TPM_EXE_PATH%getcapability -cap 6 -pr 200 > run.out
+%TPM_EXE_PATH%getcapability -cap 6 -pr 200 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
+
 echo "Get Capability TPM_CAP_PCR_PROPERTIES "
-%TPM_EXE_PATH%getcapability -cap 7 > run.out
+%TPM_EXE_PATH%getcapability -cap 7 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
+
 echo "Get Capability TPM_CAP_ECC_CURVES"
-%TPM_EXE_PATH%getcapability -cap 8 > run.out
+%TPM_EXE_PATH%getcapability -cap 8 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
-				  
+
 echo "Get Capability TPM_CAP_AUTH_POLICIES"
-%TPM_EXE_PATH%getcapability -cap 9 -pr 40000000 > run.out
+%TPM_EXE_PATH%getcapability -cap 9 -pr 40000000 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
 echo "Get Capability TPM_CAP_ACT"
-%TPM_EXE_PATH%getcapability -cap a -pr 40000110 > run.out
+%TPM_EXE_PATH%getcapability -cap a -pr 40000110 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
- 
+
 exit /B 0

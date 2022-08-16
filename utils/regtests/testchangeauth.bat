@@ -60,7 +60,7 @@ for %%B in ("" "-bi 80000001 -pwdb sig") do (
 	   )
 
 	echo "Object change auth, change password to xxx %%~S"
-	%TPM_EXE_PATH%objectchangeauth -ho 80000001 -pwdo sig -pwdn xxx -hp 80000000 -opr tmppriv.bin %%~S > run.out
+	%TPM_EXE_PATH%objectchangeauth -ho 80000001 -pwdo sig -pwdn xxx -hp 80000000 -opr tmppriv.bin %%~S -v > run.out
 	IF !ERRORLEVEL! NEQ 0 (
 	   exit /B 1
 	   )
@@ -121,7 +121,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Object change auth, change password"
-%TPM_EXE_PATH%objectchangeauth -hp 80000000 -ho 80000001 -pwdo dec -ipwdn tmppwd.bin -opr tmppriv.bin > run.out
+%TPM_EXE_PATH%objectchangeauth -hp 80000000 -ho 80000001 -pwdo dec -ipwdn tmppwd.bin -opr tmppriv.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )

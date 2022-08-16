@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2020					#
+REM # (c) Copyright IBM Corporation 2015 - 2022					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -108,7 +108,7 @@ for /L %%i in (1,1,!L!) do (
 	    )
 
 	    echo "Verify the signature, %%H"
-	    %TPM_EXE_PATH%verifysignature -hk 80000002 -halg %%H -if policies/aaa -is sig.bin > run.out
+	    %TPM_EXE_PATH%verifysignature -hk 80000002 -halg %%H -if policies/aaa -is sig.bin -v > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
 	    )
@@ -136,9 +136,9 @@ for /L %%i in (1,1,!L!) do (
 	    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
 	    )
-	    
+
 	    echo "Duplicate K2 under !SALG[%%i]! K1, %%~E"
-	    %TPM_EXE_PATH%duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin %%~E -se0 03000000 1 > run.out
+	    %TPM_EXE_PATH%duplicate -ho 80000002 -pwdo sig -hp 80000001 -od tmpdup.bin -oss tmpss.bin %%~E -se0 03000000 1 -v > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
 	    )
@@ -150,7 +150,7 @@ for /L %%i in (1,1,!L!) do (
 	    )
 
 	    echo "Import K2 under !SALG[%%i]! K1, %%~E"
-	    %TPM_EXE_PATH%import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin %%~E -opr tmppriv.bin > run.out
+	    %TPM_EXE_PATH%import -hp 80000001 -pwdp sto -ipu tmppub.bin -id tmpdup.bin -iss tmpss.bin %%~E -opr tmppriv.bin -v > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
 	    )
@@ -294,7 +294,7 @@ for %%S in ("" "-se0 02000000 1") do (
         for %%P in (80000000 80000001) do (
 
 	    echo "Import the signing key under the parent key %%P %%H"
-	    %TPM_EXE_PATH%importpem -hp %%P -pwdp sto -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H > run.out
+	    %TPM_EXE_PATH%importpem -hp %%P -pwdp sto -rsa -ipem tmpprivkey.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin -halg %%H -nalg sha256 > run.out
 	    IF !ERRORLEVEL! NEQ 0 (
 	        exit /B 1
 	    )
@@ -407,7 +407,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Load the storage key K1 80000001 public key "
-%TPM_EXE_PATH%loadexternal -hi p -ipu storersa2048pub.bin > run.out
+%TPM_EXE_PATH%loadexternal -hi p -ipu storersa2048pub.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -484,7 +484,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Rewrap O1 from K1 80000001 to K2 80000002 "
-%TPM_EXE_PATH%rewrap -ho 80000001 -hn 80000002 -pwdo sto -id tmpdup.bin -in tmpo1name.bin -iss tmpss.bin -od tmpdup.bin -oss tmpss.bin > run.out
+%TPM_EXE_PATH%rewrap -ho 80000001 -hn 80000002 -pwdo sto -id tmpdup.bin -in tmpo1name.bin -iss tmpss.bin -od tmpdup.bin -oss tmpss.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -725,7 +725,7 @@ REM # change it.
     )
 
     echo "Target: Unseal the AES key"
-    %TPM_EXE_PATH%unseal -ha 80000002 -of tmpaeskeytgt.bin > run.out
+    %TPM_EXE_PATH%unseal -ha 80000002 -of tmpaeskeytgt.bin -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )

@@ -56,7 +56,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Make the signing key persistent"
-%TPM_EXE_PATH%evictcontrol -ho 80000001 -hp 81800000 -hi p > run.out
+%TPM_EXE_PATH%evictcontrol -ho 80000001 -hp 81800000 -hi p -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -74,7 +74,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Flush the transient key"
-%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+%TPM_EXE_PATH%flushcontext -ha 80000001 -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
