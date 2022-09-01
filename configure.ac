@@ -43,8 +43,8 @@ PKG_CHECK_MODULES(EFIBOOT, [efiboot efivar],,[true])
 CPPFLAGS="$CPPFLAGS $EFIBOOT_CFLAGS"
 AC_CHECK_HEADERS([efiboot.h])
 
-# Checks for header files.
-AC_HEADER_STDC
+# Checks for header files.  Obsolete in Ubuntu jammy.
+#AC_HEADER_STDC
 
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h inttypes.h limits.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/param.h sys/socket.h unistd.h])
 
