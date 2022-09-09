@@ -91,4 +91,4 @@ script:
     - INSTALL="${DISTRO#${REPO}}"
     - INSTALL="${INSTALL%%:*}"
     - INSTALL="${INSTALL%%/*}"
-    - $CONTAINER run $CONTAINER_ARGS -t tpm2 /bin/sh -c "cd travis && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ARCH=\"$ARCH\" CC=\"$CC\" ./$INSTALL.sh && if [ ! \"$VARIANT\" ]; then ../travis/install-ibmtpm.sh; fi && CC=\"$CC\" VARIANT=\"$VARIANT\" ../build.sh"
+    - $CONTAINER run $CONTAINER_ARGS -t tpm2 /bin/sh -c "cd ci && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ARCH=\"$ARCH\" CC=\"$CC\" ./$INSTALL.sh && if [ ! \"$VARIANT\" ]; then ../ci/install-ibmtpm.sh; fi && CC=\"$CC\" VARIANT=\"$VARIANT\" ../build.sh"
