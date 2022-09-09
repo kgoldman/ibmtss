@@ -1,0 +1,110 @@
+name: "distros"
+on: [push, pull_request]
+
+jobs:
+  job:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # 32bit build
+          - container: "debian:stable"
+            env:
+              CC: gcc
+              ARCH: i386
+              VARIANT: i386
+
+          # cross compilation builds
+          - container: "debian:stable"
+            env:
+              ARCH: ppc64el
+              CC: powerpc64le-linux-gnu-gcc
+              VARIANT: cross-compile
+
+          - container: "debian:stable"
+            env:
+              ARCH: arm64
+              CC: aarch64-linux-gnu-gcc
+              VARIANT: cross-compile
+
+          - container: "debian:stable"
+            env:
+              ARCH: s390x
+              CC: s390x-linux-gnu-gcc
+              VARIANT: cross-compile
+
+          # musl (native)
+          - container: "alpine:latest"
+            env:
+              CC: gcc
+
+          # glibc (gcc/clang)
+          - container: "opensuse/tumbleweed"
+            env:
+              CC: clang
+
+          - container: "opensuse/leap"
+            env:
+              CC: gcc
+
+          - container: "ubuntu:jammy"
+            env:
+              CC: gcc
+
+          - container: "ubuntu:xenial"
+            env:
+              CC: clang
+
+          - container: "fedora:latest"
+            env:
+              CC: clang
+
+          - container: "centos:7"
+            env:
+              CC: gcc
+
+          - container: "debian:testing"
+            env:
+              CC: clang
+
+          - container: "debian:stable"
+            env:
+              CC: clang
+
+          - container: "alt:sisyphus"
+            env:
+              CC: gcc
+
+    container:
+      image: ${{ matrix.container }}
+      env: ${{ matrix.env }}
+      options: --security-opt seccomp=unconfined
+
+    steps:
+    - name: Show OS
+      run: cat /etc/os-release
+
+    - name: Git checkout
+      uses: actions/checkout@v1
+
+    - name: Install additional packages
+      run: |
+        INSTALL=${{ matrix.container }}
+        INSTALL="${INSTALL%%:*}"
+        INSTALL="${INSTALL%%/*}"
+        if [ "$VARIANT" ]; then ARCH="$ARCH" ./ci/$INSTALL.$VARIANT.sh; fi
+        ARCH="$ARCH" CC="$CC" ./ci/$INSTALL.sh
+
+    - name: Build ibmtpm
+      run: |
+        if [ ! "$VARIANT" ]; then
+              ./ci/install-ibmtpm.sh;
+        fi
+
+    - name: Compiler version
+      run: $CC --version
+
+    - name: Compile
+      run: CC="$CC" VARIANT="$VARIANT" ./build.sh
