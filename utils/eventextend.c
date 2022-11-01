@@ -223,7 +223,7 @@ int main(int argc, char * argv[])
 	}
 	/* void the unused banks so they will never match an event */
 	for (; bankNum < HASH_COUNT ; bankNum++) {
-	    simPcrs[bankNum][pcrNum].hashAlg = TPM_ALG_NULL;
+	    simPcrs[bankNum][0].hashAlg = TPM_ALG_NULL;
 	}
     }
     /* scan each measurement 'line' in the binary */
