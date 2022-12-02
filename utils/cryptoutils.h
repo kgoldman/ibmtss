@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017 - 2021.					*/
+/* (c) Copyright IBM Corporation 2017 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -143,6 +143,11 @@ extern "C" {
 				     TPMT_SIGNATURE *tSignature,
 				     TPMI_ALG_HASH halg,
 				     void *rsaPubKey);
+    TPM_RC verifyRSASignatureFromRSA3(const unsigned char *message,
+				      unsigned int messageSize,
+				      TPMT_SIGNATURE *tSignature,
+				      TPMI_ALG_HASH halg,
+				      EVP_PKEY *rsaPubKey);
     TPM_RC verifySignatureFromHmacKey(unsigned char *message,
 				      unsigned int messageSize,
 				      TPMT_SIGNATURE *tSignature,
@@ -151,7 +156,7 @@ extern "C" {
 
     TPM_RC convertRsaBinToTSignature(TPMT_SIGNATURE *tSignature,
 				     TPMI_ALG_HASH halg,
-				     uint8_t *signatureBin,
+				     const uint8_t *signatureBin,
 				     size_t signatureBinLen);
 
     /* Some OpenSSL builds do not include ECC */

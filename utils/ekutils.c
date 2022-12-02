@@ -598,7 +598,58 @@ uint32_t getPubkeyFromDerCertFile(void **rsaPkey,	/* freed by caller */
     }
     /* extract the OpenSSL format public key from the X509 token */
     if (rc == 0) {
+	/* For Openssl < 3, rsaKey is an RSA structure.
+	   For Openssl 3, rsaKey is an EVP_PKEY. */
 	rc = getPubKeyFromX509Cert(rsaPkey, *x509);	/* freed by caller */
+    }
+    /* for debug, print the X509 certificate */
+    if (rc == 0) {
+	if (tssUtilsVerbose) X509_print_fp(stdout, *x509);
+    }
+    if (fp != NULL) {
+	fclose(fp);
+    }
+    return rc;
+}
+
+/* getPubkeyFromDerCertFile3() gets an OpenSSL EVP_PKEY public key token from a DER format X509
+   certificate stored in a file.
+
+   Returns both the OpenSSL X509 certificate token and RSA public key token.
+
+   Differs from getPubkeyFromDerCertFile(), where the public key is version dependent.
+*/
+
+uint32_t getPubkeyFromDerCertFile3(EVP_PKEY **evpPkey,	/* freed by caller */
+				   X509 **x509,	 	/* freed by caller */
+				   const char *derCertificateFileName)
+{
+    uint32_t rc = 0;
+    FILE *fp = NULL;
+
+    /* open the file */
+    if (rc == 0) {
+	fp = fopen(derCertificateFileName, "rb");
+	if (fp == NULL) {
+	    printf("getPubkeyFromDerCertFile3: Error opening %s\n", derCertificateFileName);
+	    rc = TSS_RC_FILE_OPEN;
+	}
+    }
+    /* read the file and convert the X509 DER to OpenSSL format */
+    if (rc == 0) {
+	*x509 = d2i_X509_fp(fp, NULL);
+	if (*x509 == NULL) {
+	    printf("getPubkeyFromDerCertFile3: Error converting %s\n", derCertificateFileName);
+	    rc = TSS_RC_X509_ERROR;
+	}
+    }
+    /* extract the OpenSSL format public key from the X509 token */
+    if (rc == 0) {
+	*evpPkey = X509_get_pubkey(*x509);	/* freed by caller */
+	if (*evpPkey == NULL) {
+	    printf("getPubkeyFromDerCertFile3: X509_get_pubkey failed\n");
+	    rc = TSS_RC_X509_ERROR;
+	}
     }
     /* for debug, print the X509 certificate */
     if (rc == 0) {
@@ -651,6 +702,7 @@ uint32_t getPubKeyFromX509Cert(void **rsaPkey,
 #endif
     return rc;
 }
+
 #endif /* TPM_TSS_NORSA */
 
 #ifndef TPM_TSS_NOFILE

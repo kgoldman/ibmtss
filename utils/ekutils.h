@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2021.					*/
+/* (c) Copyright IBM Corporation 2016 - 2022.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -231,7 +231,10 @@ extern "C" {
     uint32_t getPubkeyFromDerCertFile(void **rsaPkey,
 				      X509 **x509,
 				      const char *derCertificateFileName);
-    uint32_t getPubKeyFromX509Cert(void **rsaPkey,
+    uint32_t getPubkeyFromDerCertFile3(EVP_PKEY **evpPkey,
+				       X509 **x509,
+				       const char *derCertificateFileName);
+   uint32_t getPubKeyFromX509Cert(void **rsaPkey,
 				   X509 *x509);
     TPM_RC getCaStore(X509_STORE **caStore,
 		      X509 *caCert[],

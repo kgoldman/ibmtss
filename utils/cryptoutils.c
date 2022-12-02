@@ -2406,7 +2406,7 @@ TPM_RC signRSAFromRSA(uint8_t *signature, size_t *signatureLength,
 }
 
 /* verifyRSASignatureFromRSA() verifies the signature 'tSignature' against the digest 'message'
-   using the RSA public key in the OpenSSL RSA format.
+   using the RSA public key in the OpenSSL EVP_PKEY or RSA format.
 
    Supports RSASSA and RSAPSS schemes.
 
@@ -2558,6 +2558,83 @@ TPM_RC verifyRSASignatureFromRSA(unsigned char *message,
    return rc;
 }
 
+/* verifyRSASignatureFromRSA3() verifies the signature 'tSignature' against the digest 'message'
+   using the RSA public key in the OpenSSL EVP_PKEY format.
+
+   Supports RSASSA and RSAPSS schemes.
+
+   Differs from verifyRSASignatureFromRSA3(), where the public key is openssl version dependent.
+*/
+
+TPM_RC verifyRSASignatureFromRSA3(const unsigned char *message,
+				  unsigned int messageSize,
+				  TPMT_SIGNATURE *tSignature,
+				  TPMI_ALG_HASH halg,
+				  EVP_PKEY *rsaPubKey)
+{
+    TPM_RC 		rc = 0;
+    int			irc;
+    const EVP_MD 	*md = NULL;
+    EVP_PKEY_CTX 	*ctx = NULL;
+
+    if (rc == 0) {
+	ctx = EVP_PKEY_CTX_new(rsaPubKey, NULL);	/* freed @1 */
+	if (ctx == NULL) {
+	    printf("verifyRSAFSignatureromRSA3: Error in EVP_PKEY_CTX_new()\n");
+            rc = TSS_RC_RSA_KEY_CONVERT;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_verify_init(ctx);
+	if (irc != 1) {
+	    printf("verifyRSASignatureFromRSA3: Error in EVP_PKEY_verify_init()\n");
+	    rc = TSS_RC_RSA_SIGNATURE;
+	}
+    }
+    if (rc == 0) {
+	rc = TSS_Hash_GetMd(&md, halg);
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_CTX_set_signature_md(ctx, md);
+	if (irc <= 0) {
+	    printf("verifyRSASignatureFromRSA3: Error in EVP_PKEY_CTX_set_signature_md()\n");
+	    rc = TSS_RC_RSA_SIGNATURE;
+	}
+    }
+    /* verify the signature */
+    if (rc == 0) {
+	if (tSignature->sigAlg == TPM_ALG_RSASSA) {
+	    irc = EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PADDING);
+	}
+	else if (tSignature->sigAlg == TPM_ALG_RSAPSS) {
+	    irc = EVP_PKEY_CTX_set_rsa_padding(ctx, RSA_PKCS1_PSS_PADDING);
+	}
+	else {
+	    rc = TSS_RC_RSA_SIGNATURE;
+	    printf("verifyRSASignatureFromRSA3: Bad signature scheme %04x\n",
+		   tSignature->sigAlg);
+	}
+    }
+    if (rc == 0) {
+	if (irc <= 0) {
+	    printf("verifyRSASignatureFromRSA3: Error in EVP_PKEY_CTX_set_rsa_padding()\n");
+	    rc = TSS_RC_RSA_SIGNATURE;
+	}
+    }
+    if (rc == 0) {
+	irc = EVP_PKEY_verify(ctx,
+			      tSignature->signature.rsapss.sig.t.buffer,
+			      tSignature->signature.rsapss.sig.t.size,
+			      message, messageSize);
+ 	if (irc != 1) {
+	    printf("verifyRSASignatureFromRSA3: Error in EVP_PKEY_verify()\n");
+	    rc = TSS_RC_RSA_SIGNATURE;
+	}
+    }
+    EVP_PKEY_CTX_free(ctx);	/* @1 */
+    return rc;
+}
+
 #endif /* TPM_TSS_NORSA */
 
 #ifndef TPM_TSS_NOECC
@@ -2694,15 +2771,26 @@ TPM_RC verifySignatureFromHmacKey(unsigned char *message,
 
 TPM_RC convertRsaBinToTSignature(TPMT_SIGNATURE *tSignature,
 				 TPMI_ALG_HASH halg,
-				 uint8_t *signatureBin,
+				 const uint8_t *signatureBin,
 				 size_t signatureBinLen)
 {
     TPM_RC rc = 0;
 
-    tSignature->sigAlg = TPM_ALG_RSASSA;
-    tSignature->signature.rsassa.hash = halg;
-    tSignature->signature.rsassa.sig.t.size = (uint16_t)signatureBinLen;
-    memcpy(&tSignature->signature.rsassa.sig.t.buffer, signatureBin, signatureBinLen);
+    /* check that the signature size agrees with the TPMT_SIGNATURE  */
+    if (rc == 0) {
+	size_t signatureBinMax = sizeof(((TPMS_SIGNATURE_RSA *)NULL)->sig.t.buffer);
+	if (signatureBinLen > signatureBinMax) {
+	    printf("convertRsaBinToTSignature: signature length %lu greater than %lu\n",
+		   (unsigned long)signatureBinLen, (unsigned long)signatureBinMax);
+	    rc = TPM_RC_VALUE;
+	}
+    }
+    if (rc == 0) {
+	tSignature->sigAlg = TPM_ALG_RSASSA;
+	tSignature->signature.rsassa.hash = halg;
+	tSignature->signature.rsassa.sig.t.size = (uint16_t)signatureBinLen;
+	memcpy(&tSignature->signature.rsassa.sig.t.buffer, signatureBin, signatureBinLen);
+    }
     return rc;
 }
 
