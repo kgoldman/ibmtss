@@ -147,7 +147,7 @@ extern "C" {
 				      unsigned int messageSize,
 				      TPMT_SIGNATURE *tSignature,
 				      TPMI_ALG_HASH halg,
-				      EVP_PKEY *rsaPubKey);
+				      void *rsaPubKey);
     TPM_RC verifySignatureFromHmacKey(unsigned char *message,
 				      unsigned int messageSize,
 				      TPMT_SIGNATURE *tSignature,

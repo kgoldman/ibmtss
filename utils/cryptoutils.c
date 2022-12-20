@@ -2563,6 +2563,8 @@ TPM_RC verifyRSASignatureFromRSA(unsigned char *message,
 
    Supports RSASSA and RSAPSS schemes.
 
+   rsaPubKey is an EVP_PKEY,
+
    Differs from verifyRSASignatureFromRSA3(), where the public key is openssl version dependent.
 */
 
@@ -2570,7 +2572,7 @@ TPM_RC verifyRSASignatureFromRSA3(const unsigned char *message,
 				  unsigned int messageSize,
 				  TPMT_SIGNATURE *tSignature,
 				  TPMI_ALG_HASH halg,
-				  EVP_PKEY *rsaPubKey)
+				  void *rsaPubKey)
 {
     TPM_RC 		rc = 0;
     int			irc;
