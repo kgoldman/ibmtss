@@ -4,7 +4,7 @@ REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
 REM										#
-REM (c) Copyright IBM Corporation 2015 - 2022					#
+REM (c) Copyright IBM Corporation 2015 - 2023					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -57,7 +57,7 @@ echo "Initialize Regression Test Keys"
 echo ""
 
 echo "Create a platform primary RSA storage key"
-%TPM_EXE_PATH%createprimary -hi p -pwdk sto -pol policies/zerosha256.bin -tk pritk.bin -ch prich.bin > run.out
+%TPM_EXE_PATH%createprimary -hi p -pwdk sto -pol policies/zerosha256.bin -tk pritk.bin -ch prich.bin -cd tmpcd.bin -v > run.out
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
 )
@@ -77,7 +77,7 @@ set L=!i!
 for /L %%i in (1,1,!L!) do (
 
     echo "Create an RSA !BITS[%%i]! !SHALG[%%i]! storage key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa!BITS[%%i]!priv.bin -opu storersa!BITS[%%i]!pub.bin -tk storersa!BITS[%%i]!tk.bin -ch storersa!BITS[%%i]!ch.bin -pwdp sto -pwdk sto -v > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa!BITS[%%i]!priv.bin -opu storersa!BITS[%%i]!pub.bin -tk storersa!BITS[%%i]!tk.bin -ch storersa!BITS[%%i]!ch.bin  -cd tmpcd.bin -pwdp sto -pwdk sto -v > run.out
     IF !ERRORLEVEL! NEQ 0 (
        exit /B 1
     )

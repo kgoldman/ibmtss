@@ -351,6 +351,7 @@ rm -f despriv.bin
 rm -f despub.bin
 rm -f prich.bin
 rm -f pritk.bin
+rm -f tmpcd.bin
 
 for %%H in (%ITERATE_ALGS%) do (
 	rm -f khpriv%%H.bin
