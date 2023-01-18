@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2020.					*/
+/* (c) Copyright IBM Corporation 2015 - 2023.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -50,6 +50,7 @@
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tssmarshal.h>
 #include <ibmtss/tsscryptoh.h>
+#include <ibmtss/Unmarshal_fp.h>
 
 #include "objecttemplates.h"
 #include "cryptoutils.h"
@@ -83,6 +84,7 @@ int main(int argc, char *argv[])
     const char			*pemFilename = NULL;
     const char			*ticketFilename = NULL;
     const char			*creationHashFilename = NULL;
+    const char			*creationDataFilename = NULL;
     const char 			*dataFilename = NULL;
     const char			*keyPassword = NULL; 
     const char			*parentPassword = NULL; 
@@ -370,6 +372,16 @@ int main(int argc, char *argv[])
 	    }
 	    else {
 		printf("-ch option needs a value\n");
+		printUsage();
+	    }
+	}
+	else if (strcmp(argv[i],"-cd") == 0) {
+	    i++;
+	    if (i < argc) {
+		creationDataFilename = argv[i];
+	    }
+	    else {
+		printf("-cd option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -747,6 +759,19 @@ int main(int argc, char *argv[])
 				      out.creationHash.b.size,
 				      creationHashFilename);
     }
+    /* save the optional creation data */
+    if ((rc == 0) && (creationDataFilename != NULL)) {
+	rc = TSS_File_WriteStructure(&out.creationData.creationData,
+				     (MarshalFunction_t)TSS_TPMS_CREATION_DATA_Marshalu,
+				     creationDataFilename);
+    }
+    /* regression test sanity check */
+    if ((rc == 0) && (creationDataFilename != NULL)) {
+	TPMS_CREATION_DATA creationDataTest;
+	rc = TSS_File_ReadStructure(&creationDataTest,
+				    (UnmarshalFunction_t)TSS_TPMS_CREATION_DATA_Unmarshalu,
+				    creationDataFilename);
+    }
     if (rc == 0) {
 	printf("Handle %08x\n", out.objectHandle);
 	if (algPublic == TPM_ALG_RSA) {
@@ -762,6 +787,7 @@ int main(int argc, char *argv[])
 				      out.outPublic.publicArea.unique.ecc.y.t.buffer,
 				      out.outPublic.publicArea.unique.ecc.y.t.size);
 	}
+	if (tssUtilsVerbose) TSS_TPMS_CREATION_DATA_Print(&out.creationData.creationData, 2);
 	if (tssUtilsVerbose) printf("createprimary: success\n");
     }
     else {
@@ -794,6 +820,7 @@ static void printUsage(void)
     printf("\t[-opem\t\tpublic key PEM format file name (default do not save)]\n");
     printf("\t[-tk\t\toutput ticket file name]\n");
     printf("\t[-ch\t\toutput creation hash file name]\n");
+    printf("\t[-cd\t\toutput creation data file name]\n");
     printf("\n");
     printUsageTemplate();
     printf("\n");
@@ -803,5 +830,5 @@ static void printUsage(void)
     printf("\t40\tresponse encrypt\n");
     printf("\n");
     printf("Depending on the build configuration, some hash algorithms may not be available.\n");
-    exit(1);	
+    exit(1);
 }

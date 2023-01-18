@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2022					#
+# (c) Copyright IBM Corporation 2015 - 2023					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -66,7 +66,7 @@ for ((i = 0 ; i < 2 ; i++))
 do
 
     echo "Create an RSA ${BITS[i]} ${SHALG[i]} storage key under the primary key"
-    ${PREFIX}create -hp 80000000 -rsa ${BITS[i]} -halg ${SHALG[i]} -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa${BITS[i]}priv.bin -opu storersa${BITS[i]}pub.bin -tk storersa${BITS[i]}tk.bin -ch storersa${BITS[i]}ch.bin -pwdp sto -pwdk sto -v > run.out
+    ${PREFIX}create -hp 80000000 -rsa ${BITS[i]} -halg ${SHALG[i]} -st -kt f -kt p -pol policies/policycccreate-auth.bin -opr storersa${BITS[i]}priv.bin -opu storersa${BITS[i]}pub.bin -tk storersa${BITS[i]}tk.bin -ch storersa${BITS[i]}ch.bin -cd tmpcd.bin -pwdp sto -pwdk sto -v > run.out
     checkSuccess $?
 
     echo "Create an RSA ${BITS[i]} ${SHALG[i]} unrestricted signing key under the primary key"
@@ -137,5 +137,7 @@ do
 
 
 done
+
+rm -f tmpcd.bin
 
 exit ${WARN}

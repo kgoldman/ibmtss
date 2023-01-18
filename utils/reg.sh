@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2014 - 2022					#
+# (c) Copyright IBM Corporation 2014 - 2023					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -249,6 +249,7 @@ cleanup()
     rm -f tmppub.bin
     rm -f tmpspriv.bin
     rm -f tmpspub.bin
+    rm -f tmpcd.bin
     rm -f to.bin
     rm -f zero.bin
 }
@@ -256,7 +257,7 @@ cleanup()
 initprimary()
 {
     echo "Create a platform primary RSA storage key"
-    ${PREFIX}createprimary -hi p -pwdk sto -pol policies/zerosha256.bin -tk pritk.bin -ch prich.bin > run.out
+    ${PREFIX}createprimary -hi p -pwdk sto -pol policies/zerosha256.bin -tk pritk.bin -ch prich.bin -cd tmpcd.bin -v > run.out
     checkSuccess $?
 }
 
