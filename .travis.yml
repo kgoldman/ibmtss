@@ -42,16 +42,12 @@ matrix:
           compiler: gcc
 
         - os: linux
-          env: DISTRO=ubuntu:xenial
+          env: DISTRO=ubuntu:focal
           compiler: clang
 
         - os: linux
           env: DISTRO=fedora:latest
           compiler: clang
-
-        - os: linux
-          env: DISTRO=centos:7 CONTAINER=podman CONTAINER_ARGS="--runtime=/usr/bin/crun --network=host"
-          compiler: gcc
 
         - os: linux
           env: REPO="quay.io/centos/" DISTRO="${REPO}centos:stream8"
