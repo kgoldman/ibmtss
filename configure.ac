@@ -35,7 +35,7 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 LT_INIT([disable-static])
 
-PKG_CHECK_MODULES(LIBCRYPTO, [libcrypto >= 1.0.1 ])
+PKG_CHECK_MODULES(LIBCRYPTO, [libcrypto >= 1.1.1 ])
 AC_CHECK_HEADERS(openssl/conf.h)
 
 # check for optional efiboot library for boot log pretty printing
