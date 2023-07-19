@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2022					#
+REM # (c) Copyright IBM Corporation 2015 - 2023					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -79,7 +79,7 @@ for /L %%i in (1,1,!L!) do (
     	)
 
 	echo "NV read - should fail before write %%~S"
-	%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 16 %%~S >-v  run.out
+	%TPM_EXE_PATH%nvread -ha 01000000 -pwdn nnn -sz 16 %%~S -v >  run.out
 	IF !ERRORLEVEL! EQU 0 (
 	  exit /B 1
 	)
@@ -91,7 +91,7 @@ for /L %%i in (1,1,!L!) do (
 	)
 
 	echo "Write lock, should fail %%~S"
-	${PREFIX}nvwritelock -ha 01000000 -pwdn nnn %%~S -v > run.out  
+	%TPM_EXE_PATH%nvwritelock -ha 01000000 -pwdn nnn %%~S -v > run.out
 	IF !ERRORLEVEL! EQU 0 (
 	   exit /B 1
 	)

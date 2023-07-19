@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2022					#
+REM # (c) Copyright IBM Corporation 2015 - 2023					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -590,9 +590,12 @@ IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
 
+set i=0
+for %%v in (!NVIDX!) do set /A i+=1 & set NVIDX[!i!]=%%v
+set L=!i!
 for /L %%i in (1,1,!L!) do (
 
-    echo "Undefine optional !HALG[%%i]! NV index !NVIDX[%%i]!"
+    echo "Undefine optional NV index !NVIDX[%%i]!"
     %TPM_EXE_PATH%nvundefinespace -ha !NVIDX[%%i]! -hi o > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
@@ -616,7 +619,9 @@ IF !ERRORLEVEL! NEQ 0 (
 
 echo "Change endorsement hierarchy password"
 %TPM_EXE_PATH%hierarchychangeauth -hi e -pwdn eee > run.out
-checkSuccess $?
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
 
 for %%A in ("-rsa 2048" "-ecc nistp256") do (
 
@@ -717,12 +722,16 @@ echo "writeapp demo"
 echo ""
 
 echo "writeapp"
-${PREFIX}writeapp -v > run.out
-checkSuccess $?
+%TPM_EXE_PATH%writeapp -v > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
 
 echo "writeapp"
-${PREFIX}writeapp -pwsess > run.out
-checkSuccess $?
+%TPM_EXE_PATH%writeapp -pwsess > run.out
+IF !ERRORLEVEL! NEQ 0 (
+    exit /B 1
+)
 
 echo ""
 echo "Low range EK certificates are now provisioned in NV"
@@ -736,6 +745,9 @@ rm -f tmpcredenc.bin
 rm -f tmpsecret.bin
 rm -f tmpcreddec.bin
 rm -f tmpcert.bin
+rm -f tmpactual.txt
+rm -f tmpexpect.txt
+rm -f tmp.txt
 
 REM %TPM_EXE_PATH%getcapability -cap 1 -pr 80000000
 REM %TPM_EXE_PATH%getcapability -cap 1 -pr 02000000
