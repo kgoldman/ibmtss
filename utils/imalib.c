@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2019.					*/
+/* (c) Copyright IBM Corporation 2016 - 2023.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -67,11 +67,31 @@
 
 #include "imalib.h"
 
-#define IMA_PARSE_FUNCTIONS_MAX 128
+/* IMA template names */
 
+#define IMA_UNSUPPORTED		0
+#define IMA_FORMAT_IMA_NG	1
+#define IMA_FORMAT_IMA_SIG	2
+#define IMA_FORMAT_IMA		3
+#define IMA_FORMAT_IMA_MODSIG	4
+#define IMA_FORMAT_IMA_BUF	5
+#define IMA_FORMAT_IMA_NGV2	6
+#define IMA_FORMAT_IMA_SIGV2	7
+#define IMA_FORMAT_EVM_SIG	8
+
+static uint32_t IMA_Uint16_Unmarshal(uint16_t 	*out,
+				     uint8_t 	**buffer,
+				     size_t 	*length,
+				     int 	littleEndian);
+static uint32_t IMA_Uint32_Unmarshal(uint32_t 	*out,
+				     uint8_t 	**buffer,
+				     size_t 	*length,
+				     int 	littleEndian);
 static uint32_t IMA_Uint32_Convert(const uint8_t *stream,
 				   int littleEndian);
 static uint32_t IMA_Strn2cpy(char *dest, const uint8_t *src,
+			     size_t destLength, size_t srcLength);
+static uint32_t IMA_Strc2cpy(char *dest, const uint8_t *src,
 			     size_t destLength, size_t srcLength);
 static void IMA_Event_ParseName(ImaEvent *imaEvent);
 
@@ -91,20 +111,26 @@ typedef uint32_t (*TemplateDataParseFunction_t)(ImaTemplateData	*imaTemplateData
 						size_t 		*length,
 						int 		littleEndian);
 static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataParseFunctions[],
+				       TemplateDataTraceFunction_t templateDataTraceFunctions[],
 				       size_t templateDataParseFunctionsSize,
 				       ImaEvent *imaEvent);
 static uint32_t
 IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFunctions[],
+			     TemplateDataTraceFunction_t templateDataTraceFunctions[],
 			     size_t templateDataParseFunctionsSize,
 			     ImaEvent *imaEvent);
 static uint32_t IMA_ParseD(ImaTemplateData	*imaTemplateData,
 			   uint8_t 		**buffer,
 			   size_t 		*length,
-			   int 		littleEndian);
+			   int 			littleEndian);
 static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
 			     uint8_t 		**buffer,
 			     size_t 		*length,
 			     int 		littleEndian);
+static uint32_t IMA_ParseDNGV2(ImaTemplateData	*imaTemplateData,
+			       uint8_t 		**buffer,
+			       size_t 		*length,
+			       int 		littleEndian);
 static uint32_t IMA_ParseNNG(ImaTemplateData	*imaTemplateData,
 			     uint8_t 		**buffer,
 			     size_t 		*length,
@@ -125,6 +151,30 @@ static uint32_t IMA_ParseBUF(ImaTemplateData	*imaTemplateData,
 			     uint8_t 		**buffer,
 			     size_t 		*length,
 			     int 		littleEndian);
+static uint32_t IMA_ParseXATTRNAMES(ImaTemplateData	*imaTemplateData,
+				    uint8_t 		**buffer,
+				    size_t 		*length,
+				    int 		littleEndian);
+static uint32_t IMA_ParseXATTRLENGTHS(ImaTemplateData	*imaTemplateData,
+				      uint8_t 		**buffer,
+				      size_t 		*length,
+				      int 		littleEndian);
+static uint32_t IMA_ParseXATTRVALUES(ImaTemplateData	*imaTemplateData,
+				     uint8_t 		**buffer,
+				     size_t 		*length,
+				     int 		littleEndian);
+static uint32_t IMA_ParseIUID(ImaTemplateData	*imaTemplateData,
+			      uint8_t 		**buffer,
+			      size_t 		*length,
+			      int 		littleEndian);
+static uint32_t IMA_ParseIGID(ImaTemplateData	*imaTemplateData,
+			      uint8_t 		**buffer,
+			      size_t 		*length,
+			      int 		littleEndian);
+static uint32_t IMA_ParseIMODE(ImaTemplateData	*imaTemplateData,
+			       uint8_t 		**buffer,
+			       size_t 		*length,
+			       int 		littleEndian);
 
 extern int tssUtilsVerbose;
 
@@ -168,8 +218,12 @@ void IMA_Event_Trace(ImaEvent *imaEvent, int traceTemplate)
 		 imaEvent->digest, sizeof(((ImaEvent *)NULL)->digest));
 
     printf("IMA_Event_Trace: name length %u\n", imaEvent->name_len);
-    printf("IMA_Event_Trace: name %s\n", imaEvent->name);
+    printf("IMA_Event_Trace: name text %s\n", imaEvent->name);
+#if 1
     printf("IMA_Event_Trace: name integer %u\n", imaEvent->nameInt);
+    TSS_PrintAll("IMA_Event_Trace: template data",
+		 imaEvent->template_data, imaEvent->template_data_len);
+#endif
     printf("IMA_Event_Trace: template data length %u\n", imaEvent->template_data_len);
     /* in some use cases, the template_data field is not populated.  In those cases, do not trace
        it. */
@@ -194,10 +248,19 @@ static void IMA_Event_ParseName(ImaEvent *imaEvent)
 	imaEvent->nameInt = IMA_FORMAT_IMA;
     }
     else if (strcmp(imaEvent->name, "ima-modsig") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_MODSIG;
+	imaEvent->nameInt = IMA_FORMAT_IMA_MODSIG;
     }
     else if (strcmp(imaEvent->name, "ima-buf") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_BUF;
+	imaEvent->nameInt = IMA_FORMAT_IMA_BUF;
+    }
+    else if (strcmp(imaEvent->name, "ima-ngv2") == 0) {
+	imaEvent->nameInt = IMA_FORMAT_IMA_NGV2;
+    }
+    else if (strcmp(imaEvent->name, "ima-sigv2") == 0) {
+	imaEvent->nameInt = IMA_FORMAT_IMA_SIGV2;
+    }
+    else if (strcmp(imaEvent->name, "evm-sig") == 0) {
+	imaEvent->nameInt = IMA_FORMAT_EVM_SIG;
     }
     /* the template data parser currently supports only these formats. */
     else {
@@ -208,7 +271,9 @@ static void IMA_Event_ParseName(ImaEvent *imaEvent)
 
 void IMA_TemplateData_Init(ImaTemplateData *imaTemplateData)
 {
+    size_t i;
     imaTemplateData->imaTemplateDNG.hashLength = 0;
+    imaTemplateData->imaTemplateDNG.hashAlgId = TPM_ALG_NULL;
     imaTemplateData->imaTemplateDNG.fileDataHashLength = 0;
     imaTemplateData->imaTemplateNNG.fileNameLength = 0;
     imaTemplateData->imaTemplateNNG.fileName[0] = '\0';
@@ -219,6 +284,18 @@ void IMA_TemplateData_Init(ImaTemplateData *imaTemplateData)
     imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength = 0;
     imaTemplateData->imaTemplateMODSIG.modSigLength = 0;
     imaTemplateData->imaTemplateBUF.bufLength = 0;
+    imaTemplateData->imaTemplateXattrs.xattrNamesLength = 0;
+    imaTemplateData->imaTemplateXattrs.xattrNames[0] = '\0';
+    imaTemplateData->imaTemplateXattrs.xattrNamesLength = 0;
+    for (i = 0 ; i < sizeof (((ImaTemplateXattrs *)NULL)->xattrNamesPtr)    ; i++) {
+	imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i] = NULL;
+    }
+    imaTemplateData->imaTemplateXattrs.xattrNamesCount = 0;
+    imaTemplateData->imaTemplateXattrs.xattrLengthsSum = 0;
+    imaTemplateData->imaTemplateXattrs.xattrValuesLength = 0;
+    imaTemplateData->imaTemplateIUID.iuidLength = 0;
+    imaTemplateData->imaTemplateIGID.igidLength = 0;
+    imaTemplateData->imaTemplateIMODE.imodeLength = 0;
     return;
 }
 
@@ -227,24 +304,61 @@ void IMA_TemplateData_Init(ImaTemplateData *imaTemplateData)
    nameInt maps to the template name.
 
 */
-  
+
 void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 			    unsigned int nameInt)
 {
+    size_t	i;
+
     nameInt = nameInt;	/* obsolete now that custom templates are supported */
-    /* d-ng */
-    printf("IMA_TemplateData_Trace: DNG hashLength %u\n", imaTemplateData->imaTemplateDNG.hashLength); 
+    for (i = 0 ; imaTemplateData->templateDataTraceFunctions[i] != NULL ; i++) {
+	imaTemplateData->templateDataTraceFunctions[i](imaTemplateData);
+    }
+    return;
+}
+
+/* Below are the callbacks to trace fields in ImaTemplateData */
+
+static void IMA_TraceD(ImaTemplateData	*imaTemplateData)
+{
+    TSS_PrintAll("IMA_Template_Trace: D file data hash",
+		 imaTemplateData->imaTemplateDNG.fileDataHash,
+		 imaTemplateData->imaTemplateDNG.fileDataHashLength);
+    return;
+}
+static void IMA_TraceDNG(ImaTemplateData	*imaTemplateData)
+{
+    printf("IMA_TemplateData_Trace: DNG hashLength %u\n",
+	   imaTemplateData->imaTemplateDNG.hashLength); 
     printf("IMA_TemplateData_Trace: DNG hashAlg %s\n", imaTemplateData->imaTemplateDNG.hashAlg);
     TSS_PrintAll("IMA_Template_Trace: DNG file data hash",
 		 imaTemplateData->imaTemplateDNG.fileDataHash,
 		 imaTemplateData->imaTemplateDNG.fileDataHashLength);
-    /* n-ng */
+    return;
+}
+static void IMA_TraceDNGV2(ImaTemplateData	*imaTemplateData)
+{
+    printf("IMA_TemplateData_Trace: DNGV2 hashLength %u\n",
+	   imaTemplateData->imaTemplateDNGV2.hashLength); 
+    printf("IMA_TemplateData_Trace: DNGV2 prefix %s\n", imaTemplateData->imaTemplateDNGV2.prefix);
+    printf("IMA_TemplateData_Trace: DNGV2 hashAlg %s\n", imaTemplateData->imaTemplateDNGV2.hashAlg);
+    TSS_PrintAll("IMA_Template_Trace: DNGV2 file data hash",
+		 imaTemplateData->imaTemplateDNGV2.fileDataHash,
+		 imaTemplateData->imaTemplateDNGV2.fileDataHashLength);
+    return;
+}
+static void IMA_TraceNNG(ImaTemplateData	*imaTemplateData)
+{
     printf("IMA_TemplateData_Trace: NNG fileNameLength %u\n",
 	   imaTemplateData->imaTemplateNNG.fileNameLength);
     if (imaTemplateData->imaTemplateNNG.fileNameLength > 0) {
-	printf("IMA_TemplateData_Trace: NNG fileName %s\n", imaTemplateData->imaTemplateNNG.fileName);
+	printf("IMA_TemplateData_Trace: NNG fileName %s\n",
+	       imaTemplateData->imaTemplateNNG.fileName);
     }
-    /* sig */
+    return;
+}
+static void IMA_TraceSIG(ImaTemplateData	*imaTemplateData)
+{
     printf("IMA_TemplateData_Trace: SIG sigLength %u\n", imaTemplateData->imaTemplateSIG.sigLength);
     if (imaTemplateData->imaTemplateSIG.sigLength != 0) {
 	TSS_PrintAll("IMA_TemplateData_Trace: sigHeader",
@@ -256,7 +370,10 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 		     imaTemplateData->imaTemplateSIG.signature,
 		     imaTemplateData->imaTemplateSIG.signatureSize);
     }
-    /* d-modsig */
+    return;
+}
+static void IMA_TraceDMODSIG(ImaTemplateData	*imaTemplateData)
+{
     printf("IMA_TemplateData_Trace: DMODSIG dModSigHashLength %u\n",
 	   imaTemplateData->imaTemplateDMODSIG.dModSigHashLength);
     if (imaTemplateData->imaTemplateDMODSIG.dModSigHashLength != 0) {
@@ -266,7 +383,10 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 		     imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHash,
 		     imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength);
     }
-    /* modsig */
+    return;
+}
+static void IMA_TraceMODSIG(ImaTemplateData	*imaTemplateData)
+{
     printf("IMA_TemplateData_Trace: MODSIG modSigLength %u\n",
 	   imaTemplateData->imaTemplateMODSIG.modSigLength);
     if (imaTemplateData->imaTemplateMODSIG.modSigLength != 0) {
@@ -280,7 +400,7 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 	    /* tmp pointer because d2i moves the pointer */
 	    tmpData = imaTemplateData->imaTemplateMODSIG.modSigData;
 	    pkcs7 = d2i_PKCS7(NULL,				/* freed @1 */
-			    (const unsigned char **)&tmpData,
+			      (const unsigned char **)&tmpData,
 			      imaTemplateData->imaTemplateMODSIG.modSigLength);
 	    if (pkcs7 != NULL) {
 		BIO *bio = NULL;
@@ -305,35 +425,171 @@ void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 	}
 #endif /* TPM_TSS_MBEDTLS */
     }
-    /* buf */
+    return;
+}
+static void IMA_TraceBUF(ImaTemplateData	*imaTemplateData)
+{
     printf("IMA_TemplateData_Trace: BUF bufLength %u\n", imaTemplateData->imaTemplateBUF.bufLength);
     if (imaTemplateData->imaTemplateBUF.bufLength != 0) {
 	TSS_PrintAll("IMA_TemplateData_Trace: BUF bufData",
-		     imaTemplateData->imaTemplateBUF.bufData, imaTemplateData->imaTemplateBUF.bufLength);
+		     imaTemplateData->imaTemplateBUF.bufData,
+		     imaTemplateData->imaTemplateBUF.bufLength);
 #ifndef TPM_TSS_MBEDTLS
-	if ((strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName, ".builtin_trusted_keys") == 0) ||
-	    (strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName, ".ima") == 0)) {
+	/* keys are X.509 certificates */
+	if ((strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName,
+		    ".builtin_trusted_keys") == 0) ||
+	    (strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName,
+		    ".platform") == 0) ||
+	    (strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName,
+		    ".machine") == 0) ||
+	    (strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName,
+		    ".evm") == 0) ||
+	    (strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName,
+		    ".ima") == 0)) {
 	    {
 		X509 		*x509 = NULL;
-		unsigned char 	*tmpData = NULL; 
+		unsigned char 	*tmpData = NULL;
 		/* tmp pointer because d2i moves the pointer */
 		tmpData = imaTemplateData->imaTemplateBUF.bufData;
 		x509 = d2i_X509(NULL,				/* freed @1 */
-				  (const unsigned char **)&tmpData,
+				(const unsigned char **)&tmpData,
 				imaTemplateData->imaTemplateBUF.bufLength);
 		if (x509 != NULL) {
-		    X509_print_fp(stdout, x509);
-		    X509_free(x509);	/* @1 */
-		}
-		else {
-		    printf("IMA_TemplateData_Trace: BUF Could not trace bufData as X509\n");
+		    if (x509 != NULL) {
+			X509_print_fp(stdout, x509);
+			X509_free(x509);	/* @1 */
+		    }
+		    else {
+			printf("IMA_TemplateData_Trace: BUF Could not trace bufData as X509\n");
+		    }
 		}
 	    }
-	    
+	}
+	/* selinux state and kernel command line are printable, not nul terminated */
+	else if ((strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName,
+			 "selinux-state") == 0) ||
+		 (strcmp((const char *)imaTemplateData->imaTemplateNNG.fileName,
+			 "kexec-cmdline") == 0)) {
+	    printf("    %.*s\n",
+		   imaTemplateData->imaTemplateBUF.bufLength,
+		   imaTemplateData->imaTemplateBUF.bufData);
 	}
 #endif /* TPM_TSS_MBEDTLS */
     }
-    return;    
+    return;
+}
+
+static void IMA_TraceXATTRNAMES(ImaTemplateData	*imaTemplateData)
+{
+    size_t i;
+    for (i = 0 ; i < imaTemplateData->imaTemplateXattrs.xattrNamesCount ; i++) {
+	printf("IMA_TemplateData_Trace: xattrnames %s\n",
+	       imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i]);
+    }
+    return;
+}
+
+static void IMA_TraceXATTRLENGTHS(ImaTemplateData	*imaTemplateData)
+{
+    size_t	i;
+
+    for (i = 0 ; i < imaTemplateData->imaTemplateXattrs.xattrLengthsLength / 4 ; i++) {
+	printf("IMA_TemplateData_Trace: xattrlengths index %u length %08x %u\n",
+	       (unsigned int)i,
+	       imaTemplateData->imaTemplateXattrs.xattrLengths[i],
+	       imaTemplateData->imaTemplateXattrs.xattrLengths[i]);
+    }
+    return;
+}
+
+static void IMA_TraceXATTRVALUES(ImaTemplateData	*imaTemplateData)
+{
+    size_t i;
+    size_t index = 0;	/* index into xattrValues buffer */
+
+#if 0
+    TSS_PrintAll("IMA_TemplateData_Trace: xattrvalues",
+		 imaTemplateData->imaTemplateXattrs.xattrValues,
+		 imaTemplateData->imaTemplateXattrs.xattrValuesLength);
+#endif
+    for (i = 0 ; i < imaTemplateData->imaTemplateXattrs.xattrNamesCount ; i++) {
+
+	if (strcmp(imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i], "security.selinux") == 0) {
+	    /* ensure that the selinux string is nul terminated */
+	    if (imaTemplateData->imaTemplateXattrs.xattrValues
+		[index + imaTemplateData->imaTemplateXattrs.xattrLengths[i] -1] == '\0') {
+		printf("IMA_TemplateData_Trace: xattrvalue %lu %s\n",
+		       (unsigned long)i,
+		       (char *)&imaTemplateData->imaTemplateXattrs.xattrValues[index]);
+	    }
+	    else {
+		printf("IMA_TemplateData_Trace: "
+		       "security.selinux value not nul terminated at index %lu\n",
+		       (unsigned long)
+		       (index + imaTemplateData->imaTemplateXattrs.xattrLengths[i] -1));
+	    }
+	}
+	else if (strcmp(imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i], "security.ima") == 0) {
+	    if (imaTemplateData->imaTemplateXattrs.xattrLengths[i] < 2) {
+		printf("IMA_TemplateData_Trace: xattrvalue security.ima length insufficient\n");
+	    }
+	    else {
+		printf("IMA_TemplateData_Trace: xattrvalue security.ima %02x %02x\n",
+		       imaTemplateData->imaTemplateXattrs.xattrValues[index],
+		       imaTemplateData->imaTemplateXattrs.xattrValues[index+1]);
+		TSS_PrintAll("IMA_TemplateData_Trace: xattrvalue security.ima digest",
+			     &imaTemplateData->imaTemplateXattrs.xattrValues[index+2],
+			     imaTemplateData->imaTemplateXattrs.xattrLengths[i] -2);
+	    }
+	}
+	else {
+	    printf("IMA_TemplateData_Trace: Trace of xattrname %s not supported\n",
+		   imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i]);
+	}
+
+	/* move the index past the length for the next pass */
+	index += imaTemplateData->imaTemplateXattrs.xattrLengths[i];
+    }
+    return;
+}
+
+static void IMA_TraceIUID(ImaTemplateData	*imaTemplateData)
+{
+    if (imaTemplateData->imaTemplateIUID.iuidLength == 2) {
+	printf("IMA_TemplateData_Trace: iuid %u\n", imaTemplateData->imaTemplateIUID.iuid16);
+    }
+    else if (imaTemplateData->imaTemplateIUID.iuidLength == 4) {
+	printf("IMA_TemplateData_Trace: iuid %u\n", imaTemplateData->imaTemplateIUID.iuid32);
+    }
+    else {
+	printf("IMA_TemplateData_Trace: iuid length 0\n");
+    }
+    return;
+}
+
+static void IMA_TraceIGID(ImaTemplateData	*imaTemplateData)
+{
+    if (imaTemplateData->imaTemplateIGID.igidLength == 2) {
+	printf("IMA_TemplateData_Trace: igid %u\n", imaTemplateData->imaTemplateIGID.igid16);
+    }
+    else if (imaTemplateData->imaTemplateIGID.igidLength == 4) {
+	printf("IMA_TemplateData_Trace: igid %u\n", imaTemplateData->imaTemplateIGID.igid32);
+    }
+    else {
+	printf("IMA_TemplateData_Trace: igid length 0\n");
+    }
+    return;
+}
+
+static void IMA_TraceIMODE(ImaTemplateData	*imaTemplateData)
+{
+    if (imaTemplateData->imaTemplateIMODE.imodeLength != 0) {
+	printf("IMA_TemplateData_Trace: imode %04o\n", imaTemplateData->imaTemplateIMODE.imode);
+    }
+    else {
+	printf("IMA_TemplateData_Trace: igid length 0\n");
+    }
+    return;
 }
 
 /* IMA_Event_ReadFile() reads one IMA event from a file.
@@ -645,7 +901,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 			      int getTemplate)
 {
     int rc = 0;
-    
+
     imaEvent->template_data = NULL;		/* for free */
     if (*length == 0) {
 	*endOfBuffer = 1;
@@ -653,16 +909,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
     else {
 	/* read the IMA pcr index */
 	if (rc == 0) {
-	    /* bounds check the length */
-	    if (*length < sizeof(uint32_t)) {
-		printf("ERROR: IMA_Event_ReadBuffer: buffer too small for PCR index\n");
-		rc = TSS_RC_INSUFFICIENT_BUFFER;
-	    }
-	    else {
-		imaEvent->pcrIndex = IMA_Uint32_Convert(*buffer, littleEndian);
-		*buffer += sizeof(uint32_t);
-		*length -= sizeof(uint32_t);
-	    }
+	    rc = IMA_Uint32_Unmarshal(&imaEvent->pcrIndex, buffer, length, littleEndian);
 	}
 	/* sanity check the PCR index */
 	if (rc == 0) {
@@ -671,7 +918,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 		       IMA_PCR, imaEvent->pcrIndex);
 		rc = TSS_RC_BAD_PROPERTY_VALUE;
 	    }
-	}	
+	}
 	/* read the IMA digest, this is hard coded to SHA-1 */
 	if (rc == 0) {
 	    /* bounds check the length */
@@ -687,17 +934,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	}
 	/* read the IMA name length */
 	if (rc == 0) {
-	    /* bounds check the length */
-	    if (*length < sizeof(uint32_t)) {
-		printf("ERROR: IMA_Event_ReadBuffer: "
-		       "buffer too small for IMA template name length\n");
-		rc = TSS_RC_INSUFFICIENT_BUFFER;
-	    }
-	    else {
-		imaEvent->name_len = IMA_Uint32_Convert(*buffer, littleEndian);
-		*buffer += sizeof(uint32_t);
-		*length -= sizeof(uint32_t);
-	    }
+	    rc = IMA_Uint32_Unmarshal(&imaEvent->name_len, buffer, length, littleEndian);
 	}
 	/* read the template name */
 	if (rc == 0) {
@@ -725,16 +962,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	}
 	/* read the template data length */
 	if (rc == 0) {
-	    /* bounds check the length */
-	    if (*length < sizeof(uint32_t)) {
-		printf("ERROR: IMA_Event_ReadBuffer: buffer too small for template data length\n");
-		rc = TSS_RC_INSUFFICIENT_BUFFER;
-	    }
-	    else {
-		imaEvent->template_data_len = IMA_Uint32_Convert(*buffer, littleEndian);
-		*buffer += sizeof(uint32_t);
-		*length -= sizeof(uint32_t);
-	    }
+	    rc = IMA_Uint32_Unmarshal(&imaEvent->template_data_len, buffer, length, littleEndian);
 	}
 	/* allocate for the template data */
 	if (rc == 0) {
@@ -774,18 +1002,21 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
     return rc;
 }
 
-/* IMA_TemplateName_Parse() parses the template name and registers the template data callbacks */
+/* IMA_TemplateName_Parse() parses the template name and registers the template data parsing and
+   tracing callbacks */
 
 static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataParseFunctions[],
+				       TemplateDataTraceFunction_t templateDataTraceFunctions[],
 				       size_t templateDataParseFunctionsSize,
 				       ImaEvent *imaEvent)
 {
     uint32_t 	rc = 0;
     size_t	i;
-    
+
     /* initialize all the function pointers to NULL */
     for (i = 0 ; (rc == 0) && (i < templateDataParseFunctionsSize) ; i++) {
 	templateDataParseFunctions[i] = NULL;
+	templateDataTraceFunctions[i] = NULL;
     }
     /* parse the name into the callback structure */
     if (rc == 0) {
@@ -795,37 +1026,99 @@ static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataP
 	    /* d-ng | n-ng */
 	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNG;
 	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
+
+	    templateDataTraceFunctions[0] = (TemplateDataTraceFunction_t)IMA_TraceDNG;
+	    templateDataTraceFunctions[1] = (TemplateDataTraceFunction_t)IMA_TraceNNG;
+	    break;
+	  case IMA_FORMAT_IMA_NGV2:
+	    /* d-ng | n-ngv2 */
+	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNGV2;
+	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
+
+	    templateDataTraceFunctions[0] = (TemplateDataTraceFunction_t)IMA_TraceDNGV2;
+	    templateDataTraceFunctions[1] = (TemplateDataTraceFunction_t)IMA_TraceNNG;
 	    break;
 	  case IMA_FORMAT_IMA_SIG:
 	    /* d-ng | n-ng | sig */
 	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNG;
 	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
 	    templateDataParseFunctions[2] = (TemplateDataParseFunction_t)IMA_ParseSIG;
+
+	    templateDataTraceFunctions[0] = (TemplateDataTraceFunction_t)IMA_TraceDNG;
+	    templateDataTraceFunctions[1] = (TemplateDataTraceFunction_t)IMA_TraceNNG;
+	    templateDataTraceFunctions[2] = (TemplateDataTraceFunction_t)IMA_TraceSIG;
+	    break;
+	  case IMA_FORMAT_IMA_SIGV2:
+	    /* d-ngv2 | n-ng | sig */
+	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNGV2;
+	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
+	    templateDataParseFunctions[2] = (TemplateDataParseFunction_t)IMA_ParseSIG;
+
+	    templateDataTraceFunctions[0] = (TemplateDataTraceFunction_t)IMA_TraceDNGV2;
+	    templateDataTraceFunctions[1] = (TemplateDataTraceFunction_t)IMA_TraceNNG;
+	    templateDataTraceFunctions[2] = (TemplateDataTraceFunction_t)IMA_TraceSIG;
 	    break;
 	  case IMA_FORMAT_IMA:
 	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseD;
 	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
+
+	    templateDataTraceFunctions[0] = (TemplateDataTraceFunction_t)IMA_TraceD;
+	    templateDataTraceFunctions[1] = (TemplateDataTraceFunction_t)IMA_TraceNNG;
 	    break;
-	  case IMA_FORMAT_MODSIG:
+	  case IMA_FORMAT_IMA_MODSIG:
 	    /* d-ng | n-ng | sig | d-modsig | modsig */
 	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNG;
 	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
 	    templateDataParseFunctions[2] = (TemplateDataParseFunction_t)IMA_ParseSIG;
 	    templateDataParseFunctions[3] = (TemplateDataParseFunction_t)IMA_ParseDMODSIG;
 	    templateDataParseFunctions[4] = (TemplateDataParseFunction_t)IMA_ParseMODSIG;
+
+	    templateDataTraceFunctions[0] = (TemplateDataTraceFunction_t)IMA_TraceDNG;
+	    templateDataTraceFunctions[1] = (TemplateDataTraceFunction_t)IMA_TraceNNG;
+	    templateDataTraceFunctions[2] = (TemplateDataTraceFunction_t)IMA_TraceSIG;
+	    templateDataTraceFunctions[3] = (TemplateDataTraceFunction_t)IMA_TraceDMODSIG;
+	    templateDataTraceFunctions[4] = (TemplateDataTraceFunction_t)IMA_TraceMODSIG;
 	    break;
-	  case IMA_FORMAT_BUF:
+	  case IMA_FORMAT_IMA_BUF:
 	    /* d-ng | n-ng | buf */
 	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNG;
 	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
 	    templateDataParseFunctions[2] = (TemplateDataParseFunction_t)IMA_ParseBUF;
+
+	    templateDataTraceFunctions[0] = (TemplateDataTraceFunction_t)IMA_TraceDNG;
+	    templateDataTraceFunctions[1] = (TemplateDataTraceFunction_t)IMA_TraceNNG;
+	    templateDataTraceFunctions[2] = (TemplateDataTraceFunction_t)IMA_TraceBUF;
+	    break;
+	  case IMA_FORMAT_EVM_SIG:
+	    /* d-ng | n-ng | evmsig | xattrnames | xattrlengths | xattrvalues |
+	       iuid | igid | imode */
+	    templateDataParseFunctions[0] = (TemplateDataParseFunction_t)IMA_ParseDNG;
+	    templateDataParseFunctions[1] = (TemplateDataParseFunction_t)IMA_ParseNNG;
+	    templateDataParseFunctions[2] = (TemplateDataParseFunction_t)IMA_ParseSIG;
+	    templateDataParseFunctions[3] = (TemplateDataParseFunction_t)IMA_ParseXATTRNAMES;
+	    templateDataParseFunctions[4] = (TemplateDataParseFunction_t)IMA_ParseXATTRLENGTHS;
+	    templateDataParseFunctions[5] = (TemplateDataParseFunction_t)IMA_ParseXATTRVALUES;
+	    templateDataParseFunctions[6] = (TemplateDataParseFunction_t)IMA_ParseIUID;
+	    templateDataParseFunctions[7] = (TemplateDataParseFunction_t)IMA_ParseIGID;
+	    templateDataParseFunctions[8] = (TemplateDataParseFunction_t)IMA_ParseIMODE;
+
+	    templateDataTraceFunctions[0] = (TemplateDataTraceFunction_t)IMA_TraceDNG;
+	    templateDataTraceFunctions[1] = (TemplateDataTraceFunction_t)IMA_TraceNNG;
+	    templateDataTraceFunctions[2] = (TemplateDataTraceFunction_t)IMA_TraceSIG;
+	    templateDataTraceFunctions[3] = (TemplateDataTraceFunction_t)IMA_TraceXATTRNAMES;
+	    templateDataTraceFunctions[4] = (TemplateDataTraceFunction_t)IMA_TraceXATTRLENGTHS;
+	    templateDataTraceFunctions[5] = (TemplateDataTraceFunction_t)IMA_TraceXATTRVALUES;
+	    templateDataTraceFunctions[6] = (TemplateDataTraceFunction_t)IMA_TraceIUID;
+	    templateDataTraceFunctions[7] = (TemplateDataTraceFunction_t)IMA_TraceIGID;
+	    templateDataTraceFunctions[8] = (TemplateDataTraceFunction_t)IMA_TraceIMODE;
 	    break;
 	    /* these are potentially the custom templates */
 	  default:
 	    rc = IMA_TemplateName_ParseCustom(templateDataParseFunctions,
+					      templateDataTraceFunctions,
 					      templateDataParseFunctionsSize,
 					      imaEvent);
-	}	    
+	}
     }
     return rc;
 }
@@ -835,21 +1128,63 @@ static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataP
 typedef struct {
     const char *formatString;
     TemplateDataParseFunction_t parseFunction;
+    TemplateDataTraceFunction_t traceFunction;
 } ImaFormatMap; 
 
 static ImaFormatMap imaFormatMap[] = {
-    {"d", (TemplateDataParseFunction_t)IMA_ParseD},
-    {"n", (TemplateDataParseFunction_t)IMA_ParseNNG},
-    {"d-ng", (TemplateDataParseFunction_t)IMA_ParseDNG},
-    {"n-ng", (TemplateDataParseFunction_t)IMA_ParseNNG},
-    {"sig", (TemplateDataParseFunction_t)IMA_ParseSIG},
-    {"d-modsig", (TemplateDataParseFunction_t)IMA_ParseDMODSIG},
-    {"modsig", (TemplateDataParseFunction_t)IMA_ParseMODSIG},
-    {"buf", (TemplateDataParseFunction_t)IMA_ParseBUF}
+    {"d",
+     (TemplateDataParseFunction_t)IMA_ParseD,
+     (TemplateDataTraceFunction_t)IMA_TraceD},
+    {"n",
+     (TemplateDataParseFunction_t)IMA_ParseNNG,
+     (TemplateDataTraceFunction_t)IMA_TraceNNG},
+    {"d-ng",
+     (TemplateDataParseFunction_t)IMA_ParseDNG,
+     (TemplateDataTraceFunction_t)IMA_TraceDNG},
+    {"d-ngv2",
+     (TemplateDataParseFunction_t)IMA_ParseDNGV2,
+     (TemplateDataTraceFunction_t)IMA_TraceDNGV2},
+    {"n-ng",
+     (TemplateDataParseFunction_t)IMA_ParseNNG,
+     (TemplateDataTraceFunction_t)IMA_TraceNNG},
+    {"sig",
+     (TemplateDataParseFunction_t)IMA_ParseSIG,
+     (TemplateDataTraceFunction_t)IMA_TraceSIG},
+    {"d-modsig",
+      (TemplateDataParseFunction_t)IMA_ParseDMODSIG,
+      (TemplateDataTraceFunction_t)IMA_TraceDMODSIG},
+    {"modsig",
+     (TemplateDataParseFunction_t)IMA_ParseMODSIG,
+     (TemplateDataTraceFunction_t)IMA_TraceMODSIG},
+    {"buf",
+     (TemplateDataParseFunction_t)IMA_ParseBUF,
+     (TemplateDataTraceFunction_t)IMA_TraceBUF},
+    {"xattrnames",
+     (TemplateDataParseFunction_t)IMA_ParseXATTRNAMES,
+     (TemplateDataTraceFunction_t)IMA_TraceXATTRNAMES},
+    {"xattrlengths",
+     (TemplateDataParseFunction_t)IMA_ParseXATTRLENGTHS,
+     (TemplateDataTraceFunction_t)IMA_TraceXATTRLENGTHS},
+    {" xattrvalues",
+     (TemplateDataParseFunction_t)IMA_ParseXATTRVALUES,
+     (TemplateDataTraceFunction_t)IMA_TraceXATTRVALUES},
+    {"iuid",
+     (TemplateDataParseFunction_t)IMA_ParseIUID,
+     (TemplateDataTraceFunction_t)IMA_TraceIUID},
+    {"igid",
+     (TemplateDataParseFunction_t)IMA_ParseIGID,
+     (TemplateDataTraceFunction_t)IMA_TraceIGID},
+    {"imode",
+     (TemplateDataParseFunction_t)IMA_ParseIMODE,
+     (TemplateDataTraceFunction_t)IMA_TraceIMODE}
 };
-	 
+
+/* IMA_TemplateName_ParseCustom() parses the template custom (not built-in) names and registers the
+   template data parsing and tracing callbacks */
+
 static uint32_t
 IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFunctions[],
+			     TemplateDataTraceFunction_t templateDataTraceFunctions[],
 			     size_t templateDataParseFunctionsSize,
 			     ImaEvent *imaEvent)
 {
@@ -860,7 +1195,7 @@ IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFuncti
     char	*endName;
     char 	templateName[TCG_EVENT_NAME_LEN_MAX + 1];	/* one | separated item with nul */
 
-    /* parse the custom templates */
+    /* parse the custom templates, strcpy is safe because the reader did the bounds check */
     strcpy(templateName, imaEvent->name);	/* modify'able */
     startName = templateName;
 
@@ -876,6 +1211,7 @@ IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFuncti
 	    irc = strcmp(startName, imaFormatMap[j].formatString);
 	    if (irc == 0) {
 		templateDataParseFunctions[i] = imaFormatMap[j].parseFunction;
+		templateDataTraceFunctions[i] = imaFormatMap[j].traceFunction;
 	    }
 	}
 	/* if no format string found */
@@ -896,7 +1232,7 @@ IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFuncti
 }
 
 /*
-  template data callbacks
+  template data parsing callbacks
 */
 
 /* IMA_ParseD() parses a d : digest (no length or algorithm) */
@@ -939,16 +1275,8 @@ static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
     size_t 	hashAlgSize;
     /* read the hash length, algorithm + hash */
     if (rc == 0) {
-	/* bounds check the length */
-	if (*length < sizeof(uint32_t)) {
-	    printf("ERROR: IMA_ParseDNG: buffer too small for hash length\n");
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-	else {
-	    imaTemplateData->imaTemplateDNG.hashLength = IMA_Uint32_Convert(*buffer, littleEndian);
-	    *buffer += sizeof(uint32_t);
-	    *length -= sizeof(uint32_t);
-	}
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateDNG.hashLength,
+				  buffer, length, littleEndian);
     }
     /* read the hash algorithm, nul terminated string */
     if (rc == 0) {
@@ -993,7 +1321,7 @@ static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
 		   "hashLength %u inconsistent with hashAlgSize %lu and fileDataHashLength %u\n",
 		   imaTemplateData->imaTemplateDNG.hashLength, (unsigned long)hashAlgSize,
 		   imaTemplateData->imaTemplateDNG.fileDataHashLength);
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
     /* fileDataHash */
@@ -1014,10 +1342,126 @@ static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
 		   imaTemplateData->imaTemplateDNG.fileDataHashLength);
 	    *buffer += imaTemplateData->imaTemplateDNG.fileDataHashLength;
 	    *length -= imaTemplateData->imaTemplateDNG.fileDataHashLength;
-	    /* FIXME remove */
+#if 0
 	    TSS_PrintAll("IMA_ParseDNG: file data hash",
 			 imaTemplateData->imaTemplateDNG.fileDataHash,
 			 imaTemplateData->imaTemplateDNG.fileDataHashLength);
+#endif
+	}
+    }
+    return rc;
+}
+
+/* IMA_ParseDNGV2 parses a d-ngv2 : length + prefix + hash algorithm + hash
+
+   The digest is a file data hash.
+*/
+
+static uint32_t IMA_ParseDNGV2(ImaTemplateData	*imaTemplateData,
+			       uint8_t 		**buffer,
+			       size_t 		*length,
+			       int 		littleEndian)
+{
+    uint32_t 	rc = 0;
+    size_t 	hashAlgSize;
+    size_t 	prefixSize;
+
+    /* read the length, prefix + algorithm + hash */
+    if (rc == 0) {
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateDNGV2.hashLength,
+				  buffer, length, littleEndian);
+    }
+    /* read the prefix, : terminated string */
+    if (rc == 0) {
+    	/* NUL terminate first */
+	memset(imaTemplateData->imaTemplateDNGV2.prefix, 0,
+	       sizeof(((ImaTemplateData *)NULL)->imaTemplateDNGV2.prefix));
+	rc = IMA_Strc2cpy(imaTemplateData->imaTemplateDNGV2.prefix, *buffer,
+			  sizeof(((ImaTemplateData *)NULL)->imaTemplateDNGV2.prefix),
+			  imaTemplateData->imaTemplateDNGV2.hashLength);
+	if (rc != 0) {
+	    printf("ERROR: IMA_ParseDNGV2: buffer too small for prefix\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else {
+	    prefixSize = strlen(imaTemplateData->imaTemplateDNGV2.prefix);
+	    *buffer += prefixSize;
+	    *length -= prefixSize;
+	}
+    }
+    /* read the hash algorithm, nul terminated string */
+    if (rc == 0) {
+    	/* NUL terminate first */
+	memset(imaTemplateData->imaTemplateDNGV2.hashAlg, 0,
+	       sizeof(((ImaTemplateData *)NULL)->imaTemplateDNGV2.hashAlg));
+	rc = IMA_Strn2cpy(imaTemplateData->imaTemplateDNGV2.hashAlg, *buffer,
+			  /* destLength */
+			  sizeof(((ImaTemplateData *)NULL)->imaTemplateDNGV2.hashAlg),
+			  /* srcLength */
+			  imaTemplateData->imaTemplateDNGV2.hashLength - prefixSize);
+	if (rc != 0) {
+	    printf("ERROR: IMA_ParseDNGV2: buffer too small for hash algorithm\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else {
+	    hashAlgSize = strlen(imaTemplateData->imaTemplateDNGV2.hashAlg) + 1;
+	    *buffer += hashAlgSize;
+	    *length -= hashAlgSize;
+	}
+    }
+    /* fileDataHashLength */
+    if (rc == 0) {
+	if (strcmp(imaTemplateData->imaTemplateDNGV2.hashAlg, "sha1:") == 0) {
+	    imaTemplateData->imaTemplateDNGV2.fileDataHashLength = SHA1_DIGEST_SIZE;
+	    imaTemplateData->imaTemplateDNGV2.hashAlgId = TPM_ALG_SHA1;
+	}
+	else if (strcmp(imaTemplateData->imaTemplateDNGV2.hashAlg, "sha256:") == 0) {
+	    imaTemplateData->imaTemplateDNGV2.fileDataHashLength = SHA256_DIGEST_SIZE;
+	    imaTemplateData->imaTemplateDNGV2.hashAlgId = TPM_ALG_SHA256;
+	}
+	else {
+	    printf("ERROR: IMA_ParseDNGV2: Unknown file data hash algorithm: %s\n",
+		   imaTemplateData->imaTemplateDNGV2.hashAlg);
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+    /* consistency check hashLength vs contents */
+    if (rc == 0) {
+	if ((prefixSize + hashAlgSize + imaTemplateData->imaTemplateDNGV2.fileDataHashLength) !=
+	    imaTemplateData->imaTemplateDNGV2.hashLength) {
+	    printf("ERROR: IMA_ParseDNGV2: "
+		   "hashLength %u inconsistent with prefixSize %lu hashAlgSize %lu "
+		   "and fileDataHashLength %u\n",
+		   imaTemplateData->imaTemplateDNGV2.hashLength,
+		   (unsigned long)prefixSize,
+		   (unsigned long)hashAlgSize,
+		   imaTemplateData->imaTemplateDNGV2.fileDataHashLength);
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    /* fileDataHash */
+    if (rc == 0) {
+	/* bounds check the length */
+	if (*length < imaTemplateData->imaTemplateDNGV2.fileDataHashLength) {
+	    printf("ERROR: IMA_ParseDNGV2: buffer too small for file data hash\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else if (imaTemplateData->imaTemplateDNGV2.fileDataHashLength >
+		 sizeof(((ImaTemplateData *)NULL)->imaTemplateDNGV2.fileDataHash)) {
+	    printf("ERROR: IMA_ParseDNGV2: "
+		   "file data hash length exceeds maximum size\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	} 
+	else {
+	    memcpy(&(imaTemplateData->imaTemplateDNGV2.fileDataHash), *buffer,
+		   imaTemplateData->imaTemplateDNGV2.fileDataHashLength);
+	    *buffer += imaTemplateData->imaTemplateDNGV2.fileDataHashLength;
+	    *length -= imaTemplateData->imaTemplateDNGV2.fileDataHashLength;
+#if 0
+	    TSS_PrintAll("IMA_ParseDNGV2: file data hash",
+			 imaTemplateData->imaTemplateDNGV2.fileDataHash,
+			 imaTemplateData->imaTemplateDNGV2.fileDataHashLength);
+#endif
 	}
     }
     return rc;
@@ -1033,16 +1477,8 @@ static uint32_t IMA_ParseNNG(ImaTemplateData	*imaTemplateData,
     uint32_t 	rc = 0;
     /* fileNameLength (length includes the nul terminator) */
     if (rc == 0) {
-	/* bounds check the length */
-	if (*length < sizeof(uint32_t)) {
-	    printf("ERROR: IMA_ParseNNG: buffer too small for file name length\n");
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-	else {
-	    imaTemplateData->imaTemplateNNG.fileNameLength = IMA_Uint32_Convert(*buffer, littleEndian);
-	    *buffer += sizeof(uint32_t);
-	    *length -= sizeof(uint32_t);
-	}
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateNNG.fileNameLength,
+				  buffer, length, littleEndian);
     }
     /* fileName */
     if (rc == 0) {
@@ -1079,19 +1515,8 @@ static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
     uint32_t 	rc = 0;
     /* sigLength */
     if (rc == 0) {
-	/* bounds check the length */
-	if (*length < sizeof(uint32_t)) {
-	    printf("ERROR: IMA_ParseSIG: "
-		   "buffer too small for signature length\n");
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-	else {
-	    imaTemplateData->imaTemplateSIG.sigLength = IMA_Uint32_Convert(*buffer, littleEndian);
-	    *buffer += sizeof(uint32_t);
-	    *length -= sizeof(uint32_t);
-	    /* FIXME remove */
-	    printf("IMA_ParseSIG: sigLength %u\n", imaTemplateData->imaTemplateSIG.sigLength);
-	}
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateSIG.sigLength,
+				  buffer, length, littleEndian);
     }
     /* sigHeader - only parsed if its length is not zero */
     if (imaTemplateData->imaTemplateSIG.sigLength != 0) {
@@ -1122,19 +1547,20 @@ static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
 	    int goodHashAlgo = (((imaTemplateData->imaTemplateSIG.sigHeader[2] == HASH_ALGO_SHA1) &&
 				 (imaTemplateData->imaTemplateDNG.hashAlgId == TPM_ALG_SHA1)) ||
 				((imaTemplateData->imaTemplateSIG.sigHeader[2] == HASH_ALGO_SHA256) &&
-				 (imaTemplateData->imaTemplateDNG.hashAlgId == TPM_ALG_SHA256)));
-	    int goodSigSize = ((imaTemplateData->imaTemplateSIG.signatureSize == 128) ||
-			       (imaTemplateData->imaTemplateSIG.signatureSize == 256));
+				 (imaTemplateData->imaTemplateDNG.hashAlgId == TPM_ALG_SHA256)) ||
+				/* might have sig without dng */
+				(imaTemplateData->imaTemplateDNG.hashAlgId == TPM_ALG_NULL));
 	    /* xattr type */
 	    if (
-		(imaTemplateData->imaTemplateSIG.sigHeader[0] != EVM_IMA_XATTR_DIGSIG) || /* [0] type */
 		(imaTemplateData->imaTemplateSIG.sigHeader[1] != 2) ||		/* [1] version */
-		!goodHashAlgo ||				/* [2] hash algorithm */
+		!goodHashAlgo				/* [2] hash algorithm */
 		/* [3]-[6] are the public key fingerprint.  Any value is legal. */
-		!goodSigSize 					/* [7][8] sig size */
+		/* [7][8] sig size cannot be checked, sig alg is not in log */
 		) {
-		printf("ERROR: IMA_ParseSIG: invalid sigHeader\n");
-		rc = TSS_RC_INSUFFICIENT_BUFFER;
+		printf("ERROR: IMA_ParseSIG: invalid sigHeader %02x %02x\n",
+		       imaTemplateData->imaTemplateSIG.sigHeader[0],
+		       imaTemplateData->imaTemplateSIG.sigHeader[1]);
+		rc = TSS_RC_BAD_PROPERTY_VALUE;
 	    }
 	}
 	/* signature */
@@ -1158,11 +1584,12 @@ static uint32_t IMA_ParseSIG(ImaTemplateData	*imaTemplateData,
 		       imaTemplateData->imaTemplateSIG.signatureSize);
 		*buffer += imaTemplateData->imaTemplateSIG.signatureSize;
 		*length -= imaTemplateData->imaTemplateSIG.signatureSize;
-		/* FIXME remove */
+#if 0
 		TSS_PrintAll("IMA_ParseSIG: file data hash",
 			     imaTemplateData->imaTemplateSIG.signature,
 			     imaTemplateData->imaTemplateSIG.signatureSize);
 
+#endif
 	    }
 	}
     }
@@ -1184,19 +1611,11 @@ static uint32_t IMA_ParseDMODSIG(ImaTemplateData	*imaTemplateData,
 {
     uint32_t 	rc = 0;
     size_t 	hashAlgSize;
-    
+
     /* read the hash length, algorithm + hash */
     if (rc == 0) {
-	/* bounds check the length */
-	if (*length < sizeof(uint32_t)) {
-	    printf("ERROR: IMA_ParseDMODSIG: buffer too small for hash length\n");
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-	else {
-	    imaTemplateData->imaTemplateDMODSIG.dModSigHashLength = IMA_Uint32_Convert(*buffer, littleEndian);
-	    *buffer += sizeof(uint32_t);
-	    *length -= sizeof(uint32_t);
-	}
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateDMODSIG.dModSigHashLength,
+				  buffer, length, littleEndian);
     }
     /* FIXME is zero length an error? */
     if (imaTemplateData->imaTemplateDMODSIG.dModSigHashLength != 0) {
@@ -1286,16 +1705,8 @@ static uint32_t IMA_ParseMODSIG(ImaTemplateData	*imaTemplateData,
 
     /* read the length */
     if (rc == 0) {
-	/* bounds check the length */
-	if (*length < sizeof(uint32_t)) {
-	    printf("ERROR: IMA_ParseMODSIG: buffer too small for length\n");
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-	else {
-	    imaTemplateData->imaTemplateMODSIG.modSigLength = IMA_Uint32_Convert(*buffer, littleEndian);
-	    *buffer += sizeof(uint32_t);
-	    *length -= sizeof(uint32_t);
-	}
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateMODSIG.modSigLength,
+				  buffer, length, littleEndian);
     }
     /* read the DER */
     if (rc == 0) {
@@ -1329,19 +1740,10 @@ static uint32_t IMA_ParseBUF(ImaTemplateData	*imaTemplateData,
 {
     uint32_t 	rc = 0;
 
-    /* FIXME factor reading a 4 byte length plus data stream */
     /* read the length */
     if (rc == 0) {
-	/* bounds check the length */
-	if (*length < sizeof(uint32_t)) {
-	    printf("ERROR: IMA_ParseBUF: buffer too small for length\n");
-	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	}
-	else {
-	    imaTemplateData->imaTemplateBUF.bufLength = IMA_Uint32_Convert(*buffer, littleEndian);
-	    *buffer += sizeof(uint32_t);
-	    *length -= sizeof(uint32_t);
-	}
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateBUF.bufLength,
+				  buffer, length, littleEndian);
     }
     /* read the DER */
     if (rc == 0) {
@@ -1361,6 +1763,266 @@ static uint32_t IMA_ParseBUF(ImaTemplateData	*imaTemplateData,
 		   imaTemplateData->imaTemplateBUF.bufLength);
 	    *buffer += imaTemplateData->imaTemplateBUF.bufLength;
 	    *length -= imaTemplateData->imaTemplateBUF.bufLength;
+	}
+    }
+    return rc;
+}
+
+/* IMA_ParseXATTRNAMESz parses an xattrnames field */
+
+static uint32_t IMA_ParseXATTRNAMES(ImaTemplateData	*imaTemplateData,
+				    uint8_t 		**buffer,
+				    size_t 		*length,
+				    int 		littleEndian)
+{
+    uint32_t 	rc = 0;
+    size_t	i;
+    size_t 	xattrNamesSize;
+
+    if (rc == 0) {
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateXattrs.xattrNamesLength,
+				  buffer, length, littleEndian);
+    }
+    if (imaTemplateData->imaTemplateXattrs.xattrNamesLength > 0) {
+	if (rc == 0) {
+	    /* NUL terminate first */
+	    memset(imaTemplateData->imaTemplateXattrs.xattrNames, 0,
+		   sizeof(((ImaTemplateData *)NULL)->imaTemplateXattrs.xattrNames));
+	    /* copy nul terminated xattrnames string */
+	    rc = IMA_Strn2cpy(imaTemplateData->imaTemplateXattrs.xattrNames, *buffer,
+			      /* destLength */
+			      sizeof(((ImaTemplateData *)NULL)->imaTemplateXattrs.xattrNames),
+			      /* srcLength */
+			      imaTemplateData->imaTemplateXattrs.xattrNamesLength);
+	    if (rc != 0) {
+		printf("ERROR: IMA_ParseXATTRNAMES: buffer too small for xattrNames\n"
+		       "\tor xattrNames exceeds maximum size\n");
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	    else {
+		/* add one to strlen for nul terminator */
+		xattrNamesSize = strlen(imaTemplateData->imaTemplateXattrs.xattrNames) + 1;
+		*buffer += xattrNamesSize;
+		*length -= xattrNamesSize;
+	    }
+	}
+	/* verify length of xattrnames against the string length */
+	if (rc == 0) {
+	    if (xattrNamesSize != imaTemplateData->imaTemplateXattrs.xattrNamesLength) {
+		printf("ERROR: IMA_ParseXATTRNAMES: length %lu not equal to string length %u\n",
+		       (unsigned long)xattrNamesSize,
+		       imaTemplateData->imaTemplateXattrs.xattrNamesLength);
+	    }
+	}
+	if (rc == 0) {
+	    /* if xattrNamesLength is > 0, have at least one name */
+	    imaTemplateData->imaTemplateXattrs.xattrNamesPtr[0] =
+		imaTemplateData->imaTemplateXattrs.xattrNames;
+	    imaTemplateData->imaTemplateXattrs.xattrNamesCount++;
+
+	    for (i = 1 ;
+		 i < sizeof(((ImaTemplateData *)NULL)->imaTemplateXattrs.xattrNamesPtr) ; i++) {
+		/* the | is a separator character */
+		imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i] =
+		    strchr(imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i-1], '|');
+		/* found a | character */
+		if (imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i] != NULL) {
+		    /* nul terminate the previous string, replace | with nul */
+		    *(imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i]) = '\0';
+		    imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i] += 1; /* skip the | */
+		    imaTemplateData->imaTemplateXattrs.xattrNamesCount++;
+		}
+		else {
+		    break;	/* no more | separators */
+		}
+	    }
+	}
+    }
+    return rc;
+}
+
+/* IMA_ParseXATTRLENGTHS parses an xattrlengths field */
+
+static uint32_t IMA_ParseXATTRLENGTHS(ImaTemplateData	*imaTemplateData,
+				      uint8_t 		**buffer,
+				      size_t 		*length,
+				      int 		littleEndian)
+{
+    uint32_t 	rc = 0;
+    size_t	i;
+
+    if (rc == 0) {
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateXattrs.xattrLengthsLength,
+				  buffer, length, littleEndian);
+    }
+    if (rc == 0) {
+	/* range check against total buffer */
+	if (*length < imaTemplateData->imaTemplateXattrs.xattrLengthsLength) {
+	    printf("ERROR: IMA_ParseXATTRLENGTHS: buffer too small for xattrLengthsLength\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	/* 4-byte lengths, so must be a multiple of 4 */
+	else if ((imaTemplateData->imaTemplateXattrs.xattrLengthsLength % 4) != 0) {
+	    printf("ERROR: IMA_ParseXATTRLENGTHS: xattrLengthsLength not multiple of 4\n");
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+	/* array of lengths must fit in (guess at) xattrLengths array */
+	else if ((imaTemplateData->imaTemplateXattrs.xattrLengthsLength / 4) >
+		 sizeof(((ImaTemplateData *)NULL)->imaTemplateXattrs.xattrLengths)) {
+	    printf("ERROR: IMA_ParseXATTRLENGTHS: xattrLengths length %u too large\n",
+		   imaTemplateData->imaTemplateXattrs.xattrLengthsLength);
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else if ((imaTemplateData->imaTemplateXattrs.xattrLengthsLength / 4) !=
+		 imaTemplateData->imaTemplateXattrs.xattrNamesCount) {
+	    printf("ERROR: IMA_ParseXATTRLENGTHS: xattrLengthsLength %lu "
+		   "does not match xattrNames Count %lu\n",
+		   (unsigned long)imaTemplateData->imaTemplateXattrs.xattrLengthsLength,
+		   (unsigned long)imaTemplateData->imaTemplateXattrs.xattrNamesCount);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+
+    }
+    /* unmarshal the xattrLengths array */ 
+    if (rc == 0) {
+	for (i = 0 ; i < imaTemplateData->imaTemplateXattrs.xattrLengthsLength / 4 ; i++) {
+	    rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateXattrs.xattrLengths[i],
+				      buffer, length, littleEndian);
+	    imaTemplateData->imaTemplateXattrs.xattrLengthsSum +=
+		imaTemplateData->imaTemplateXattrs.xattrLengths[i];
+	}
+    }
+    return rc;
+}
+
+/* IMA_ParseXATTRVALUES parses a xattrvalues structure */
+
+static uint32_t IMA_ParseXATTRVALUES(ImaTemplateData	*imaTemplateData,
+				     uint8_t 		**buffer,
+				     size_t 		*length,
+				     int 		littleEndian)
+{
+    uint32_t 	rc = 0;
+
+    if (rc == 0) {
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateXattrs.xattrValuesLength,
+				  buffer, length, littleEndian);
+	/* range check against total buffer */
+	if (*length < imaTemplateData->imaTemplateXattrs.xattrValuesLength) {
+	    printf("ERROR: IMA_ParseXATTRVALUES: buffer too small for xattrValuesLength\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else if (imaTemplateData->imaTemplateXattrs.xattrValuesLength !=
+		 imaTemplateData->imaTemplateXattrs.xattrLengthsSum) {
+	    printf("ERROR: IMA_ParseXATTRVALUES: "
+		   "xattrLengths and xattrValuesLength inconsistent\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+	else if (imaTemplateData->imaTemplateXattrs.xattrValuesLength >
+		 sizeof(((ImaTemplateData *)NULL)->imaTemplateXattrs.xattrValues)) {
+	    printf("ERROR: IMA_ParseXATTRVALUES: xattrValues array too small\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    /* copy the unparsed xattrValues buffer */
+    if (rc == 0) {
+	memcpy(imaTemplateData->imaTemplateXattrs.xattrValues,
+	       *buffer, imaTemplateData->imaTemplateXattrs.xattrValuesLength);
+	*buffer += imaTemplateData->imaTemplateXattrs.xattrValuesLength;
+	*length -= imaTemplateData->imaTemplateXattrs.xattrValuesLength;
+    }
+#if 0
+    TSS_PrintAll("IMA_ParseXATTRVALUES: xattrvalues",
+		 imaTemplateData->imaTemplateXattrs.xattrValues,
+		 imaTemplateData->imaTemplateXattrs.xattrValuesLength);
+#endif
+    return rc;
+}
+
+/* IMA_ParseIUID parses a iuid, either a uint16 or uint32 */
+
+static uint32_t IMA_ParseIUID(ImaTemplateData	*imaTemplateData,
+			      uint8_t 		**buffer,
+			      size_t 		*length,
+			      int 		littleEndian)
+{
+    uint32_t 	rc = 0;
+
+    if (rc == 0) {
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateIUID.iuidLength,
+				  buffer, length, littleEndian);
+    }
+    if ((rc == 0) && (imaTemplateData->imaTemplateIUID.iuidLength > 0)) {
+	if (imaTemplateData->imaTemplateIUID.iuidLength == 2) {
+	    rc = IMA_Uint16_Unmarshal(&imaTemplateData->imaTemplateIUID.iuid16,
+				      buffer, length, littleEndian);
+	}
+	else if (imaTemplateData->imaTemplateIUID.iuidLength == 4) {
+	    rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateIUID.iuid32,
+				      buffer, length, littleEndian);
+	}
+	else {
+	    printf("ERROR: IMA_ParseIUID: length %u not 2 or 4 bytes\n",
+		   imaTemplateData->imaTemplateIUID.iuidLength);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+    }
+   return rc;
+}
+
+/* IMA_ParseIGID parses a igid, either a uint16 or uint32 */
+
+static uint32_t IMA_ParseIGID(ImaTemplateData	*imaTemplateData,
+			      uint8_t 		**buffer,
+			      size_t 		*length,
+			      int 		littleEndian)
+{
+    uint32_t 	rc = 0;
+
+    if (rc == 0) {
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateIGID.igidLength,
+				  buffer, length, littleEndian);
+    }
+    if ((rc == 0) && (imaTemplateData->imaTemplateIGID.igidLength > 0)) {
+	if (imaTemplateData->imaTemplateIGID.igidLength == 2) {
+	    rc = IMA_Uint16_Unmarshal(&imaTemplateData->imaTemplateIGID.igid16,
+				      buffer, length, littleEndian);
+	}
+	else if (imaTemplateData->imaTemplateIGID.igidLength == 4) {
+	    rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateIGID.igid32,
+				      buffer, length, littleEndian);
+	}
+	else {
+	    printf("ERROR: IMA_ParseIGID: length %u not 2 or 4 bytes\n",
+		   imaTemplateData->imaTemplateIGID.igidLength);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+    }
+    return rc;
+}
+
+/* IMA_ParseIMODE parses a */
+
+static uint32_t IMA_ParseIMODE(ImaTemplateData	*imaTemplateData,
+			      uint8_t 		**buffer,
+			      size_t 		*length,
+			      int 		littleEndian)
+{
+    uint32_t 	rc = 0;
+
+    if (rc == 0) {
+	rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateIMODE.imodeLength,
+				  buffer, length, littleEndian);
+    }
+    if ((rc == 0) && (imaTemplateData->imaTemplateIMODE.imodeLength > 0)) {
+	if (imaTemplateData->imaTemplateIMODE.imodeLength == 2) {
+	    rc = IMA_Uint16_Unmarshal(&imaTemplateData->imaTemplateIMODE.imode,
+				      buffer, length, littleEndian);
+	}
+	else {
+	    printf("ERROR: IMA_ParseIMODE: length %u not 2 bytes\n",
+		   imaTemplateData->imaTemplateIMODE.imodeLength);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
     return rc;
@@ -1386,8 +2048,10 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	IMA_TemplateData_Init(imaTemplateData);
     }
     if (rc == 0) {
-	rc = IMA_TemplateName_Parse(templateDataParseFunctions, IMA_PARSE_FUNCTIONS_MAX,
-				    imaEvent);	
+	rc = IMA_TemplateName_Parse(templateDataParseFunctions,
+				    imaTemplateData->templateDataTraceFunctions,
+				    IMA_PARSE_FUNCTIONS_MAX,
+				    imaEvent);
     }
     for (i = 0 ; (rc == 0) && (templateDataParseFunctions[i] != NULL) ; i++) {
 	rc = templateDataParseFunctions[i](imaTemplateData, &buffer, &length, littleEndian);
@@ -1399,7 +2063,7 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 		   "buffer too large (bytes remaining after unmarshaling)\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
-    }    
+    }
     return rc;
 }
 
@@ -1503,7 +2167,7 @@ uint32_t IMA_Extend(TPMT_HA *imapcr,
     unsigned char oneDigest[SHA256_DIGEST_SIZE];
 
     /* FIXME sanity check TPM_IMA_PCR imaEvent->pcrIndex */
-    
+
     /* extend based on the previous IMA PCR value */
     if (rc == 0) {
 	memset(zeroDigest, 0, SHA256_DIGEST_SIZE);
@@ -1599,8 +2263,8 @@ uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match 
 	    }
 	    if (rc == 0) {
 		if (imaTemplateData.imaTemplateNNG.fileNameLength > sizeof(zeroPad)) {
-		    printf("ERROR: IMA_VerifyImaDigest: ima template file name length %lu > %lu\n",
-			   (unsigned long)imaTemplateData.imaTemplateNNG.fileNameLength,
+		    printf("ERROR: IMA_VerifyImaDigest: ima template file name length %u > %lu\n",
+			   imaTemplateData.imaTemplateNNG.fileNameLength,
 			   (unsigned long)sizeof(zeroPad));
 		    rc = TSS_RC_INSUFFICIENT_BUFFER;
 		}
@@ -1609,7 +2273,7 @@ uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match 
 		memset(zeroPad, 0, sizeof(zeroPad));
 		/* subtract safe after above length check */
 		zeroPadLength = sizeof(zeroPad) - imaTemplateData.imaTemplateNNG.fileNameLength;
-	    }		
+	    }
 	    if (rc == 0) {
 		rc = TSS_Hash_Generate(&calculatedImaDigest,
 				       SHA1_DIGEST_SIZE, &imaTemplateData.imaTemplateDNG.fileDataHash,
@@ -1629,7 +2293,8 @@ uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match 
 
 	irc = memcmp(imaEvent->digest, &calculatedImaDigest.digest, SHA1_DIGEST_SIZE);
 	if (irc == 0) {
-	    if (tssUtilsVerbose) printf("IMA_VerifyImaDigest: IMA digest verified, event %u\n", eventNum);
+	    if (tssUtilsVerbose) printf("IMA_VerifyImaDigest: IMA digest verified, event %u\n",
+					eventNum);
 	    *badEvent = FALSE;
 	}
 	else {
@@ -1637,6 +2302,80 @@ uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match 
 		   eventNum);
 	    *badEvent = TRUE;
 	}
+    }
+    return rc;
+}
+
+/* IMA_Uint16_Unmarshal() converts a uint8_t (from an input stream) to host byte order
+ */
+
+static uint32_t IMA_Uint16_Unmarshal(uint16_t 	*out,
+				     uint8_t 	**buffer,
+				     size_t 	*length,
+				     int 	littleEndian)
+{
+    uint32_t 	rc = 0;
+
+    *out = 0;
+    /* bounds check the length */
+    if (rc == 0) {
+	if (*length < sizeof(uint16_t)) {
+	    printf("ERROR: IMA_Uint16_Convert: buffer too small for length\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    if (rc == 0) {
+	/* little endian input */
+	if (littleEndian) {
+	    *out = (((uint16_t)(*buffer)[0]) <<  0) |
+		   (((uint16_t)(*buffer)[1]) <<  8);
+	}
+	/* big endian input */
+	else {
+	    *out = (((uint16_t)(*buffer)[0]) <<  8) |
+		   (((uint16_t)(*buffer)[1]) <<  0);
+	}
+	*buffer += sizeof(uint16_t);
+	*length -= sizeof(uint16_t);
+    }
+    return rc;
+}
+
+/* IMA_Uint32_Ummarshal() converts a uint8_t (from an input stream) to host byte order
+ */
+
+static uint32_t IMA_Uint32_Unmarshal(uint32_t 	*out,
+				     uint8_t	**buffer,
+				     size_t 	*length,
+				     int 	littleEndian)
+{
+    uint32_t 	rc = 0;
+
+    *out = 0;
+    /* bounds check the length */
+    if (rc == 0) {
+	if (*length < sizeof(uint32_t)) {
+	    printf("ERROR: IMA_Uint32_Unmarshal: buffer too small for length\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    if (rc == 0) {
+	/* little endian input */
+	if (littleEndian) {
+	    *out = (((uint32_t)(*buffer)[0]) <<  0) |
+		   (((uint32_t)(*buffer)[1]) <<  8) |
+		   (((uint32_t)(*buffer)[2]) << 16) |
+		   (((uint32_t)(*buffer)[3]) << 24);
+	}
+	/* big endian input */
+	else {
+	    *out = (((uint32_t)(*buffer)[0]) << 24) |
+		   (((uint32_t)(*buffer)[1]) << 16) |
+		   (((uint32_t)(*buffer)[2]) <<  8) |
+		   (((uint32_t)(*buffer)[3]) <<  0);
+	}
+	*buffer += sizeof(uint32_t);
+	*length -= sizeof(uint32_t);
     }
     return rc;
 }
@@ -1679,10 +2418,44 @@ static uint32_t IMA_Strn2cpy(char *dest, const uint8_t *src,
 {
     uint32_t rc = 0;
     int done = 0;
-    
+
     while ((destLength > 0) && (srcLength > 0)) {
 	*dest = *src;
 	if (*dest == '\0') {
+	    done = 1;
+	    break;
+	}
+	else {
+	    dest++;
+	    src++;
+	    destLength--;
+	    srcLength--;
+	}
+    }
+    if (!done) {
+	rc = TSS_RC_INSUFFICIENT_BUFFER;
+    }
+    return rc;
+}
+
+/* IMA_Strc2cpy() copies src to dest, including a NUL terminator
+
+   It checks that src is colon terminated within srcLength bytes.
+   It checks that src fits into dest within destLength bytes
+
+   Returns error if either the src is not nul terminated or will not fit in dest.
+*/
+
+static uint32_t IMA_Strc2cpy(char *dest, const uint8_t *src,
+			     size_t destLength, size_t srcLength)
+{
+    uint32_t rc = 0;
+    int done = 0;
+
+    while ((destLength > 0) && (srcLength > 0)) {
+	*dest = *src;
+	if (*dest == ':') {
+	    *(dest+1) = '\0';	/* append nul */
 	    done = 1;
 	    break;
 	}
