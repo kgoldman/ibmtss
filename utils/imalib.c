@@ -848,7 +848,7 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
     if ((rc == 0) && !(*endOfFile)) {
 	imaEvent->template_data = malloc(imaEvent->template_data_len);
 	if (imaEvent->template_data == NULL) {
-	    printf("ERROR: IMA_TemplateData_ReadFile: "
+	    printf("ERROR: IMA_TemplateDataIma_ReadFile: "
 		   "could not allocate template data, size %u\n",
 		   imaEvent->template_data_len);
 	    rc = TSS_RC_OUT_OF_MEMORY;
@@ -861,7 +861,7 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
 	memcpy(imaEvent->template_data, fileDataHash, sizeof(fileDataHash));
 	/* copy file name length */
 	memcpy(imaEvent->template_data + sizeof(fileDataHash),
-	       &fileNameLength, sizeof(fileNameLength));
+	       &fileNameLengthIbo, sizeof(fileNameLength));
 	/* read and copy the file name */
 	readSize = fread(imaEvent->template_data + sizeof(fileDataHash) + sizeof(fileNameLength),
 			 fileNameLength, 1, inFile);
