@@ -3,9 +3,8 @@
 /*		Linux Device Transmit and Receive Utilities  			*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: tssdev.h 1015 2017-06-07 13:16:34Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015.						*/
+/* (c) Copyright IBM Corporation 2015 - 2023					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -43,6 +42,8 @@
 #define TSSDEV_H
 
 #include <stdint.h>
+
+#include <ibmtss/tss.h>
 
 #ifdef __cplusplus
 extern "C" {
