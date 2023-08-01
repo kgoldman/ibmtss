@@ -14,6 +14,7 @@ mkdir -p ibmtpm$version
 cd ibmtpm$version
 tar -xvzf ../download
 cd src
+openssl version
 make -j$(nproc)
 $SUDO cp tpm_server /usr/local/bin/
 cd ../..

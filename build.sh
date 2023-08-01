@@ -69,6 +69,10 @@ echo "CFLAGS: '$CFLAGS'"
 echo "LDFLAGS: '$LDFLAGS'"
 echo "PREFIX: '$PREFIX'"
 
+title "openssl version"
+openssl version
+
+
 title "configure"
 ./autogen.sh
 ./configure --prefix=$PREFIX --disable-hwtpm --disable-tpm-1.2 $host || log_exit config.log "configure failed"
@@ -110,6 +114,8 @@ echo "INFO: software TSS startup completed"
 
 # To use the root certificates here, update the certificate file path
 sed -i -e "s/^.*utils\///g" utils/certificates/rootcerts.txt
+
+echo "INFO: Starting Regression test"
 VERBOSE=1 make check > ./reg.sh.log || grep "Success -" ./reg.sh.log
 ret=$?
 if [ $ret -eq 0 ]; then
@@ -117,5 +123,7 @@ if [ $ret -eq 0 ]; then
 else
 	grep -A 1 -B 4 "ERROR:" ./reg.sh.log
 fi
+echo "INFO: Finished regression test"
 rm ./reg.sh.log
+
 exit $ret
