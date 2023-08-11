@@ -71,7 +71,7 @@ AC_ARG_ENABLE(debug,
 
 # Linux requires -DTPM_POSIX
 case $host_os in
-       linux-*)        CFLAGS="-DTPM_POSIX $CFLAGS" ;;
+       *linux* | *darwin* | *freebsd*)        CFLAGS="-DTPM_POSIX $CFLAGS" ;;
 esac
 
 AC_ARG_ENABLE(tpm-2.0,
