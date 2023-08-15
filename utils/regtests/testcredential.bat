@@ -637,7 +637,7 @@ for %%A in ("-rsa 2048" "-ecc nistp256") do (
         exit /B 1
     )
 
-    echo "Read the $%%~Atemplate - should fail"
+    echo "Read the %%~Atemplate - should fail"
     %TPM_EXE_PATH%createek %%~A -te > run.out
     IF !ERRORLEVEL! EQU 0 (
         exit /B 1
