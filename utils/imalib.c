@@ -287,7 +287,9 @@ void IMA_TemplateData_Init(ImaTemplateData *imaTemplateData)
     imaTemplateData->imaTemplateXattrs.xattrNamesLength = 0;
     imaTemplateData->imaTemplateXattrs.xattrNames[0] = '\0';
     imaTemplateData->imaTemplateXattrs.xattrNamesLength = 0;
-    for (i = 0 ; i < sizeof (((ImaTemplateXattrs *)NULL)->xattrNamesPtr)    ; i++) {
+    for (i = 0 ;
+	 i < ((sizeof(((ImaTemplateXattrs *)NULL)->xattrNamesPtr)) / (sizeof(char *))) ;
+	 i++) {
 	imaTemplateData->imaTemplateXattrs.xattrNamesPtr[i] = NULL;
     }
     imaTemplateData->imaTemplateXattrs.xattrNamesCount = 0;
