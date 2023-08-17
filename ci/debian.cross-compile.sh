@@ -18,6 +18,7 @@ dpkg --add-architecture $ARCH
 apt update
 
 apt install -y --no-install-recommends \
-	dpkg-dev \
-	gcc-${gcc_arch}-linux-gnu \
-	libc6-dev-${ARCH}-cross
+       dpkg-dev \
+       libssl-dev \
+       gcc-${gcc_arch}-linux-gnu \
+       libc6-dev-${ARCH}-cross

@@ -14,6 +14,7 @@ yum -y install \
 	$CC autoconf \
 	automake \
 	diffutils \
+	git \
 	libattr-devel \
 	make \
 	openssl \

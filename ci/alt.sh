@@ -12,6 +12,7 @@ apt-get install -y \
 		asciidoc \
 		attr \
 		docbook-style-xsl \
+		git \
 		gnutls-utils \
 		libattr-devel \
 		libkeyutils-devel \

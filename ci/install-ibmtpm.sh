@@ -7,12 +7,11 @@ else
 	SUDO=sudo
 fi
 
-version=1682
+# get latest TPM from github
+git clone http://github.com/kgoldman/ibmswtpm2.git
 
-wget --no-check-certificate https://sourceforge.net/projects/ibmswtpm2/files/ibmtpm${version}.tar.gz/download
-mkdir -p ibmtpm$version
-cd ibmtpm$version
-tar -xvzf ../download
+# build and install SW TPM
+cd ibmswtpm2
 cd src
 openssl version
 make -j$(nproc)

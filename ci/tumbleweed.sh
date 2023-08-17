@@ -15,6 +15,8 @@ zypper --non-interactive install --force-resolution --no-recommends \
 	autoconf \
 	automake \
 	diffutils \
+	gawk \
+	git \
 	gzip \
 	libattr-devel \
 	libopenssl-devel \
