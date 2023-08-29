@@ -20,6 +20,7 @@ apk add \
 	automake \
 	bash \
 	diffutils \
+	git \
 	libtool \
 	libxslt \
 	make \

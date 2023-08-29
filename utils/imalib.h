@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2020					*/
+/* (c) Copyright IBM Corporation 2016 - 2023					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -94,16 +94,10 @@ enum hash_algo {
     HASH_ALGO__LAST
 };
 
-/* IMA template names */
-
-#define IMA_UNSUPPORTED	0
-#define IMA_FORMAT_IMA_NG	1
-#define IMA_FORMAT_IMA_SIG	2
-#define IMA_FORMAT_IMA		3
-#define IMA_FORMAT_MODSIG	4
-#define IMA_FORMAT_BUF		5
-
 //typedef TPM_DIGEST TPM_PCRVALUE;        	/* The value inside of the PCR */
+
+/* maximum number of callback fields for parsing and tracing */
+#define IMA_PARSE_FUNCTIONS_MAX 128
 
 typedef struct ImaEvent {
     uint32_t pcrIndex;
@@ -123,6 +117,15 @@ typedef struct ImaTemplateDNG {
     uint32_t fileDataHashLength;
     uint8_t fileDataHash[SHA256_DIGEST_SIZE];
 } ImaTemplateDNG;
+
+typedef struct ImaTemplateDNGV2 {
+    uint32_t hashLength;
+    char prefix[64+1];
+    char hashAlg[64+1];		/* FIXME need verification */
+    TPMI_ALG_HASH hashAlgId;
+    uint32_t fileDataHashLength;
+    uint8_t fileDataHash[SHA256_DIGEST_SIZE];
+} ImaTemplateDNGV2;
 
 typedef struct ImaTemplateNNG {
     uint32_t fileNameLength;
@@ -156,9 +159,55 @@ typedef struct ImaTemplateBUF {
     uint8_t bufData[4096];	/* FIXME guess */
 } ImaTemplateBUF;
 
-typedef struct ImaTemplateData {
+/* Put the three items in one structure since they must be together and have dependencies and
+   redundancies.
+*/
+
+typedef struct ImaTemplateXattrs {
+    uint32_t xattrNamesLength;
+    char xattrNames[256];	/* FIXME guess maximum length */
+    size_t xattrNamesCount;
+    char *xattrNamesPtr[32];	/* FIXME guess maxumum number of elements */
+    uint32_t xattrLengthsLength;
+    uint32_t xattrLengths[32];	/* FIXME guess maximum number of elements */
+    uint32_t xattrLengthsSum;	/* sum of the previous array values */
+    uint32_t xattrValuesLength;
+    unsigned char xattrValues[4096];		/* FIXME guess */
+} ImaTemplateXattrs;
+
+typedef struct ImaTemplateIUID {
+    uint32_t iuidLength;
+    union {	/* u16 or u32 */
+	uint16_t iuid16;
+	uint32_t iuid32;
+    };
+} ImaTemplateIUID;
+
+typedef struct ImaTemplateIGID {
+    uint32_t igidLength;
+    union {	/* u16 or u32 */
+	uint16_t igid16;
+	uint32_t igid32;
+    };
+} ImaTemplateIGID;
+
+typedef struct ImaTemplateIMODE {
+    uint32_t imodeLength;
+    uint16_t imode;
+} ImaTemplateIMODE;
+
+
+typedef struct ImaTemplateData ImaTemplateData;
+
+typedef void (*TemplateDataTraceFunction_t)(ImaTemplateData	*imaTemplateData);
+
+struct ImaTemplateData {
+    /* array for tracing */
+    TemplateDataTraceFunction_t templateDataTraceFunctions[IMA_PARSE_FUNCTIONS_MAX];
     /* d-ng */
     ImaTemplateDNG imaTemplateDNG;
+    /* d-ngv2 */
+    ImaTemplateDNGV2 imaTemplateDNGV2;
     /* n-ng */
     ImaTemplateNNG imaTemplateNNG;
     /* sig */
@@ -169,8 +218,18 @@ typedef struct ImaTemplateData {
     ImaTemplateMODSIG imaTemplateMODSIG;
     /* buf */
     ImaTemplateBUF imaTemplateBUF;
+    /* xattrs */
+    ImaTemplateXattrs imaTemplateXattrs;
+    /* iuid */
+    ImaTemplateIUID imaTemplateIUID; 
+    /* igid */
+    ImaTemplateIGID imaTemplateIGID; 
+    /* imode */
+    ImaTemplateIMODE imaTemplateIMODE; 
+    /* NOTE: When adding here, update IMA_TemplateData_Init() */
+};
 
-} ImaTemplateData;
+
 
 #ifdef __cplusplus
 extern "C" {

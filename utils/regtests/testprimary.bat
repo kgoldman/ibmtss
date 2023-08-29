@@ -4,7 +4,7 @@ REM			TPM2 regression test					#
 REM			     Written by Ken Goldman				#
 REM		       IBM Thomas J. Watson Research Center			#
 REM										#
-REM (c) Copyright IBM Corporation 2015 - 2020					#
+REM (c) Copyright IBM Corporation 2015 - 2023					#
 REM 										#
 REM All rights reserved.							#
 REM 										#
@@ -216,6 +216,8 @@ echo "Flush the primary storage key"
 IF !ERRORLEVEL! NEQ 0 (
   exit /B 1
   )
+
+rm -f empty.bin
 
 exit /B 0
 

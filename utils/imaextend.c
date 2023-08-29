@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2014 - 2020.					*/
+/* (c) Copyright IBM Corporation 2014 - 2023.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -124,6 +124,7 @@ int main(int argc, char * argv[])
     int			type = 1;			/* IMA log type, default 1 */
     int			sim = FALSE;			/* extend into simulated PCRs */
     int			checkHash = FALSE;		/* verify IMA log hashes */
+    int			checkData = FALSE;		/* verify IMA log template data */
     uint32_t 		bankNum = 0;			/* PCR hash bank iterator */
     unsigned int 	pcrNum = 0;			/* PCR number iterator */
     TPMT_HA 		simPcrs[HASH_COUNT][IMPLEMENTATION_PCR];
@@ -212,6 +213,9 @@ int main(int argc, char * argv[])
 	}
 	else if (strcmp(argv[i],"-checkhash") == 0) {
 	    checkHash = TRUE;
+	}
+	else if (strcmp(argv[i],"-checkdata") == 0) {
+	    checkData = TRUE;
 	}
 	else if (strcmp(argv[i],"-ty") == 0) {
 	    i++;
@@ -360,7 +364,9 @@ int main(int argc, char * argv[])
 			}
 			else {
 			    printf("imaextend: Error parsing template data, event %u\n", lineNum);
-			    rc = 0;		/* not a fatal error */
+			    if (!checkData) {
+				rc = 0;		/* not a fatal error */
+			    }
 			}
 		    }
 		}
@@ -674,6 +680,7 @@ static void printUsage(void)
     printf("\t[-tpm\textend TPM PCRs (default)]\n");
     printf("\t[-sim\tcalculate simulated PCRs]\n");
     printf("\t[-checkhash\tverify IMA event log hashes]\n");
+    printf("\t[-checkdata\tverify IMA event log template data, stop on error]\n");
     printf("\t[-b\tbeginning entry (default 0, beginning of log)]\n");
     printf("\t\tA beginning entry after the end of the log becomes a noop\n");
     printf("\t[-e\tending entry (default end of log)]\n");

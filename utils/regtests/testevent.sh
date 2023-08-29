@@ -79,11 +79,11 @@ do
 	checkSuccess $?
 
 	echo "IMA ${HALG} Test Log type ${TYPE} simulate"
-	${PREFIX}imaextend -le -if imatest.log -sim -halg ${HALG} -ty ${TYPE}  -checkhash -of tmpsim.bin > run.out
+	${PREFIX}imaextend -le -if imatest.log -sim -halg ${HALG} -ty ${TYPE}  -checkhash -checkdata -of tmpsim.bin > run.out
 	checkSuccess $?
 
 	echo "IMA ${HALG} Test Log type ${TYPE} extend"
-	${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ty ${TYPE}  -checkhash -v > run.out
+	${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ty ${TYPE}  -checkhash -checkdata -v > run.out
 	checkSuccess $?
 
 	echo "PCR read ${HALG}"

@@ -22,8 +22,10 @@ apt="apt install -y --no-install-recommends"
 $apt \
 	$CC autoconf \
 	automake \
+	ca-certificates \
 	diffutils \
 	debianutils \
+	git \
 	libattr1-dev$ARCH \
 	libkeyutils-dev$ARCH \
 	libssl-dev$ARCH \
@@ -31,5 +33,6 @@ $apt \
 	make \
 	openssl \
 	pkg-config \
+	ssh \
 	sudo \
 	wget

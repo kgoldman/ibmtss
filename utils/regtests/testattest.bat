@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2018 - 2022					#
+REM # (c) Copyright IBM Corporation 2018 - 2023					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -140,7 +140,7 @@ for %%S in ("" "-se0 02000000 1") do (
 		exit /B 1
 		)
 	
-		echo "Set command audit digest ${HALG}"
+		echo "Set command audit digest %%H"
 		%TPM_EXE_PATH%setcommandcodeauditstatus -hi p -halg null -clr 00000144 -v > run.out
 		IF !ERRORLEVEL! NEQ 0 (
 		exit /B 1
@@ -574,6 +574,7 @@ rm -f tmpdigestg.bin
 rm -f sig.bin
 rm -f tmp.bin
 rm -f tmpcert.bin
+rm -f tmphkey.bin
 
 exit /B 0
 

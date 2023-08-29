@@ -7953,7 +7953,7 @@ ${PREFIX}nvcertify -hia > run.out
 checkFailure $?
 
 echo "nvcertify"
-nvcertify -hk 1 -ha 01000000 -hia x > run.out
+${PREFIX}nvcertify -hk 1 -ha 01000000 -hia x > run.out
 checkFailure $?
 
 echo "nvcertify"

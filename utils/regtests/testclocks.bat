@@ -3,9 +3,8 @@ REM #										#
 REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
-REM #		$Id: testclocks.bat 1292 2018-08-01 17:27:24Z kgoldman $	#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2022					#
+REM # (c) Copyright IBM Corporation 2015 - 2023					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -99,6 +98,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 rm -f tmpclk.bin
+rm -f tmptime.bin
 
 exit /B 0
 

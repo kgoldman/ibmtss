@@ -69,6 +69,10 @@ echo "CFLAGS: '$CFLAGS'"
 echo "LDFLAGS: '$LDFLAGS'"
 echo "PREFIX: '$PREFIX'"
 
+title "openssl version"
+openssl version
+which openssl
+
 title "configure"
 ./autogen.sh
 ./configure --prefix=$PREFIX --disable-hwtpm --disable-tpm-1.2 $host || log_exit config.log "configure failed"
@@ -96,7 +100,9 @@ TPMSERVER_PID=$!
 
 # The tpm_server might take a while to initialize, wait before trying
 sleep 1
+echo "INFO: sending first startup"
 tssstartup
+echo "INFO: sent first startup"
 if [ $? -ne 0 ]; then
 	echo "INFO: Retry sending software TPM startup"
 	sleep 1
@@ -110,12 +116,17 @@ echo "INFO: software TSS startup completed"
 
 # To use the root certificates here, update the certificate file path
 sed -i -e "s/^.*utils\///g" utils/certificates/rootcerts.txt
-VERBOSE=1 make check > ./reg.sh.log || grep "Success -" ./reg.sh.log
+
+echo "INFO: Starting Regression test"
+VERBOSE=1 make check > ./reg.sh.log
 ret=$?
+echo "INFO: Checking regression test results"
 if [ $ret -eq 0 ]; then
 	grep "Success -" ./reg.sh.log
 else
 	grep -A 1 -B 4 "ERROR:" ./reg.sh.log
 fi
+echo "INFO: Finished regression test"
 rm ./reg.sh.log
+
 exit $ret
