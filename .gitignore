@@ -1,7 +1,16 @@
 *.o
 *.so
 acs/
+rmtest/
 tpmutils/.vs/
+utils/.png
+utils/certificates/*.crt
+utils/certificates/*.der
+utils/certificates/*.dump
+utils/certificates/*.dumpasn1
+utils/*.bin
+utils/*.txt
+utils/*.png
 .vs
 tpmutils/*/*.vcxproj.user
 tpmutils/Debug/

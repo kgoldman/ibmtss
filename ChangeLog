@@ -1,4 +1,16 @@
 ----------------
+Changes in 2.1.0
+----------------
+
+Parse new IMA event log template data fields.
+
+Add option to verify IMA template data
+
+Travis code supports Travis v3
+
+Correct minor regression test script typos.
+
+----------------
 Changes in 2.0.1
 ----------------
 

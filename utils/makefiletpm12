@@ -103,7 +103,7 @@ LNALIBS +=  -libmtss
 # shared library
 
 # versioned shared library
-LIBTSSVERSIONED=libibmtss.so.2.0
+LIBTSSVERSIONED=libibmtss.so.2.1
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
@@ -122,7 +122,7 @@ endif
 
 # TSS utilities shared library
 
-LIBTSSUTILSVERSIONED=libibmtssutils.so.2.0
+LIBTSSUTILSVERSIONED=libibmtssutils.so.2.1
 LIBTSSUTILSSONAME=libibmtssutils.so.2
 LIBTSSUTILS=libibmtssutils.so
 

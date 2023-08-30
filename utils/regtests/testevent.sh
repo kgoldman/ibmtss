@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2021 - 2022                                     #
+# (c) Copyright IBM Corporation 2021 - 2023                                     #
 # 										#
 # All rights reserved.								#
 # 										#
@@ -99,5 +99,5 @@ done
 
 # cleanup
 
-rm -f tmptpm.bin
+rm -f tmppcr.bin
 rm -f tmpsim.bin
