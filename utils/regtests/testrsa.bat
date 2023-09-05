@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2022					#
+REM # (c) Copyright IBM Corporation 2015 - 2023					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -133,7 +133,9 @@ for %%B in (2048 3072) do (
 
     echo "Flush the RSA %%B signing key"
     %TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
-    checkSuccess $?
+    IF !ERRORLEVEL! NEQ 0 (
+       exit /B 1
+    )
 
 )
 

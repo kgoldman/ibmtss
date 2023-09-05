@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2021 - 2022                                     #
+# (c) Copyright IBM Corporation 2021 - 2023                                     #
 # 										#
 # All rights reserved.								#
 # 										#
@@ -79,11 +79,11 @@ do
 	checkSuccess $?
 
 	echo "IMA ${HALG} Test Log type ${TYPE} simulate"
-	${PREFIX}imaextend -le -if imatest.log -sim -halg ${HALG} -ty ${TYPE}  -checkhash -of tmpsim.bin > run.out
+	${PREFIX}imaextend -le -if imatest.log -sim -halg ${HALG} -ty ${TYPE}  -checkhash -checkdata -of tmpsim.bin > run.out
 	checkSuccess $?
 
 	echo "IMA ${HALG} Test Log type ${TYPE} extend"
-	${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ty ${TYPE}  -checkhash -v > run.out
+	${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ty ${TYPE}  -checkhash -checkdata -v > run.out
 	checkSuccess $?
 
 	echo "PCR read ${HALG}"
@@ -99,5 +99,5 @@ done
 
 # cleanup
 
-rm -f tmptpm.bin
+rm -f tmppcr.bin
 rm -f tmpsim.bin

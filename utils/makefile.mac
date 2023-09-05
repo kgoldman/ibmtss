@@ -108,7 +108,7 @@ LNALIBS +=  -libmtss -lcrypto
 # shared library
 
 # versioned shared library
-LIBTSSVERSIONED=libibmtss.dylib.2.0
+LIBTSSVERSIONED=libibmtss.dylib.2.1
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library

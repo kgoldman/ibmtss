@@ -1,4 +1,4 @@
-dist: bionic
+dist: focal
 language: C
 services:
     - docker
@@ -50,7 +50,7 @@ matrix:
           compiler: clang
 
         - os: linux
-          env: REPO="quay.io/centos/" DISTRO="${REPO}centos:stream8"
+          env: REPO="quay.io/centos/" DISTRO="${REPO}centos:stream8" WAIT="travis_wait 30 "
           compiler: clang
 
         - os: linux
@@ -62,7 +62,7 @@ matrix:
           compiler: gcc
 
         - os: linux
-          env: REPO="docker.io/library/" DISTRO="${REPO}alt:sisyphus" CONTAINER=podman CONTAINER_ARGS="--runtime=/usr/bin/crun --network=host"
+          env: REPO="docker.io/library/" DISTRO="${REPO}alt:sisyphus" CONTAINER=podman CONTAINER_ARGS="--runtime=/usr/bin/crun --network=host" WAIT="travis_wait 30 "
           compiler: gcc
 
 before_install:
@@ -87,4 +87,5 @@ script:
     - INSTALL="${DISTRO#${REPO}}"
     - INSTALL="${INSTALL%%:*}"
     - INSTALL="${INSTALL%%/*}"
-    - $CONTAINER run $CONTAINER_ARGS -t tpm2 /bin/sh -c "cd ci && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ARCH=\"$ARCH\" CC=\"$CC\" ./$INSTALL.sh && if [ ! \"$VARIANT\" ]; then ../ci/install-ibmtpm.sh; fi && CC=\"$CC\" VARIANT=\"$VARIANT\" ../build.sh"
+    # if VARIANT is set to a cross compile, don't run the regression test, therefore don't install the SW TPM
+    - $WAIT $CONTAINER run $CONTAINER_ARGS -t tpm2 /bin/sh -c "cd ci && if [ \"$VARIANT\" ]; then ARCH=\"$ARCH\" ./$INSTALL.$VARIANT.sh; fi && ARCH=\"$ARCH\" CC=\"$CC\" ./$INSTALL.sh && if [ ! \"$VARIANT\" ]; then ../ci/install-ibmtpm.sh; fi && CC=\"$CC\" VARIANT=\"$VARIANT\" ../build.sh"
