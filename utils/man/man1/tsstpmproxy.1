@@ -1,0 +1,30 @@
+.TH TSSTPMPROXY "1" "October 2023" "tsstpmproxy 2.1" "User Commands"
+.SH NAME
+tsstpmproxy \- Runs tsstpmproxy
+.SH DESCRIPTION
+.PP
+Pass through connecting a TCPIP port to a hardware TPM
+.PP
+Use this proxy when using the TSS command line utilities.  It keeps
+the connection to the TPM device driver open.  This prevents a
+resource manager from flushing resources after each utiity exits.  It
+also permits remote access to a HW TPM.
+.TP
+[\--port, -p]
+TCPIP server port (default 2321)
+.TP
+[\-mssim]
+use MS TPM 2.0 socket simulator packet format (default)
+.PP
+	use with TSS env variable TPM_SERVER_TYPE=mssim (default)
+.TP
+[\-raw]
+use TPM 2.0 packet format
+.PP
+	use with TSS env variable TPM_SERVER_TYPE=raw
+.TP
+[\--verbose, -v]
+verbose mode (default false)
+.TP
+[--log -l]
+log transactions into given file (default none)
