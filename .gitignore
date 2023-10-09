@@ -3,7 +3,8 @@
 acs/
 rmtest/
 tpmutils/.vs/
-utils/.png
+utils/*.png
+utils/*.exe
 utils/certificates/*.crt
 utils/certificates/*.der
 utils/certificates/*.dump
