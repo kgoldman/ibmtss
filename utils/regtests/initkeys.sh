@@ -74,7 +74,7 @@ do
     checkSuccess $?
 
     echo "Create an RSA ${BITS[i]} decryption key under the primary key"
-    ${PREFIX}create -hp 80000000 -den -kt f -kt p -opr derrsa${BITS[i]}priv.bin -opu derrsa${BITS[i]}pub.bin -pwdp sto -pwdk dec > run.out
+    ${PREFIX}create -hp 80000000 -rsa ${BITS[i]} -den -kt f -kt p -opr derrsa${BITS[i]}priv.bin -opu derrsa${BITS[i]}pub.bin -pwdp sto -pwdk dec > run.out
     checkSuccess $?
 
     echo "Create an RSA ${BITS[i]} ${SHALG[i]} restricted signing key under the primary key"

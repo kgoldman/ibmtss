@@ -89,7 +89,7 @@ for /L %%i in (1,1,!L!) do (
     )
 
     echo "Create an RSA !BITS[%%i]! decryption key under the primary key"
-    %TPM_EXE_PATH%create -hp 80000000 -den -kt f -kt p -opr derrsa!BITS[%%i]!priv.bin -opu derrsa!BITS[%%i]!pub.bin -pwdp sto -pwdk dec > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -rsa !BITS[%%i]! -den -kt f -kt p -opr derrsa!BITS[%%i]!priv.bin -opu derrsa!BITS[%%i]!pub.bin -pwdp sto -pwdk dec > run.out
     IF !ERRORLEVEL! NEQ 0 (
       exit /B 1
     )

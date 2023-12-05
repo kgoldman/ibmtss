@@ -1,4 +1,12 @@
 ----------------
+Changes in 2.1.1
+----------------
+
+Add man page for tpmproxy.
+Update tss2.spec file for Fedora
+Remove old OSes that don't include a modern OpenSSL from CI list
+
+----------------
 Changes in 2.1.0
 ----------------
 
