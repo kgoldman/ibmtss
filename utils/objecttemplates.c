@@ -264,7 +264,7 @@ TPM_RC asymPublicTemplate(TPMT_PUBLIC *publicArea,	/* output */
 	      case TYPE_ST:
 		publicArea->parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
 		publicArea->parameters.eccDetail.scheme.details.anySig.hashAlg = 0;
-		publicArea->parameters.eccDetail.curveID = TPM_ECC_NIST_P256;
+		publicArea->parameters.eccDetail.curveID = curveID;
 		publicArea->parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
 		publicArea->parameters.eccDetail.kdf.details.mgf1.hashAlg = 0;
 		break;
