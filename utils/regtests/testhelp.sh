@@ -2116,49 +2116,121 @@ echo "load"
 ${PREFIX}load -se2 02000000 100 > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -v -h > run.out
+echo "loadexternal 0"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -v -h  > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -v -xxxxx > run.out
+echo "loadexternal 1"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -v -xxxxx > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -se0 > run.out
+echo "loadexternal 2"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -se0 > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -se0 02000000 > run.out
+echo "loadexternal 3"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -se0 02000000 > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -se0 02000000 100 > run.out
+echo "loadexternal 4"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -se0 02000000 100 > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -se1 > run.out
+echo "loadexternal 5"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -se1 > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -se1 02000000 > run.out
+echo "loadexternal 6"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -se1 02000000 > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -se1 02000000 100 > run.out
+echo "loadexternal 7"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -se1 02000000 100 > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -se2 > run.out
+echo "loadexternal 8"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -se2 > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -se2 02000000 > run.out
+echo "loadexternal 9"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -se2 02000000 > run.out
 checkFailure $?
 
-echo "loadexternal"
-${PREFIX}loadexternal -se2 02000000 100 > run.out
+echo "loadexternal 10"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -se2 02000000 100 > run.out
 checkFailure $?
+
+echo "loadexternal 11"
+${PREFIX}loadexternal > run.out
+checkFailure $?
+
+echo "loadexternal 12"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -hi > run.out
+checkFailure $?
+
+echo "loadexternal 13"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -hi x > run.out
+checkFailure $?
+
+echo "loadexternal 14"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -nalg > run.out
+checkFailure $?
+
+echo "loadexternal 15"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -nalg x > run.out
+checkFailure $?
+
+echo "loadexternal 16"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -halg > run.out
+checkFailure $?
+
+echo "loadexternal 17"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -halg x > run.out checkFailure $?
+checkFailure $?
+
+echo "loadexternal 18"
+${PREFIX}loadexternal -xxx > run.out
+checkFailure $?
+
+echo "loadexternal 19"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -pwdk > run.out
+checkFailure $?
+
+echo "loadexternal 20"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -si -scheme > run.out
+checkFailure $?
+
+echo "loadexternal 21"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -si -scheme rsapkcs1 > run.out
+checkFailure $?
+
+echo "loadexternal 22"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -si -scheme rsaoaep > run.out
+checkFailure $?
+
+echo "loadexternal 23"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -den -scheme rsassa > run.out
+checkFailure $?
+
+echo "loadexternal 24"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -den -scheme rsapss > run.out
+checkFailure $?
+
+echo "loadexternal 25"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -si -scheme null > run.out
+checkSuccess $?
+
+echo "Flush the session"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+echo "loadexternal 26"
+${PREFIX}loadexternal -ipem signrsa3072pub.pem -den -scheme null > run.out
+checkSuccess $?
+
+echo "Flush the session"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
 
 echo "makecredential"
 ${PREFIX}makecredential -v -h > run.out

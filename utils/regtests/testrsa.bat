@@ -39,13 +39,20 @@ REM ############################################################################
 
 setlocal enableDelayedExpansion
 
+echo ""
+echo "RSA Decryption"
+echo ""
+
 for %%B in (2048 3072) do (
 
-    echo "generate the %%B encryption key with openssl"
+    echo "Generate the %%B encryption key with openssl"
     openssl genrsa -out tmpkeypairrsa%%B.pem -aes256 -passout pass:rrrr 2048
 
     echo "Convert key pair to plaintext DER format"
     openssl rsa -inform pem -outform der -in tmpkeypairrsa%%B.pem -out tmpkeypairrsa%%B.der -passin pass:rrrr > run.out
+
+    echo "Convert %%B keypair to public key"
+    openssl pkey -inform pem -outform pem -in tmpkeypairrsa%%B.pem -passin pass:rrrr -pubout -out tmppubkey%%B.pem
 )
 
 echo ""
@@ -205,6 +212,64 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo ""
+echo "Import PEM RSA encryption key userWithAuth test"
+echo ""
+
+echo "Import the RSA 2048 encryption key under the primary key 80000000"
+%TPM_EXE_PATH%importpem -hp 80000000 -den -pwdp sto -ipem tmpkeypairrsa2048.pem -pwdk rrrr -opu tmppub.bin -opr tmppriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the RSA 2048 encryption key 80000001"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "RSA encrypt with the encryption key"
+%TPM_EXE_PATH%rsaencrypt -hk 80000001 -id policies/aaa -oe enc.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "RSA decrypt with the decryption key and password"
+%TPM_EXE_PATH%rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the encryption key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Import the RSA 2048 encryption key under the primary key, userWithAuth false"
+%TPM_EXE_PATH%importpem -hp 80000000 -si -pwdp sto -ipem tmpkeypairrsa2048.pem -pwdk rrrr -uwa -opu tmppub.bin -opr tmppriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Load the RSA 2048 encryption key"
+%TPM_EXE_PATH%load -hp 80000000 -pwdp sto -ipu tmppub.bin -ipr tmppriv.bin > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "RSA decrypt with the decryption key and password - should fail"
+%TPM_EXE_PATH%rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "Flush the encryption key"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo ""
 echo "Loadexternal DER encryption key"
 echo ""
 
@@ -262,7 +327,7 @@ echo "Encrypt with OpenSSL OAEP, decrypt with TPM"
 echo ""
 
 echo "Create OAEP encryption key"
-%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha256 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out	
+%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha256 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -302,7 +367,7 @@ echo "Child RSA decryption key RSAES"
 echo ""
 
 echo "Create RSAES encryption key"
-%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -dee -opr deepriv.bin -opu deepub.bin > run.out	
+%TPM_EXE_PATH%create -hp 80000000 -pwdp sto -dee -opr deepriv.bin -opu deepub.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -343,7 +408,7 @@ echo "Primary RSA decryption key RSAES"
 echo ""
 
 echo "Create Primary RSAES encryption key"
-%TPM_EXE_PATH%createprimary -hi p -dee -halg sha256 -opem tmppubkey.pem > run.out	
+%TPM_EXE_PATH%createprimary -hi p -dee -halg sha256 -opem tmppubkey.pem > run.out
 IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
@@ -407,6 +472,49 @@ IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
+echo ""
+echo "OpenSSL key, Encrypt with OpenSSL, decrypt with TPM"
+echo ""
+
+REM The rsa_oaep_md:sha256 parameter is ignored for pkcs1
+
+for %%B in (2048 3072) do (
+
+    for %%S in (oaep pkcs1) do (
+
+    	echo "Encrypt using OpenSSL %%S and the %%B PEM public key"
+	openssl pkeyutl -encrypt -inkey tmppubkey%%B.pem -pubin -pkeyopt rsa_padding_mode:%%S -pkeyopt rsa_oaep_md:sha256 -in policies/aaa -out enc.bin > run.out 2>&1
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Loadexternal the openssl %%B %%S key pair in the NULL hierarchy 80000001"
+	%TPM_EXE_PATH%loadexternal -den -scheme rsa%%S -ider tmpkeypairrsa%%B.der -pwdk rrrr > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Decrypt using TPM key at 80000001"
+	%TPM_EXE_PATH%rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Verify the decrypt result"
+	diff policies/aaa dec.bin > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+	)
+
+	echo "Flush the encryption key"
+	%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+	IF !ERRORLEVEL! NEQ 0 (
+	    exit /B 1
+        )
+    )
+)
+
+
 REM cleanup
 
 rm -f tmp.bin
@@ -421,6 +529,14 @@ rm -f tmpkeypairrsa2048.der
 rm -f tmpkeypairrsa2048.pem
 rm -f tmpkeypairrsa3072.der
 rm -f tmpkeypairrsa3072.pem
+rm -f tmpkeypairrsaenc2048.pem
+rm -f tmpkeypairrsadec2048.pem
+rm -f tmppubkey2048.bin
+rm -f tmppubkey2048.pem
+rm -f tmpkeypairrsaenc3072.pem
+rm -f tmpkeypairrsadec3072.pem
+rm -f tmppubkey3072.bin
+rm -f tmppubkey3072.pem
 rm -f tmppubkey.bin
 rm -f tmppubkey.pem
 rm -f tmpprivkey.bin
@@ -429,6 +545,5 @@ exit /B 0
 
 REM  getcapability -cap 1 -pr 80000000
 REM  getcapability -cap 1 -pr 02000000
-REM 
+REM
 REM  flushcontext -ha 80000001
- 

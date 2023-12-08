@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2022					#
+REM # (c) Copyright IBM Corporation 2023					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -3145,69 +3145,177 @@ IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -v -h > run.out
+echo "loadexternal 0"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -v -h  > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -v -xxxxx > run.out
+echo "loadexternal 1"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -v -xxxxx > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -se0 > run.out
+echo "loadexternal 2"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -se0 > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -se0 02000000 > run.out
+echo "loadexternal 3"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -se0 02000000 > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -se0 02000000 100 > run.out
+echo "loadexternal 4"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -se0 02000000 100 > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -se1 > run.out
+echo "loadexternal 5"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -se1 > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -se1 02000000 > run.out
+echo "loadexternal 6"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -se1 02000000 > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -se1 02000000 100 > run.out
+echo "loadexternal 7"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -se1 02000000 100 > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -se2 > run.out
+echo "loadexternal 8"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -se2 > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -se2 02000000 > run.out
+echo "loadexternal 9"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -se2 02000000 > run.out
 IF !ERRORLEVEL! EQU 0 (
    exit /B 1
 )
 
-echo "loadexternal"
-%TPM_EXE_PATH%loadexternal -se2 02000000 100 > run.out
+echo "loadexternal 10"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -se2 02000000 100 > run.out
 IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 11"
+%TPM_EXE_PATH%loadexternal > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 12"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -hi > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 13"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -hi x > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 14"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -nalg > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 15"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -nalg x > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 16"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -halg > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 17"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -halg x > run.out checkFailure $?
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 18"
+%TPM_EXE_PATH%loadexternal -xxx > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 19"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -pwdk > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 20"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -si -scheme > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 21"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -si -scheme rsapkcs1 > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 22"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -si -scheme rsaoaep > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 23"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -den -scheme rsassa > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 24"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -den -scheme rsapss > run.out
+IF !ERRORLEVEL! EQU 0 (
+   exit /B 1
+)
+
+echo "loadexternal 25"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -si -scheme null > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the session"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "loadexternal 26"
+%TPM_EXE_PATH%loadexternal -ipem signrsa3072pub.pem -den -scheme null > run.out
+IF !ERRORLEVEL! NEQ 0 (
+   exit /B 1
+)
+
+echo "Flush the session"
+%TPM_EXE_PATH%flushcontext -ha 80000001 > run.out
+IF !ERRORLEVEL! NEQ 0 (
    exit /B 1
 )
 
