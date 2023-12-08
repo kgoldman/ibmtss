@@ -40,7 +40,7 @@
   DER example:
 
   Create a key pair in PEM format
-  
+
   > openssl genrsa -out keypair.pem -aes256 -passout pass:rrrr 2048
   > openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem
 
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     char 			hierarchyChar = 0;
     TPMI_RH_HIERARCHY		hierarchy = TPM_RH_NULL;
     int				keyType = TYPE_SI;
-    TPMI_ALG_SIG_SCHEME 	scheme = TPM_ALG_RSASSA;
+    TPMI_ALG_SIG_SCHEME 	scheme = TPM_ALG_ERROR;		/* illegal value marker */
     uint32_t 			keyTypeSpecified = 0;
     TPMI_ALG_PUBLIC 		algPublic = TPM_ALG_RSA;
     TPMI_ALG_HASH		halg = TPM_ALG_SHA256;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
     TSS_SetProperty(NULL, TPM_TRACE_LEVEL, "1");
     tssUtilsVerbose = FALSE;
-    
+
     /* command line argument defaults */
     for (i=1 ; (i<argc) && (rc == 0) ; i++) {
 	if (strcmp(argv[i],"-hi") == 0) {
@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
 	    if (i < argc) {
 		if (argv[i][0] != 'e' && argv[i][0] != 'o' &&
 		    argv[i][0] != 'p' && argv[i][0] != 'n') {
+		    printf("Illegal -hi parameter %c\n", argv[i][0]);
 		    printUsage();
 		}
 		hierarchyChar = argv[i][0];
@@ -122,7 +123,6 @@ int main(int argc, char *argv[])
 		printf("Missing parameter for -hi\n");
 		printUsage();
 	    }
-	    
 	}
 	else if (strcmp(argv[i],"-halg") == 0) {
 	    i++;
@@ -181,34 +181,39 @@ int main(int argc, char *argv[])
 	    algPublic = TPM_ALG_ECC;
 	}
 	else if (strcmp(argv[i],"-scheme") == 0) {
-	    if (keyType == TYPE_SI) {
-		i++;
-		if (i < argc) {
-		    if (strcmp(argv[i],"rsassa") == 0) {
-			scheme = TPM_ALG_RSASSA;
-		    }
-		    else if (strcmp(argv[i],"rsapss") == 0) {
-			scheme = TPM_ALG_RSAPSS;
-		    }
-		    else {
-			printf("Bad parameter %s for -scheme\n", argv[i]);
-			printUsage();
-		    }
+	    i++;
+	    if (i < argc) {
+		if (strcmp(argv[i],"rsassa") == 0) {
+		    scheme = TPM_ALG_RSASSA;
+		}
+		else if (strcmp(argv[i],"rsapss") == 0) {
+		    scheme = TPM_ALG_RSAPSS;
+		}
+		else if (strcmp(argv[i],"rsapkcs1") == 0) {
+		    scheme = TPM_ALG_RSAES;
+		}
+		else if (strcmp(argv[i],"rsaoaep") == 0) {
+		    scheme = TPM_ALG_OAEP;
+		}
+		else if (strcmp(argv[i],"null") == 0) {
+		    scheme = TPM_ALG_NULL;
+		}
+		else {
+		    printf("Bad parameter %s for -scheme\n", argv[i]);
+		    printUsage();
 		}
 	    }
 	    else {
-		printf("-scheme can only be specified for signing key\n");
+		printf("-scheme option needs a value\n");
 		printUsage();
 	    }
         }
 	else if (strcmp(argv[i], "-st") == 0) {
 	    keyType = TYPE_ST;
-	    scheme = TPM_ALG_NULL;
 	    keyTypeSpecified++;
 	}
 	else if (strcmp(argv[i], "-den") == 0) {
 	    keyType = TYPE_DEN;
-	    scheme = TPM_ALG_NULL;
 	    keyTypeSpecified++;
 	}
 	else if (strcmp(argv[i], "-si") == 0) {
@@ -363,6 +368,35 @@ int main(int argc, char *argv[])
 	    keyType = TYPE_DEN;
 	}
     }
+    /* set scheme defaults if scheme has not bee specified */
+    if (scheme == TPM_ALG_ERROR) {
+	if (keyType == TYPE_DEN) {
+	    scheme = TPM_ALG_NULL;
+	}
+	else if (keyType == TYPE_SI) {
+	    scheme = TPM_ALG_RSASSA;
+	}
+	else if (keyType == TYPE_ST) {
+	    scheme = TPM_ALG_NULL;
+	}
+    }
+    /* check for valid scheme */
+    if (keyType == TYPE_SI) {
+	if ((scheme != TPM_ALG_NULL) &&
+	    (scheme != TPM_ALG_RSASSA) &&
+	    (scheme != TPM_ALG_RSAPSS)) {
+	    printf("Illegal scheme %04x for signing key\n", scheme);
+	    printUsage();
+	}
+    }
+    if (keyType == TYPE_DEN) {
+	if ((scheme != TPM_ALG_NULL) &&
+	    (scheme != TPM_ALG_RSAES) &&
+	    (scheme != TPM_ALG_OAEP)) {
+	    printf("Illegal scheme %04x for decryption key\n", scheme);
+	    printUsage();
+	}
+    }
     /* Table 50 - TPMI_RH_HIERARCHY primaryHandle */
     if (rc == 0) {
 	if (hierarchyChar == 'e') {
@@ -465,7 +499,7 @@ int main(int argc, char *argv[])
     /* call TSS to execute the command */
     if (rc == 0) {
 	rc = TSS_Execute(tssContext,
-			 (RESPONSE_PARAMETERS *)&out, 
+			 (RESPONSE_PARAMETERS *)&out,
 			 (COMMAND_PARAMETERS *)&in,
 			 NULL,
 			 TPM_CC_LoadExternal,
@@ -513,23 +547,26 @@ static void printUsage(void)
     printf("\t[-hi\thierarchy (e, o, p, n) (default NULL)]\n");
     printf("\t[-nalg\tname hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
     printf("\t[-halg\tscheme hash algorithm (sha1, sha256, sha384, sha512) (default sha256)]\n");
-    printf("\n");
     printf("\t[Asymmetric Key Algorithm]\n");
-    printf("\n");
-    printf("\t[-rsa\t(default)]\n");
-    printf("\t[-ecc\t]\n");
-    printf("\n");
-    printf("\t-ipu\tTPM2B_PUBLIC public key file name\n");
-    printf("\t-ipem\tPEM format public key file name\n");
-    printf("\t-ider\tDER format plaintext key pair file name\n");
+    printf("\t\t[-rsa\t(default)]\n");
+    printf("\t\t[-ecc\t]\n");
+    printf("\tInput\n");
+    printf("\t\t-ipu\tTPM2B_PUBLIC public key file name\n");
+    printf("\t\t-ipem\tPEM format public key file name\n");
+    printf("\t\t-ider\tDER format plaintext key pair file name\n");
     printf("\t[-pwdk\tpassword for DER key (default empty)]\n");
     printf("\t[-uwa\tuserWithAuth attribute clear (default set)]\n");
-    printf("\t[-si\tsigning (default) RSA]\n");
-    printf("\t[-scheme  for signing key (default RSASSA scheme)]\n");
-    printf("\t\trsassa\n");
-    printf("\t\trsapss\n");
-    printf("\t[-st\tstorage (default NULL scheme)]\n");
-    printf("\t[-den\tdecryption, (unrestricted, RSA and EC NULL scheme)\n");
+    printf("\t[Key Type]\n");
+    printf("\t\t[-si\tsigning (default)\n");
+    printf("\t\t[-st\tdecryption]\n");
+    printf("\t\t[-den\tdecryption]\n");
+    printf("\t[-scheme]\n");
+    printf("\t\trsassa\tdefault for a signing key\n");
+    printf("\t\trsapss\tvalid for a signing key\n");
+    printf("\t\trsapkcs1\tvalid for a decryption key\n");
+    printf("\t\trsaoaep\tvalid for a decryption key\n");
+    printf("\t\tnull\tdefault for decryption key, valid for any key\n");
+
     printf("\t[-ns\tadditionally print Name in hex ascii on one line]\n");
     printf("\t\tUseful to paste into policy\n");
     printf("\n");
@@ -540,5 +577,5 @@ static void printUsage(void)
     printf("\t80\taudit\n");
     printf("\n");
     printf("Depending on the build configuration, some hash algorithms may not be available.\n");
-    exit(1);	
+    exit(1);
 }

@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2022					#
+# (c) Copyright IBM Corporation 2015 - 2023					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -52,7 +52,7 @@ echo ""
 # -----BEGIN ENCRYPTED PRIVATE KEY-----
 #
 
-echo "Generate the encryption key with openssl"
+echo "Generate the encryption keys with openssl"
 if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 
     for BITS in 2048 3072
@@ -63,6 +63,9 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 
 	echo "Convert key pair to plaintext DER format"
 	openssl pkey -inform pem -in tmpkeypairrsa${BITS}.pem -outform der -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out 2>&1
+
+	echo "Convert ${BITS} keypair to public key"
+	openssl pkey -inform pem -outform pem -in tmpkeypairrsa${BITS}.pem -passin pass:rrrr -pubout -out tmppubkey${BITS}.pem
 
     done
 
@@ -302,39 +305,44 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 fi
 
 echo ""
-echo "Encrypt with OpenSSL OAEP, decrypt with TPM"
+echo "TPM key, Encrypt with OpenSSL OAEP, decrypt with TPM"
 echo ""
 
-echo "Create OAEP encryption key"
-${PREFIX}create -hp 80000000 -pwdp sto -deo -kt f -kt p -halg sha256 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out
-checkSuccess $?
+for BITS in 2048 3072
+do
 
-echo "Load encryption key at 80000001"
-${PREFIX}load -hp 80000000 -pwdp sto -ipr tmpprivkey.bin -ipu tmppubkey.bin  > run.out
-checkSuccess $?
+    echo "Create ${BITS} OAEP encryption key"
+    ${PREFIX}create -hp 80000000 -pwdp sto -deo -kt f -kt p -rsa ${BITS} -halg sha256 -opr tmpprivkey.bin -opu tmppubkey.bin -opem tmppubkey.pem > run.out
+    checkSuccess $?
 
-echo "Encrypt using OpenSSL and the PEM public key"
-openssl pkeyutl -encrypt -inkey tmppubkey.pem -pubin -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in policies/aaa -out enc.bin > run.out 2>&1
-checkSuccess $?
+    echo "Load ${BITS} encryption key at 80000001"
+    ${PREFIX}load -hp 80000000 -pwdp sto -ipr tmpprivkey.bin -ipu tmppubkey.bin  > run.out
+    checkSuccess $?
 
-echo "Decrypt using TPM key at 80000001"
-${PREFIX}rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin > run.out
-checkSuccess $?
+    echo "Encrypt using OpenSSL and the PEM public key"
+    openssl pkeyutl -encrypt -inkey tmppubkey.pem -pubin -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -in policies/aaa -out enc.bin > run.out 2>&1
+    checkSuccess $?
 
-echo "Verify the decrypt result"
-diff policies/aaa dec.bin > run.out
-checkSuccess $?
+    echo "Decrypt using TPM key at 80000001"
+    ${PREFIX}rsadecrypt -hk 80000001 -ie enc.bin -od dec.bin > run.out
+    checkSuccess $?
 
-echo "Flush the encryption key"
-${PREFIX}flushcontext -ha 80000001 > run.out
-checkSuccess $?
+    echo "Verify the decrypt result"
+    diff policies/aaa dec.bin > run.out
+    checkSuccess $?
+
+    echo "Flush the encryption key"
+    ${PREFIX}flushcontext -ha 80000001 > run.out
+    checkSuccess $?
+
+done
 
 echo ""
 echo "Child RSA decryption key RSAES"
 echo ""
 
 echo "Create RSAES encryption key"
-${PREFIX}create -hp 80000000 -pwdp sto -dee -opr deepriv.bin -opu deepub.bin > run.out	
+${PREFIX}create -hp 80000000 -pwdp sto -dee -opr deepriv.bin -opu deepub.bin > run.out
 checkSuccess $?
 
 echo "Load encryption key at 80000001"
@@ -363,7 +371,7 @@ echo "Primary RSA decryption key RSAES"
 echo ""
 
 echo "Create Primary RSAES encryption key"
-${PREFIX}createprimary -hi p -dee -halg sha256 -opem tmppubkey.pem > run.out	
+${PREFIX}createprimary -hi p -dee -halg sha256 -opem tmppubkey.pem > run.out
 checkSuccess $?
 
 echo "RSA encrypt with the encryption key"
@@ -408,7 +416,45 @@ echo "Flush the encryption key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
 checkSuccess $?
 
-# cleanup
+if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
+
+    echo ""
+    echo "OpenSSL key, Encrypt with OpenSSL, decrypt with TPM"
+    echo ""
+
+    # The rsa_oaep_md:sha256 parameter is ignored for pkcs1
+
+    for BITS in 2048 3072
+    do
+
+	for SCHEME in oaep pkcs1
+	do
+
+	    echo "Encrypt using OpenSSL ${SCHEME} and the ${BITS} PEM public key"
+	    openssl pkeyutl -encrypt -inkey tmppubkey${BITS}.pem -pubin -pkeyopt rsa_padding_mode:${SCHEME} -pkeyopt rsa_oaep_md:sha256 -in policies/aaa -out enc.bin > run.out 2>&1
+	    checkSuccess $?
+
+	    echo "Loadexternal the openssl ${BITS} ${SCHEME} key pair in the NULL hierarchy 80000001"
+	    ${PREFIX}loadexternal -den -scheme rsa${SCHEME} -ider tmpkeypairrsa${BITS}.der -pwdk rrrr > run.out
+	    checkSuccess $?
+
+	    echo "Decrypt using TPM key at 80000001"
+	    ${PREFIX}rsadecrypt -hk 80000001 -pwdk rrrr -ie enc.bin -od dec.bin > run.out
+	    checkSuccess $?
+
+	    echo "Verify the decrypt result"
+	    diff policies/aaa dec.bin > run.out
+	    checkSuccess $?
+
+	    echo "Flush the encryption key"
+	    ${PREFIX}flushcontext -ha 80000001 > run.out
+	    checkSuccess $?
+
+	done
+    done
+fi
+
+  # cleanup
 
 rm -f tmp.bin
 rm -f enc.bin
@@ -424,10 +470,12 @@ do
     rm -f tmpkeypairrsa${BITS}.pem
     rm -f tmpkeypairrsaenc${BITS}.pem
     rm -f tmpkeypairrsadec${BITS}.pem
+    rm -f tmppubkey${BITS}.bin
+    rm -f tmppubkey${BITS}.pem
 done
-rm -f tmppubkey.bin
 rm -f tmppubkey.pem
-rm -f tmpprivkey.bin 
+rm -f tmppubkey.bin
+rm -f tmpprivkey.bin
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 02000000
