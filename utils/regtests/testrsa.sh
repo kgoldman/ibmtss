@@ -422,8 +422,6 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
     echo "OpenSSL key, Encrypt with OpenSSL, decrypt with TPM"
     echo ""
 
-    # The rsa_oaep_md:sha256 parameter is ignored for pkcs1
-
     for BITS in 2048 3072
     do
 
@@ -431,7 +429,12 @@ if   [ ${CRYPTOLIBRARY} == "openssl" ]; then
 	do
 
 	    echo "Encrypt using OpenSSL ${SCHEME} and the ${BITS} PEM public key"
-	    openssl pkeyutl -encrypt -inkey tmppubkey${BITS}.pem -pubin -pkeyopt rsa_padding_mode:${SCHEME} -pkeyopt rsa_oaep_md:sha256 -in policies/aaa -out enc.bin > run.out 2>&1
+	    # The rsa_oaep_md:sha256 parameter is ignored for pkcs1 only after openssl 3.x
+	    if [ ${SCHEME} == "pkcs1" ]; then
+		openssl pkeyutl -encrypt -inkey tmppubkey${BITS}.pem -pubin -pkeyopt rsa_padding_mode:${SCHEME}  -in policies/aaa -out enc.bin > run.out 2>&1
+	    else
+		openssl pkeyutl -encrypt -inkey tmppubkey${BITS}.pem -pubin -pkeyopt rsa_padding_mode:${SCHEME} -pkeyopt rsa_oaep_md:sha256 -in policies/aaa -out enc.bin > run.out 2>&1
+	    fi
 	    checkSuccess $?
 
 	    echo "Loadexternal the openssl ${BITS} ${SCHEME} key pair in the NULL hierarchy 80000001"
