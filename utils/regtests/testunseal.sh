@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2024					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -102,7 +102,7 @@ ${PREFIX}hierarchychangeauth -hi p -pwdn ppp > run.out
 checkSuccess $?
 
 echo "Create a sealed data object with policysecret platform auth under primary key"
-${PREFIX}create -hp 80000000 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policysecretp.bin > run.out
+${PREFIX}create -hp 80000000 -bl -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policysecretp.bin > run.out
 checkSuccess $?
 
 echo "Load the sealed data object under primary key"
@@ -195,7 +195,7 @@ for HALG in ${ITERATE_ALGS}
 do
 
     echo "Create a sealed data object ${HALG}"
-    ${PREFIX}create -hp 80000000 -nalg ${HALG} -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr16aaa${HALG}.bin > run.out
+    ${PREFIX}create -hp 80000000 -nalg ${HALG} -bl -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr16aaa${HALG}.bin > run.out
     checkSuccess $?
 
     echo "Load the sealed data object"
@@ -317,7 +317,7 @@ for HALG in ${ITERATE_ALGS}
 do
 
     echo "Create a sealed data object ${HALG}"
-    ${PREFIX}create -hp 80000000 -nalg ${HALG} -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr1623aaa${HALG}.bin > run.out
+    ${PREFIX}create -hp 80000000 -nalg ${HALG} -bl -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr1623aaa${HALG}.bin > run.out
     checkSuccess $?
 
     echo "Load the sealed data object"
@@ -456,7 +456,7 @@ do
     # with Name of authorizing key
 
     echo "Create a sealed data object ${HALG}"
-    ${PREFIX}create -hp 80000000 -nalg ${HALG} -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -if msg.bin -pol policies/policyauthorize${HALG}.bin > run.out
+    ${PREFIX}create -hp 80000000 -nalg ${HALG} -bl -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto -if msg.bin -pol policies/policyauthorize${HALG}.bin > run.out
     checkSuccess $?
 
     # Once per new PCR approved values, authorizing PCRs in policy${HALG}.bin
@@ -515,6 +515,10 @@ do
     echo "Load the sealed data object 80000001"
     ${PREFIX}load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
     checkSuccess $?
+
+    echo "Unseal the data blob using a password session, userWithAuth CLEAR, should fail"
+    ${PREFIX}unseal -ha 80000001 -of tmp.bin > run.out
+    checkFailure $?
 
     echo "Unseal the data blob using the policy session"
     ${PREFIX}unseal -ha 80000001 -of tmp.bin -se0 03000000 1 > run.out

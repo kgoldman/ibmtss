@@ -4,7 +4,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2023					#
+REM # (c) Copyright IBM Corporation 2015 - 2024					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -117,7 +117,7 @@ IF !ERRORLEVEL! NEQ 0 (
 )
 
 echo "Create a sealed data object with policysecret platform auth under primary key"
-%TPM_EXE_PATH%create -hp 80000000 -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policysecretp.bin > run.out
+%TPM_EXE_PATH%create -hp 80000000 -bl -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policysecretp.bin > run.out
 IF !ERRORLEVEL! NEQ 0 (
     exit /B 1
 )
@@ -229,7 +229,7 @@ echo ""
 for %%H in (%ITERATE_ALGS%) do (
 
     echo "Create a sealed data object %%H"
-    %TPM_EXE_PATH%create -hp 80000000 -nalg %%H -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr16aaa%%H.bin > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -nalg %%H -bl -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr16aaa%%H.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -378,7 +378,7 @@ echo ""
 for %%H in (%ITERATE_ALGS%) do (
 
     echo "Create a sealed data object %%H"
-    %TPM_EXE_PATH%create -hp 80000000 -nalg %%H -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr1623aaa%%H.bin > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -nalg %%H -bl -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto -pwdk sea -if msg.bin -pol policies/policypcr1623aaa%%H.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -541,7 +541,7 @@ for %%H in (%ITERATE_ALGS%) do (
     REM # with Name of authorizing key
 
     echo "Create a sealed data object %%H"
-    %TPM_EXE_PATH%create -hp 80000000 -nalg %%H -bl -kt f -kt p -opr tmppriv.bin -opu tmppub.bin -pwdp sto -if msg.bin -pol policies/policyauthorize%%H.bin > run.out
+    %TPM_EXE_PATH%create -hp 80000000 -nalg %%H -bl -kt f -kt p -uwa -opr tmppriv.bin -opu tmppub.bin -pwdp sto -if msg.bin -pol policies/policyauthorize%%H.bin > run.out
     IF !ERRORLEVEL! NEQ 0 (
         exit /B 1
     )
@@ -622,6 +622,12 @@ for %%H in (%ITERATE_ALGS%) do (
     echo "Load the sealed data object 80000001"
     %TPM_EXE_PATH%load -hp 80000000 -ipr tmppriv.bin -ipu tmppub.bin -pwdp sto > run.out
     IF !ERRORLEVEL! NEQ 0 (
+        exit /B 1
+    )
+
+    echo "Unseal the data blob using a password session, userWithAuth CLEAR, should fail"
+    %TPM_EXE_PATH%unseal -ha 80000001 -of tmp.bin > run.out
+    IF !ERRORLEVEL! EQU 0 (
         exit /B 1
     )
 
