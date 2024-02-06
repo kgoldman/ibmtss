@@ -60,7 +60,7 @@ nvdefinespace_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 nvdefinespace_LDFLAGS = -L$(top_srcdir)/utils
 nvdefinespace_LDADD = libibmtssutils12.la ../utils/libibmtss.la
 
-nvreadvalueauth_SOURCES = nvreadvalueauth.c
+nvreadvalueauth_SOURCES = nvreadvalueauth.c ../utils/cryptoutils.c
 nvreadvalueauth_CFLAGS = -I$(top_srcdir)/utils -DTPM_TPM12
 nvreadvalueauth_LDFLAGS = -L$(top_srcdir)/utils
 nvreadvalueauth_LDADD = libibmtssutils12.la ../utils/libibmtss.la $(LIBCRYPTO_LIBS)
