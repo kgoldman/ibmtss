@@ -250,10 +250,10 @@ extern "C" {
     TPM_RC convertBin2Bn(BIGNUM **bn,
 			 const unsigned char *bin,
 			 unsigned int bytes);
-    
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     TPM_RC convertEvpPkeyToRsakey(RSA **rsaKey,
 				  EVP_PKEY *evpPkey);
-#if OPENSSL_VERSION_NUMBER < 0x30000000
     TPM_RC convertRsaKeyToPrivateKeyBin(int 		*privateKeyBytes,
 					uint8_t 	**privateKeyBin,
 					const RSA	*rsaKey);
@@ -292,8 +292,10 @@ extern "C" {
 					   EVP_PKEY *evpPkey);
 
 #ifndef TPM_TSS_NOECC
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     TPM_RC convertEvpPkeyToEckey(EC_KEY **ecKey,
 				 EVP_PKEY *evpPkey);
+#endif
     TPM_RC convertEcPublicKeyBinToPublic(TPM2B_PUBLIC 		*objectPublic,
 					 int			keyType,
 					 TPMI_ALG_SIG_SCHEME 	scheme,

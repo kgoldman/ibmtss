@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2021.					*/
+/* (c) Copyright IBM Corporation 2015 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -135,20 +135,24 @@ extern "C" {
     LIB_EXPORT
     TPM_RC TSS_RsaNew(void **rsaKey);
     /* deprecated */
+#ifndef TPM_TSS_NODEPRECATED
     LIB_EXPORT
     TPM_RC TSS_RSAGeneratePublicToken(RSA **rsa_pub_key,		/* freed by caller */
 				      const unsigned char *narr,   	/* public modulus */
 				      uint32_t nbytes,
 				      const unsigned char *earr,   	/* public exponent */
 				      uint32_t ebytes);
+#endif /* TPM_TSS_NODEPRECATED */
 
 
 #endif /* TPM_TSS_NORSA */
-    
+
 #endif /* TPM_TSS_NO_OPENSSL */
-    
+
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     TPM_RC TSS_AES_GetEncKeySize(size_t *tssSessionEncKeySize);
     TPM_RC TSS_AES_GetDecKeySize(size_t *tssSessionDecKeySize);
+#endif
     TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
 			       void *tssSessionDecKey);
     TPM_RC TSS_AES_Encrypt(void *tssSessionEncKey,

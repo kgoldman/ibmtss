@@ -46,7 +46,7 @@ CC = /usr/bin/gcc
 # no-deprecated-declarations silences the compiler until the openssl
 # 3.0 port is complete.
 
-CCFLAGS += 	-DTPM_POSIX -DTPM_TSS_NODEPRECATED -DTPM_TSS_NODEV
+CCFLAGS += 	-DTPM_POSIX -DTPM_TSS_NODEPRECATED -DTPM_TSS_NODEV -DOPENSSL_NO_DEPRECATED
 
 # example of pointing to a locally built openssl
 #CCFLAGS += 	-I/home/kgold/openssl/include

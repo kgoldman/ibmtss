@@ -247,8 +247,10 @@ extern "C" {
 			    unsigned char **certificate,
 			    X509 *x509Certificate);
 #ifndef TPM_TSS_NOECC
+#if OPENSSL_VERSION_NUMBER < 0x30000000
     TPM_RC convertX509ToEc(EC_KEY **ecKey,
 			   X509 *x509);
+#endif
 #endif	/* TPM_TSS_NOECC */
     TPM_RC convertX509ToDer(uint32_t *certLength,
 			    unsigned char **certificate,
@@ -297,13 +299,6 @@ extern "C" {
     TPM_RC addCertSignatureRoot(X509 *x509Certificate,
 				const char *caKeyFileName,
 				const char *caKeyPassword);
-    TPM_RC TSS_RSAGetKey(const BIGNUM **n,
-			 const BIGNUM **e,
-			 const BIGNUM **d,
-			 const BIGNUM **p,
-			 const BIGNUM **q,
-			 const RSA *rsaKey);
-
     int TSS_Pubkey_GetAlgorithm(EVP_PKEY *pkey);
 
 

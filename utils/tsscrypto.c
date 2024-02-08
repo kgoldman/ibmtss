@@ -126,8 +126,10 @@ TPM_RC TSS_Crypto_Init(void)
     int			irc;
 #endif
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
     ERR_load_crypto_strings ();
     OpenSSL_add_all_algorithms();
+#endif
 #if 0
     irc = FIPS_mode_set(1);
     if (irc == 0) {
@@ -1241,6 +1243,7 @@ static TPM_RC TSS_bn2binpad(unsigned char *bin, int binlen, const BIGNUM *bn)
   AES
 */
 
+#if OPENSSL_VERSION_NUMBER < 0x30000000
 TPM_RC TSS_AES_GetEncKeySize(size_t *tssSessionEncKeySize)
 {
     *tssSessionEncKeySize = sizeof(AES_KEY);
@@ -1251,6 +1254,7 @@ TPM_RC TSS_AES_GetDecKeySize(size_t *tssSessionDecKeySize)
     *tssSessionDecKeySize = sizeof(AES_KEY);
     return 0;
 }
+#endif
 
 /* TSS_AES_KeyAllocate() allocates memory for the AES encryption and decryption keys.
  */

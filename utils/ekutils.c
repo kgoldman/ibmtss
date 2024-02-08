@@ -1999,7 +1999,7 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
     }
     if (rc == 0) {
 	/* can't fail, just returns a structure member */
-	ASN1_TIME *notBefore = X509_get_notBefore(x509Certificate);
+	ASN1_TIME *notBefore = X509_getm_notBefore((const X509 *)x509Certificate);
 	arc = X509_gmtime_adj(notBefore ,0L);			/* set to today */
 	if (arc == NULL) {
 	    printf("startCertificate: Error setting notBefore time\n");
@@ -2008,7 +2008,7 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
     }
     if (rc == 0) {
 	/* can't fail, just returns a structure member */
-	ASN1_TIME *notAfter = X509_get_notAfter(x509Certificate);
+	ASN1_TIME *notAfter = X509_getm_notAfter((const X509 *)x509Certificate);
 	arc = X509_gmtime_adj(notAfter, CERT_DURATION);		/* set to duration */
 	if (arc == NULL) {
 	    printf("startCertificate: Error setting notAfter time\n");
