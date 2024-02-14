@@ -5,7 +5,9 @@ rmtest/
 tpmutils/.vs/
 utils/*.png
 utils/*.exe
+utils/libibmtss.dll
 utils/certificates/*.crt
+utils/certificates/*.cer
 utils/certificates/*.der
 utils/certificates/*.dump
 utils/certificates/*.dumpasn1
@@ -164,6 +166,12 @@ tpmutils/loadexternal/x64/
 tpmutils/makecredential/Debug/
 tpmutils/makecredential/Release/
 tpmutils/makecredential/x64/
+tpmutils/ntc2getconfig/Debug/
+tpmutils/ntc2getconfig/Release/
+tpmutils/ntc2getconfig/x64/
+tpmutils/ntc2preconfig/Debug/
+tpmutils/ntc2preconfig/Release/
+tpmutils/ntc2preconfig/x64/
 tpmutils/nvcertify/Debug/
 tpmutils/nvcertify/Release/
 tpmutils/nvcertify/x64/
@@ -403,6 +411,8 @@ utils/createprimary
 utils/dictionaryattacklockreset
 utils/dictionaryattackparameters
 utils/duplicate
+utils/eccdecrypt
+utils/eccencrypt
 utils/eccparameters
 utils/ecephemeral
 utils/encryptdecrypt
