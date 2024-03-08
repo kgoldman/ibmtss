@@ -95,8 +95,7 @@ TPM_RC TSS_Create(TSS_CONTEXT **tssContext)
 	/* the likely cause of a failure is a bad environment variable */
 	if (rc != 0) {
 	    if (tssVerbose) printf("TSS_Create: TSS_Context_Init() failed\n");
-	    free(*tssContext);
-	    *tssContext = NULL;
+	    TSS_Free((unsigned char**)tssContext);
 	}
     }
     /* allocate and initialize the lower layer TSS context */
@@ -168,7 +167,7 @@ TPM_RC TSS_Delete(TSS_CONTEXT *tssContext)
 		    memset(tssContext->sessions[i].sessionData,
 			   0, tssContext->sessions[i].sessionDataLength);
 		}
-		free(tssContext->sessions[i].sessionData);
+		TSS_Free(&tssContext->sessions[i].sessionData);
 		tssContext->sessions[i].sessionData = NULL;
 		tssContext->sessions[i].sessionDataLength = 0;
 	    }
@@ -181,7 +180,7 @@ TPM_RC TSS_Delete(TSS_CONTEXT *tssContext)
 #endif
 #endif
 	rc = TSS_Close(tssContext);
-	free(tssContext);
+	TSS_Free((unsigned char**)&tssContext);
     }
     return rc;
 }

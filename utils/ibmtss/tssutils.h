@@ -62,7 +62,8 @@ extern "C" {
     TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size);
     LIB_EXPORT
     TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size);
-
+    LIB_EXPORT
+    TPM_RC TSS_Free(unsigned char** buffer);
     LIB_EXPORT
     TPM_RC TSS_Structure_Marshal(uint8_t		**buffer,
 				 uint16_t		*written,

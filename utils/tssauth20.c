@@ -1026,7 +1026,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
 		printf("TSS_Marshal: Invalid command parameter\n");
 	    }
 	}
-	free(target);		/* @1 */
+    TSS_Free((unsigned char**)&target);		/* @1 */
     }
 #endif
     /* back fill the correct commandSize */

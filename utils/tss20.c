@@ -1549,9 +1549,9 @@ static TPM_RC TSS_Execute_valist(TSS_CONTEXT *tssContext,
     /* cleanup */
     for (i = 0 ; i < MAX_SESSION_NUM ; i++) {
 	TSS_HmacSession_FreeContext(session[i]);
-	free(authCommand[i]);		/* @1 */
- 	free(authResponse[i]);		/* @2 */
-	free(names[i]);			/* @3 */
+	TSS_Free((unsigned char**)&authCommand[i]);		/* @1 */
+	TSS_Free((unsigned char**)&authResponse[i]);		/* @2 */
+	TSS_Free((unsigned char**)&names[i]);			/* @3 */
     }
     return rc;
 }
@@ -1664,7 +1664,7 @@ void TSS_HmacSession_FreeContext(struct TSS_HMAC_CONTEXT *session)
 {
     if (session != NULL) {
 	TSS_HmacSession_InitContext(session);
-	free(session);
+	TSS_Free((unsigned char**)&session);
     }
     return;
 }
@@ -1798,7 +1798,7 @@ static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
 				      sessionFilename);
     }
     if (tssContext->tssEncryptSessions) {
-	free(outBuffer);	/* @2 */
+	TSS_Free(&outBuffer);	/* @2 */
     }
 #else		/* no file support, save to context */
     if (rc == 0) {
@@ -1807,7 +1807,7 @@ static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
 				      written, buffer);
     }
 #endif
-    free(buffer);	/* @1 */
+	TSS_Free(&buffer);	/* @1 */
     return rc;
 }
 
@@ -1874,10 +1874,10 @@ static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
     }
 #ifndef TPM_TSS_NOFILE
     if (tssContext->tssEncryptSessions) {
-	free(inData);	/* @2 */
+	TSS_Free(&inData);	/* @2 */
     }
 #endif
-    free(buffer);	/* @1 */
+	TSS_Free(&buffer);	/* @1 */
     return rc;
 }
 
@@ -1958,7 +1958,7 @@ static TPM_RC TSS_HmacSession_DeleteData(TSS_CONTEXT *tssContext,
 	/* erase any secrets */
 	memset(tssContext->sessions[slotIndex].sessionData, 0,
 	       tssContext->sessions[slotIndex].sessionDataLength);
-	free(tssContext->sessions[slotIndex].sessionData);
+	TSS_Free(&tssContext->sessions[slotIndex].sessionData);
 	tssContext->sessions[slotIndex].sessionData = NULL;
 	tssContext->sessions[slotIndex].sessionDataLength = 0;
     }
@@ -2792,7 +2792,7 @@ static TPM_RC TSS_ObjectPublic_GetName(TPM2B_NAME *name,
 	/* set the size */
 	name->t.size = sizeInBytes + (uint16_t)sizeof(TPMI_ALG_HASH);
     }
-    free(buffer);	/* @1 */
+	TSS_Free(&buffer);	/* @1 */
     return rc;
 }
 
@@ -3029,7 +3029,7 @@ static TPM_RC TSS_NVPublic_GetName(TPM2B_NAME *name,
 	/* set the size */
 	name->t.size = sizeInBytes + (uint16_t)sizeof(TPMI_ALG_HASH);
     }
-    free(buffer);	/* @1 */
+	TSS_Free(&buffer);	/* @1 */
     return rc;
 }
 
@@ -3797,8 +3797,8 @@ static TPM_RC TSS_Command_DecryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
 	if (tssVverbose) TSS_PrintAll("TSS_Command_DecryptXor: encrypt out",
 				      encryptParamBuffer, paramSize);
     }
-    free(mask);
-    free(encryptParamBuffer);
+	TSS_Free(&mask);
+	TSS_Free(&encryptParamBuffer);
     return rc;
 }
 
@@ -3894,7 +3894,7 @@ static TPM_RC TSS_Command_DecryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
     if (rc == 0) {
 	rc = TSS_SetCommandDecryptParam(tssAuthContext, paramSize, encryptParamBuffer);
     }
-    free(encryptParamBuffer);	/* @1 */
+	TSS_Free(&encryptParamBuffer);	/* @1 */
     return rc;
 }    
 
@@ -4055,8 +4055,8 @@ static TPM_RC TSS_Response_EncryptXor(TSS_AUTH_CONTEXT *tssAuthContext,
 	rc = TSS_SetResponseDecryptParam(tssAuthContext,
 					 paramSize, decryptParamBuffer);
     }
-    free(mask);			/* @1 */
-    free(decryptParamBuffer);	/* @2 */
+	TSS_Free(&mask);			/* @1 */
+	TSS_Free(&decryptParamBuffer);	/* @2 */
     return rc;
 }
 
@@ -4148,7 +4148,7 @@ static TPM_RC TSS_Response_EncryptAes(TSS_AUTH_CONTEXT *tssAuthContext,
 	rc = TSS_SetResponseDecryptParam(tssAuthContext,
 					 paramSize, decryptParamBuffer);
     }
-    free(decryptParamBuffer);	/* @1 */
+	TSS_Free(&decryptParamBuffer);	/* @1 */
     return rc;
 }
 
@@ -4235,7 +4235,7 @@ static TPM_RC TSS_CA_HierarchyChangeAuth(TSS_CONTEXT *tssContext,
     session = session;
     handleNumber = handleNumber;
 #endif	/* TPM_TSS_NOCRYPTO */
-    free(password);	/* @1 */
+	TSS_Free(&password);	/* @1 */
     return rc;
 }
 
@@ -4274,7 +4274,7 @@ static TPM_RC TSS_CA_NV_ChangeAuth(TSS_CONTEXT *tssContext,
     session = session;
     handleNumber = handleNumber;
 #endif	/* TPM_TSS_NOCRYPTO */
-    free(password);	/* @1 */
+	TSS_Free(&password);	/* @1 */
     return rc;
 }
 
@@ -5144,7 +5144,7 @@ static TPM_RC TSS_PO_PolicyAuthValue(TSS_CONTEXT *tssContext,
 	session->isAuthValueNeeded = TRUE;
 	rc = TSS_HmacSession_SaveSession(tssContext, session);
     }
-    free(session);		/* @1 */
+	TSS_Free((unsigned char**)&session);		/* @1 */
     return rc;
 }
 
@@ -5170,7 +5170,7 @@ static TPM_RC TSS_PO_PolicyPassword(TSS_CONTEXT *tssContext,
 	session->isAuthValueNeeded = FALSE;
 	rc = TSS_HmacSession_SaveSession(tssContext, session);
     }
-    free(session);		/* @1 */
+	TSS_Free((unsigned char**)&session);		/* @1 */
     return rc;
 }
 
