@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018 - 2022.					*/
+/* (c) Copyright IBM Corporation 2018 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -757,6 +757,24 @@ void PolicyTemplate_In_Print(PolicyTemplate_In *in, unsigned int indent)
     printf("%*s" "TPM2_PolicyTemplate\n", indent, "");
     TSS_TPM_HANDLE_Print("policySession", in->policySession, indent);
     TSS_TPM2B_Print("templateHash", indent, &in->templateHash.b);
+    return;
+}
+void PolicyCapability_In_Print(PolicyCapability_In *in, unsigned int indent)
+{
+    printf("%*s" "TPM2_PolicyCapability\n", indent, "");
+    TSS_TPM_HANDLE_Print("policySession", in->policySession, indent);
+    TSS_TPM2B_Print("operandB", indent, &in->operandB.b);
+    TSS_TPM_EO_Print("operation", in->operation, indent);
+    printf("%*s" "offset %u\n", indent, "", in->offset);
+    TSS_TPM_CAP_Print("capability", in->capability, indent);
+    printf("%*s" "property %08x\n", indent, "", in->property);
+   return;
+}
+void PolicyParameters_In_Print(PolicyParameters_In *in, unsigned int indent)
+{
+    printf("%*s" "TPM2_PolicyParameters\n", indent, "");
+    TSS_TPM_HANDLE_Print("policySession", in->policySession, indent);
+    TSS_TPM2B_Print("pHash", indent, &in->pHash.b);
     return;
 }
 void PolicyTicket_In_Print(PolicyTicket_In *in, unsigned int indent)

@@ -117,7 +117,7 @@ bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation 
 	nvundefinespace nvundefinespacespecial nvwrite nvwritelock objectchangeauth pcrallocate pcrevent pcrextend \
 	pcrread pcrreset policyauthorize policyauthvalue policycommandcode policycphash policynamehash \
 	policycountertimer policyduplicationselect policygetdigest policymaker policymakerpcr policyauthorizenv \
-	policynv policynvwritten policyor policypassword policypcr policyrestart policysigned policysecret \
+	policynv policynvwritten policyor policypassword policyparameters policypcr policyrestart policysigned policysecret \
 	policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt \
 	sequenceupdate sequencecomplete setcommandcodeauditstatus setprimarypolicy shutdown sign startauthsession \
 	startup stirrandom unseal \
@@ -461,6 +461,10 @@ policynvwritten_LDADD = libibmtssutils.la libibmtss.la
 policyor_SOURCES = policyor.c
 policyor_CFLAGS = $(UTILS_CFLAGS)
 policyor_LDADD = libibmtssutils.la libibmtss.la
+
+policyparameters_SOURCES = policyparameters.c
+policyparameters_CFLAGS = $(UTILS_CFLAGS)
+policyparameters_LDADD = libibmtssutils.la libibmtss.la
 
 policypassword_SOURCES = policypassword.c
 policypassword_CFLAGS = $(UTILS_CFLAGS)

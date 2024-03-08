@@ -450,6 +450,8 @@ policynvwritten:	ibmtss/tss.h policynvwritten.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynvwritten.o $(LNALIBS) -o policynvwritten
 policyor:		ibmtss/tss.h policyor.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyor.o $(LNALIBS) -o policyor
+policyparameters:	ibmtss/tss.h policyparameters.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyparameters.o $(LNALIBS) -o policyparameters
 policypassword:		ibmtss/tss.h policypassword.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policypassword.o $(LNALIBS) -o policypassword
 policypcr:		ibmtss/tss.h policypcr.o $(LIBTSS) $(LIBTSSUTILS)

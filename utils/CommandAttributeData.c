@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2022				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2024				*/
 /*										*/
 /********************************************************************************/
 
@@ -75,7 +75,7 @@
 // s_commandAttributes provides command code attributes, but tuned for different purpose
 
 /* bitfield is:
-   
+
    command index
    reserved
    nv
@@ -86,11 +86,11 @@
    V
    reserved, flags TPM 1.2 command
 */
-   
+
 #include "tssccattributes.h"
 
 const TPMA_CC_TSS    s_ccAttr [] = {
-    
+
 #if (PAD_LIST || CC_NV_UndefineSpaceSpecial)
     {{0x011f, 0, 1, 0, 0, 2, 0, 0, 0}},     // TPM_CC_NV_UndefineSpaceSpecial
 #endif
@@ -442,6 +442,12 @@ const TPMA_CC_TSS    s_ccAttr [] = {
 #if (PAD_LIST || CC_PolicyTemplate)
     {{0x0190, 0, 0, 0, 0, 1, 0, 0, 0}},       // TPM_CC_PolicyTemplate
 #endif
+#if (PAD_LIST || CC_PolicyCapability)
+    {{0x019b, 0, 0, 0, 0, 1, 0, 0, 0}},       // TPM_CC_PolicyCapability
+#endif
+#if (PAD_LIST || CC_PolicyParameters)
+    {{0x019c, 0, 0, 0, 0, 1, 0, 0, 0}},       // TPM_CC_PolicyParameters
+#endif
 #if (PAD_LIST || CC_CreateLoaded)
     {{0x0191, 0, 0, 0, 0, 1, 1, 0, 0}},       // TPM_CC_CreateLoaded
 #endif
@@ -451,7 +457,7 @@ const TPMA_CC_TSS    s_ccAttr [] = {
 #if (PAD_LIST || CC_EncryptDecrypt2)
     {{0x0193, 0, 0, 0, 0, 1, 0, 0, 0}},       // TPM_CC_EncryptDecrypt2
 #endif
-    
+
 #if (PAD_LIST || CC_Vendor_TCG_Test)
     {{0x0000, 0, 0, 0, 0, 0, 0, 1, 0}},     // TPM_CC_Vendor_TCG_Test
 #endif
@@ -937,6 +943,14 @@ const COMMAND_ATTRIBUTES    s_commandAttributes [] = {
     (COMMAND_ATTRIBUTES)(CC_PolicyTemplate             *  // 0x0190
 			 (IS_IMPLEMENTED+DECRYPT_2+ALLOW_TRIAL)),
 #endif
+#if (PAD_LIST || CC_PolicyCapability)
+    (COMMAND_ATTRIBUTES)(CC_PolicyCapability           *  // 0x019b
+			 (IS_IMPLEMENTED+DECRYPT_2+ALLOW_TRIAL)),
+#endif
+#if (PAD_LIST || CC_PolicyParameters)
+    (COMMAND_ATTRIBUTES)(CC_PolicyParameters           *  // 0x019c
+			 (IS_IMPLEMENTED+DECRYPT_2+ALLOW_TRIAL)),
+#endif
 #if (PAD_LIST || CC_CreateLoaded)
     (COMMAND_ATTRIBUTES)(CC_CreateLoaded               *  // 0x0191
 			 (IS_IMPLEMENTED+DECRYPT_2+HANDLE_1_USER+PP_COMMAND+ENCRYPT_2+R_HANDLE)),
@@ -949,7 +963,7 @@ const COMMAND_ATTRIBUTES    s_commandAttributes [] = {
     (COMMAND_ATTRIBUTES)(CC_EncryptDecrypt2            *  // 0x0193
 			 (IS_IMPLEMENTED+DECRYPT_2+HANDLE_1_USER+ENCRYPT_2)),
 #endif
-    
+
 #if (PAD_LIST || CC_Vendor_TCG_Test)
     (COMMAND_ATTRIBUTES)(CC_Vendor_TCG_Test            *  // 0x0000
 			 (IS_IMPLEMENTED+DECRYPT_2+ENCRYPT_2)),
@@ -969,6 +983,6 @@ const COMMAND_ATTRIBUTES    s_commandAttributes [] = {
 			 (IS_IMPLEMENTED+NO_SESSIONS)),
 #endif
 #endif	/* TPM_TSS_NUVOTON */
-    
+
     0
 };

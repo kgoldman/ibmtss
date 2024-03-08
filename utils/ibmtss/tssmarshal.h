@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -140,6 +140,8 @@
 #include "PolicySecret_fp.h"
 #include "PolicySigned_fp.h"
 #include "PolicyTemplate_fp.h"
+#include "PolicyCapability_fp.h"
+#include "PolicyParameters_fp.h"
 #include "PolicyTicket_fp.h"
 #include "Quote_fp.h"
 #include "RSA_Decrypt_fp.h"
@@ -168,230 +170,234 @@ extern "C" {
 #endif
 
     /* Recommended functions */
-    
-    TPM_RC
+
+    LIB_EXPORT TPM_RC
     TSS_Startup_In_Marshalu(const Startup_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Shutdown_In_Marshalu(const Shutdown_In  *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_SelfTest_In_Marshalu(const SelfTest_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_IncrementalSelfTest_In_Marshalu(const IncrementalSelfTest_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_StartAuthSession_In_Marshalu(const StartAuthSession_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyRestart_In_Marshalu(const PolicyRestart_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Create_In_Marshalu(const Create_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Load_In_Marshalu(const Load_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_LoadExternal_In_Marshalu(const LoadExternal_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ReadPublic_In_Marshalu(const ReadPublic_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ActivateCredential_In_Marshalu(const ActivateCredential_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_MakeCredential_In_Marshalu(const MakeCredential_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Unseal_In_Marshalu(const Unseal_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ObjectChangeAuth_In_Marshalu(const ObjectChangeAuth_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_CreateLoaded_In_Marshalu(const CreateLoaded_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Duplicate_In_Marshalu(const Duplicate_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Rewrap_In_Marshalu(const Rewrap_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Import_In_Marshalu(const Import_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_RSA_Encrypt_In_Marshalu(const RSA_Encrypt_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_RSA_Decrypt_In_Marshalu(const RSA_Decrypt_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ECDH_KeyGen_In_Marshalu(const ECDH_KeyGen_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ECDH_ZGen_In_Marshalu(const ECDH_ZGen_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ECC_Encrypt_In_Marshalu(const ECC_Encrypt_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ECC_Decrypt_In_Marshalu(const ECC_Decrypt_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ECC_Parameters_In_Marshalu(const ECC_Parameters_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ZGen_2Phase_In_Marshalu(const ZGen_2Phase_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_EncryptDecrypt_In_Marshalu(const EncryptDecrypt_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_EncryptDecrypt2_In_Marshalu(const EncryptDecrypt2_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Hash_In_Marshalu(const Hash_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_HMAC_In_Marshalu(const HMAC_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_GetRandom_In_Marshalu(const GetRandom_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_StirRandom_In_Marshalu(const StirRandom_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_HMAC_Start_In_Marshalu(const HMAC_Start_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_HashSequenceStart_In_Marshalu(const HashSequenceStart_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_SequenceUpdate_In_Marshalu(const SequenceUpdate_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_SequenceComplete_In_Marshalu(const SequenceComplete_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_EventSequenceComplete_In_Marshalu(const EventSequenceComplete_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Certify_In_Marshalu(const Certify_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_CertifyCreation_In_Marshalu(const CertifyCreation_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_CertifyX509_In_Marshalu(const CertifyX509_In *source, uint16_t *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Quote_In_Marshalu(const Quote_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_GetSessionAuditDigest_In_Marshalu(const GetSessionAuditDigest_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_GetCommandAuditDigest_In_Marshalu(const GetCommandAuditDigest_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_GetTime_In_Marshalu(const GetTime_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Commit_In_Marshalu(const Commit_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_EC_Ephemeral_In_Marshalu(const EC_Ephemeral_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_VerifySignature_In_Marshalu(const VerifySignature_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Sign_In_Marshalu(const Sign_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_SetCommandCodeAuditStatus_In_Marshalu(const SetCommandCodeAuditStatus_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PCR_Extend_In_Marshalu(const PCR_Extend_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PCR_Event_In_Marshalu(const PCR_Event_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PCR_Read_In_Marshalu(const PCR_Read_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PCR_Allocate_In_Marshalu(const PCR_Allocate_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PCR_SetAuthPolicy_In_Marshalu(const PCR_SetAuthPolicy_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PCR_SetAuthValue_In_Marshalu(const PCR_SetAuthValue_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PCR_Reset_In_Marshalu(const PCR_Reset_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicySigned_In_Marshalu(const PolicySigned_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicySecret_In_Marshalu(const PolicySecret_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyTicket_In_Marshalu(const PolicyTicket_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyOR_In_Marshalu(const PolicyOR_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyPCR_In_Marshalu(const PolicyPCR_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyLocality_In_Marshalu(const PolicyLocality_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyNV_In_Marshalu(const PolicyNV_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyAuthorizeNV_In_Marshalu(const PolicyAuthorizeNV_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyCounterTimer_In_Marshalu(const PolicyCounterTimer_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyCommandCode_In_Marshalu(const PolicyCommandCode_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyPhysicalPresence_In_Marshalu(const PolicyPhysicalPresence_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyCpHash_In_Marshalu(const PolicyCpHash_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyNameHash_In_Marshalu(const PolicyNameHash_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyDuplicationSelect_In_Marshalu(const PolicyDuplicationSelect_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyAuthorize_In_Marshalu(const PolicyAuthorize_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyAuthValue_In_Marshalu(const PolicyAuthValue_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyPassword_In_Marshalu(const PolicyPassword_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyGetDigest_In_Marshalu(const PolicyGetDigest_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyNvWritten_In_Marshalu(const PolicyNvWritten_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PolicyTemplate_In_Marshalu(const PolicyTemplate_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
+    TSS_PolicyCapability_In_Marshalu(const PolicyCapability_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
+    LIB_EXPORT TPM_RC
+    TSS_PolicyParameters_In_Marshalu(const PolicyParameters_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
+    LIB_EXPORT TPM_RC
     TSS_CreatePrimary_In_Marshalu(const CreatePrimary_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_HierarchyControl_In_Marshalu(const HierarchyControl_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_SetPrimaryPolicy_In_Marshalu(const SetPrimaryPolicy_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ChangePPS_In_Marshalu(const ChangePPS_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ChangeEPS_In_Marshalu(const ChangeEPS_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_Clear_In_Marshalu(const Clear_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ClearControl_In_Marshalu(const ClearControl_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_HierarchyChangeAuth_In_Marshalu(const HierarchyChangeAuth_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_DictionaryAttackLockReset_In_Marshalu(const DictionaryAttackLockReset_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_DictionaryAttackParameters_In_Marshalu(const DictionaryAttackParameters_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_PP_Commands_In_Marshalu(const PP_Commands_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_SetAlgorithmSet_In_Marshalu(const SetAlgorithmSet_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ContextSave_In_Marshalu(const ContextSave_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ContextLoad_In_Marshalu(const ContextLoad_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_FlushContext_In_Marshalu(const FlushContext_In *source, UINT16 *written, BYTE **buffer, uint32_t *size) ;
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_EvictControl_In_Marshalu(const EvictControl_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ClockSet_In_Marshalu(const ClockSet_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_ClockRateAdjust_In_Marshalu(const ClockRateAdjust_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_GetCapability_In_Marshalu(const GetCapability_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_TestParms_In_Marshalu(const TestParms_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_DefineSpace_In_Marshalu(const NV_DefineSpace_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_UndefineSpace_In_Marshalu(const NV_UndefineSpace_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_UndefineSpaceSpecial_In_Marshalu(const NV_UndefineSpaceSpecial_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_ReadPublic_In_Marshalu(const NV_ReadPublic_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_Write_In_Marshalu(const NV_Write_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_Increment_In_Marshalu(const NV_Increment_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_Extend_In_Marshalu(const NV_Extend_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_SetBits_In_Marshalu(const NV_SetBits_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_WriteLock_In_Marshalu(const NV_WriteLock_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_GlobalWriteLock_In_Marshalu(const NV_GlobalWriteLock_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_Read_In_Marshalu(const NV_Read_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_ReadLock_In_Marshalu(const NV_ReadLock_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_ChangeAuth_In_Marshalu(const NV_ChangeAuth_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
-    TPM_RC
+    LIB_EXPORT TPM_RC
     TSS_NV_Certify_In_Marshalu(const NV_Certify_In *source, UINT16 *written, BYTE **buffer, uint32_t *size);
 
     /* Deprecated functions */
-    
+
     TPM_RC
     TSS_Startup_In_Marshal(const Startup_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
     TPM_RC
@@ -610,7 +616,7 @@ extern "C" {
     TSS_NV_Certify_In_Marshal(const NV_Certify_In *source, UINT16 *written, BYTE **buffer, INT32 *size);
 
     /* Recommended functions */
-    
+
     TPM_RC
     TSS_IncrementalSelfTest_Out_Unmarshalu(IncrementalSelfTest_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
     TPM_RC
@@ -727,7 +733,7 @@ extern "C" {
     TSS_NV_Certify_Out_Unmarshalu(NV_Certify_Out *target, TPM_ST tag, BYTE **buffer, uint32_t *size);
 
     /* Deprecated functions */
-    
+
     TPM_RC
     TSS_IncrementalSelfTest_Out_Unmarshal(IncrementalSelfTest_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
     TPM_RC
@@ -838,7 +844,7 @@ extern "C" {
     TSS_NV_Certify_Out_Unmarshal(NV_Certify_Out *target, TPM_ST tag, BYTE **buffer, INT32 *size);
 
     /* Recommended functions */
-    
+
     LIB_EXPORT TPM_RC
     TSS_UINT8_Marshalu(const UINT8 *source, UINT16 *written, BYTE **buffer, uint32_t *size);
     LIB_EXPORT TPM_RC
@@ -1237,7 +1243,7 @@ extern "C" {
     TSS_TPM2B_CREATION_DATA_Marshalu(const TPM2B_CREATION_DATA *source, UINT16 *written, BYTE **buffer, uint32_t *size);
 
     /* Deprecated functions */
-    
+
     LIB_EXPORT TPM_RC
     TSS_UINT8_Marshal(const UINT8 *source, UINT16 *written, BYTE **buffer, INT32 *size);
     LIB_EXPORT TPM_RC

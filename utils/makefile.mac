@@ -4,7 +4,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2017 - 2020					#
+# (c) Copyright IBM Corporation 2017 - 2024					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -368,6 +368,8 @@ policynvwritten:	ibmtss/tss.h policynvwritten.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynvwritten.o $(LNALIBS) -o policynvwritten
 policyor:		ibmtss/tss.h policyor.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyor.o $(LNALIBS) -o policyor
+policyparameters:	ibmtss/tss.h policyparameters.o $(LIBTSS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyparameters.o $(LNALIBS) -o policyparameters
 policypassword:		ibmtss/tss.h policypassword.o $(LIBTSS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policypassword.o $(LNALIBS) -o policypassword
 policypcr:		ibmtss/tss.h policypcr.o $(LIBTSS)

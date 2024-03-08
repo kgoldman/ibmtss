@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2022				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2024				*/
 /*										*/
 /********************************************************************************/
 
@@ -1744,6 +1744,66 @@ PolicyTemplate_In_Unmarshal(PolicyTemplate_In *target, BYTE **buffer, uint32_t *
 	rc = TSS_TPM2B_DIGEST_Unmarshalu(&target->templateHash, buffer, size);
 	if (rc != TPM_RC_SUCCESS) {
 	    rc += RC_PolicyTemplate_templateHash;
+	}
+    }
+    return rc;
+}
+TPM_RC
+PolicyCapability_In_Unmarshal(PolicyCapability_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    buffer = buffer;
+    size = size;
+
+    if (rc == TPM_RC_SUCCESS) {
+	target->policySession = handles[0];
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_OPERAND_Unmarshalu(&target->operandB, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_PolicyCapability_operandB;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_UINT16_Unmarshalu(&target->offset, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_PolicyCapability_offset;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM_EO_Unmarshalu(&target->operation, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_PolicyCapability_operation;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM_CAP_Unmarshalu(&target->capability, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_PolicyCapability_capability;
+	}
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_UINT32_Unmarshalu(&target->property, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_PolicyCapability_property;
+	}
+    }
+    return rc;
+}
+TPM_RC
+PolicyParameters_In_Unmarshal(PolicyParameters_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[])
+{
+    TPM_RC rc = TPM_RC_SUCCESS;
+    buffer = buffer;
+    size = size;
+
+    if (rc == TPM_RC_SUCCESS) {
+	target->policySession = handles[0];
+    }
+    if (rc == TPM_RC_SUCCESS) {
+	rc = TSS_TPM2B_DIGEST_Unmarshalu(&target->pHash, buffer, size);
+	if (rc != TPM_RC_SUCCESS) {
+	    rc += RC_PolicyParameters_pHash;
 	}
     }
     return rc;

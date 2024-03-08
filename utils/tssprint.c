@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2022.					*/
+/* (c) Copyright IBM Corporation 2015 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -700,6 +700,12 @@ void TSS_TPM_CC_Print(const char *string, TPM_CC source, unsigned int indent)
 	break;
       case TPM_CC_PolicyTemplate:
 	printf("%s TPM_CC_PolicyTemplate\n", string);
+	break;
+      case TPM_CC_PolicyCapability:
+	printf("%s TPM_CC_PolicyCapability\n", string);
+	break;
+      case TPM_CC_PolicyParameters:
+	printf("%s TPM_CC_PolicyParameters\n", string);
 	break;
       case TPM_CC_CreateLoaded:
 	printf("%s TPM_CC_CreateLoaded\n", string);

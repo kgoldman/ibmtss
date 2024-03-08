@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2022.					*/
+/* (c) Copyright IBM Corporation 2015 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -144,6 +144,8 @@ extern "C" {
     void PolicySecret_In_Print(PolicySecret_In *in, unsigned int indent);
     void PolicySigned_In_Print(PolicySigned_In *in, unsigned int indent);
     void PolicyTemplate_In_Print(PolicyTemplate_In *in, unsigned int indent);
+    void PolicyCapability_In_Print(PolicyCapability_In *in, unsigned int indent);
+    void PolicyParameters_In_Print(PolicyParameters_In *in, unsigned int indent);
     void PolicyTicket_In_Print(PolicyTicket_In *in, unsigned int indent);
     void Quote_In_Print(Quote_In *in, unsigned int indent);
     void RSA_Decrypt_In_Print(RSA_Decrypt_In *in, unsigned int indent);

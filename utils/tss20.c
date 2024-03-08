@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2018 - 2022					*/
+/* (c) Copyright IBM Corporation 2018 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -726,6 +726,8 @@ static const TSS_TABLE tssTable [] = {
     {TPM_CC_PolicyGetDigest, NULL, NULL, NULL},
     {TPM_CC_PolicyNvWritten, NULL, NULL, NULL},
     {TPM_CC_PolicyTemplate, NULL, NULL, NULL},
+    {TPM_CC_PolicyCapability, NULL, NULL, NULL},
+    {TPM_CC_PolicyParameters, NULL, NULL, NULL},
     {TPM_CC_CreatePrimary, NULL, NULL, (TSS_PostProcessFunction_t)TSS_PO_CreatePrimary},
     {TPM_CC_HierarchyControl, NULL, NULL, NULL},
     {TPM_CC_SetPrimaryPolicy, NULL, NULL, NULL},
@@ -852,6 +854,8 @@ static const TSS_CH_TABLE tssChTable [] = {
     {TPM_CC_PolicyGetDigest, NULL},
     {TPM_CC_PolicyNvWritten, NULL},
     {TPM_CC_PolicyTemplate, NULL},
+    {TPM_CC_PolicyCapability, NULL},
+    {TPM_CC_PolicyParameters, NULL},
     {TPM_CC_CreatePrimary, (TSS_CheckParametersFunction_t)TSS_CH_CreatePrimary},
     {TPM_CC_HierarchyControl, NULL},
     {TPM_CC_SetPrimaryPolicy, (TSS_CheckParametersFunction_t)TSS_CH_SetPrimaryPolicy},
@@ -982,6 +986,8 @@ static const TSS_PRINT_TABLE tssPrintTable [] = {
     {TPM_CC_PolicyGetDigest, (TSS_InPrintFunction_t)PolicyGetDigest_In_Print},
     {TPM_CC_PolicyNvWritten, (TSS_InPrintFunction_t)PolicyNvWritten_In_Print},
     {TPM_CC_PolicyTemplate, (TSS_InPrintFunction_t)PolicyTemplate_In_Print},
+    {TPM_CC_PolicyCapability, (TSS_InPrintFunction_t)PolicyCapability_In_Print},
+    {TPM_CC_PolicyParameters, (TSS_InPrintFunction_t)PolicyParameters_In_Print},
     {TPM_CC_CreatePrimary, (TSS_InPrintFunction_t)CreatePrimary_In_Print},
     {TPM_CC_HierarchyControl, (TSS_InPrintFunction_t)HierarchyControl_In_Print},
     {TPM_CC_SetPrimaryPolicy, (TSS_InPrintFunction_t)SetPrimaryPolicy_In_Print},
