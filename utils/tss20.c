@@ -1798,7 +1798,7 @@ static TPM_RC TSS_HmacSession_SaveSession(TSS_CONTEXT *tssContext,
 				      sessionFilename);
     }
     if (tssContext->tssEncryptSessions) {
-	TSS_Free(&outBuffer);	/* @2 */
+		TSS_Free(&outBuffer);	/* @2 */
     }
 #else		/* no file support, save to context */
     if (rc == 0) {
@@ -1874,7 +1874,7 @@ static TPM_RC TSS_HmacSession_LoadSession(TSS_CONTEXT *tssContext,
     }
 #ifndef TPM_TSS_NOFILE
     if (tssContext->tssEncryptSessions) {
-	TSS_Free(&inData);	/* @2 */
+		TSS_Free(&inData);	/* @2 */
     }
 #endif
 	TSS_Free(&buffer);	/* @1 */

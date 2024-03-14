@@ -142,7 +142,6 @@ TPM_RC TSS_File_ReadBinaryFile(unsigned char **data,     /* must be freed by cal
     if (rc != 0) {
 	if (tssVerbose) printf("TSS_File_ReadBinaryFile: Error reading %s\n", filename);
 	TSS_Free(data);
-	*data = NULL;
     }
     return rc;
 }

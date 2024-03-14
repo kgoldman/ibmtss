@@ -95,7 +95,7 @@ TPM_RC TSS_Create(TSS_CONTEXT **tssContext)
 	/* the likely cause of a failure is a bad environment variable */
 	if (rc != 0) {
 	    if (tssVerbose) printf("TSS_Create: TSS_Context_Init() failed\n");
-	    TSS_Free((unsigned char**)tssContext);
+		TSS_Free((unsigned char**)tssContext);
 	}
     }
     /* allocate and initialize the lower layer TSS context */
