@@ -2281,7 +2281,7 @@ void TSS_TPMA_NV_Print(TPMA_NV source, unsigned int indent)
 	printf("%*s" "TPM_NT_COUNTER\n", indent, "");
 	break;
       case TPM_NT_BITS:
-	printf("%*s" "TPM_NT_COUNTER\n", indent, "");
+	printf("%*s" "TPM_NT_BITS\n", indent, "");
 	break;
       case TPM_NT_EXTEND:
 	printf("%*s" "TPM_NT_EXTEND\n", indent, "");
