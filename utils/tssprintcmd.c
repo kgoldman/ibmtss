@@ -501,7 +501,7 @@ void NV_SetBits_In_Print(NV_SetBits_In *in, unsigned int indent)
     printf("%*s" "TPM2_NV_SetBits\n", indent, "");
     TSS_TPM_HANDLE_Print("authHandle", in->authHandle, indent);
     TSS_TPM_HANDLE_Print("nvIndex", in->nvIndex, indent);
-    printf("%*s" "bits %"PRIx64"\n", indent, "", in->bits);
+    printf("%*s" "bits %016"PRIx64"\n", indent, "", in->bits);
     return;
 }
 void NV_UndefineSpaceSpecial_In_Print(NV_UndefineSpaceSpecial_In *in, unsigned int indent)

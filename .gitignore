@@ -476,6 +476,7 @@ utils/policynamehash
 utils/policynv
 utils/policynvwritten
 utils/policyor
+utils/policyparameters
 utils/policypassword
 utils/policypcr
 utils/policyrestart

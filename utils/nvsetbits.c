@@ -53,7 +53,8 @@
 #include <ibmtss/tsscryptoh.h>
 
 static TPM_RC calculateParameterHash(const NV_SetBits_In *in,
-				     const TPMI_ALG_HASH halg);
+				     const TPMI_ALG_HASH halg,
+				     const char *pHashFilename);
 static void printUsage(void);
 
 extern int tssUtilsVerbose;
@@ -67,6 +68,7 @@ int main(int argc, char *argv[])
     TPMI_RH_NV_INDEX		nvIndex = 0;
     TPMI_ALG_HASH 		halg = TPM_ALG_NULL;		/* no default */
     int				pHash = FALSE;			/* default run command */
+    const char 			*pHashFilename;			/* binary output */
     const char			*nvPassword = NULL; 		/* default no password */
     TPMI_SH_AUTH_SESSION    	sessionHandle0 = TPM_RS_PW;
     unsigned int		sessionAttributes0 = 0;
@@ -137,12 +139,16 @@ int main(int argc, char *argv[])
 		    halg = TPM_ALG_SHA512;
 		}
 		else {
-		    printf("Bad parameter %s for -halg\n", argv[i]);
+		    printf("Bad parameter %s for -phash algorithm\n", argv[i]);
 		    printUsage();
 		}
 	    }
+	    i++;
+	    if (i < argc) {
+		pHashFilename = argv[i];
+	    }
 	    else {
-		printf("-halg option needs a value\n");
+		printf("-phash option needs two values\n");
 		printUsage();
 	    }
 	}
@@ -263,7 +269,7 @@ int main(int argc, char *argv[])
     /* calculate pHash */
     else {
 	if (rc == 0) {
-	    rc = calculateParameterHash(&in, halg);
+	    rc = calculateParameterHash(&in, halg, pHashFilename);
 	}
     }
     if (rc != 0) {
@@ -282,37 +288,49 @@ int main(int argc, char *argv[])
    calculation */
 
 static TPM_RC calculateParameterHash(const NV_SetBits_In *in,
-				     const TPMI_ALG_HASH halg)
+				     const TPMI_ALG_HASH halg,
+				     const char *pHashFilename)
 {
     TPM_RC 	rc = 0;
-    uint8_t 	pBuffer[MAX_COMMAND_SIZE];
+    uint8_t 	pBuffer[MAX_COMMAND_SIZE];	/* the marshalled parameters */
     TPM_CC 	commandCode = TPM_CC_NV_SetBits;
     TPM_CC	commandCodeNbo = htonl(commandCode);
-    uint16_t 	written = 0;
+    uint16_t 	parameterSize = 0;		/* the marshalled parameter size */
     uint32_t 	sizeInBytes;
     TPMT_HA	digest;
-    uint8_t 	*tmpptr = pBuffer;	/* because the marshal function moves the pointer */
-    uint32_t 	tmpsize = sizeof(pBuffer);
+    uint8_t 	*paramPtr = pBuffer;	/* because the marshal function moves the pointer */
+    uint32_t 	sizeLeft = sizeof(pBuffer);
 
+    /* marshal the input parameters */
     if (rc == 0) {
-	rc = TSS_NV_SetBits_In_Marshalu(in, &written, &tmpptr, &tmpsize);
+	rc = TSS_NV_SetBits_In_Marshalu(in, &parameterSize, &paramPtr, &sizeLeft);
     }
+    /* calculate the parameter hash */
     if (rc == 0) {
-	if (tssUtilsVerbose) TSS_PrintAll("pBuffer", pBuffer, written);
+	/* move the pointer and size past the handle area, this command has two handles */
+	paramPtr = pBuffer + (2 * (sizeof(TPM_HANDLE)));
+	parameterSize -= (2 * (sizeof(TPM_HANDLE)));
+	if (tssUtilsVerbose) TSS_PrintAll("pBuffer", pBuffer, parameterSize);
 	sizeInBytes = TSS_GetDigestSize(halg);
 	digest.hashAlg = halg;			/* session digest algorithm */
 	rc = TSS_Hash_Generate(&digest,		/* largest size of a digest */
 			       sizeof(TPM_CC), &commandCodeNbo,
-			       written, pBuffer,
+			       parameterSize, paramPtr,
 			       0, NULL);
     }
+    /* putput as hexascii for policymaker input */
     if (rc == 0) {
 	uint32_t i;
 	for (i = 0 ; i < sizeInBytes ; i++) {
 	    printf("%02x", digest.digest.tssmax[i]);
 	}
 	printf("\n");
-
+    }
+    /* output as binary for policyparameters input */
+    if (rc == 0) {
+	rc = TSS_File_WriteBinaryFile(digest.digest.tssmax,
+				      sizeInBytes,
+				      pHashFilename);
     }
     return rc;
 }
@@ -327,7 +345,8 @@ static void printUsage(void)
     printf("\t-ha\tNV index handle\n");
     printf("\t[-pwdn\tpassword for NV index (default empty)]\n");
     printf("\t[-bit\tbit to set, can be specified multiple times]\n");
-    printf("\t[-phash\tpolicy hash algorithm (sha1, sha256, sha384, sha512)]\n");
+    printf("\t[-phash\tpolicy hash algorithm (sha1, sha256, sha384, sha512)]\n"
+	   "\t\tand binary output file name\n");
     printf("\t\tOutputs the parameter hash, does not run the command\n");
     printf("\n");
     printf("\t-se[0-2] session handle / attributes (default PWAP)\n");
