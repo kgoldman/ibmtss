@@ -147,7 +147,7 @@ ${PREFIX}nvdefinespace -ha 01000000 -hi p -ty b -at aw -pol policies/policyparam
 checkSuccess $?
 
 echo "Start a policy session"
-${PREFIX}startauthsession -se p -on tmpnonce.bin -v > run.out
+${PREFIX}startauthsession -se p -on tmpnonce.bin > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -159,7 +159,7 @@ echo "nvsetbits set no bits"
 echo ""
 
 echo "Policy command code nvsetbits"
-${PREFIX}policycommandcode -ha 03000000 -cc 135 -v > run.out
+${PREFIX}policycommandcode -ha 03000000 -cc 135 > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -167,7 +167,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy Parameters, no bits"
-${PREFIX}policyparameters -ha 03000000 -ph policies/policyparametersnonesha256.bin
+${PREFIX}policyparameters -ha 03000000 -ph policies/policyparametersnonesha256.bin > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -175,7 +175,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy OR of ORs, 4 * 8 for the bits + 1 for the no bits term"
-${PREFIX}policyor -ha 03000000 -if policies/policyor1.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policynvsetbitsnone.bin
+${PREFIX}policyor -ha 03000000 -if policies/policyor1.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policynvsetbitsnone.bin > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -183,7 +183,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "NV setbits to set written"
-${PREFIX}nvsetbits -ha 01000000 -se0 03000000 0 -v > run.out
+${PREFIX}nvsetbits -ha 01000000 -se0 03000000 0 > run.out
 checkSuccess $?
 
 echo ""
@@ -195,7 +195,7 @@ ${PREFIX}startauthsession -se p -on tmpnonce.bin > run.out
 checkSuccess $?
 
 echo "Policy command code nvsetbits"
-${PREFIX}policycommandcode -ha 03000000 -cc 135 -v > run.out
+${PREFIX}policycommandcode -ha 03000000 -cc 135 > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -203,7 +203,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy Parameters, bit 0"
-${PREFIX}policyparameters -ha 03000000 -ph policies/policyparameterssha256.bin
+${PREFIX}policyparameters -ha 03000000 -ph policies/policyparameterssha256.bin > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -240,7 +240,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy OR of ORs, 4 * 8 for the bits + 1 for the no bits term"
-${PREFIX}policyor -ha 03000000 -if policies/policyor1.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policynvsetbitsnone.bin -v > run.out
+${PREFIX}policyor -ha 03000000 -if policies/policyor1.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policynvsetbitsnone.bin > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -248,7 +248,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "NV setbits to set bit 0"
-${PREFIX}nvsetbits -ha 01000000 -bit 0 -se0 03000000 0 -v > run.out
+${PREFIX}nvsetbits -ha 01000000 -bit 0 -se0 03000000 0 > run.out
 checkSuccess $?
 
 echo ""
@@ -256,11 +256,11 @@ echo "nvsetbits set bit 1, should fail"
 echo ""
 
 echo "Start a policy session"
-${PREFIX}startauthsession -se p -on tmpnonce.bin -v > run.out
+${PREFIX}startauthsession -se p -on tmpnonce.bin > run.out
 checkSuccess $?
 
 echo "Policy command code nvsetbits"
-${PREFIX}policycommandcode -ha 03000000 -cc 135 -v > run.out
+${PREFIX}policycommandcode -ha 03000000 -cc 135 > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -268,7 +268,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy Parameters"
-${PREFIX}policyparameters -ha 03000000 -ph policies/policyparameterssha256.bin
+${PREFIX}policyparameters -ha 03000000 -ph policies/policyparameterssha256.bin > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -276,7 +276,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy signed, sign with PEM key"
-${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg sha256 -pwdk rrrr -v > run.out
+${PREFIX}policysigned -hk 80000001 -ha 03000000 -sk policies/rsaprivkey.pem -halg sha256 -pwdk rrrr > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -301,7 +301,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "Policy OR or ORs, 4 * 8 for the bits + 1 for the no bits term"
-${PREFIX}policyor -ha 03000000 -if policies/policyor1.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policynvsetbitsnone.bin -v > run.out
+${PREFIX}policyor -ha 03000000 -if policies/policyor1.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policyor2-8.bin -if policies/policynvsetbitsnone.bin > run.out
 checkSuccess $?
 
 echo "Get policy digest"
@@ -309,7 +309,7 @@ ${PREFIX}policygetdigest -ha 03000000 > run.out
 checkSuccess $?
 
 echo "NV setbits to set bit 0"
-${PREFIX}nvsetbits -ha 01000000 -bit 1 -se0 03000000 0 -v > run.out
+${PREFIX}nvsetbits -ha 01000000 -bit 1 -se0 03000000 0 > run.out
 checkFailure $?
 
 # cleanup

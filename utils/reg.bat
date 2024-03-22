@@ -6,7 +6,7 @@ REM #			TPM2 regression test					#
 REM #			     Written by Ken Goldman				#
 REM #		       IBM Thomas J. Watson Research Center			#
 REM #										#
-REM # (c) Copyright IBM Corporation 2015 - 2022					#
+REM # (c) Copyright IBM Corporation 2015 - 2024					#
 REM # 										#
 REM # All rights reserved.							#
 REM # 										#
@@ -311,6 +311,13 @@ call regtests\testhelp.bat
 IF !ERRORLEVEL! NEQ 0 (
       echo ""
       echo "Failed testhelp.bat"
+  exit /B 1
+)
+
+call regtests\testpolicy183.bat
+IF !ERRORLEVEL! NEQ 0 (
+      echo ""
+      echo "Failed testpolicy183.bat"
   exit /B 1
 )
 
