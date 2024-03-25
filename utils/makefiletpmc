@@ -414,6 +414,8 @@ policyauthorize:	ibmtss/tss.h policyauthorize.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthorize.o $(LNALIBS) -o policyauthorize
 policyauthvalue:	ibmtss/tss.h policyauthvalue.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthvalue.o $(LNALIBS) -o policyauthvalue
+policycapability:	ibmtss/tss.h policycapability.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policycapability.o $(LNALIBS) -o policycapability
 policycommandcode:	ibmtss/tss.h policycommandcode.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycommandcode.o $(LNALIBS) -o policycommandcode
 policycphash:		ibmtss/tss.h policycphash.o $(LIBTSS) $(LIBTSSUTILS)

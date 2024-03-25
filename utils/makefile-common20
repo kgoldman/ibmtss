@@ -115,6 +115,7 @@ ALL += 	activatecredential$(EXE)		\
 	policycommandcode$(EXE) 		\
 	policycphash$(EXE)	 		\
 	policynamehash$(EXE)	 		\
+	policycapability$(EXE)	 		\
 	policycountertimer$(EXE)		\
 	policyduplicationselect$(EXE)		\
 	policygetdigest$(EXE)			\

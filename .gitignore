@@ -465,6 +465,7 @@ utils/pcrreset
 utils/policyauthorize
 utils/policyauthorizenv
 utils/policyauthvalue
+utils/policycapability
 utils/policycommandcode
 utils/policycountertimer
 utils/policycphash

@@ -1,0 +1,55 @@
+.TH TSSPOLICYCAPABILITY "1" "March 2024" "tsspolicycapability 2.3" "User Commands"
+.SH NAME
+tsspolicycapability \- Runs tsspolicycapability
+.SH DESCRIPTION
+tsspolicycapability
+.PP
+Runs TPM2_PolicyCapability
+.PP
+\fB\-hs\fR
+policy session handle
+.br
+\fB\-ic\fR
+data string (operandB)
+.br
+\fB\-if\fR
+data file (operandB)
+.TP
+\fB\-cap\fR
+capability
+.br
+TPM_CAP_ALGS           0
+.br
+TPM_CAP_HANDLES        1
+.br
+TPM_CAP_COMMANDS       2
+.br
+TPM_CAP_PP_COMMANDS    3
+.br
+TPM_CAP_AUDIT_COMMANDS 4
+.br
+TPM_CAP_PCRS           5
+.br
+TPM_CAP_TPM_PROPERTIES 6
+.br
+TPM_CAP_PCR_PROPERTIES 7
+.br
+TPM_CAP_ECC_CURVES     8
+.br
+TPM_CAP_AUTH_POLICIES  9
+.br
+TPM_CAP_ACT            a
+.TP
+\fB\-pr\fR
+property (defaults to 0)
+.HP
+\fB\-se[0\-2]\fR session handle / attributes (default NULL)
+.br
+01
+continue
+.br
+20
+command decrypt
+.br
+80
+command audit

@@ -142,6 +142,9 @@ echo ""
 echo "Policy Rev 183"
 echo ""
 
+echo "PolicyParameters"
+echo ""
+
 echo "nvdefinespace 01000000"
 ${PREFIX}nvdefinespace -ha 01000000 -hi p -ty b -at aw -pol policies/policyparametersor9.bin > run.out
 checkSuccess $?
@@ -312,7 +315,7 @@ echo "NV setbits to set bit 0"
 ${PREFIX}nvsetbits -ha 01000000 -bit 1 -se0 03000000 0 > run.out
 checkFailure $?
 
-# cleanup
+# cleanup PolicyParameters
 
 echo "Flush the signing key"
 ${PREFIX}flushcontext -ha 80000001 > run.out
@@ -328,3 +331,60 @@ checkSuccess $?
 
 rm -f tmpnonce.bin
 
+echo ""
+echo "PolicyCapability"
+echo ""
+
+# Test case: Seal to TPM rev 183 or greater
+
+echo "Create a primary sealed data object with policycapability"
+${PREFIX}createprimary  -bl -kt f -kt p -uwa -if msg.bin -pol policies/policycaprevision183.bin > run.out
+checkSuccess $?
+
+# args = operandb.buffer offset operation capability property
+
+# policycapargsrevision183.txt
+# 000000b7 0000 0007 00000006 00000102
+#
+# hash args
+#
+# policymaker -nz -if policies/policycapargsrevision183.txt -pr -ns
+# policy digest length 32
+# 1e11883c7d42c639c4e4ae1e1fa48b53a2ef6b6387cbeabc97501b1582b3e5a2
+#
+# policycaprevision183.txt
+#
+# 0000019b1e11883c7d42c639c4e4ae1e1fa48b53a2ef6b6387cbeabc97501b1582b3e5a2
+#
+# policymaker -if policies/policycaprevision183.txt -pr -of policies/policycaprevision183.bin
+# policy digest length 32
+# 41 82 db 6d 45 1f 28 c9 f8 f3 43 36 91 94 08 48
+# d7 94 73 84 ec 5d 26 69 cb f5 0b 71 76 89 e2 26
+
+echo "Start a policy session"
+${PREFIX}startauthsession -se p > run.out
+checkSuccess $?
+
+echo "Get policy digest"
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Policy Capability property TPM_PT_REVISION GE 183 decimal 0xb7"
+${PREFIX}policycapability -hs 03000000 -if policies/rev183.bin -op 7 -cap 6 -pr 102 > run.out
+checkSuccess $?
+
+echo "Get policy digest"
+${PREFIX}policygetdigest -ha 03000000 > run.out
+checkSuccess $?
+
+echo "Unseal the data blob"
+${PREFIX}unseal -ha 80000001 -of tmp.bin -se0 03000000 0 > run.out
+checkSuccess $?
+
+echo "Flush the sealed object"
+${PREFIX}flushcontext -ha 80000001 > run.out
+checkSuccess $?
+
+# cleanup PolicyCapability
+
+rm -rf tmp.bin
