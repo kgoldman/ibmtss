@@ -84,6 +84,12 @@ int tssVverbose = FALSE;
 
 int tssFirstCall = TRUE;
 
+/*	Function pointers to the current memory functions, if NULL the platform default 
+	functions shall be used */
+TSS_CUST_MALLOC tssMalloc = NULL;
+TSS_CUST_REALLOC tssRealloc = NULL;
+TSS_CUST_FREE tssFree = NULL;
+
 /* defaults for global settings */
 
 #ifndef TPM_TRACE_LEVEL_DEFAULT 	
@@ -571,4 +577,21 @@ static TPM_RC TSS_SetLocality(TSS_CONTEXT *tssContext, const char *value)
 	}
     }
     return rc;
+}
+
+TPM_RC TSS_SetMemoryFunctions(TSS_CUST_MALLOC custom_malloc, TSS_CUST_REALLOC custom_realloc, TSS_CUST_FREE custom_free)
+{
+	TPM_RC		rc = 0;
+
+	if (custom_malloc == NULL || custom_realloc == NULL || custom_free == NULL) {
+		rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+
+	if (rc == 0) {
+		tssMalloc = custom_malloc;
+		tssRealloc = custom_realloc;
+		tssFree = custom_free;
+	}
+
+	return rc;
 }

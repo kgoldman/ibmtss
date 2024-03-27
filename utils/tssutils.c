@@ -48,6 +48,7 @@
 #include <winsock2.h>
 #endif
 
+#include <ibmtss/tss.h>
 #include <ibmtss/tssutils.h>
 #include <ibmtss/tssresponsecode.h>
 #include <ibmtss/tsserror.h>
@@ -64,6 +65,10 @@
 
 extern int tssVerbose;
 extern int tssVverbose;
+
+extern TSS_CUST_MALLOC tssMalloc;
+extern TSS_CUST_REALLOC tssRealloc;
+extern TSS_CUST_FREE tssFree;
 
 /* TSS_Malloc() is a general purpose wrapper around malloc()
  */
@@ -99,7 +104,17 @@ TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size)
         }       
     }
     if (rc == 0) {
-        *buffer = malloc(size);
+		if (!tssMalloc) {
+#if  defined(TPM_POSIX)
+			*buffer = malloc(size);
+#elif defined(TPM_WINDOWS)
+			*buffer = malloc(size);
+#else
+			*buffer = NULL;
+#endif
+		} else{
+			*buffer = tssMalloc(size);
+		}
         if (*buffer == NULL) {
             if (tssVerbose) printf("TSS_Malloc: Error allocating %u bytes\n", size);
             rc = TSS_RC_OUT_OF_MEMORY;
@@ -129,11 +144,22 @@ TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size)
         }       
     }
     if (rc == 0) {
-	tmpptr = realloc(*buffer, size);
-	if (tmpptr == NULL) {
+        if (!tssRealloc) {
+#if  defined(TPM_POSIX)
+            tmpptr = realloc(*buffer, size);
+#elif defined(TPM_WINDOWS)
+            tmpptr = realloc(*buffer, size);
+#else
+            tmpptr = NULL;
+#endif
+        }
+        else {
+            tmpptr = tssRealloc(*buffer, size);
+        }
+        if (tmpptr == NULL) {
             if (tssVerbose) printf("TSS_Realloc: Error reallocating %u bytes\n", size);
-	    rc = TSS_RC_OUT_OF_MEMORY;
-	}
+            rc = TSS_RC_OUT_OF_MEMORY;
+        }
     }
     if (rc == 0) {
 	*buffer = tmpptr;
@@ -169,6 +195,46 @@ TPM_RC TSS_Structure_Marshal(uint8_t		**buffer,	/* freed by caller */
 	*written = 0;
 	rc = marshalFunction(structure, written, &buffer1, NULL);
     }
+    return rc;
+}
+
+
+LIB_EXPORT
+TPM_RC TSS_Free(unsigned char** buffer)
+{
+    TPM_RC          rc = 0;
+
+    /* assertion test.  The coding style requires that all allocated pointers are initialized to
+       NULL.  A non-NULL value indicates either a missing initialization or a pointer reuse (a
+       memory leak). */
+    if (rc == 0) {
+        if (*buffer == NULL) {
+            if (tssVerbose)
+                printf("TSS_Free: Error (fatal), *buffer %p is NULL\n",
+                    *buffer);
+            rc = TSS_RC_ALLOC_INPUT;
+        }
+    }
+
+    if (rc == 0) {
+        if (!tssFree) {
+#if  defined(TPM_POSIX)
+            free(*buffer);
+#elif defined(TPM_WINDOWS)
+            free(*buffer);
+#else   
+            ;
+#endif
+        }
+        else {
+            tssFree(*buffer);
+        }
+    }
+
+    if (rc == 0) {
+        *buffer = NULL;
+    }
+
     return rc;
 }
 

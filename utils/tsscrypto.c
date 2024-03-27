@@ -743,7 +743,7 @@ TPM_RC TSS_RSAPublicEncrypt(unsigned char *encrypt_data,    /* encrypted data */
     EVP_PKEY_CTX_free(ctx);		/* @1 */
 #endif
    TSS_RsaFree(rsa_pub_key);          	/* @3 */
-   free(padded_data);                  	/* @2 */
+   TSS_Free(&padded_data);                  	/* @2 */
    return rc;
 }
 
@@ -1310,8 +1310,8 @@ TPM_RC TSS_AES_KeyFree(void *tssSessionEncKey,
 
 #ifndef TPM_TSS_NOFILE
 #if OPENSSL_VERSION_NUMBER < 0x30000000
-    free(tssSessionEncKey);
-    free(tssSessionDecKey);
+	TSS_Free(&tssSessionEncKey);
+	TSS_Free(&tssSessionDecKey);
 #else
     EVP_CIPHER_CTX_free(tssSessionEncKey);
     EVP_CIPHER_CTX_free(tssSessionDecKey);
@@ -1438,7 +1438,7 @@ TPM_RC TSS_AES_KeyGenerate(void *tssSessionEncKey,
 
     }
 #endif
-    free(envKeyBin);	/* @1 */
+	TSS_Free(&envKeyBin);	/* @1 */
     return rc;
 }
 
@@ -1520,7 +1520,7 @@ TPM_RC TSS_AES_Encrypt(void *tssSessionEncKey,
 	}
     }
 #endif
-    free(decrypt_data_pad);     /* @1 */
+	TSS_Free(&decrypt_data_pad);     /* @1 */
     return rc;
 }
 
