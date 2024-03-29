@@ -54,11 +54,9 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2022				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2024				*/
 /*										*/
 /********************************************************************************/
-
-/* rev 119 */
 
 #ifndef COMMANDS_FP_H
 #define COMMANDS_FP_H
@@ -137,6 +135,7 @@
 #include <ibmtss/PP_Commands_fp.h>
 #include <ibmtss/PolicyAuthValue_fp.h>
 #include <ibmtss/PolicyAuthorize_fp.h>
+#include <ibmtss/PolicyCapability_fp.h>
 #include <ibmtss/PolicyCommandCode_fp.h>
 #include <ibmtss/PolicyCounterTimer_fp.h>
 #include <ibmtss/PolicyCpHash_fp.h>
@@ -149,6 +148,7 @@
 #include <ibmtss/PolicyNameHash_fp.h>
 #include <ibmtss/PolicyOR_fp.h>
 #include <ibmtss/PolicyPCR_fp.h>
+#include <ibmtss/PolicyParameters_fp.h>
 #include <ibmtss/PolicyPassword_fp.h>
 #include <ibmtss/PolicyPhysicalPresence_fp.h>
 #include <ibmtss/PolicyRestart_fp.h>
@@ -423,6 +423,10 @@ TPM_RC
 PolicyNvWritten_In_Unmarshal(PolicyNvWritten_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
 PolicyTemplate_In_Unmarshal(PolicyTemplate_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
+TPM_RC
+PolicyCapability_In_Unmarshal(PolicyCapability_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
+TPM_RC
+PolicyParameters_In_Unmarshal(PolicyParameters_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 TPM_RC
 CreatePrimary_In_Unmarshal(CreatePrimary_In *target, BYTE **buffer, uint32_t *size, TPM_HANDLE handles[]);
 UINT16

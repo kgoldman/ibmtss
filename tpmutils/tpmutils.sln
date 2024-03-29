@@ -262,6 +262,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ntc2preconfig", "ntc2precon
 		{5C11AF70-45A6-4888-A66A-C0A70302BD89} = {5C11AF70-45A6-4888-A66A-C0A70302BD89}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "policyparameters", "policyparameters\policyparameters.vcxproj", "{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C11AF70-45A6-4888-A66A-C0A70302BD89} = {5C11AF70-45A6-4888-A66A-C0A70302BD89}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1986,6 +1991,22 @@ Global
 		{8B7A52D1-AC4E-471E-BFCB-8A9B57C727CE}.Release|Win32.Build.0 = Release|Win32
 		{8B7A52D1-AC4E-471E-BFCB-8A9B57C727CE}.Release|x64.ActiveCfg = Release|x64
 		{8B7A52D1-AC4E-471E-BFCB-8A9B57C727CE}.Release|x64.Build.0 = Release|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Debug|Any CPU.Build.0 = Debug|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Debug|Win32.Build.0 = Debug|Win32
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Debug|x64.ActiveCfg = Debug|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Debug|x64.Build.0 = Debug|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Release|Any CPU.ActiveCfg = Release|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Release|Any CPU.Build.0 = Release|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Release|Mixed Platforms.Build.0 = Release|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Release|Win32.ActiveCfg = Release|Win32
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Release|Win32.Build.0 = Release|Win32
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Release|x64.ActiveCfg = Release|x64
+		{F3A7F92F-3E8D-4EF9-AF54-3933C5923C10}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

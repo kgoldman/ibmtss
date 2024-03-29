@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012 - 2022				*/
+/*  (c) Copyright IBM Corp. and others, 2012 - 2024				*/
 /*										*/
 /********************************************************************************/
 
@@ -314,6 +314,7 @@
 #define  CC_PolicyAuthorize               CC_YES
 #define  CC_PolicyAuthorizeNV             CC_YES
 #define  CC_PolicyAuthValue               CC_YES
+#define  CC_PolicyCapability              CC_YES
 #define  CC_PolicyCommandCode             CC_YES
 #define  CC_PolicyCounterTimer            CC_YES
 #define  CC_PolicyCpHash                  CC_YES
@@ -323,6 +324,7 @@
 #define  CC_PolicyNameHash                CC_YES
 #define  CC_PolicyNV                      CC_YES
 #define  CC_PolicyOR                      CC_YES
+#define  CC_PolicyParameters              CC_YES
 #define  CC_PolicyPassword                CC_YES
 #define  CC_PolicyPCR                     CC_YES
 #define  CC_PolicyPhysicalPresence        CC_YES
@@ -355,6 +357,8 @@
 #define  CC_EC_Ephemeral                  (CC_YES*ALG_ECC)
 #define  CC_PolicyNvWritten               CC_YES
 #define  CC_PolicyTemplate                CC_YES
+#define  CC_PolicyCapability              CC_YES
+#define  CC_PolicyParameters              CC_YES
 #define  CC_CreateLoaded                  CC_YES
 #define  CC_PolicyAuthorizeNV             CC_YES
 #define  CC_EncryptDecrypt2               CC_YES
@@ -1280,11 +1284,28 @@ typedef  UINT32             TPM_CC;
 #if CC_CertifyX509 == YES
 #define  TPM_CC_CertifyX509 		      (TPM_CC)(0x00000197)
 #endif
+#ifndef CC_ECC_Encrypt
+#define CC_ECC_Encrypt NO
+#endif
 #define TPM_CC_ECC_Encrypt		      (TPM_CC)(0x00000199)
+#ifndef CC_ECC_Decrypt
+#define CC_ECC_Decrypt NO
+#endif
 #define TPM_CC_ECC_Decrypt		      (TPM_CC)(0x0000019A)
 
+#ifndef CC_PolicyCapability
+#define CC_PolicyCapability NO
+#endif
+#define TPM_CC_PolicyCapability	      	      (TPM_CC)(0x0000019B)
+
+#ifndef CC_PolicyParameters
+#define CC_PolicyParameters NO
+#endif
+#define TPM_CC_PolicyParameters	      	      (TPM_CC)(0x0000019C)
+
+
 /* Compile variable. May increase based on implementation. */
-#define  TPM_CC_LAST			      (TPM_CC)(0x0000019a)
+#define  TPM_CC_LAST			      (TPM_CC)(0x0000019C)
 
 #ifndef CC_Vendor_TCG_Test
 #   define CC_Vendor_TCG_Test NO
@@ -1293,7 +1314,7 @@ typedef  UINT32             TPM_CC;
 #define  TPM_CC_Vendor_TCG_Test               (TPM_CC)(0x20000000)
 #endif
 
-#ifndef CC_NTC2_PreConfig                
+#ifndef CC_NTC2_PreConfig
 #   define CC_NTC2_PreConfig NO
 #endif
 #if CC_NTC2_PreConfig == YES
@@ -1442,6 +1463,8 @@ typedef  UINT32             TPM_CC;
 					  + (ADD_FILL || CC_CertifyX509)                /* 0x00000197 */ \
 					  + (ADD_FILL || CC_ECC_Encrypt)                /* 0x00000199 */ \
 					  + (ADD_FILL || CC_ECC_Decrypt)                /* 0x0000019a */ \
+					  + (ADD_FILL || CC_PolicyCapability)           /* 0x0000019b */ \
+					  + (ADD_FILL || CC_PolicyParameters)           /* 0x0000019c */ \
 					  )
 #define VENDOR_COMMAND_ARRAY_SIZE   ( 0				\
 				      + CC_Vendor_TCG_Test	\

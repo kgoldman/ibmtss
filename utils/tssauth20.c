@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2022.					*/
+/* (c) Copyright IBM Corporation 2015 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -79,7 +79,7 @@ typedef struct MARSHAL_TABLE {
 } MARSHAL_TABLE;
 
 static const MARSHAL_TABLE marshalTable [] = {
-				 
+
     {TPM_CC_Startup, "TPM2_Startup",
      (MarshalInFunction_t)TSS_Startup_In_Marshalu,
      NULL
@@ -619,6 +619,20 @@ static const MARSHAL_TABLE marshalTable [] = {
      ,(UnmarshalInFunction_t)PolicyTemplate_In_Unmarshal
 #endif
     },
+    {TPM_CC_PolicyCapability, "TPM2_PolicyCapability",
+     (MarshalInFunction_t)TSS_PolicyCapability_In_Marshalu,
+     NULL
+#ifndef TPM_TSS_NOCMDCHECK
+     ,(UnmarshalInFunction_t)PolicyCapability_In_Unmarshal
+#endif
+    },
+    {TPM_CC_PolicyParameters, "TPM2_PolicyParameters",
+     (MarshalInFunction_t)TSS_PolicyParameters_In_Marshalu,
+     NULL
+#ifndef TPM_TSS_NOCMDCHECK
+     ,(UnmarshalInFunction_t)PolicyParameters_In_Unmarshal
+#endif
+    },
     {TPM_CC_CreatePrimary, "TPM2_CreatePrimary",
      (MarshalInFunction_t)TSS_CreatePrimary_In_Marshalu,
      (UnmarshalOutFunction_t)TSS_CreatePrimary_Out_Unmarshalu
@@ -886,7 +900,7 @@ static const MARSHAL_TABLE marshalTable [] = {
      ,NULL
 #endif
     },
-     
+
 #endif	/* TPM_TSS_NUVOTON */
 };
 
@@ -927,7 +941,7 @@ static TPM_RC TSS_MarshalTable_Process(TSS_AUTH_CONTEXT *tssAuthContext,
 
 /* TSS_Marshal() marshals the input parameters into the TSS Authorization context.
 
-   It also sets other member of the context in preparation for the rest of the sequence.  
+   It also sets other member of the context in preparation for the rest of the sequence.
 */
 
 TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
@@ -941,7 +955,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     uint8_t 		*bufferu;			/* for test unmarshaling */
 #endif
     uint32_t 		size;
-    
+
     /* index from command code to table and save items for this command */
     if (rc == 0) {
 	rc = TSS_MarshalTable_Process(tssAuthContext, commandCode);
@@ -975,7 +989,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     if (rc == 0) {
 	rc = TSS_TPM_CC_Marshalu(&commandCode, &tssAuthContext->commandSize, &buffer, &size);
-    }    
+    }
     if (rc == 0) {
 #ifndef TPM_TSS_NOCMDCHECK
 	/* save pointer to marshaled data for test unmarshal */
@@ -994,7 +1008,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
 		if (tssVerbose)
 		    printf("TSS_Marshal: Command %08x requires command parameter structure\n",
 			   commandCode);
-		rc = TSS_RC_IN_PARAMETER;	
+		rc = TSS_RC_IN_PARAMETER;
 	    }
 	}
 	/* if there is no marshal function */
@@ -1004,7 +1018,7 @@ TPM_RC TSS_Marshal(TSS_AUTH_CONTEXT *tssAuthContext,
 		if (tssVerbose)
 		    printf("TSS_Marshal: Command %08x does not take command parameter structure\n",
 			   commandCode);
-		rc = TSS_RC_IN_PARAMETER;	
+		rc = TSS_RC_IN_PARAMETER;
 	    }
 	    /* no marshal function and no command parameter structure is OK */
 	}
@@ -1063,7 +1077,7 @@ TPM_RC TSS_Unmarshal(TSS_AUTH_CONTEXT *tssAuthContext,
 {
     TPM_RC 	rc = 0;
     TPM_ST 	tag;
-    uint8_t 	*buffer;    
+    uint8_t 	*buffer;
     uint32_t 	size;
 
     /* if there is an unmarshal function */
@@ -1117,7 +1131,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 {
     TPM_RC 		rc = 0;
     va_list		ap;
-    uint16_t 		authorizationSize;	/* does not include 4 bytes of size */   
+    uint16_t 		authorizationSize;	/* does not include 4 bytes of size */
     TPMS_AUTH_COMMAND 	*authCommand = NULL;
     int 		done;
     uint32_t 		cpBufferSize;
@@ -1158,7 +1172,7 @@ TPM_RC TSS_SetCmdAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
 		sizeof (uint32_t) +		/* authorizationSize */
 		authorizationSize		/* authorization area */
 		> tssAuthContext->commandBuffer + sizeof(tssAuthContext->commandBuffer)) {
-	
+
 		if (tssVerbose)
 		    printf("TSS_SetCmdAuths: Command authorizations overflow command buffer\n");
 		rc = TSS_RC_INSUFFICIENT_BUFFER;
@@ -1228,7 +1242,7 @@ TPM_RC TSS_GetRspAuths(TSS_AUTH_CONTEXT *tssAuthContext, ...)
     int 	done;
     uint16_t	authCount = 0;		/* authorizations in response */
     uint32_t 	parameterSize;
-    
+
     /* unmarshal the response tag */
     if (rc == 0) {
 	size = tssAuthContext->responseSize;
@@ -1380,8 +1394,8 @@ TPM_RC TSS_GetCommandHandle(TSS_AUTH_CONTEXT *tssAuthContext,
     TPM_RC 	rc = 0;
     uint8_t 	*buffer;
     uint32_t 	size;
-   
-    
+
+
     if (rc == 0) {
 	if (index >= tssAuthContext->commandHandleCount) {
 	    if (tssVerbose) printf("TSS_GetCommandHandle: index %u too large for command\n",
@@ -1399,7 +1413,7 @@ TPM_RC TSS_GetCommandHandle(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     return rc;
 }
-    
+
 /* TSS_GetRpBuffer() returns a pointer to the response parameter area.
 
    NOTE could move to execute so it only has to be done once.
@@ -1415,7 +1429,7 @@ TPM_RC TSS_GetRpBuffer(TSS_AUTH_CONTEXT *tssAuthContext,
     uint32_t 	size;			/* tmp for unmarshal */
     uint8_t 	*buffer;		/* tmp for unmarshal */
     uint32_t 	parameterSize;		/* response parameter (if sessions) */
-     
+
     /* unmarshal the response tag */
     if (rc == 0) {
 	/* offset to parameterSize or parameters */
@@ -1557,4 +1571,3 @@ TPM_RC TSS_SetResponseDecryptParam(TSS_AUTH_CONTEXT *tssAuthContext,
     }
     return rc;
 }
-

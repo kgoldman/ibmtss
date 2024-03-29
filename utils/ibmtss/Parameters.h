@@ -54,7 +54,7 @@
 /*    arising in any way out of use or reliance upon this specification or any 	*/
 /*    information herein.							*/
 /*										*/
-/*  (c) Copyright IBM Corp. and others, 2012-2022				*/
+/*  (c) Copyright IBM Corp. and others, 2012-2024				*/
 /*										*/
 /********************************************************************************/
 
@@ -135,6 +135,7 @@
 #include "PP_Commands_fp.h"
 #include "PolicyAuthValue_fp.h"
 #include "PolicyAuthorize_fp.h"
+#include "PolicyCapability_fp.h"
 #include "PolicyCommandCode_fp.h"
 #include "PolicyCounterTimer_fp.h"
 #include "PolicyCpHash_fp.h"
@@ -147,6 +148,7 @@
 #include "PolicyNameHash_fp.h"
 #include "PolicyOR_fp.h"
 #include "PolicyPCR_fp.h"
+#include "PolicyParameters_fp.h"
 #include "PolicyPassword_fp.h"
 #include "PolicyPhysicalPresence_fp.h"
 #include "PolicyRestart_fp.h"
@@ -266,6 +268,9 @@ typedef union {
     PolicySecret_In               PolicySecret;
     PolicySigned_In               PolicySigned;
     PolicyTicket_In               PolicyTicket;
+    PolicyTemplate_In             PolicyTemplate;
+    PolicyCapability_In           PolicyCapability;
+    PolicyParameters_In           PolicyParameters;
     Quote_In                      Quote;
     RSA_Decrypt_In                RSA_Decrypt;
     RSA_Encrypt_In                RSA_Encrypt;

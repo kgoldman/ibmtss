@@ -107,22 +107,26 @@ endif
 
 if CONFIG_TPM20
 if !CONFIG_TSS_NOPRINT
-bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation certifyx509 changeeps changepps clear \
-	clearcontrol clockrateadjust clockset commit contextload contextsave create createloaded createprimary \
-	dictionaryattacklockreset dictionaryattackparameters duplicate eccparameters eccencrypt eccdecrypt ecephemeral encryptdecrypt \
-	eventsequencecomplete evictcontrol flushcontext getcommandauditdigest getcapability getcryptolibrary \
-	getrandom gettestresult getsessionauditdigest gettime hashsequencestart hash hierarchycontrol \
-	hierarchychangeauth hmac hmacstart import importpem load loadexternal makecredential nvcertify nvchangeauth \
-	nvdefinespace nvextend nvglobalwritelock nvincrement nvread nvreadlock nvreadpublic nvsetbits \
-	nvundefinespace nvundefinespacespecial nvwrite nvwritelock objectchangeauth pcrallocate pcrevent pcrextend \
-	pcrread pcrreset policyauthorize policyauthvalue policycommandcode policycphash policynamehash \
-	policycountertimer policyduplicationselect policygetdigest policymaker policymakerpcr policyauthorizenv \
-	policynv policynvwritten policyor policypassword policypcr policyrestart policysigned policysecret \
-	policytemplate policyticket quote powerup readclock readpublic returncode rewrap rsadecrypt rsaencrypt \
-	sequenceupdate sequencecomplete setcommandcodeauditstatus setprimarypolicy shutdown sign startauthsession \
-	startup stirrandom unseal \
-	verifysignature zgen2phase signapp writeapp createek createekcert tpm2pem tpmpublic2eccpoint \
-	ntc2getconfig ntc2preconfig ntc2lockconfig publicname tpmcmd printattr tpmproxy
+bin_PROGRAMS = activatecredential eventextend imaextend certify certifycreation certifyx509 \
+	changeeps changepps clear clearcontrol clockrateadjust clockset commit contextload \
+	contextsave create createloaded createprimary dictionaryattacklockreset \
+	dictionaryattackparameters duplicate eccparameters eccencrypt eccdecrypt ecephemeral \
+	encryptdecrypt eventsequencecomplete evictcontrol flushcontext getcommandauditdigest \
+	getcapability getcryptolibrary getrandom gettestresult getsessionauditdigest gettime \
+	hashsequencestart hash hierarchycontrol hierarchychangeauth hmac hmacstart import \
+	importpem load loadexternal makecredential nvcertify nvchangeauth nvdefinespace \
+	nvextend nvglobalwritelock nvincrement nvread nvreadlock nvreadpublic nvsetbits \
+	nvundefinespace nvundefinespacespecial nvwrite nvwritelock objectchangeauth \
+	pcrallocate pcrevent pcrextend pcrread pcrreset policyauthorize policyauthvalue \
+	policycapability policycommandcode policycphash policynamehash policycountertimer \
+	policyduplicationselect policygetdigest policymaker policymakerpcr policyauthorizenv \
+	policynv policynvwritten policyor policypassword policyparameters policypcr policyrestart \
+	policysigned policysecret policytemplate policyticket quote powerup readclock \
+	readpublic returncode rewrap rsadecrypt rsaencrypt sequenceupdate sequencecomplete \
+	setcommandcodeauditstatus setprimarypolicy shutdown sign startauthsession startup \
+	stirrandom unseal verifysignature zgen2phase signapp writeapp createek createekcert \
+	tpm2pem tpmpublic2eccpoint ntc2getconfig ntc2preconfig ntc2lockconfig publicname \
+	tpmcmd printattr tpmproxy
 
 if !CONFIG_TSS_NOFILE
 bin_PROGRAMS += timepacket
@@ -414,6 +418,10 @@ policyauthvalue_SOURCES = policyauthvalue.c
 policyauthvalue_CFLAGS = $(UTILS_CFLAGS)
 policyauthvalue_LDADD = libibmtssutils.la libibmtss.la
 
+policycapability_SOURCES = policycapability.c
+policycapability_CFLAGS = $(UTILS_CFLAGS)
+policycapability_LDADD = libibmtssutils.la libibmtss.la
+
 policycommandcode_SOURCES = policycommandcode.c
 policycommandcode_CFLAGS = $(UTILS_CFLAGS)
 policycommandcode_LDADD = libibmtssutils.la libibmtss.la
@@ -461,6 +469,10 @@ policynvwritten_LDADD = libibmtssutils.la libibmtss.la
 policyor_SOURCES = policyor.c
 policyor_CFLAGS = $(UTILS_CFLAGS)
 policyor_LDADD = libibmtssutils.la libibmtss.la
+
+policyparameters_SOURCES = policyparameters.c
+policyparameters_CFLAGS = $(UTILS_CFLAGS)
+policyparameters_LDADD = libibmtssutils.la libibmtss.la
 
 policypassword_SOURCES = policypassword.c
 policypassword_CFLAGS = $(UTILS_CFLAGS)

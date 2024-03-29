@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2014 - 2023					#
+# (c) Copyright IBM Corporation 2014 - 2024					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -128,7 +128,8 @@ printUsage ()
     echo "-32 Get Capability"
     echo "-33 Usage Help"
     echo "-34 Nuvoton commands"
-    echo "-35 Shutdown (only run for simulator)"
+    echo "-35 Policy - rev 183"
+    echo "-36 Shutdown (only run for simulator)"
     echo "-40 Tests under development (not part of all)"
     echo "-50 Change seed"
     echo "-51 Events"
@@ -587,9 +588,17 @@ main ()
 	fi
 	((I++))
     fi
+    if [ "$1" == "-a" ] || [ "$1" == "-35" ]; then
+    	./regtests/testpolicy183.sh
+    	RC=$?
+	if [ $RC -ne 0 ]; then
+	    exit 255
+	fi
+	((I++))
+    fi
     # these test may power cycle the TPM, erasing loaded keys */
     # put them after other tests
-    if [ "$1" == "-a" ] || [ "$1" == "-35" ]; then
+    if [ "$1" == "-a" ] || [ "$1" == "-36" ]; then
 	# the MS simulator supports power cycling
 	if [ -z ${TPM_INTERFACE_TYPE} ] || [ ${TPM_INTERFACE_TYPE} == "socsim" ];  then
 	    if [ -z ${TPM_SERVER_TYPE} ] || [ ${TPM_SERVER_TYPE} == "mssim" ]; then

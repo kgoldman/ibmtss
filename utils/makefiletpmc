@@ -4,7 +4,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2018 - 2022					#
+# (c) Copyright IBM Corporation 2018 - 2024					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -108,7 +108,7 @@ LNALIBS +=  -libmtssutils -libmtss
 # shared library
 
 # versioned shared library
-LIBTSSVERSIONED=libibmtss.so.2.2
+LIBTSSVERSIONED=libibmtss.so.2.3
 
 # soname field of the shared library
 # which will be made symbolic link to the versioned shared library
@@ -127,7 +127,7 @@ endif
 
 # TSS utilities shared library
 
-LIBTSSUTILSVERSIONED=libibmtssutils.so.2.2
+LIBTSSUTILSVERSIONED=libibmtssutils.so.2.3
 LIBTSSUTILSSONAME=libibmtssutils.so.2
 LIBTSSUTILS=libibmtssutils.so
 
@@ -414,6 +414,8 @@ policyauthorize:	ibmtss/tss.h policyauthorize.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthorize.o $(LNALIBS) -o policyauthorize
 policyauthvalue:	ibmtss/tss.h policyauthvalue.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyauthvalue.o $(LNALIBS) -o policyauthvalue
+policycapability:	ibmtss/tss.h policycapability.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policycapability.o $(LNALIBS) -o policycapability
 policycommandcode:	ibmtss/tss.h policycommandcode.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policycommandcode.o $(LNALIBS) -o policycommandcode
 policycphash:		ibmtss/tss.h policycphash.o $(LIBTSS) $(LIBTSSUTILS)
@@ -438,6 +440,8 @@ policynvwritten:	ibmtss/tss.h policynvwritten.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policynvwritten.o $(LNALIBS) -o policynvwritten
 policyor:		ibmtss/tss.h policyor.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policyor.o $(LNALIBS) -o policyor
+policyparameters:	ibmtss/tss.h policyparameters.o $(LIBTSS) $(LIBTSSUTILS)
+			$(CC) $(LNFLAGS) $(LNAFLAGS) policyparameters.o $(LNALIBS) -o policyparameters
 policypassword:		ibmtss/tss.h policypassword.o $(LIBTSS) $(LIBTSSUTILS)
 			$(CC) $(LNFLAGS) $(LNAFLAGS) policypassword.o $(LNALIBS) -o policypassword
 policypcr:		ibmtss/tss.h policypcr.o $(LIBTSS) $(LIBTSSUTILS)

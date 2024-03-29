@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2022.					*/
+/* (c) Copyright IBM Corporation 2015 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -1383,6 +1383,42 @@ TSS_PolicyTemplate_In_Marshalu(const PolicyTemplate_In *source, uint16_t *writte
     }
     if (rc == 0) {
 	rc = TSS_TPM2B_DIGEST_Marshalu(&source->templateHash, written, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
+TSS_PolicyCapability_In_Marshalu(const PolicyCapability_In *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMI_SH_POLICY_Marshalu(&source->policySession, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_OPERAND_Marshalu(&source->operandB, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16_Marshalu(&source->offset, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM_EO_Marshalu(&source->operation, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM_CAP_Marshalu(&source->capability, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32_Marshalu(&source->property, written, buffer, size);
+    }
+    return rc;
+}
+TPM_RC
+TSS_PolicyParameters_In_Marshalu(const PolicyParameters_In *source, uint16_t *written, BYTE **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+    if (rc == 0) {
+	rc = TSS_TPMI_SH_POLICY_Marshalu(&source->policySession, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_TPM2B_DIGEST_Marshalu(&source->pHash, written, buffer, size);
     }
     return rc;
 }
