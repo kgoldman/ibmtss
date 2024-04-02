@@ -584,7 +584,11 @@ TPM_RC TSS_SetMemoryFunctions(TSS_CUST_MALLOC custom_malloc, TSS_CUST_REALLOC cu
 	TPM_RC		rc = 0;
 
 	if (custom_malloc == NULL || custom_realloc == NULL || custom_free == NULL) {
-		rc = TSS_RC_BAD_PROPERTY_VALUE;
+		rc = TSS_RC_NULL_PARAMETER;
+	}
+
+	if (tssMalloc != NULL || tssRealloc != NULL || tssFree != NULL) {
+		rc = TSS_RC_PROPERTY_ALREADY_SET;
 	}
 
 	if (rc == 0) {
