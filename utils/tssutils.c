@@ -105,9 +105,7 @@ TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size)
     }
     if (rc == 0) {
 		if (!tssMalloc) {
-#if  defined(TPM_POSIX)
-			*buffer = malloc(size);
-#elif defined(TPM_WINDOWS)
+#if  defined(TPM_POSIX) || defined(TPM_WINDOWS)
 			*buffer = malloc(size);
 #else
 			*buffer = NULL;
@@ -145,9 +143,7 @@ TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size)
     }
     if (rc == 0) {
         if (!tssRealloc) {
-#if  defined(TPM_POSIX)
-            tmpptr = realloc(*buffer, size);
-#elif defined(TPM_WINDOWS)
+#if  defined(TPM_POSIX) || defined(TPM_WINDOWS)
             tmpptr = realloc(*buffer, size);
 #else
             tmpptr = NULL;
@@ -218,9 +214,7 @@ TPM_RC TSS_Free(unsigned char** buffer)
 
     if (rc == 0) {
         if (!tssFree) {
-#if  defined(TPM_POSIX)
-            free(*buffer);
-#elif defined(TPM_WINDOWS)
+#if  defined(TPM_POSIX) || defined(TPM_WINDOWS)
             free(*buffer);
 #else   
             ;
