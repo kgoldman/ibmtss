@@ -1,4 +1,21 @@
 ----------------
+Changes in 2.3 1
+----------------
+
+Add policyparameters regression test that demos the original use
+case. Add man page.  Add VS project.
+
+Add policycapability regression test.
+
+Update VS project for OpenSSL 3.2 and the two policy commands.
+
+----------------
+Changes in 2.3 0
+----------------
+
+Add policycapability, policyparameters.
+
+----------------
 Changes in 2.2.0
 ----------------
 
