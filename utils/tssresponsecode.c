@@ -389,7 +389,8 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_FAIL, "TSS_RC_FAIL - TSS internal failure"},
     {TSS_RC_NO_SESSION_SLOT, "TSS_RC_NO_SESSION_SLOT - TSS context has no session slot for handle"},
     {TSS_RC_NO_OBJECTPUBLIC_SLOT, "TSS_RC_NO_OBJECTPUBLIC_SLOT - TSS context has no object public slot for handle"},
-    {TSS_RC_NO_NVPUBLIC_SLOT, "TSS_RC_NO_NVPUBLIC_SLOT -TSS context has no NV public slot for handle"},
+    {TSS_RC_NO_NVPUBLIC_SLOT, "TSS_RC_NO_NVPUBLIC_SLOT - TSS context has no NV public slot for handle"},
+    {TSS_RC_PROPERTY_ALREADY_SET, "TSS_RC_PROPERTY_ALREADY_SET - A property has already been set and cannot be set again"},
 };
 
 #ifdef TPM_WINDOWS
