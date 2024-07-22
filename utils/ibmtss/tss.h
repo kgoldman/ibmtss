@@ -48,10 +48,6 @@
 #include <ibmtss/tssprint.h>
 
 typedef struct TSS_CONTEXT TSS_CONTEXT; 
-
-typedef void* (*TSS_CUST_MALLOC)(size_t size);
-typedef void* (*TSS_CUST_REALLOC)(void* ptr, size_t size);
-typedef void (*TSS_CUST_FREE)(void* ptr);
    
 #define TPM_TRACE_LEVEL		1
 #define TPM_DATA_DIR		2
@@ -109,11 +105,6 @@ extern "C" {
     TPM_RC TSS_SetProperty(TSS_CONTEXT *tssContext,
 			   int property,
 			   const char *value);
-
-    LIB_EXPORT
-        TPM_RC TSS_SetMemoryFunctions(TSS_CUST_MALLOC custom_malloc,
-            TSS_CUST_REALLOC custom_realloc,
-            TSS_CUST_FREE custom_free);
 
 #ifdef __cplusplus
 }

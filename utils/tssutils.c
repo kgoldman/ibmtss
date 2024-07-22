@@ -66,9 +66,12 @@
 extern int tssVerbose;
 extern int tssVverbose;
 
-extern TSS_CUST_MALLOC tssMalloc;
-extern TSS_CUST_REALLOC tssRealloc;
-extern TSS_CUST_FREE tssFree;
+static int tssAllowMemoryCustomize = 1;
+/*	Function pointers to the current memory functions, if NULL the platform default 
+	functions shall be used */
+static TSS_CUST_MALLOC tssMalloc = NULL;
+static TSS_CUST_REALLOC tssRealloc = NULL;
+static TSS_CUST_FREE tssFree = NULL;
 
 /* TSS_Malloc() is a general purpose wrapper around malloc()
  */
@@ -104,18 +107,19 @@ TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size)
         }       
     }
     if (rc == 0) {
-		if (!tssMalloc) {
-#if  defined(TPM_POSIX) || defined(TPM_WINDOWS)
+		if (tssMalloc == NULL) {
 			*buffer = malloc(size);
-#else
-			*buffer = NULL;
-#endif
 		} else{
 			*buffer = tssMalloc(size);
 		}
         if (*buffer == NULL) {
             if (tssVerbose) printf("TSS_Malloc: Error allocating %u bytes\n", size);
             rc = TSS_RC_OUT_OF_MEMORY;
+        }
+    }
+    if (rc == 0) {
+        if (tssAllowMemoryCustomize != 0) {
+            tssAllowMemoryCustomize = 0;
         }
     }
     return rc;
@@ -142,12 +146,8 @@ TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size)
         }       
     }
     if (rc == 0) {
-        if (!tssRealloc) {
-#if  defined(TPM_POSIX) || defined(TPM_WINDOWS)
+        if (tssRealloc == NULL) {
             tmpptr = realloc(*buffer, size);
-#else
-            tmpptr = NULL;
-#endif
         }
         else {
             tmpptr = tssRealloc(*buffer, size);
@@ -158,7 +158,12 @@ TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size)
         }
     }
     if (rc == 0) {
-	*buffer = tmpptr;
+	    *buffer = tmpptr;
+    }
+    if (rc == 0) {
+        if (tssAllowMemoryCustomize != 0) {
+            tssAllowMemoryCustomize = 0;
+        }
     }
     return rc;
 }
@@ -213,12 +218,8 @@ TPM_RC TSS_Free(unsigned char** buffer)
     }
 
     if (rc == 0) {
-        if (!tssFree) {
-#if  defined(TPM_POSIX) || defined(TPM_WINDOWS)
+        if (tssFree == NULL) {
             free(*buffer);
-#else   
-            ;
-#endif
         }
         else {
             tssFree(*buffer);
@@ -420,4 +421,29 @@ uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg)
 	size = 0;
     }
     return size;
+}
+
+TPM_RC TSS_SetMemoryFunctions(TSS_CUST_MALLOC custom_malloc, TSS_CUST_REALLOC custom_realloc, TSS_CUST_FREE custom_free)
+{
+	TPM_RC		rc = 0;
+
+    if (rc == 0) {
+        if (custom_malloc == NULL || custom_realloc == NULL || custom_free == NULL) {
+            rc = TSS_RC_NULL_PARAMETER;
+        }
+    }
+
+    if(rc == 0) {
+        if (tssAllowMemoryCustomize == 0) {
+            rc = TSS_RC_PROPERTY_ALREADY_SET;
+        }
+    }
+
+	if (rc == 0) {
+		tssMalloc = custom_malloc;
+		tssRealloc = custom_realloc;
+		tssFree = custom_free;
+	}
+
+	return rc;
 }
