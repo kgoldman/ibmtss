@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2022.					*/
+/* (c) Copyright IBM Corporation 2016 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -844,13 +844,10 @@ TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
 
 #ifndef TPM_TSS_NOFILE
 
-/* verifyCertificate() verifies a certificate (typically an EK certificate against the root CA
-   certificate (typically the TPM vendor CA certificate chain)
+/* verifyCertificate() verifies a certificate against a root, with no intermediate certificates
 
-   The 'rootFileCount' root certificates are stored in the files whose paths are in the array
-   'rootFilename'
-
-*/
+   x509Certificate is an X509 structure.
+ */
 
 TPM_RC verifyCertificate(void *x509Certificate,
 			 const char *rootFilename[],
@@ -858,13 +855,53 @@ TPM_RC verifyCertificate(void *x509Certificate,
 			 int print)
 {
     TPM_RC			rc = 0;
+    rc = verifyCertificateI(x509Certificate,
+			    NULL,		/* pointer to intermediate CA certificates */
+			    0,			/* count of intermediate CA certificates */
+			    rootFilename,
+			    rootFileCount,
+			    print);
+    return rc;
+}
+
+
+
+/* verifyCertificateI() verifies a certificate (typically an EK certificate against the root CA
+   certificate (typically the TPM vendor CA certificate chain)
+
+   It can optionally include an array of intermediate, untrusted X509 certificates.
+
+   The 'rootFileCount' root certificates are stored in the files whose paths are in the array
+   'rootFilename'
+
+   x509Certificate is an X509 structure.
+   intermediateCert is an array of X509 structures.
+*/
+
+TPM_RC verifyCertificateI(void *x509Certificate,
+			  void *intermediateCert[],
+			  unsigned int intermediateCertCount,
+			  const char *rootFilename[],
+			  unsigned int rootFileCount,
+			  int print)
+{
+    TPM_RC			rc = 0;
+    int				irc;
     unsigned int		i;
     X509_STORE 			*caStore = NULL;	/* freed @1 */
     X509 			*caCert[MAX_ROOTS];	/* freed @2 */
+    STACK_OF(X509) 		*untrusted = NULL;
     X509_STORE_CTX 		*verifyCtx = NULL;	/* freed @3 */
 
     for (i = 0 ; i < rootFileCount ; i++) {
 	caCert[i] = NULL;    				/* for free @2 */
+    }
+    if (intermediateCertCount > 0) {
+	untrusted = sk_X509_new_null();			/* freed @4 */
+	if (untrusted == NULL) {
+	    printf("verifyCertificateI: sk_X509_new_null failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
     }
     /* get the root CA certificate chain */
     if (rc == 0) {
@@ -877,7 +914,14 @@ TPM_RC verifyCertificate(void *x509Certificate,
     if (rc == 0) {
 	verifyCtx = X509_STORE_CTX_new();		/* freed @3 */
 	if (verifyCtx == NULL) {
-	    printf("verifyCertificate: X509_STORE_CTX_new failed\n");  
+	    printf("verifyCertificateI: X509_STORE_CTX_new failed\n");
+	    rc = TSS_RC_OUT_OF_MEMORY;
+	}
+    }
+    for (i = 0 ; (i < intermediateCertCount) && (rc == 0) ; i++) {
+	irc = sk_X509_push(untrusted, intermediateCert[i]);
+	if (irc < 1) {
+	    printf("verifyCertificateI: sk_X509_push failed\n");
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
@@ -886,18 +930,18 @@ TPM_RC verifyCertificate(void *x509Certificate,
 	int irc = X509_STORE_CTX_init(verifyCtx,
 				      caStore,		/* trusted certificates */
 				      x509Certificate,	/* end entity certificate */
-				      NULL);		/* untrusted (intermediate) certificates */
+				      untrusted);	/* untrusted (intermediate) certificates */
 	if (irc != 1) {
-	    printf("verifyCertificate: "
-		   "Error in X509_STORE_CTX_init initializing verify context\n");  
+	    printf("verifyCertificateI: "
+		   "Error in X509_STORE_CTX_init initializing verify context\n");
 	    rc = TSS_RC_RSA_SIGNATURE;
-	}	    
+	}
     }
     /* walk the certificate chain */
     if (rc == 0) {
 	int irc = X509_verify_cert(verifyCtx);
 	if (irc != 1) {
-	    printf("verifyCertificate: Error in X509_verify_cert verifying certificate\n");  
+	    printf("verifyCertificateI: Error in X509_verify_cert verifying certificate\n");
 	    rc = TSS_RC_RSA_SIGNATURE;
 	}
 	else {
@@ -912,6 +956,9 @@ TPM_RC verifyCertificate(void *x509Certificate,
     }
     if (verifyCtx != NULL) {
 	X509_STORE_CTX_free(verifyCtx);	/* @3 */
+    }
+    if (intermediateCertCount > 0) {
+	sk_X509_free(untrusted);	/* @4 */
     }
     return rc;
 }

@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2022.					*/
+/* (c) Copyright IBM Corporation 2016 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -73,6 +73,8 @@
 #define EK_CERT_ECC_SM2P256INDEX_H5	0x01c0001a	/* ECC SM2_P256 EK Certificate (H-5) */
 #define EK_CERT_RSA_3072_INDEX_H6	0x01c0001c	/* RSA 3072 EK Certificate (H-6) */
 #define EK_CERT_RSA_4096_INDEX_H7	0x01c0001e	/* RSA 4096 EK Certificate (H-7) */
+
+#define INTERMEDIATE_CERT_INDEX	0x01c00100
 
 #define EK_NVPOLICY_SHA256_I1	0x01c07f01	/* Policy Index I-1 with nameAlg = SHA256 (B.5.3) */
 #define EK_NVPOLICY_SHA384_I2	0x01c07f02	/* Policy Index I-2 with nameAlg = SHA384 (B.5.4) */
@@ -167,6 +169,12 @@ extern "C" {
 			     const char *rootFilename[],
 			     unsigned int rootFileCount,
 			     int print);
+    TPM_RC verifyCertificateI(void *x509Certificate,
+			      void *intermediateCert[],
+			      unsigned int intermediateCertCount,
+			      const char *rootFilename[],
+			      unsigned int rootFileCount,
+			      int print);
     TPM_RC processCreatePrimaryE(TSS_CONTEXT *tssContext,
 				 TPM_HANDLE *keyHandle,
 				 const char *endorsementPassword,
