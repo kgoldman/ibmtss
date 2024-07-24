@@ -74,7 +74,9 @@
 #define EK_CERT_RSA_3072_INDEX_H6	0x01c0001c	/* RSA 3072 EK Certificate (H-6) */
 #define EK_CERT_RSA_4096_INDEX_H7	0x01c0001e	/* RSA 4096 EK Certificate (H-7) */
 
-#define INTERMEDIATE_CERT_INDEX	0x01c00100
+#define INTERMEDIATE_CERT_INDEX_FIRST	0x01c00100
+#define INTERMEDIATE_CERT_INDEX_LAST	0x01c001ff
+#define INTERMEDIATE_CERT_INDEX_MAX     (INTERMEDIATE_CERT_INDEX_LAST +1 - INTERMEDIATE_CERT_INDEX_FIRST)
 
 #define EK_NVPOLICY_SHA256_I1	0x01c07f01	/* Policy Index I-1 with nameAlg = SHA256 (B.5.3) */
 #define EK_NVPOLICY_SHA384_I2	0x01c07f02	/* Policy Index I-2 with nameAlg = SHA384 (B.5.4) */
@@ -90,7 +92,7 @@ extern "C" {
     /*
       crypto library independent functions
     */
-    
+
     TPM_RC readNvBufferMax(TSS_CONTEXT *tssContext,
 			   uint32_t *nvBufferMax);
     TPM_RC getIndexSize(TSS_CONTEXT *tssContext,
@@ -153,7 +155,7 @@ extern "C" {
 			     char **pemCertString,
 			     uint32_t *certLength,
 			     unsigned char **certificate,
-			     TPMT_PUBLIC *tpmtPublic,	
+			     TPMT_PUBLIC *tpmtPublic,
 			     const char *caKeyFileName,
 			     size_t issuerEntriesSize,
 			     char **issuerEntries,
@@ -217,7 +219,7 @@ extern "C" {
 			   const char *endorsementPassword,
 			   const char *keyPassword,
 			   TPMI_RH_NV_INDEX ekCertIndex,
-			   TPMI_RH_NV_INDEX ekNonceIndex, 
+			   TPMI_RH_NV_INDEX ekNonceIndex,
 			   TPMI_RH_NV_INDEX ekTemplateIndex,
 			   unsigned int noFlush,
 			   int print);
@@ -225,14 +227,14 @@ extern "C" {
     TPM_RC processPrimary(TSS_CONTEXT *tssContext,
 			  TPM_HANDLE *keyHandle,
 			  TPMI_RH_NV_INDEX ekCertIndex,
-			  TPMI_RH_NV_INDEX ekNonceIndex, 
+			  TPMI_RH_NV_INDEX ekNonceIndex,
 			  TPMI_RH_NV_INDEX ekTemplateIndex,
 			  unsigned int noFlush,
 			  int print);
     /*
       deprecated OpenSSL specific functions
     */
-   
+
 #ifndef TPM_TSS_NO_OPENSSL
 
 
