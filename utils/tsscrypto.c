@@ -5,7 +5,7 @@
 /*		       IBM Thomas J. Watson Research Center			*/
 /*		ECC Salt functions written by Bill Martin			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2023.					*/
+/* (c) Copyright IBM Corporation 2015 - 2024					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -57,7 +57,6 @@
 #include <openssl/rsa.h>
 #endif
 #include <openssl/rand.h>
-#include <openssl/engine.h>
 #if OPENSSL_VERSION_NUMBER >= 0x30000000
 #include <openssl/core_names.h>
 #include <openssl/param_build.h>
