@@ -7,14 +7,14 @@
 
 Name:           tss2
 # this is the release of the TSS library
-Version:        2.1.1
+Version:        2.3.1
 # this is the release of the fedora package, goes back to 1 when version changes
-Release:        2%{?dist}
+Release:        1%{?dist}
 Epoch:          1
 Summary:        IBM's TCG Software Stack (TSS) for TPM 2.0 and related utilities
 
 License:        BSD-3-Clause AND LicenseRef-TCGL
-URL:            http://sourceforge.net/projects/ibmtpm20tss/
+URL:            https://sourceforge.net/projects/ibmtpm20tss/
 Source0:        https://sourceforge.net/projects/ibmtpm20tss/files/ibmtss%{version}.tar.gz
 
 BuildRequires:  automake
@@ -79,6 +79,15 @@ find %{buildroot} -type f -name "*.la" -delete -print
 %doc ibmtss.docx
 
 %changelog
+
+* Mon May 20 2024 Ken Goldman <kgoldman@us.ibm.com> - 1:2.3.1-1
+- Add support for loadexternal schemes
+- Fix ObjectTemplates to accept caller curveID
+- Add Nuvoton configure utilities to VS projects
+- ifdef out functions deprecated with openssl 3.x
+- Recode the OpenSSL pkeyutl uses.  OpenSSL 3.x no longer ignores the oaep hash algorithm for the pkcs1 scheme.
+- Add userWithAuth to unseal policy sample scripts.  This is best practice.
+- Add policyparameters, policycapability
 
 * Fri Oct 6 2023 Ken Goldman <kgoldman@us.ibm.com> - 1:2.1.1-2
 - Update license
