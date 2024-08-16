@@ -7,7 +7,7 @@
 
 Name:           tss2
 # this is the release of the TSS library
-Version:        2.3.1
+Version:        2.3.2
 # this is the release of the fedora package, goes back to 1 when version changes
 Release:        1%{?dist}
 Epoch:          1
@@ -80,6 +80,8 @@ find %{buildroot} -type f -name "*.la" -delete -print
 
 %changelog
 
+* Thu Aug 15 2024 Ken Goldman <kgoldman@us.ibm.com> - 1:2.3.2-1
+- Trivial fixes for Fedora 41 Openssl 3.2.2 removal of SHA-1 signing
 * Mon May 20 2024 Ken Goldman <kgoldman@us.ibm.com> - 1:2.3.1-1
 - Add support for loadexternal schemes
 - Fix ObjectTemplates to accept caller curveID
