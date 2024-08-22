@@ -114,7 +114,7 @@ TPM_RC TSS_AuthDelete(TSS_AUTH_CONTEXT *tssAuthContext)
 {
     if (tssAuthContext != NULL) {
 	TSS_InitAuthContext(tssAuthContext);
-	free(tssAuthContext);
+    TSS_Free((unsigned char**)&tssAuthContext);
     }
     return 0;
 }

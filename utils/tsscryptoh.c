@@ -542,8 +542,8 @@ TPM_RC TSS_RSA_padding_add_PKCS1_OAEP(unsigned char *em, uint32_t emLen,
 	/* 2.i. 0x00, maskedSeed, and maskedDb to form EM */
 	/* NOTE Created directly in em */
     }
-    free(dbMask);		/* @1 */
-    free(seed);			/* @2 */
+	TSS_Free(&dbMask);		/* @1 */
+	TSS_Free(&seed);			/* @2 */
     return rc;
 }
 

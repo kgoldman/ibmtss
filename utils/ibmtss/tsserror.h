@@ -112,4 +112,5 @@
 #define TSS_RC_NO_SESSION_SLOT		0x000b0090	/* TSS context has no session slot for handle */
 #define TSS_RC_NO_OBJECTPUBLIC_SLOT	0x000b0091	/* TSS context has no object public slot for handle */
 #define TSS_RC_NO_NVPUBLIC_SLOT		0x000b0092	/* TSS context has no NV public slot for handle */
+#define TSS_RC_PROPERTY_ALREADY_SET		0x000b0093	/* A property has already been set and cannot be set again */
 #endif
