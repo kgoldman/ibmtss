@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2023					*/
+/* (c) Copyright IBM Corporation 2016 - 2024					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -99,6 +99,8 @@ enum hash_algo {
 /* maximum number of callback fields for parsing and tracing */
 #define IMA_PARSE_FUNCTIONS_MAX 128
 
+/* deprecated, hard coded to sha1 */
+
 typedef struct ImaEvent {
     uint32_t pcrIndex;
     uint8_t digest[SHA1_DIGEST_SIZE];		/* IMA hard coded to SHA-1 */
@@ -109,6 +111,21 @@ typedef struct ImaEvent {
     uint32_t template_data_len;
     uint8_t *template_data;			/* template related data */
 } ImaEvent;
+
+/* hash agile IMA event structure */
+
+typedef struct ImaEvent2 {
+    uint32_t pcrIndex;
+    uint16_t templateHashAlgId;			/* template hash */
+    TPM_ALG_ID templateHashSize;		/* template hash */
+    uint8_t digest[MAX_DIGEST_BUFFER];		/* template hash */
+    uint32_t name_len;
+    char name[TCG_EVENT_NAME_LEN_MAX + 1];
+    unsigned int nameInt;			/* integer for template data handler */
+    struct ima_template_desc *template_desc; 	/* template descriptor */
+    uint32_t template_data_len;
+    uint8_t *template_data;			/* template related data */
+} ImaEvent2;
 
 typedef struct ImaTemplateDNG {
     uint32_t hashLength;
@@ -229,18 +246,14 @@ struct ImaTemplateData {
     /* NOTE: When adding here, update IMA_TemplateData_Init() */
 };
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+    /* deprecated SHA-1 functions */
     void IMA_Event_Init(ImaEvent *imaEvent);
     void IMA_Event_Free(ImaEvent *imaEvent);
     void IMA_Event_Trace(ImaEvent *imaEvent, int traceTemplate);
-    void IMA_TemplateData_Init(ImaTemplateData *imaTemplateData);
-    void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
-				unsigned int nameInt);
     uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,
 				int *endOfFile,
 				FILE *infile,
@@ -251,17 +264,8 @@ extern "C" {
 				  int *endOfBuffer,
 				  int littleEndian,
 				  int getTemplate);
-    uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
-					 ImaEvent *imaEvent,
-					 int littleEndian);
     uint32_t IMA_Event_Write(ImaEvent *imaEvent,
 			     FILE *outFile);
-    uint32_t IMA_Extend(TPMT_HA *imapcr,
-			ImaEvent *imaEvent,
-			TPMI_ALG_HASH hashAlg);
-    uint32_t IMA_VerifyImaDigest(uint32_t *badEvent,
-				 ImaEvent *imaEvent,
-				 int eventNum);
     TPM_RC IMA_Event_Marshal(ImaEvent *source,
 			     uint16_t *written, uint8_t **buffer, uint32_t *size);
 
@@ -271,6 +275,38 @@ extern "C" {
     uint32_t IMA_Event_ToString(char **eventString,
 				ImaEvent *imaEvent);
 #endif
+    uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
+					 ImaEvent *imaEvent,
+					 int littleEndian);
+    uint32_t IMA_VerifyImaDigest(uint32_t *badEvent,
+				 ImaEvent *imaEvent,
+				 int eventNum);
+ 
+    /* Hash agile API */
+    
+    void IMA_Event2_Init(ImaEvent2 *imaEvent);
+    void IMA_Event2_Free(ImaEvent2 *imaEvent);
+    void IMA_Event2_Trace(ImaEvent2 *imaEvent, int traceTemplate);
+    uint32_t IMA_Event2_ReadFile(ImaEvent2 *imaEvent,
+				 int *endOfFile,
+				 FILE *infile,
+				 int littleEndian,
+				 TPM_ALG_ID templateHashAlgId);
+    uint32_t IMA_TemplateData2_ReadBuffer(ImaTemplateData *imaTemplateData,
+					  ImaEvent2 *imaEvent,
+					  int littleEndian);
+    uint32_t IMA_VerifyImaDigest2(uint32_t *badEvent,
+				  ImaEvent2 *imaEvent,
+				  int eventNum);
+ 
+    /* Template Data */
+
+    void IMA_TemplateData_Init(ImaTemplateData *imaTemplateData);
+    void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
+				unsigned int nameInt);
+    uint32_t IMA_Extend(TPMT_HA *imapcr,
+			ImaEvent *imaEvent,
+			TPMI_ALG_HASH hashAlg);
 
 #ifdef __cplusplus
 }

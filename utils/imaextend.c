@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2014 - 2023.					*/
+/* (c) Copyright IBM Corporation 2014 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -47,18 +47,19 @@
    the caller can optionally specify a sleep time.  The program will then incrementally extend after
    each sleep.
 
-   Two IMA log types are supported:
+   Three IMA log types are supported:
 
-   Type 1: For an older kernel that zero extends SHA-256 PCR
+   Type 1: For an older kernel that zero extends SHA-256 PCR, template hash is SHA-1
 
-   sha1 bank: extends the template hash
+   sha1 bank: Extends the template hash
 
    sha256 bank: extends a zero padded template hash
 
-   Type 2: For a transition kernel that correctly extends SHA-256, etc, but does not have a hash
-   agile IMA log.  The template hash is calcaulated as a hash of the template data.
+   Type 2: For a transition kernel that correctly extends SHA-256, but the template hash is SHA-1,
+   The template hash is calcaulated as a hash of the template data.
 
-   In the future, support for a hash agile IMA log is anticipated.
+   Type 3: For hash agile logs. The template hash is SHA-256.
+
 */
 
 /* Design:  The inner loop reads and parses each IMA event.  Then:
@@ -96,8 +97,8 @@
 
 static TPM_RC addDigest(PCR_Extend_In 	*pcrExtendIn,
 			int 		type,
-			ImaEvent 	*imaEvent);
-static TPM_RC checkTemplateHash(ImaEvent 	*imaEvent,
+			ImaEvent2 	*imaEvent);
+static TPM_RC checkTemplateHash(ImaEvent2 	*imaEvent,
 				int 		type,
 				int 		eventNum);
 static TPM_RC extendDigest(TPMT_HA 		simPcrs[][IMPLEMENTATION_PCR],
@@ -122,6 +123,7 @@ int main(int argc, char * argv[])
     FILE 		*infile = NULL;
     int 		littleEndian = FALSE;
     int			type = 1;			/* IMA log type, default 1 */
+    TPM_ALG_ID		templateHashAlgId = TPM_ALG_SHA1;	/* default algorithm for event log */
     int			sim = FALSE;			/* extend into simulated PCRs */
     int			checkHash = FALSE;		/* verify IMA log hashes */
     int			checkData = FALSE;		/* verify IMA log template data */
@@ -131,7 +133,7 @@ int main(int argc, char * argv[])
     unsigned long	beginEvent = 0;			/* default beginning of log */
     unsigned long	endEvent = 0xffffffff;		/* default end of log */
     unsigned int	loopTime = 0;			/* default no loop */
-    ImaEvent 		imaEvent;
+    ImaEvent2 		imaEvent;
     unsigned int 	lineNum;
 
     setvbuf(stdout, 0, _IONBF, 0);      /* output may be going through pipe to log file */
@@ -221,7 +223,15 @@ int main(int argc, char * argv[])
 	    i++;
 	    if (i < argc) {
 		sscanf(argv[i],"%u", &type);
-		if ((type != 1) && (type != 2)) {
+		switch (type) {
+		  case 1:				/* original sha1 event log */
+		  case 2:				/* sha1 zero extended event log */
+		    templateHashAlgId = TPM_ALG_SHA1;
+		    break;
+		  case 3:
+		    templateHashAlgId = TPM_ALG_SHA256;
+		    break;				/* sha256 event log */
+		  default:
 		    printf("Bad parameter %s for -ty\n", argv[i]);
 		    printUsage();
 		}
@@ -336,10 +346,10 @@ int main(int argc, char * argv[])
 	}
 	for (lineNum = 0 ; (rc == 0) && !endOfFile ; lineNum++) {
 	    /* read an IMA event line */
-	    IMA_Event_Init(&imaEvent);
+	    IMA_Event2_Init(&imaEvent);
 	    if (rc == 0) {
-		rc = IMA_Event_ReadFile(&imaEvent, &endOfFile, infile,
-					littleEndian);
+		rc = IMA_Event2_ReadFile(&imaEvent, &endOfFile, infile,
+					 littleEndian, templateHashAlgId);
 	    }
 	    /*
 	      if the event line is in range
@@ -351,10 +361,10 @@ int main(int argc, char * argv[])
 		    if (tssUtilsVerbose) printf("\n");
 		    printf("imaextend: line %u\n", lineNum);
 		    if (tssUtilsVerbose) {
-			IMA_Event_Trace(&imaEvent, FALSE);
+			IMA_Event2_Trace(&imaEvent, FALSE);
 			/* unmarshal the template data */
 			if (rc == 0) {
-			    rc = IMA_TemplateData_ReadBuffer(&imaTemplateData,
+			    rc = IMA_TemplateData2_ReadBuffer(&imaTemplateData,
 							     &imaEvent,
 							     littleEndian);
 			}
@@ -407,7 +417,7 @@ int main(int argc, char * argv[])
 		    }
 		}
 	    }
-	    IMA_Event_Free(&imaEvent);
+	    IMA_Event2_Free(&imaEvent);
 	}	/* for each IMA event line */
 	if (tssUtilsVerbose && (loopTime != 0)) printf("set beginEvent to %u\n", lineNum-1);
 	beginEvent = lineNum-1;		/* remove the last increment at EOF */
@@ -465,27 +475,27 @@ int main(int argc, char * argv[])
     return rc;
 }
 
-/* checkTemplateHash() validates the IMA event SHA-1 template hash against the hash of the template
+/* checkTemplateHash() validates the IMA event template hash against the hash of the template
    data. */
 
-static TPM_RC checkTemplateHash(ImaEvent 	*imaEvent,
+static TPM_RC checkTemplateHash(ImaEvent2 	*imaEvent,
 				int 		type,
 				int 		eventNum)
 {
     TPM_RC 		rc = 0;
     int 		notAllZero;
-    unsigned char 	zeroDigest[SHA1_DIGEST_SIZE];	/* compare to SHA-1 digest in event log */
+    unsigned char 	zeroDigest[MAX_DIGEST_BUFFER];	/* compare to digest in event log */
     uint32_t 		badEvent;
 
     type = type;	/* unused until a hash agile log is supported */
     if (rc == 0) {
 	memset(zeroDigest, 0, sizeof(zeroDigest));
-	notAllZero = memcmp(imaEvent->digest, zeroDigest, sizeof(zeroDigest));
+	notAllZero = memcmp(imaEvent->digest, zeroDigest, imaEvent->templateHashSize);
     }
     if ((rc == 0) && notAllZero) {
-	rc = IMA_VerifyImaDigest(&badEvent, 	/* TRUE if hash does not match */
-				 imaEvent, 	/* the current IMA event being processed */
-				 eventNum);	/* the current IMA event number being processed */
+	rc = IMA_VerifyImaDigest2(&badEvent, 	/* TRUE if hash does not match */
+				  imaEvent, 	/* the current IMA event being processed */
+				  eventNum);	/* the current IMA event number being processed */
 	if ((rc == 0) && badEvent) {
 	    printf("imaextend: Hash of template data does not match template hash\n");
 	    rc = TSS_RC_HASH;
@@ -507,7 +517,7 @@ static TPM_RC checkTemplateHash(ImaEvent 	*imaEvent,
 
 static TPM_RC addDigest(PCR_Extend_In 	*pcrExtendIn,
 			int 		type,
-			ImaEvent 	*imaEvent)
+			ImaEvent2 	*imaEvent)
 {
     TPM_RC 		rc = 0;
     uint32_t 		bankNum = 0;				/* PCR hash bank interator */
@@ -647,7 +657,7 @@ static TPM_RC pcrread(TSS_CONTEXT *tssContext,
 		     pcrReadOut.pcrValues.digests[count].t.buffer,
 		     pcrReadOut.pcrValues.digests[count].t.size);
     }
-   return rc;
+    return rc;
 }
 
 static void printUsage(void)
@@ -667,7 +677,8 @@ static void printUsage(void)
 	   "Two IMA log formats are currently supported:\n"
 	   "\n"
 	   "1: SHA1 - A zero padded measurement is extended into other PCR banks.\n"
-	   "2: SHA1 - A digest of the template data is extended into other PCR banks.\n");
+	   "2: SHA1 - A digest of the template data is extended into other PCR banks.\n"
+	   "3: SHA256 - SHA-256 event log.\n");
     printf("\n");
     printf("This handles the case where a zero measurement extends ones into the IMA PCR.\n");
     printf("\n");
@@ -677,8 +688,8 @@ static void printUsage(void)
     printf("\t[-halg\t(sha1, sha256, sha384, sha512)]\n"
 	   "\t\t-halg may be specified more than once\n");
     printf("\t[-ty\tIMA log format (default type 1)]\n");
-    printf("\t[-tpm\textend TPM PCRs (default)]\n");
-    printf("\t[-sim\tcalculate simulated PCRs]\n");
+    printf("\t[-tpm\textend TPM PCRs (default true)]\n");
+    printf("\t[-sim\tcalculate simulated PCRs (default false)]\n");
     printf("\t[-checkhash\tverify IMA event log hashes]\n");
     printf("\t[-checkdata\tverify IMA event log template data, stop on error]\n");
     printf("\t[-b\tbeginning entry (default 0, beginning of log)]\n");

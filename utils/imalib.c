@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2023.					*/
+/* (c) Copyright IBM Corporation 2016 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -93,13 +93,16 @@ static uint32_t IMA_Strn2cpy(char *dest, const uint8_t *src,
 			     size_t destLength, size_t srcLength);
 static uint32_t IMA_Strc2cpy(char *dest, const uint8_t *src,
 			     size_t destLength, size_t srcLength);
-static void IMA_Event_ParseName(ImaEvent *imaEvent);
+static void IMA_Event_ParseName(unsigned int *nameInt,
+				 const char *name);
 
-static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,
+static uint32_t IMA_TemplateData_ReadFile(uint32_t *template_data_len,
+					  uint8_t **template_data,	/* freed by caller */
 					  int *endOfFile,
 					  FILE *inFile,
 					  int littleEndian);
-static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,
+static uint32_t IMA_TemplateDataIma_ReadFile(uint32_t *template_data_len,
+					     uint8_t **template_data,	/* freed by caller */
 					     int *endOfFile,
 					     FILE *inFile,
 					     int littleEndian);
@@ -113,12 +116,13 @@ typedef uint32_t (*TemplateDataParseFunction_t)(ImaTemplateData	*imaTemplateData
 static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataParseFunctions[],
 				       TemplateDataTraceFunction_t templateDataTraceFunctions[],
 				       size_t templateDataParseFunctionsSize,
-				       ImaEvent *imaEvent);
+				       unsigned int nameInt,
+				       const char *name);
 static uint32_t
 IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFunctions[],
 			     TemplateDataTraceFunction_t templateDataTraceFunctions[],
 			     size_t templateDataParseFunctionsSize,
-			     ImaEvent *imaEvent);
+			     const char *name);
 static uint32_t IMA_ParseD(ImaTemplateData	*imaTemplateData,
 			   uint8_t 		**buffer,
 			   size_t 		*length,
@@ -191,11 +195,37 @@ void IMA_Event_Init(ImaEvent *imaEvent)
     return;
 }
 
+/* IMA_Event_Init2() initializes the ImaEvent2 structure so that IMA_Event2_Free() is safe.
+
+ */
+
+void IMA_Event2_Init(ImaEvent2 *imaEvent)
+{
+    if (imaEvent != NULL) {
+	imaEvent->nameInt = IMA_UNSUPPORTED;
+	imaEvent->template_data = NULL;
+    }
+    return;
+}
+
 /* IMA_Event_Free() frees any memory allocated for the ImaEvent structure.
 
  */
 
 void IMA_Event_Free(ImaEvent *imaEvent)
+{
+    if (imaEvent != NULL) {
+	free(imaEvent->template_data);
+	imaEvent->template_data = NULL;
+    }
+    return;
+}
+
+/* IMA_Event2_Free() frees any memory allocated for the ImaEvent2 structure.
+
+ */
+
+void IMA_Event2_Free(ImaEvent2 *imaEvent)
 {
     if (imaEvent != NULL) {
 	free(imaEvent->template_data);
@@ -233,38 +263,69 @@ void IMA_Event_Trace(ImaEvent *imaEvent, int traceTemplate)
     }
     return;
 }
+/* IMA_Event2_Trace() traces the ImaEvent structure.
+
+   If traceTemplate is FALSE, template data is not traced.  This handles the case where template
+   data is not unmarshaled.
+
+*/
+
+void IMA_Event2_Trace(ImaEvent2 *imaEvent, int traceTemplate)
+{
+    printf("IMA_Event2_Trace: PCR index %u\n", imaEvent->pcrIndex);
+    TSS_TPM_ALG_ID_Print("IMA_Event_Trace: hash alg", imaEvent->templateHashAlgId, 0);
+    TSS_PrintAll("IMA_Event_Trace: hash",
+		 imaEvent->digest, imaEvent->templateHashSize);
+
+    printf("IMA_Event2_Trace: name length %u\n", imaEvent->name_len);
+    printf("IMA_Event2_Trace: name text %s\n", imaEvent->name);
+#if 1
+    printf("IMA_Event2_Trace: name integer %u\n", imaEvent->nameInt);
+    TSS_PrintAll("IMA_Event2_Trace: template data",
+		 imaEvent->template_data, imaEvent->template_data_len);
+#endif
+    printf("IMA_Event2_Trace: template data length %u\n", imaEvent->template_data_len);
+    /* in some use cases, the template_data field is not populated.  In those cases, do not trace
+       it. */
+    if (traceTemplate) {
+	TSS_PrintAll("IMA_Event2_Trace: template data",
+		     imaEvent->template_data, imaEvent->template_data_len);
+    }
+    return;
+}
 
 /* IMA_Event_ParseName() parses the Template Name and sets the nameInt field */
 
-static void IMA_Event_ParseName(ImaEvent *imaEvent)
+static void IMA_Event_ParseName(unsigned int *nameInt,	/* name integer value */
+				const char *name)	/* name in ascii */
 {
-    if (strcmp(imaEvent->name, "ima-ng") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_IMA_NG;
+    if (strcmp(name, "ima-ng") == 0) {
+	*nameInt = IMA_FORMAT_IMA_NG;
     }
-    else if (strcmp(imaEvent->name, "ima-sig") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_IMA_SIG;
+    else if (strcmp(name, "ima-sig") == 0) {
+	*nameInt = IMA_FORMAT_IMA_SIG;
     }
-    else if (strcmp(imaEvent->name, "ima") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_IMA;
+    else if (strcmp(name, "ima") == 0) {
+	*nameInt = IMA_FORMAT_IMA;
     }
-    else if (strcmp(imaEvent->name, "ima-modsig") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_IMA_MODSIG;
+    else if (strcmp(name, "ima-modsig") == 0) {
+	*nameInt = IMA_FORMAT_IMA_MODSIG;
     }
-    else if (strcmp(imaEvent->name, "ima-buf") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_IMA_BUF;
+    else if (strcmp(name, "ima-buf") == 0) {
+	*nameInt = IMA_FORMAT_IMA_BUF;
     }
-    else if (strcmp(imaEvent->name, "ima-ngv2") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_IMA_NGV2;
+    else if (strcmp(name, "ima-ngv2") == 0) {
+	*nameInt = IMA_FORMAT_IMA_NGV2;
     }
-    else if (strcmp(imaEvent->name, "ima-sigv2") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_IMA_SIGV2;
+    else if (strcmp(name, "ima-sigv2") == 0) {
+	*nameInt = IMA_FORMAT_IMA_SIGV2;
     }
-    else if (strcmp(imaEvent->name, "evm-sig") == 0) {
-	imaEvent->nameInt = IMA_FORMAT_EVM_SIG;
+    else if (strcmp(name, "evm-sig") == 0) {
+	*nameInt = IMA_FORMAT_EVM_SIG;
     }
     /* the template data parser currently supports only these formats. */
     else {
-	imaEvent->nameInt = IMA_UNSUPPORTED;
+	*nameInt = IMA_UNSUPPORTED;
     }
     return;
 }
@@ -331,7 +392,7 @@ static void IMA_TraceD(ImaTemplateData	*imaTemplateData)
 static void IMA_TraceDNG(ImaTemplateData	*imaTemplateData)
 {
     printf("IMA_TemplateData_Trace: DNG hashLength %u\n",
-	   imaTemplateData->imaTemplateDNG.hashLength); 
+	   imaTemplateData->imaTemplateDNG.hashLength);
     printf("IMA_TemplateData_Trace: DNG hashAlg %s\n", imaTemplateData->imaTemplateDNG.hashAlg);
     TSS_PrintAll("IMA_Template_Trace: DNG file data hash",
 		 imaTemplateData->imaTemplateDNG.fileDataHash,
@@ -341,7 +402,7 @@ static void IMA_TraceDNG(ImaTemplateData	*imaTemplateData)
 static void IMA_TraceDNGV2(ImaTemplateData	*imaTemplateData)
 {
     printf("IMA_TemplateData_Trace: DNGV2 hashLength %u\n",
-	   imaTemplateData->imaTemplateDNGV2.hashLength); 
+	   imaTemplateData->imaTemplateDNGV2.hashLength);
     printf("IMA_TemplateData_Trace: DNGV2 prefix %s\n", imaTemplateData->imaTemplateDNGV2.prefix);
     printf("IMA_TemplateData_Trace: DNGV2 hashAlg %s\n", imaTemplateData->imaTemplateDNGV2.hashAlg);
     TSS_PrintAll("IMA_Template_Trace: DNGV2 file data hash",
@@ -398,7 +459,7 @@ static void IMA_TraceMODSIG(ImaTemplateData	*imaTemplateData)
 #ifndef TPM_TSS_MBEDTLS
 	{
 	    PKCS7 		*pkcs7 = NULL;
-	    unsigned char 	*tmpData = NULL; 
+	    unsigned char 	*tmpData = NULL;
 	    /* tmp pointer because d2i moves the pointer */
 	    tmpData = imaTemplateData->imaTemplateMODSIG.modSigData;
 	    pkcs7 = d2i_PKCS7(NULL,				/* freed @1 */
@@ -599,6 +660,8 @@ static void IMA_TraceIMODE(ImaTemplateData	*imaTemplateData)
    It currently supports these template formats:  ima, ima-ng, ima-sig.
 
    This is typically used at the client, reading from the pseudofile.
+
+   Deprecated, see IMA_Event_ReadFileT()
 */
 
 uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
@@ -609,7 +672,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
     int rc = 0;
     size_t readSize;
     *endOfFile = FALSE;
-    
+
     imaEvent->template_data = NULL;		/* for free */
 
     /* read the IMA PCR index */
@@ -636,7 +699,7 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 		   imaEvent->pcrIndex, imaEvent->pcrIndex);
 	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
-    }	
+    }
     /* read the IMA digest, this is hard coded to SHA-1 */
     if ((rc == 0) && !(*endOfFile)) {
 	readSize = fread(&(imaEvent->digest),
@@ -698,14 +761,150 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
     }
     /* record the template name as an int */
     if ((rc == 0) && !(*endOfFile)) {
-	IMA_Event_ParseName(imaEvent);
+	IMA_Event_ParseName(&imaEvent->nameInt, imaEvent->name);
     }
     if ((rc == 0) && !(*endOfFile)) {
 	if (imaEvent->nameInt != IMA_FORMAT_IMA) {	/* standard format */
-	    rc = IMA_TemplateData_ReadFile(imaEvent, endOfFile, inFile, littleEndian);
+	    rc = IMA_TemplateData_ReadFile(&imaEvent->template_data_len, &imaEvent->template_data,
+					   endOfFile, inFile, littleEndian);
 	}
 	else {						/* unique 'ima' format */
-	    rc = IMA_TemplateDataIma_ReadFile(imaEvent, endOfFile, inFile, littleEndian);
+	    rc = IMA_TemplateDataIma_ReadFile(&imaEvent->template_data_len, &imaEvent->template_data,
+					      endOfFile, inFile, littleEndian);
+	}
+    }
+    return rc;
+}
+
+/* IMA_Event2_ReadFile() reads one IMA event from a file.
+
+   It currently supports these template formats:  ima, ima-ng, ima-sig.
+
+   This is typically used at the client, reading from the pseudofile.
+
+   templateHashAlgId is the digest algorithm of the template hash.
+*/
+
+uint32_t IMA_Event2_ReadFile(ImaEvent2 *imaEvent,	/* freed by caller */
+			     int *endOfFile,
+			     FILE *inFile,
+			     int littleEndian,
+			     TPM_ALG_ID templateHashAlgId)	/* digest algorithm for event log */
+{
+    int rc = 0;
+    size_t readSize;
+    uint16_t templateHashSize;
+    *endOfFile = FALSE;
+
+    imaEvent->template_data = NULL;		/* for free */
+    if ((rc == 0) && !(*endOfFile)) {
+	templateHashSize = TSS_GetDigestSize(templateHashAlgId);
+	if (templateHashSize == 0) {
+	    printf("ERROR: IMA_Event2_ReadFile: bad template hash algorithm %04x\n",
+		templateHashSize);
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+    if ((rc == 0) && !(*endOfFile)) {		/* record the digest algorithm */
+	imaEvent->templateHashAlgId = templateHashAlgId;
+	imaEvent->templateHashSize = templateHashSize;
+    }
+    /* read the IMA PCR index */
+    if ((rc == 0) && !(*endOfFile)) {
+	readSize = fread(&(imaEvent->pcrIndex),
+			 sizeof(((ImaEvent *)NULL)->pcrIndex), 1, inFile);
+	if (readSize != 1) {
+	    if (feof(inFile)) {
+		*endOfFile = TRUE;
+	    }
+	    else {
+		printf("ERROR: IMA_Event2_ReadFile: could not read pcrIndex, returned %lu\n",
+		       (unsigned long)readSize);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+    }
+    /* PCR index endian convert */
+    if ((rc == 0) && !(*endOfFile)) {
+	imaEvent->pcrIndex = IMA_Uint32_Convert((uint8_t *)&imaEvent->pcrIndex, littleEndian);
+	/* range check the PCR index */
+	if (imaEvent->pcrIndex >= IMPLEMENTATION_PCR) {
+	    printf("ERROR: IMA_Event2_ReadFile: PCR index %u %08x out of range\n",
+		   imaEvent->pcrIndex, imaEvent->pcrIndex);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+    }
+    /* read the IMA digest */
+    if ((rc == 0) && !(*endOfFile)) {
+	readSize = fread(&(imaEvent->digest),
+			 templateHashSize, 1, inFile);
+	if (readSize != 1) {
+	    if (feof(inFile)) {
+		*endOfFile = TRUE;
+	    }
+	    else {
+		printf("ERROR: IMA_Event2_ReadFile: could not read digest, returned %lu\n",
+		       (unsigned long)readSize);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+    }
+    /* read the IMA name length */
+    if ((rc == 0) && !(*endOfFile)) {
+	readSize = fread(&(imaEvent->name_len),
+			 sizeof(((ImaEvent *)NULL)->name_len), 1, inFile);
+	if (readSize != 1) {
+	    if (feof(inFile)) {
+		*endOfFile = TRUE;
+	    }
+	    else {
+		printf("ERROR: IMA_Event2_ReadFile: could not read name_len, returned %lu\n",
+		       (unsigned long)readSize);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+    }
+    if ((rc == 0) && !(*endOfFile)) {
+	imaEvent->name_len = IMA_Uint32_Convert((uint8_t *)&imaEvent->name_len, littleEndian);
+    }
+    /* bounds check the name length, leave a byte for the nul terminator */
+    if ((rc == 0) && !(*endOfFile)) {
+	if (imaEvent->name_len > (sizeof(((ImaEvent *)NULL)->name)) -1) {
+	    printf("ERROR: IMA_Event2_ReadFile: template name length too big: %u\n",
+		   imaEvent->name_len);
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    /* read the template name */
+    if ((rc == 0) && !(*endOfFile)) {
+	/* nul terminate first */
+	memset(imaEvent->name, 0, sizeof(((ImaEvent *)NULL)->name));
+	/* ignore VS warning, name_len is range checked above, no buffer overrun */
+	readSize = fread(&(imaEvent->name),
+			 imaEvent->name_len, 1, inFile);
+	if (readSize != 1) {
+	    if (feof(inFile)) {
+		*endOfFile = TRUE;
+	    }
+	    else {
+		printf("ERROR: IMA_Event2_ReadFile: could not read template name, returned %lu\n",
+		       (unsigned long)readSize);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	}
+    }
+    /* record the template name as an int */
+    if ((rc == 0) && !(*endOfFile)) {
+	IMA_Event_ParseName(&imaEvent->nameInt, imaEvent->name);
+    }
+    if ((rc == 0) && !(*endOfFile)) {
+	if (imaEvent->nameInt != IMA_FORMAT_IMA) {	/* standard format */
+	    rc = IMA_TemplateData_ReadFile(&imaEvent->template_data_len, &imaEvent->template_data,
+					   endOfFile, inFile, littleEndian);
+	}
+	else {						/* unique 'ima' format */
+	    rc = IMA_TemplateDataIma_ReadFile(&imaEvent->template_data_len, &imaEvent->template_data,
+					      endOfFile, inFile, littleEndian);
 	}
     }
     return rc;
@@ -715,7 +914,8 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
    of template data length plus template data.
 */
 
-static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
+static uint32_t IMA_TemplateData_ReadFile(uint32_t *template_data_len,
+					  uint8_t **template_data,	/* freed by caller */
 					  int *endOfFile,
 					  FILE *inFile,
 					  int littleEndian)
@@ -725,8 +925,7 @@ static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller
 
     /* read template data length */
     if ((rc == 0) && !(*endOfFile)) {
-	readSize = fread(&(imaEvent->template_data_len),
-			 sizeof(((ImaEvent *)NULL)->template_data_len ), 1, inFile);
+	readSize = fread(template_data_len, sizeof(uint32_t), 1, inFile);
 	if (readSize != 1) {
 	    if (feof(inFile)) {
 		*endOfFile = TRUE;
@@ -739,31 +938,30 @@ static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller
 	}
     }
     if ((rc == 0) && !(*endOfFile)) {
-	imaEvent->template_data_len =
-	    IMA_Uint32_Convert((uint8_t *)&imaEvent->template_data_len,
-			       littleEndian);
+	*template_data_len = IMA_Uint32_Convert((uint8_t *)template_data_len,
+					       littleEndian);
     }
     /* bounds check the template data length */
     if ((rc == 0) && !(*endOfFile)) {
-	if (imaEvent->template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
+	if (*template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
 	    printf("ERROR: IMA_TemplateData_ReadFile: template data length too big: %u\n",
-		   imaEvent->template_data_len);
+		   *template_data_len);
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     if ((rc == 0) && !(*endOfFile)) {
-	imaEvent->template_data = malloc(imaEvent->template_data_len);
-	if (imaEvent->template_data == NULL) {
+	*template_data = malloc(*template_data_len);
+	if (*template_data == NULL) {
 	    printf("ERROR: IMA_TemplateData_ReadFile: "
 		   "could not allocate template data, size %u\n",
-		   imaEvent->template_data_len);
+		   *template_data_len);
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
     if ((rc == 0) && !(*endOfFile)) {
 	/* ignore VS warning, template_data_len is used for the malloc, no buffer overrun */
-	readSize = fread(imaEvent->template_data,
-			 imaEvent->template_data_len, 1, inFile);
+	readSize = fread(*template_data,
+			 *template_data_len, 1, inFile);
 	if (readSize != 1) {
 	    if (feof(inFile)) {
 		*endOfFile = TRUE;
@@ -783,7 +981,8 @@ static uint32_t IMA_TemplateData_ReadFile(ImaEvent *imaEvent,	/* freed by caller
    hash, a 4 byte file name length, and a file name.
 */
 
-static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
+static uint32_t IMA_TemplateDataIma_ReadFile(uint32_t *template_data_len,
+					     uint8_t **template_data,	/* freed by caller */
 					     int *endOfFile,
 					     FILE *inFile,
 					     int littleEndian)
@@ -837,22 +1036,22 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
     }
     if ((rc == 0) && !(*endOfFile)) {
 	/* addition is safe because of above check */
-	imaEvent->template_data_len = sizeof(fileDataHash) + sizeof(fileNameLength) + fileNameLength;
+	*template_data_len = sizeof(fileDataHash) + sizeof(fileNameLength) + fileNameLength;
     }
     /* bounds check the template data length */
     if ((rc == 0) && !(*endOfFile)) {
-	if (imaEvent->template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
+	if (*template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
 	    printf("ERROR: IMA_TemplateDataIma_ReadFile: template data length too big: %u\n",
-		   imaEvent->template_data_len);
+		   *template_data_len);
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
 	}
     }
     if ((rc == 0) && !(*endOfFile)) {
-	imaEvent->template_data = malloc(imaEvent->template_data_len);
-	if (imaEvent->template_data == NULL) {
+	*template_data = malloc(*template_data_len);
+	if (*template_data == NULL) {
 	    printf("ERROR: IMA_TemplateDataIma_ReadFile: "
 		   "could not allocate template data, size %u\n",
-		   imaEvent->template_data_len);
+		   *template_data_len);
 	    rc = TSS_RC_OUT_OF_MEMORY;
 	}
     }
@@ -860,12 +1059,12 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
     if ((rc == 0) && !(*endOfFile)) {
 	/* copy file data hash */
 	/* ignore VS warning, template_data_len is calculated above for malloc, no buffer overrun */
-	memcpy(imaEvent->template_data, fileDataHash, sizeof(fileDataHash));
+	memcpy(*template_data, fileDataHash, sizeof(fileDataHash));
 	/* copy file name length */
-	memcpy(imaEvent->template_data + sizeof(fileDataHash),
+	memcpy(*template_data + sizeof(fileDataHash),
 	       &fileNameLengthIbo, sizeof(fileNameLength));
 	/* read and copy the file name */
-	readSize = fread(imaEvent->template_data + sizeof(fileDataHash) + sizeof(fileNameLength),
+	readSize = fread(*template_data + sizeof(fileDataHash) + sizeof(fileNameLength),
 			 fileNameLength, 1, inFile);
 	if (readSize != 1) {
 	    if (feof(inFile)) {
@@ -881,7 +1080,7 @@ static uint32_t IMA_TemplateDataIma_ReadFile(ImaEvent *imaEvent,	/* freed by cal
     }
     return rc;
 }
- 
+
 /* IMA_Event_ReadBuffer()  reads one IMA event from a buffer.
 
    This is typically used at the server, reading from a client connection.
@@ -960,7 +1159,7 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	}
 	/* record the template name as an int */
 	if (rc == 0) {
-	    IMA_Event_ParseName(imaEvent);
+	    IMA_Event_ParseName(&imaEvent->nameInt, imaEvent->name);
 	}
 	/* read the template data length */
 	if (rc == 0) {
@@ -1010,7 +1209,8 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataParseFunctions[],
 				       TemplateDataTraceFunction_t templateDataTraceFunctions[],
 				       size_t templateDataParseFunctionsSize,
-				       ImaEvent *imaEvent)
+				       unsigned int nameInt,
+				       const char *name)
 {
     uint32_t 	rc = 0;
     size_t	i;
@@ -1022,7 +1222,7 @@ static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataP
     }
     /* parse the name into the callback structure */
     if (rc == 0) {
-	switch (imaEvent->nameInt) {
+	switch (nameInt) {
 	    /* these are the pre-defined formats */
 	  case IMA_FORMAT_IMA_NG:
 	    /* d-ng | n-ng */
@@ -1119,7 +1319,7 @@ static uint32_t IMA_TemplateName_Parse(TemplateDataParseFunction_t templateDataP
 	    rc = IMA_TemplateName_ParseCustom(templateDataParseFunctions,
 					      templateDataTraceFunctions,
 					      templateDataParseFunctionsSize,
-					      imaEvent);
+					      name);
 	}
     }
     return rc;
@@ -1131,7 +1331,7 @@ typedef struct {
     const char *formatString;
     TemplateDataParseFunction_t parseFunction;
     TemplateDataTraceFunction_t traceFunction;
-} ImaFormatMap; 
+} ImaFormatMap;
 
 static ImaFormatMap imaFormatMap[] = {
     {"d",
@@ -1188,7 +1388,7 @@ static uint32_t
 IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFunctions[],
 			     TemplateDataTraceFunction_t templateDataTraceFunctions[],
 			     size_t templateDataParseFunctionsSize,
-			     ImaEvent *imaEvent)
+			     const char *name)
 {
     uint32_t 	rc = 0;
     size_t	i;		/* index into templateDataParseFunctions table */
@@ -1198,7 +1398,7 @@ IMA_TemplateName_ParseCustom(TemplateDataParseFunction_t templateDataParseFuncti
     char 	templateName[TCG_EVENT_NAME_LEN_MAX + 1];	/* one | separated item with nul */
 
     /* parse the custom templates, strcpy is safe because the reader did the bounds check */
-    strcpy(templateName, imaEvent->name);	/* modify'able */
+    strcpy(templateName, name);	/* modify'able */
     startName = templateName;
 
     for (i = 0 ; (rc == 0) && (i < templateDataParseFunctionsSize) ; i++) {
@@ -1338,7 +1538,7 @@ static uint32_t IMA_ParseDNG(ImaTemplateData	*imaTemplateData,
 	    printf("ERROR: IMA_ParseDNG: "
 		   "file data hash length exceeds maximum size\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	} 
+	}
 	else {
 	    memcpy(&(imaTemplateData->imaTemplateDNG.fileDataHash), *buffer,
 		   imaTemplateData->imaTemplateDNG.fileDataHashLength);
@@ -1453,7 +1653,7 @@ static uint32_t IMA_ParseDNGV2(ImaTemplateData	*imaTemplateData,
 	    printf("ERROR: IMA_ParseDNGV2: "
 		   "file data hash length exceeds maximum size\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	} 
+	}
 	else {
 	    memcpy(&(imaTemplateData->imaTemplateDNGV2.fileDataHash), *buffer,
 		   imaTemplateData->imaTemplateDNGV2.fileDataHashLength);
@@ -1684,7 +1884,7 @@ static uint32_t IMA_ParseDMODSIG(ImaTemplateData	*imaTemplateData,
 		printf("ERROR: IMA_ParseDMODSIG: "
 		       "file data hash length exceeds maximum size\n");
 		rc = TSS_RC_INSUFFICIENT_BUFFER;
-	    } 
+	    }
 	    else {
 		memcpy(&(imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHash),
 		       *buffer, imaTemplateData->imaTemplateDMODSIG.dModSigFileDataHashLength);
@@ -1722,7 +1922,7 @@ static uint32_t IMA_ParseMODSIG(ImaTemplateData	*imaTemplateData,
 	    printf("ERROR: IMA_ParseMODSIG: "
 		   "modSigData length exceeds maximum size\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	} 
+	}
 	else {
 	    memcpy(&(imaTemplateData->imaTemplateMODSIG.modSigData), *buffer,
 		   imaTemplateData->imaTemplateMODSIG.modSigLength);
@@ -1759,7 +1959,7 @@ static uint32_t IMA_ParseBUF(ImaTemplateData	*imaTemplateData,
 	    printf("ERROR: IMA_ParseBUF: "
 		   "bufData length exceeds maximum size\n");
 	    rc = TSS_RC_INSUFFICIENT_BUFFER;
-	} 
+	}
 	else {
 	    memcpy(&(imaTemplateData->imaTemplateBUF.bufData), *buffer,
 		   imaTemplateData->imaTemplateBUF.bufLength);
@@ -1885,7 +2085,7 @@ static uint32_t IMA_ParseXATTRLENGTHS(ImaTemplateData	*imaTemplateData,
 	}
 
     }
-    /* unmarshal the xattrLengths array */ 
+    /* unmarshal the xattrLengths array */
     if (rc == 0) {
 	for (i = 0 ; i < imaTemplateData->imaTemplateXattrs.xattrLengthsLength / 4 ; i++) {
 	    rc = IMA_Uint32_Unmarshal(&imaTemplateData->imaTemplateXattrs.xattrLengths[i],
@@ -2053,7 +2253,48 @@ uint32_t IMA_TemplateData_ReadBuffer(ImaTemplateData *imaTemplateData,
 	rc = IMA_TemplateName_Parse(templateDataParseFunctions,
 				    imaTemplateData->templateDataTraceFunctions,
 				    IMA_PARSE_FUNCTIONS_MAX,
-				    imaEvent);
+				    imaEvent->nameInt,
+				    imaEvent->name);
+    }
+    for (i = 0 ; (rc == 0) && (templateDataParseFunctions[i] != NULL) ; i++) {
+	rc = templateDataParseFunctions[i](imaTemplateData, &buffer, &length, littleEndian);
+    }
+    /* length should now be zero */
+    if (rc == 0) {
+	if (length != 0) {
+	    printf("ERROR: IMA_TemplateData_ReadBuffer: "
+		   "buffer too large (bytes remaining after unmarshaling)\n");
+	    rc = TSS_RC_INSUFFICIENT_BUFFER;
+	}
+    }
+    return rc;
+}
+
+/* IMA_TemplateData_ReadBuffer() unmarshals the template data fields from the template data byte
+   array.
+
+*/
+
+uint32_t IMA_TemplateData2_ReadBuffer(ImaTemplateData *imaTemplateData,
+				     ImaEvent2 *imaEvent,
+				     int littleEndian)
+{
+    uint32_t 	rc = 0;
+    size_t 	length = imaEvent->template_data_len;
+    uint8_t 	*buffer = imaEvent->template_data;
+    TemplateDataParseFunction_t templateDataParseFunctions[IMA_PARSE_FUNCTIONS_MAX];
+    size_t	i;
+
+    /* initialize all fields, since not all fields are included in all templates */
+    if (rc == 0) {
+	IMA_TemplateData_Init(imaTemplateData);
+    }
+    if (rc == 0) {
+	rc = IMA_TemplateName_Parse(templateDataParseFunctions,
+				    imaTemplateData->templateDataTraceFunctions,
+				    IMA_PARSE_FUNCTIONS_MAX,
+				    imaEvent->nameInt,
+				    imaEvent->name);
     }
     for (i = 0 ; (rc == 0) && (templateDataParseFunctions[i] != NULL) ; i++) {
 	rc = templateDataParseFunctions[i](imaTemplateData, &buffer, &length, littleEndian);
@@ -2242,7 +2483,7 @@ uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match 
     uint32_t 	rc = 0;
     int		irc;
     TPMT_HA 	calculatedImaDigest;
-    
+
     /* calculate the hash of the template data */
     if (rc == 0) {
 	calculatedImaDigest.hashAlg = TPM_ALG_SHA1;
@@ -2301,6 +2542,84 @@ uint32_t IMA_VerifyImaDigest(uint32_t *badEvent, /* TRUE if hash does not match 
 	}
 	else {
 	    printf("ERROR: IMA_VerifyImaDigest: IMA digest did not verify, event %u\n",
+		   eventNum);
+	    *badEvent = TRUE;
+	}
+    }
+    return rc;
+}
+
+/* IMA_VerifyImaDigest() verifies the IMA digest against the hash of the template data.
+
+   This handles the SHA-1 IMA event log.
+*/
+
+uint32_t IMA_VerifyImaDigest2(uint32_t *badEvent, /* TRUE if hash does not match */
+			     ImaEvent2 *imaEvent, /* the current IMA event being processed */
+			     int eventNum)	 /* the current IMA event number being processed */
+{
+    uint32_t 	rc = 0;
+    int		irc;
+    TPMT_HA 	calculatedImaDigest;
+
+    /* calculate the hash of the template data */
+    if (rc == 0) {
+	calculatedImaDigest.hashAlg = imaEvent->templateHashAlgId;
+	/* standard case, hash of entire template data */
+	if (imaEvent->nameInt != IMA_FORMAT_IMA) {
+	    rc = TSS_Hash_Generate(&calculatedImaDigest,
+				   imaEvent->template_data_len, imaEvent->template_data,
+				   0, NULL);
+	}
+	/* special case of "ima" template, hash of File Data Hash || File Name padded with zeros to
+	   256 bytes */
+	else {
+	    ImaTemplateData imaTemplateData;
+	    int zeroPadLength;
+	    uint8_t zeroPad[256];
+	    if (rc == 0) {
+		rc = IMA_TemplateData2_ReadBuffer(&imaTemplateData,
+						  imaEvent,
+						  TRUE);	/* FIXME littleEndian */
+	    }
+	    if (rc == 0) {
+		if (imaTemplateData.imaTemplateNNG.fileNameLength > sizeof(zeroPad)) {
+		    printf("ERROR: IMA_VerifyImaDigest2: ima template file name length %u > %lu\n",
+			   imaTemplateData.imaTemplateNNG.fileNameLength,
+			   (unsigned long)sizeof(zeroPad));
+		    rc = TSS_RC_INSUFFICIENT_BUFFER;
+		}
+	    }
+	    if (rc == 0) {
+		memset(zeroPad, 0, sizeof(zeroPad));
+		/* subtract safe after above length check */
+		zeroPadLength = sizeof(zeroPad) - imaTemplateData.imaTemplateNNG.fileNameLength;
+	    }
+	    if (rc == 0) {
+		rc = TSS_Hash_Generate(&calculatedImaDigest,
+				       SHA1_DIGEST_SIZE, &imaTemplateData.imaTemplateDNG.fileDataHash,
+				       imaTemplateData.imaTemplateNNG.fileNameLength,
+				       &imaTemplateData.imaTemplateNNG.fileName,
+				       zeroPadLength, zeroPad,
+				       0, NULL);
+	    }
+	}
+    }
+    /* compare the calculated hash to the event digest received from the client */
+    if (rc == 0) {
+	if (tssUtilsVerbose) TSS_PrintAll("IMA_VerifyImaDigest2: Received IMA digest",
+					  imaEvent->digest, SHA1_DIGEST_SIZE);
+	if (tssUtilsVerbose) TSS_PrintAll("IMA_VerifyImaDigest2: Calculated IMA digest",
+					  (uint8_t *)&calculatedImaDigest.digest, SHA1_DIGEST_SIZE);
+
+	irc = memcmp(imaEvent->digest, &calculatedImaDigest.digest, SHA1_DIGEST_SIZE);
+	if (irc == 0) {
+	    if (tssUtilsVerbose) printf("IMA_VerifyImaDigest2: IMA digest verified, event %u\n",
+					eventNum);
+	    *badEvent = FALSE;
+	}
+	else {
+	    printf("ERROR: IMA_VerifyImaDigest2: IMA digest did not verify, event %u\n",
 		   eventNum);
 	    *badEvent = TRUE;
 	}
@@ -2517,7 +2836,7 @@ uint32_t IMA_Event_PcrExtend(TPMT_HA pcrs[IMA_PCR_BANKS][IMPLEMENTATION_PCR],
 {
     TPM_RC 		rc = 0;
     uint8_t		eventData[SHA256_DIGEST_SIZE];
-    
+
     /* validate PCR number */
     if (rc == 0) {
 	if (imaEvent->pcrIndex >= IMPLEMENTATION_PCR) {
@@ -2534,7 +2853,7 @@ uint32_t IMA_Event_PcrExtend(TPMT_HA pcrs[IMA_PCR_BANKS][IMPLEMENTATION_PCR],
 	notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
 	/* for the SHA-256 zero extend */
 	memset(eventData, 0, SHA256_DIGEST_SIZE);
-	
+
 	/* IMA has a quirk where some measurements store a zero digest in the event log, but
 	   extend ones into PCR 10 */
 	if (notAllZero) {
@@ -2573,7 +2892,7 @@ uint32_t IMA_Event_ToString(char **eventString,	/* freed by caller */
 {
     int 	rc = 0;
     size_t	length;
-    
+
     /* calculate size of string, from ImaEvent structure */
     if (rc == 0) {
 	length = ((sizeof(uint32_t) + SHA1_DIGEST_SIZE + sizeof(uint32_t) +
@@ -2614,4 +2933,3 @@ uint32_t IMA_Event_ToString(char **eventString,	/* freed by caller */
 }
 
 #endif
-
