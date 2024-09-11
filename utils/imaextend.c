@@ -123,7 +123,7 @@ int main(int argc, char * argv[])
     FILE 		*infile = NULL;
     int 		littleEndian = FALSE;
     int			type = 1;			/* IMA log type, default 1 */
-    TPM_ALG_ID		templateHashAlgId = TPM_ALG_SHA1;	/* default algorithm for event log */
+    TPM_ALG_ID		templateHashAlg = TPM_ALG_SHA1;	/* default algorithm for event log */
     int			sim = FALSE;			/* extend into simulated PCRs */
     int			checkHash = FALSE;		/* verify IMA log hashes */
     int			checkData = FALSE;		/* verify IMA log template data */
@@ -226,10 +226,10 @@ int main(int argc, char * argv[])
 		switch (type) {
 		  case 1:				/* original sha1 event log */
 		  case 2:				/* sha1 zero extended event log */
-		    templateHashAlgId = TPM_ALG_SHA1;
+		    templateHashAlg = TPM_ALG_SHA1;
 		    break;
 		  case 3:
-		    templateHashAlgId = TPM_ALG_SHA256;
+		    templateHashAlg = TPM_ALG_SHA256;
 		    break;				/* sha256 event log */
 		  default:
 		    printf("Bad parameter %s for -ty\n", argv[i]);
@@ -349,7 +349,7 @@ int main(int argc, char * argv[])
 	    IMA_Event2_Init(&imaEvent);
 	    if (rc == 0) {
 		rc = IMA_Event2_ReadFile(&imaEvent, &endOfFile, infile,
-					 littleEndian, templateHashAlgId);
+					 littleEndian, templateHashAlg);
 	    }
 	    /*
 	      if the event line is in range
@@ -532,7 +532,8 @@ static TPM_RC addDigest(PCR_Extend_In 	*pcrExtendIn,
     }
     for (bankNum = 0 ; bankNum < pcrExtendIn->digests.count ; bankNum++) {
 
-	if (type == 1) {
+	switch (type) {
+	  case 1:
 	    if (notAllZero) {
 		memcpy((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest,
 		       imaEvent->digest, SHA1_DIGEST_SIZE);
@@ -543,8 +544,8 @@ static TPM_RC addDigest(PCR_Extend_In 	*pcrExtendIn,
 		memset((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest,
 		       0xff, SHA1_DIGEST_SIZE);
 	    }
-	}
-	else if (type == 2) {
+	    break;
+	  case 2:
 	    digestSize = TSS_GetDigestSize(pcrExtendIn->digests.digests[bankNum].hashAlg);
 
 	    if (notAllZero) {
@@ -567,6 +568,25 @@ static TPM_RC addDigest(PCR_Extend_In 	*pcrExtendIn,
 		   extend ones into PCR 10 */
 		memset((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest, 0xff, digestSize);
 	    }
+	    break;
+	  case 3:
+	    /* matching algorithm gets the imaEvent->digest field directly */
+	    if (pcrExtendIn->digests.digests[bankNum].hashAlg == imaEvent->templateHashAlg) {
+		digestSize = TSS_GetDigestSize(pcrExtendIn->digests.digests[bankNum].hashAlg);
+		memcpy((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest,
+		       imaEvent->digest, digestSize);
+	    }
+	    /* other hash algorithms get the digest of template data */
+	    else {
+		TPMT_HA *tpmtHa = &pcrExtendIn->digests.digests[bankNum];
+		rc = TSS_Hash_Generate(tpmtHa,
+				       (int)imaEvent->template_data_len, imaEvent->template_data,
+				       0, NULL);
+	    }
+	    break;
+	  default:
+	    printf("Bad parameter %u for -ty\n", type);
+	    rc = TSS_RC_BAD_PROPERTY_VALUE;
 	}
     }
     return rc;

@@ -62,6 +62,7 @@
 #include <ibmtss/TPM_Types.h>
 #include <ibmtss/tsscryptoh.h>
 #include <ibmtss/tssmarshal.h>
+#include <ibmtss/Unmarshal_fp.h>
 #include <ibmtss/tssprint.h>
 #include <ibmtss/tsserror.h>
 
@@ -273,8 +274,8 @@ void IMA_Event_Trace(ImaEvent *imaEvent, int traceTemplate)
 void IMA_Event2_Trace(ImaEvent2 *imaEvent, int traceTemplate)
 {
     printf("IMA_Event2_Trace: PCR index %u\n", imaEvent->pcrIndex);
-    TSS_TPM_ALG_ID_Print("IMA_Event_Trace: hash alg", imaEvent->templateHashAlgId, 0);
-    TSS_PrintAll("IMA_Event_Trace: hash",
+    TSS_TPM_ALG_ID_Print("IMA_Event2_Trace: hash alg", imaEvent->templateHashAlg, 0);
+    TSS_PrintAll("IMA_Event2_Trace: hash",
 		 imaEvent->digest, imaEvent->templateHashSize);
 
     printf("IMA_Event2_Trace: name length %u\n", imaEvent->name_len);
@@ -782,14 +783,14 @@ uint32_t IMA_Event_ReadFile(ImaEvent *imaEvent,	/* freed by caller */
 
    This is typically used at the client, reading from the pseudofile.
 
-   templateHashAlgId is the digest algorithm of the template hash.
+   templateHashAlg is the digest algorithm of the template hash.
 */
 
 uint32_t IMA_Event2_ReadFile(ImaEvent2 *imaEvent,	/* freed by caller */
 			     int *endOfFile,
 			     FILE *inFile,
 			     int littleEndian,
-			     TPM_ALG_ID templateHashAlgId)	/* digest algorithm for event log */
+			     TPMI_ALG_HASH templateHashAlg)	/* digest algorithm for event log */
 {
     int rc = 0;
     size_t readSize;
@@ -798,7 +799,7 @@ uint32_t IMA_Event2_ReadFile(ImaEvent2 *imaEvent,	/* freed by caller */
 
     imaEvent->template_data = NULL;		/* for free */
     if ((rc == 0) && !(*endOfFile)) {
-	templateHashSize = TSS_GetDigestSize(templateHashAlgId);
+	templateHashSize = TSS_GetDigestSize(templateHashAlg);
 	if (templateHashSize == 0) {
 	    printf("ERROR: IMA_Event2_ReadFile: bad template hash algorithm %04x\n",
 		templateHashSize);
@@ -806,7 +807,7 @@ uint32_t IMA_Event2_ReadFile(ImaEvent2 *imaEvent,	/* freed by caller */
 	}
     }
     if ((rc == 0) && !(*endOfFile)) {		/* record the digest algorithm */
-	imaEvent->templateHashAlgId = templateHashAlgId;
+	imaEvent->templateHashAlg = templateHashAlg;
 	imaEvent->templateHashSize = templateHashSize;
     }
     /* read the IMA PCR index */
@@ -1142,6 +1143,146 @@ uint32_t IMA_Event_ReadBuffer(ImaEvent *imaEvent,	/* freed by caller */
 	    /* bounds check the name length */
 	    if (imaEvent->name_len > TCG_EVENT_NAME_LEN_MAX) {
 		printf("ERROR: IMA_Event_ReadBuffer: Error, template name length too big: %u\n",
+		       imaEvent->name_len);
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	    else if (*length < imaEvent->name_len) {
+		printf("ERROR: IMA_Event_ReadBuffer: buffer too small for template name\n");
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	    else {
+		/* nul terminate first */
+		memset(imaEvent->name, 0, sizeof(((ImaEvent *)NULL)->name));
+		memcpy(&(imaEvent->name), *buffer, imaEvent->name_len);
+		*buffer += imaEvent->name_len;
+		*length -= imaEvent->name_len;
+	    }
+	}
+	/* record the template name as an int */
+	if (rc == 0) {
+	    IMA_Event_ParseName(&imaEvent->nameInt, imaEvent->name);
+	}
+	/* read the template data length */
+	if (rc == 0) {
+	    rc = IMA_Uint32_Unmarshal(&imaEvent->template_data_len, buffer, length, littleEndian);
+	}
+	/* allocate for the template data */
+	if (rc == 0) {
+	    if (getTemplate) {
+		/* bounds check the template data length */
+		if (imaEvent->template_data_len > TCG_TEMPLATE_DATA_LEN_MAX) {
+		    printf("ERROR: IMA_Event_ReadBuffer: template data length too big: %u\n",
+			   imaEvent->template_data_len);
+		    rc = TSS_RC_INSUFFICIENT_BUFFER;
+		}
+		else if (*length < imaEvent->template_data_len) {
+		    printf("ERROR: IMA_Event_ReadBuffer: buffer too small for template data\n");
+		    rc = TSS_RC_INSUFFICIENT_BUFFER;
+		}
+		else {
+		    if (rc == 0) {
+			imaEvent->template_data = malloc(imaEvent->template_data_len);
+			if (imaEvent->template_data == NULL) {
+			    printf("ERROR: IMA_Event_ReadBuffer: "
+				   "could not allocate template data, size %u\n",
+				   imaEvent->template_data_len);
+			    rc = TSS_RC_OUT_OF_MEMORY;
+			}
+		    }
+		    if (rc == 0) {
+			memcpy(imaEvent->template_data, *buffer, imaEvent->template_data_len);
+		    }
+		}
+	    }
+	    /* move the buffer even if getTemplate is false */
+	    if (rc == 0) {
+		*buffer += imaEvent->template_data_len;
+		*length -= imaEvent->template_data_len;
+	    }
+	}
+    }
+    return rc;
+}
+
+/* IMA_Event_ReadBuffer()  reads one IMA event from a buffer.
+
+   This is typically used at the server, reading from a client connection.
+
+   Although the raw IMA event log 'ima' template does not have a template data length, this function
+   at the server assumes it has been inserted by the client.
+
+   If getTemplate is TRUE, the template data is copied to a malloced imaEvent->template_data.  If
+   FALSE, template data is skipped. FALSE is used for the first pass, where the template data is not
+   needed until the hash is validated.
+
+*/
+
+uint32_t IMA_Event2_ReadBuffer(ImaEvent2 *imaEvent,	/* freed by caller */
+			       size_t *length,
+			       uint8_t **buffer,
+			       int *endOfBuffer,
+			       int littleEndian,
+			       int getTemplate)
+{
+    int rc = 0;
+
+    imaEvent->template_data = NULL;		/* for free */
+    if (*length == 0) {
+	*endOfBuffer = 1;
+    }
+    else {
+	/* read the IMA pcr index */
+	if (rc == 0) {
+	    rc = IMA_Uint32_Unmarshal(&imaEvent->pcrIndex, buffer, length, littleEndian);
+	}
+	/* sanity check the PCR index */
+	if (rc == 0) {
+	    if (imaEvent->pcrIndex != IMA_PCR) {
+		printf("ERROR: IMA_Event2_ReadBuffer: PCR index %u not PCR %u\n",
+		       IMA_PCR, imaEvent->pcrIndex);
+		rc = TSS_RC_BAD_PROPERTY_VALUE;
+	    }
+	}
+	/* read the IMA template hash algorithm */
+	if (rc == 0) {
+	    rc = IMA_Uint16_Unmarshal(&imaEvent->templateHashAlg, buffer, length, littleEndian);
+	}
+	/* calculate the IMA template hash size */
+	if (rc == 0) {
+	    imaEvent->templateHashSize = TSS_GetDigestSize(imaEvent->templateHashAlg);
+	    if (imaEvent->templateHashSize == 0) {
+		printf("ERROR: IMA_Event2_ReadBuffer: Unsupported hash algorithm: %04x\n",
+		       imaEvent->templateHashAlg);
+		rc = TSS_RC_BAD_HASH_ALGORITHM;
+	    }
+	    else if (imaEvent->templateHashSize > sizeof(((ImaEvent2 *)NULL)->digest)) {
+		printf("ERROR: IMA_Event2_ReadBuffer: Unsupported hash size: %04x\n",
+		       imaEvent->templateHashSize);
+		rc = TSS_RC_BAD_HASH_ALGORITHM;
+	    }
+	}
+	/* read the IMA digest */
+	if (rc == 0) {
+	    /* bounds check the length */
+	    if (*length < imaEvent->templateHashSize) {
+		printf("ERROR: IMA_Event2_ReadBuffer: buffer too small for IMA digest\n");
+		rc = TSS_RC_INSUFFICIENT_BUFFER;
+	    }
+	    else {
+		memcpy(&(imaEvent->digest), *buffer, imaEvent->templateHashSize);
+		*buffer += imaEvent->templateHashSize;
+		*length -= imaEvent->templateHashSize;
+	    }
+	}
+	/* read the IMA name length */
+	if (rc == 0) {
+	    rc = IMA_Uint32_Unmarshal(&imaEvent->name_len, buffer, length, littleEndian);
+	}
+	/* read the template name */
+	if (rc == 0) {
+	    /* bounds check the name length */
+	    if (imaEvent->name_len > TCG_EVENT_NAME_LEN_MAX) {
+		printf("ERROR: IMA_Event2_ReadBuffer: Error, template name length too big: %u\n",
 		       imaEvent->name_len);
 		rc = TSS_RC_INSUFFICIENT_BUFFER;
 	    }
@@ -2471,6 +2612,114 @@ uint32_t IMA_Extend(TPMT_HA *imapcr,
     return rc;
 }
 
+/* IMA_Extend2() extends the event into the imaPcr.
+
+   An IMA quirk is that, if the SHA-1 event is all zero, all ones is extended into the PCR bank.
+   For SHA-1 logs, since the SHA-256 bank currently gets the SHA-1 value zero extended, it will get
+   20 ff's and 12 00's.
+
+   halg indicates whether to calculate the digest for the SHA-1 or SHA-256 PCR bank.
+
+   This function assumes that the same hash algorithm / PCR bank is used for all calls.
+*/
+
+uint32_t IMA_Extend2(TPMT_HA *imapcr,
+		     ImaEvent2 *imaEvent,
+		     TPMI_ALG_HASH hashAlg,			/* of IMA PCR */
+		     TPMI_ALG_HASH templateHashAlg)		/* of template hash */
+{
+    uint32_t 		rc = 0;
+    uint16_t		pcrDigestSize;		/* PCR digest size */
+    uint16_t		templateDigestSize;	/* template digest size */
+    uint16_t		zeroPad;
+    int 		notAllZero;
+    unsigned char 	zeroDigest[SHA256_DIGEST_SIZE];
+    unsigned char 	oneDigest[SHA256_DIGEST_SIZE];
+
+    /* FIXME sanity check TPM_IMA_PCR imaEvent->pcrIndex */
+
+    /* extend based on the previous IMA PCR value */
+    if (rc == 0) {
+	memset(zeroDigest, 0, SHA256_DIGEST_SIZE);
+	memset(oneDigest, 0xff, SHA256_DIGEST_SIZE);
+	switch (hashAlg) {			/* PCR hash algorithm */
+	  case TPM_ALG_SHA1:
+	    pcrDigestSize = SHA1_DIGEST_SIZE;
+	    if (templateHashAlg == TPM_ALG_SHA1) {
+		templateDigestSize = SHA1_DIGEST_SIZE;
+		zeroPad = 0;
+	    }
+	    else {
+		printf("ERROR: IMA_Extend2: Unsupported template hash algorithm: %04x"
+		       " for SHA-1 PCR\n", templateHashAlg);
+		rc = TSS_RC_BAD_HASH_ALGORITHM;
+	    }
+	    break;
+	  case TPM_ALG_SHA256:			/* PCR hash algorithm */
+	    pcrDigestSize = SHA256_DIGEST_SIZE;
+	    switch (templateHashAlg) {	/* template hash algorithm */
+	      case TPM_ALG_SHA1:
+		/* pad the SHA-1 event with zeros for the SHA-256 PCR bank */
+		templateDigestSize = SHA1_DIGEST_SIZE;
+		zeroPad = SHA256_DIGEST_SIZE - SHA1_DIGEST_SIZE;
+		break;
+	      case TPM_ALG_SHA256:
+		templateDigestSize = SHA256_DIGEST_SIZE;
+		zeroPad = 0;
+		break;
+	      default:
+		printf("ERROR: IMA_Extend2: Unsupported template hash algorithm: %04x"
+		       " for %04x bank\n", templateHashAlg, hashAlg);
+		rc = TSS_RC_BAD_HASH_ALGORITHM;
+	    }
+	    break;
+	  default:
+	    printf("ERROR: IMA_Extend2: Unsupported PCR hash algorithm: %04x\n", hashAlg);
+	    rc = TSS_RC_BAD_HASH_ALGORITHM;
+	}
+    }
+    if (rc == 0) {
+	notAllZero = memcmp(imaEvent->digest, zeroDigest, templateDigestSize);
+	imapcr->hashAlg = hashAlg;	/* PCR hash algorithm */
+#if 1
+	TSS_PrintAll("IMA_Extend2: Start PCR", (uint8_t *)&imapcr->digest, pcrDigestSize);
+	TSS_PrintAll("IMA_Extend2: SHA-256 Pad", zeroDigest, zeroPad);
+#endif
+	if (notAllZero) {
+	    TSS_PrintAll("IMA_Extend2: Extend", (uint8_t *)&imaEvent->digest, templateDigestSize);
+	    rc = TSS_Hash_Generate(imapcr,
+				   pcrDigestSize, (uint8_t *)&imapcr->digest,
+				   templateDigestSize, &imaEvent->digest,
+				   /* SHA-1 PCR extend gets zero padded */
+				   zeroPad, zeroDigest,
+				   0, NULL);
+#if 1
+	    TSS_PrintAll("IMA_Extend2: notAllZero End PCR",
+			 (uint8_t *)&imapcr->digest, pcrDigestSize);
+#endif
+	}
+	/* IMA has a quirk where, when it places all all zero digest into the measurement log, it
+	   extends all ones into IMA PCR */
+	else {
+	    TSS_PrintAll("IMA_Extend2: Extend", (uint8_t *)oneDigest, SHA1_DIGEST_SIZE);
+	    rc = TSS_Hash_Generate(imapcr,
+				   pcrDigestSize, (uint8_t *)&imapcr->digest,
+				   SHA1_DIGEST_SIZE, oneDigest,
+				   /* SHA-1 gets zero padded */
+				   zeroPad, zeroDigest,
+				   0, NULL);
+#if 1
+	    TSS_PrintAll("IMA_Extend2: allZero End PCR",
+			 (uint8_t *)&imapcr->digest, pcrDigestSize);
+#endif
+	}
+    }
+    if (rc != 0) {
+	printf("ERROR: IMA_Extend2: could not extend imapcr, rc %08x\n", rc);
+    }
+    return rc;
+}
+
 /* IMA_VerifyImaDigest() verifies the IMA digest against the hash of the template data.
 
    This handles the SHA-1 IMA event log.
@@ -2564,7 +2813,7 @@ uint32_t IMA_VerifyImaDigest2(uint32_t *badEvent, /* TRUE if hash does not match
 
     /* calculate the hash of the template data */
     if (rc == 0) {
-	calculatedImaDigest.hashAlg = imaEvent->templateHashAlgId;
+	calculatedImaDigest.hashAlg = imaEvent->templateHashAlg;
 	/* standard case, hash of entire template data */
 	if (imaEvent->nameInt != IMA_FORMAT_IMA) {
 	    rc = TSS_Hash_Generate(&calculatedImaDigest,
@@ -2818,6 +3067,38 @@ TPM_RC IMA_Event_Marshal(ImaEvent *source,
     if (rc == 0) {
 	rc = TSS_Array_Marshalu(source->template_data, source->template_data_len,
 			       written, buffer, size);
+    }
+    return rc;
+}
+
+/* IMA_Event_Marshal() marshals an ImaEvent structure */
+
+TPM_RC IMA_Event2_Marshal(ImaEvent2 *source,
+			  uint16_t *written, uint8_t **buffer, uint32_t *size)
+{
+    TPM_RC rc = 0;
+
+    if (rc == 0) {
+	rc = TSS_UINT32_Marshalu(&source->pcrIndex, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT16_Marshalu(&source->templateHashAlg, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Marshalu(source->digest, source->templateHashSize, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32_Marshalu(&source->name_len, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Marshalu((uint8_t *)source->name, source->name_len, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_UINT32_Marshalu(&source->template_data_len, written, buffer, size);
+    }
+    if (rc == 0) {
+	rc = TSS_Array_Marshalu(source->template_data, source->template_data_len,
+				written, buffer, size);
     }
     return rc;
 }

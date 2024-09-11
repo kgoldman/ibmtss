@@ -116,8 +116,8 @@ typedef struct ImaEvent {
 
 typedef struct ImaEvent2 {
     uint32_t pcrIndex;
-    uint16_t templateHashAlgId;			/* template hash */
-    TPM_ALG_ID templateHashSize;		/* template hash */
+    TPMI_ALG_HASH templateHashAlg;		/* template hash */
+    uint16_t templateHashSize;		/* template hash */
     uint8_t digest[MAX_DIGEST_BUFFER];		/* template hash */
     uint32_t name_len;
     char name[TCG_EVENT_NAME_LEN_MAX + 1];
@@ -238,11 +238,11 @@ struct ImaTemplateData {
     /* xattrs */
     ImaTemplateXattrs imaTemplateXattrs;
     /* iuid */
-    ImaTemplateIUID imaTemplateIUID; 
+    ImaTemplateIUID imaTemplateIUID;
     /* igid */
-    ImaTemplateIGID imaTemplateIGID; 
+    ImaTemplateIGID imaTemplateIGID;
     /* imode */
-    ImaTemplateIMODE imaTemplateIMODE; 
+    ImaTemplateIMODE imaTemplateIMODE;
     /* NOTE: When adding here, update IMA_TemplateData_Init() */
 };
 
@@ -281,9 +281,12 @@ extern "C" {
     uint32_t IMA_VerifyImaDigest(uint32_t *badEvent,
 				 ImaEvent *imaEvent,
 				 int eventNum);
- 
+    uint32_t IMA_Extend(TPMT_HA *imapcr,
+			ImaEvent *imaEvent,
+			TPMI_ALG_HASH hashAlg);
+
     /* Hash agile API */
-    
+
     void IMA_Event2_Init(ImaEvent2 *imaEvent);
     void IMA_Event2_Free(ImaEvent2 *imaEvent);
     void IMA_Event2_Trace(ImaEvent2 *imaEvent, int traceTemplate);
@@ -291,22 +294,32 @@ extern "C" {
 				 int *endOfFile,
 				 FILE *infile,
 				 int littleEndian,
-				 TPM_ALG_ID templateHashAlgId);
+				 TPMI_ALG_HASH templateHashAlg);
+    uint32_t IMA_Event2_ReadBuffer(ImaEvent2 *imaEvent,
+				   size_t *length,
+				   uint8_t **buffer,
+				   int *endOfBuffer,
+				   int littleEndian,
+				   int getTemplate);
     uint32_t IMA_TemplateData2_ReadBuffer(ImaTemplateData *imaTemplateData,
 					  ImaEvent2 *imaEvent,
 					  int littleEndian);
     uint32_t IMA_VerifyImaDigest2(uint32_t *badEvent,
 				  ImaEvent2 *imaEvent,
 				  int eventNum);
- 
+    uint32_t IMA_Extend2(TPMT_HA *imapcr,
+			 ImaEvent2 *imaEvent,
+			 TPMI_ALG_HASH hashAlg,
+			 TPMI_ALG_HASH templateHashAlg);
+    TPM_RC IMA_Event2_Marshal(ImaEvent2 *source,
+			      uint16_t *written, uint8_t **buffer, uint32_t *size);
+
+
     /* Template Data */
 
     void IMA_TemplateData_Init(ImaTemplateData *imaTemplateData);
     void IMA_TemplateData_Trace(ImaTemplateData *imaTemplateData,
 				unsigned int nameInt);
-    uint32_t IMA_Extend(TPMT_HA *imapcr,
-			ImaEvent *imaEvent,
-			TPMI_ALG_HASH hashAlg);
 
 #ifdef __cplusplus
 }
