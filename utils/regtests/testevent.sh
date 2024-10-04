@@ -76,11 +76,11 @@ do
     ${PREFIX}startup > run.out
     checkSuccess $?
 
-    echo "IMA ${HALG} Test SHA-1 composite log type simulate"
+    echo "IMA ${HALG} Test SHA-1 composite log simulate"
     ${PREFIX}imaextend -le -if imatest.log -sim -halg ${HALG} -ealg sha1 -checkhash -checkdata -of tmpsim.bin > run.out
     checkSuccess $?
 
-    echo "IMA ${HALG} Test SHA-1 composite log type extend"
+    echo "IMA ${HALG} Test SHA-1 composite log extend"
     ${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ealg sha1 -checkhash -checkdata -v > run.out
     checkSuccess $?
 
