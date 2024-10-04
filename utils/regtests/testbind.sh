@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2022					#
+# (c) Copyright IBM Corporation 2015 - 2024					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -49,7 +49,7 @@ echo "Bind session to Primary Key"
 echo ""
 
 echo "Bind session bound to primary key at 80000000"
-${PREFIX}startauthsession -se h -bi 80000000 -pwdb sto -v > tmp.out
+${PREFIX}startauthsession -se h -bi 80000000 -pwdb sto -v > run.out
 checkSuccess $?
 
 echo "Create storage key using that bind session, same object 80000000"
@@ -424,3 +424,6 @@ checkSuccess $?
 
 # ${PREFIX}getcapability -cap 1 -pr 80000000
 # ${PREFIX}getcapability -cap 1 -pr 02000000
+
+# cleanup
+

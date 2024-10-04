@@ -36,7 +36,7 @@
 /* OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.		*/
 /********************************************************************************/
 
-/* imaextend is test/demo code.  It parses a TPM 1.2 IMA event log file and extends the measurements
+/* imaextend is test/demo code.  It parses a TPM IMA event log file and extends the measurements
    into TPM PCRs or simulated PCRs.  This simulates the actions that would be performed by the Linux
    kernel IMA in a hardware platform.
 
@@ -47,19 +47,7 @@
    the caller can optionally specify a sleep time.  The program will then incrementally extend after
    each sleep.
 
-   Three IMA log types are supported:
-
-   Type 1: For an older kernel that zero extends SHA-256 PCR, template hash is SHA-1
-
-   sha1 bank: Extends the template hash
-
-   sha256 bank: extends a zero padded template hash
-
-   Type 2: For a transition kernel that correctly extends SHA-256, but the template hash is SHA-1,
-   The template hash is calcaulated as a hash of the template data.
-
-   Type 3: For hash agile logs. The template hash is SHA-256.
-
+   SHA-1, SHA-256, SHA-384, and SHA-512 IMA logs and PCR banks are supported.
 */
 
 /* Design:  The inner loop reads and parses each IMA event.  Then:
@@ -96,14 +84,14 @@
 /* local prototypes */
 
 static TPM_RC addDigest(PCR_Extend_In 	*pcrExtendIn,
-			int 		type,
+			TPM_ALG_ID	templateHashAlg,
 			ImaEvent2 	*imaEvent);
 static TPM_RC checkTemplateHash(ImaEvent2 	*imaEvent,
-				int 		type,
 				int 		eventNum);
 static TPM_RC extendDigest(TPMT_HA 		simPcrs[][IMPLEMENTATION_PCR],
 			   PCR_Extend_In	*pcrExtendIn);
 static TPM_RC pcrread(TSS_CONTEXT *tssContext,
+		      PCR_Read_Out *pcrReadOut,
 		      PCR_Read_In *pcrReadIn,
 		      TPMI_DH_PCR pcrHandle);
 static void printUsage(void);
@@ -118,12 +106,12 @@ int main(int argc, char * argv[])
     TSS_CONTEXT		*tssContext = NULL;
     PCR_Extend_In 	pcrExtendIn;
     PCR_Read_In 	pcrReadIn;
+    PCR_Read_Out 	pcrReadOut;
     const char 		*infilename = NULL;
     const char 		*outfilename = NULL;
     FILE 		*infile = NULL;
     int 		littleEndian = FALSE;
-    int			type = 1;			/* IMA log type, default 1 */
-    TPM_ALG_ID		templateHashAlg = TPM_ALG_SHA1;	/* default algorithm for event log */
+    TPM_ALG_ID		templateHashAlg = TPM_ALG_SHA256; /* default algorithm for event log */
     int			sim = FALSE;			/* extend into simulated PCRs */
     int			checkHash = FALSE;		/* verify IMA log hashes */
     int			checkData = FALSE;		/* verify IMA log template data */
@@ -219,25 +207,28 @@ int main(int argc, char * argv[])
 	else if (strcmp(argv[i],"-checkdata") == 0) {
 	    checkData = TRUE;
 	}
-	else if (strcmp(argv[i],"-ty") == 0) {
+	else if (strcmp(argv[i],"-ealg") == 0) {
 	    i++;
 	    if (i < argc) {
-		sscanf(argv[i],"%u", &type);
-		switch (type) {
-		  case 1:				/* original sha1 event log */
-		  case 2:				/* sha1 zero extended event log */
+		if (strcmp(argv[i],"sha1") == 0) {
 		    templateHashAlg = TPM_ALG_SHA1;
-		    break;
-		  case 3:
+		}
+		else if (strcmp(argv[i],"sha256") == 0) {
 		    templateHashAlg = TPM_ALG_SHA256;
-		    break;				/* sha256 event log */
-		  default:
-		    printf("Bad parameter %s for -ty\n", argv[i]);
+		}
+		else if (strcmp(argv[i],"sha384") == 0) {
+		    templateHashAlg = TPM_ALG_SHA384;
+		}
+		else if (strcmp(argv[i],"sha512") == 0) {
+		    templateHashAlg = TPM_ALG_SHA512;
+		}
+		else {
+		    printf("Bad parameter %s for -halg\n", argv[i]);
 		    printUsage();
 		}
 	    }
 	    else {
-		printf("-ty option needs a value\n");
+		printf("-ealg option needs a value\n");
 		printUsage();
 	    }
 	}
@@ -300,8 +291,7 @@ int main(int argc, char * argv[])
 	pcrReadIn.pcrSelectionIn.pcrSelections[0].hash = TPM_ALG_SHA1;
 	pcrReadIn.pcrSelectionIn.pcrSelections[1].hash = TPM_ALG_SHA256;
     }
-    /* type 1 IMA logs zero extend into the SHA-256 bank */
-    if ((rc == 0) && (type == 1)) {
+    if (rc == 0) {
 	for (bankNum = 0 ; bankNum < pcrExtendIn.digests.count ; bankNum++) {
 	    memset((uint8_t *)&pcrExtendIn.digests.digests[bankNum].digest, 0, sizeof(TPMU_HA));
 	}
@@ -314,7 +304,7 @@ int main(int argc, char * argv[])
 	}
 	if ((rc == 0) && tssUtilsVerbose) {	/* for debug */
 	    printf("Initial PCR 10 value\n");
-	    rc = pcrread(tssContext, &pcrReadIn, 10);
+	    rc = pcrread(tssContext, &pcrReadOut, &pcrReadIn, 10);
 	}
     }
     else {	/* sim TRUE */
@@ -382,10 +372,10 @@ int main(int argc, char * argv[])
 		}
 		/* add the digest to be extended into the PCR_Extend_In banks */
 		if (rc == 0) {
-		    rc = addDigest(&pcrExtendIn, type, &imaEvent);
+		    rc = addDigest(&pcrExtendIn, templateHashAlg, &imaEvent);
 		}
 		if ((rc == 0) && checkHash) {
-		    rc = checkTemplateHash(&imaEvent, type, lineNum);
+		    rc = checkTemplateHash(&imaEvent, lineNum);
 		}
 		if (rc == 0) {
 		    pcrExtendIn.pcrHandle = imaEvent.pcrIndex;		/* normally PCR 10 */
@@ -408,7 +398,7 @@ int main(int argc, char * argv[])
 					 TPM_RH_NULL, NULL, 0);
 		    }
 		    if (rc == 0 && tssUtilsVerbose) {	/* debug reace PCR result */
-			rc = pcrread(tssContext, &pcrReadIn, imaEvent.pcrIndex);
+			rc = pcrread(tssContext, &pcrReadOut, &pcrReadIn, imaEvent.pcrIndex);
 		    }
 		}
 		else {		/* sim */
@@ -431,10 +421,25 @@ int main(int argc, char * argv[])
 	Sleep(loopTime * 1000);
 #endif
     } while ((rc == 0) && (loopTime != 0)); 		/* sleep loop */
-    if (!sim) {
-	TPM_RC rc1 = TSS_Delete(tssContext);		/* close the TPM connection */
+    if (!sim) {				/* tpm, trace the PCR 10 result */
+	uint32_t count;
 	if (rc == 0) {
-	    rc = rc1;
+	    rc = pcrread(tssContext, &pcrReadOut, &pcrReadIn, 10);
+	}
+	for (count = 0 ; (rc == 0) && (count < pcrReadOut.pcrValues.count) ; count++) {
+	    char 		pcrString[9];	/* PCR number */
+	    sprintf(pcrString, "PCR 10:");
+	    /* TSS_PrintAllLogLevel() with a log level of LOGLEVEL_INFO to print the byte
+	       array on one line with no length */
+	    TSS_PrintAllLogLevel(LOGLEVEL_INFO, pcrString, 1,
+				 pcrReadOut.pcrValues.digests[count].t.buffer,
+				 pcrReadOut.pcrValues.digests[count].t.size);
+	}
+	{
+	    TPM_RC rc1 = TSS_Delete(tssContext);		/* close the TPM connection */
+	    if (rc == 0) {
+		rc = rc1;
+	    }
 	}
     }
     else {	/* sim, trace the simulated PCR result */
@@ -479,15 +484,13 @@ int main(int argc, char * argv[])
    data. */
 
 static TPM_RC checkTemplateHash(ImaEvent2 	*imaEvent,
-				int 		type,
 				int 		eventNum)
 {
     TPM_RC 		rc = 0;
     int 		notAllZero;
-    unsigned char 	zeroDigest[MAX_DIGEST_BUFFER];	/* compare to digest in event log */
+    uint8_t 		zeroDigest[sizeof(TPMU_HA)];
     uint32_t 		badEvent;
 
-    type = type;	/* unused until a hash agile log is supported */
     if (rc == 0) {
 	memset(zeroDigest, 0, sizeof(zeroDigest));
 	notAllZero = memcmp(imaEvent->digest, zeroDigest, imaEvent->templateHashSize);
@@ -507,86 +510,56 @@ static TPM_RC checkTemplateHash(ImaEvent2 	*imaEvent,
 /* addDigest() adds the digests to the pcrExtendIn structure.  It is used before extending either
    the TPM PCRs of the simulated PCRs.
 
-   The sha1 digest comes from the imaEvent->digest field.
+   The digest comes from the imaEvent->digest field.
 
-   Type 1: The other digests are copied to the already 0 extended other banks
-   Type 2: The other digests are a hash of the template data field.
-
-   This function also handles the zeros to ones IMA quirk.
 */
 
 static TPM_RC addDigest(PCR_Extend_In 	*pcrExtendIn,
-			int 		type,
+			TPM_ALG_ID	templateHashAlg,
 			ImaEvent2 	*imaEvent)
 {
     TPM_RC 		rc = 0;
     uint32_t 		bankNum = 0;				/* PCR hash bank interator */
-    uint8_t 		zeroDigest[SHA1_DIGEST_SIZE];
+    uint8_t 		zeroDigest[sizeof(TPMU_HA)];
     int 		notAllZero;
     uint16_t 		digestSize;
 
     /* determine if the template hash (always sha1) is all zeros */
     if (rc == 0) {
-	memset(zeroDigest, 0, sizeof(zeroDigest));
-	notAllZero = memcmp(imaEvent->digest, zeroDigest, SHA1_DIGEST_SIZE);
+	memset(zeroDigest, 0, sizeof(TPMU_HA));
     }
     for (bankNum = 0 ; bankNum < pcrExtendIn->digests.count ; bankNum++) {
+	digestSize = TSS_GetDigestSize(pcrExtendIn->digests.digests[bankNum].hashAlg);
+	notAllZero = memcmp(imaEvent->digest, zeroDigest, imaEvent->templateHashSize);
 
-	switch (type) {
-	  case 1:
-	    if (notAllZero) {
-		memcpy((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest,
-		       imaEvent->digest, SHA1_DIGEST_SIZE);
-	    }
-	    /* IMA has a quirk where some measurements store a zero digest in the event log, but
-	       extend ones into PCR 10 */
-	    else {
-		memset((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest,
-		       0xff, SHA1_DIGEST_SIZE);
-	    }
-	    break;
-	  case 2:
-	    digestSize = TSS_GetDigestSize(pcrExtendIn->digests.digests[bankNum].hashAlg);
-
-	    if (notAllZero) {
-		/* sha1 gets the imaEvent->digest field directly */
-		if (pcrExtendIn->digests.digests[bankNum].hashAlg == TPM_ALG_SHA1) {
-		    memcpy((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest,
-			   imaEvent->digest, SHA1_DIGEST_SIZE);
-		}
-		/* other hash algorithms get the digest of template data */
-		else {
-		    TPMT_HA *tpmtHa = &pcrExtendIn->digests.digests[bankNum];
-		    rc = TSS_Hash_Generate(tpmtHa,
-					   (int)imaEvent->template_data_len, imaEvent->template_data,
-					   0, NULL);
-		}
-	    }
-	    /* if all zero */
-	    else {
-		/* IMA has a quirk where some measurements store a zero digest in the event log, but
-		   extend ones into PCR 10 */
-		memset((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest, 0xff, digestSize);
-	    }
-	    break;
-	  case 3:
-	    /* matching algorithm gets the imaEvent->digest field directly */
-	    if (pcrExtendIn->digests.digests[bankNum].hashAlg == imaEvent->templateHashAlg) {
-		digestSize = TSS_GetDigestSize(pcrExtendIn->digests.digests[bankNum].hashAlg);
+	if (notAllZero) {
+	    /* if the event log algorithm matches the PCR algorithm, use the event log digest */
+	    if (pcrExtendIn->digests.digests[bankNum].hashAlg == templateHashAlg) {
+#if 0
+		if (vverbose) printf("addDigest: not all zero, halg match %04x\n", templateHashAlg);
+#endif
 		memcpy((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest,
 		       imaEvent->digest, digestSize);
 	    }
 	    /* other hash algorithms get the digest of template data */
 	    else {
 		TPMT_HA *tpmtHa = &pcrExtendIn->digests.digests[bankNum];
+#if 0
+		if (vverbose) printf("addDigest: not all zero, halg no match PCR %04x Log %04x\n",
+				     pcrExtendIn->digests.digests[bankNum].hashAlg, templateHashAlg);
+#endif
 		rc = TSS_Hash_Generate(tpmtHa,
 				       (int)imaEvent->template_data_len, imaEvent->template_data,
 				       0, NULL);
 	    }
-	    break;
-	  default:
-	    printf("Bad parameter %u for -ty\n", type);
-	    rc = TSS_RC_BAD_PROPERTY_VALUE;
+	}
+	/* IMA has a quirk where some measurements store a zero digest in the event log, but
+	   extend ones into PCR 10 */
+	else {
+#if 0
+	    if (vverbose) printf("addDigest: all zero\n");
+#endif
+	    memset((uint8_t *)&pcrExtendIn->digests.digests[bankNum].digest, 0xff, digestSize);
 	}
     }
     return rc;
@@ -639,12 +612,12 @@ static TPM_RC extendDigest(TPMT_HA 		simPcrs[][IMPLEMENTATION_PCR],
 /* for debug, read back and trace the PCR value before and after the extend */
 
 static TPM_RC pcrread(TSS_CONTEXT *tssContext,
+		      PCR_Read_Out *pcrReadOut,
 		      PCR_Read_In *pcrReadIn,
 		      TPMI_DH_PCR pcrHandle)
 {
     TPM_RC 		rc = 0;
     uint32_t 		count;
-    PCR_Read_Out 	pcrReadOut;
 
     /* set the selection bitmap based on the pcrHandle */
     for (count = 0 ; (rc == 0) && (count < pcrReadIn->pcrSelectionIn.count) ; count++) {
@@ -657,7 +630,7 @@ static TPM_RC pcrread(TSS_CONTEXT *tssContext,
     }
     if (rc == 0) {
 	rc = TSS_Execute(tssContext,
-			 (RESPONSE_PARAMETERS *)&pcrReadOut,
+			 (RESPONSE_PARAMETERS *)pcrReadOut,
 			 (COMMAND_PARAMETERS *)pcrReadIn,
 			 NULL,
 			 TPM_CC_PCR_Read,
@@ -665,17 +638,17 @@ static TPM_RC pcrread(TSS_CONTEXT *tssContext,
     }
     /* the banks requested may not all be allocated.  Use pcrReadOut, not pcrReadIn */
     if (rc == 0) {
-	if (pcrReadOut.pcrValues.count == 0) {
+	if (pcrReadOut->pcrValues.count == 0) {
 	    printf("No PCR banks\n");
 	}
     }
-    for (count = 0 ; (rc == 0) && (count < pcrReadOut.pcrValues.count) ; count++) {
+    for (count = 0 ; (rc == 0) && (count < pcrReadOut->pcrValues.count) ; count++) {
 	TSS_TPM_ALG_ID_Print("PCR bank",
-			     pcrReadOut.pcrSelectionOut.pcrSelections[count].hash,
+			     pcrReadOut->pcrSelectionOut.pcrSelections[count].hash,
 			     0);
 	TSS_PrintAll("PCR digest",
-		     pcrReadOut.pcrValues.digests[count].t.buffer,
-		     pcrReadOut.pcrValues.digests[count].t.size);
+		     pcrReadOut->pcrValues.digests[count].t.buffer,
+		     pcrReadOut->pcrValues.digests[count].t.size);
     }
     return rc;
 }
@@ -690,24 +663,19 @@ static void printUsage(void)
 	   "Without -sim, uses TPM2_PCR_Extend to extend the events into the TPM.\n"
 	   "With    -sim, extends into simulated PCRs and traces the result.\n"
 	   "\n"
-	   "Without -sim, hash algorithms not allocated are ignored, the TPM behavior.\n"
-	   "With    -sim, all specified hash algorithms are used.\n"
-	   "If no hash algorithms are specified, defaults to sha1 and sha256.\n"
-	   "\n"
-	   "Two IMA log formats are currently supported:\n"
-	   "\n"
-	   "1: SHA1 - A zero padded measurement is extended into other PCR banks.\n"
-	   "2: SHA1 - A digest of the template data is extended into other PCR banks.\n"
-	   "3: SHA256 - SHA-256 event log.\n");
+	   "Without -sim, PCR hash algorithms not allocated are ignored, the TPM behavior.\n"
+	   "With    -sim, all specified PCR hash algorithms are used.\n");
     printf("\n");
     printf("This handles the case where a zero measurement extends ones into the IMA PCR.\n");
     printf("\n");
     printf("\t-if\tIMA event log file name\n");
     printf("\t[-of\tWith -sim, PCR 10 of first algorithm specified]\n");
     printf("\t[-le\tinput file is little endian (default big endian)]\n");
-    printf("\t[-halg\t(sha1, sha256, sha384, sha512)]\n"
+    printf("\t[-halg\tPCR bank algorithm (sha1, sha256, sha384, sha512)]\n"
+	   "\t\tdefault sha1 and sha256\n"
 	   "\t\t-halg may be specified more than once\n");
-    printf("\t[-ty\tIMA log format (default type 1)]\n");
+    printf("\t[-ealg\tIMA log algorithm (sha1, sha256, sha384, sha512)]\n"
+	   "\t\tdefault sha256\n");
     printf("\t[-tpm\textend TPM PCRs (default true)]\n");
     printf("\t[-sim\tcalculate simulated PCRs (default false)]\n");
     printf("\t[-checkhash\tverify IMA event log hashes]\n");

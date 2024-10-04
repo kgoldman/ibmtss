@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2021 - 2023                                     #
+# (c) Copyright IBM Corporation 2021 - 2024                                     #
 # 										#
 # All rights reserved.								#
 # 										#
@@ -65,39 +65,80 @@ echo ""
 echo "IMA"
 echo ""
 
-for TYPE in "1" "2"
+for HALG in ${ITERATE_ALGS_WITH_SHA1}
 do
-    for HALG in ${ITERATE_ALGS_WITH_SHA1}
-    do
 
-	echo "Power cycle to reset IMA PCR"
-	${PREFIX}powerup > run.out
-	checkSuccess $?
+    echo "Power cycle to reset IMA PCR"
+    ${PREFIX}powerup > run.out
+    checkSuccess $?
 
-	echo "Startup"
-	${PREFIX}startup > run.out
-	checkSuccess $?
+    echo "Startup"
+    ${PREFIX}startup > run.out
+    checkSuccess $?
 
-	echo "IMA ${HALG} Test Log type ${TYPE} simulate"
-	${PREFIX}imaextend -le -if imatest.log -sim -halg ${HALG} -ty ${TYPE}  -checkhash -checkdata -of tmpsim.bin > run.out
-	checkSuccess $?
+    echo "IMA ${HALG} Test SHA-1 composite log type simulate"
+    ${PREFIX}imaextend -le -if imatest.log -sim -halg ${HALG} -ealg sha1 -checkhash -checkdata -of tmpsim.bin > run.out
+    checkSuccess $?
 
-	echo "IMA ${HALG} Test Log type ${TYPE} extend"
-	${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ty ${TYPE}  -checkhash -checkdata -v > run.out
-	checkSuccess $?
+    echo "IMA ${HALG} Test SHA-1 composite log type extend"
+    ${PREFIX}imaextend -le -if imatest.log -tpm -halg ${HALG} -ealg sha1 -checkhash -checkdata -v > run.out
+    checkSuccess $?
 
-	echo "PCR read ${HALG}"
-	${PREFIX}pcrread -ha 10 -halg ${HALG} -of tmppcr.bin > run.out
-	checkSuccess $?
+    echo "PCR read ${HALG}"
+    ${PREFIX}pcrread -ha 10 -halg ${HALG} -of tmppcr.bin > run.out
+    checkSuccess $?
 
-	echo "Verify PCR vs sim"
-	diff tmppcr.bin tmpsim.bin > run.out
-	checkSuccess $?
+    echo "Verify PCR vs sim"
+    diff tmppcr.bin tmpsim.bin > run.out
+    checkSuccess $?
 
-    done
+done
+
+# This section consumes IMA event logs for supported hash algorithms
+# and compares the PCR 10 result to known good PCR values captured
+# from a Linux boot against a vTPM
+
+# imakvtpcr10.txt was derived from the vTPM (TPM_INTERFACE_TYPE=dev
+# using te below commands. It used the SHA-1 log, but the values are
+# tested against all four sample logs.
+
+# > imaextend -le -if sha1.log   -halg sha1 -halg sha256 -halg sha384 -halg sha512 -ealg sha1   -sim >! run.out
+
+# > grep "PCR 10" run.out > imakvtpcr10.txt
+
+for HALG in ${ITERATE_ALGS_WITH_SHA1}
+do
+    echo "Power cycle to reset IMA PCR"
+    ${PREFIX}powerup > run.out
+    checkSuccess $?
+
+    echo "Startup"
+    ${PREFIX}startup > run.out
+    checkSuccess $?
+
+    echo "Consume ${HALG} event log -sim"
+    ${PREFIX}imaextend -le -if ${HALG}.log -halg sha1 -halg sha256 -halg sha384 -halg sha512 -ealg ${HALG} -sim > run.out
+    checkSuccess $?
+
+    echo "Compare PCR10 to known good value from Linux kernel -sim"
+    grep "PCR 10:" run.out > tmp.txt
+    diff imakvtpcr10.txt tmp.txt
+    checkSuccess $?
+
+    echo "Consume ${HALG} event log -tpm"
+    ${PREFIX}imaextend -le -if ${HALG}.log -halg sha1 -halg sha256 -halg sha384 -halg sha512 -ealg ${HALG} -tpm > run.out
+    checkSuccess $?
+
+    echo "Compare PCR10 to known good value from Linux kernel -tpm"
+    grep "PCR 10:" run.out > tmp.txt
+    diff imakvtpcr10.txt tmp.txt
+    checkSuccess $?
+
 done
 
 # cleanup
 
 rm -f tmppcr.bin
 rm -f tmpsim.bin
+rm -f tmp.txt
+
