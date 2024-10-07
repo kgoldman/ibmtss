@@ -117,7 +117,7 @@ typedef struct ImaEvent {
 typedef struct ImaEvent2 {
     uint32_t pcrIndex;
     TPMI_ALG_HASH templateHashAlg;		/* template hash */
-    uint16_t templateHashSize;		/* template hash */
+    uint16_t templateHashSize;			/* template hash */
     uint8_t digest[MAX_DIGEST_BUFFER];		/* template hash */
     uint32_t name_len;
     char name[TCG_EVENT_NAME_LEN_MAX + 1];
