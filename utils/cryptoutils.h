@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2017 - 2022.					*/
+/* (c) Copyright IBM Corporation 2017 - 2024					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -344,7 +344,7 @@ extern "C" {
 				      const TPMS_ECC_POINT *tpmsEccPoint);
     TPM_RC convertEcTPMTPublicToEvpPubKey(EVP_PKEY **evpPubkey,
 					  const TPMT_PUBLIC *tpmtPublic);
-    TPM_RC verifyEcSignatureFromEvpPubKey(unsigned char *message,
+    TPM_RC verifyEcSignatureFromEvpPubKey(const unsigned char *message,
 					  unsigned int messageSize,
 					  TPMT_SIGNATURE *tSignature,
 					  EVP_PKEY *evpPkey);
