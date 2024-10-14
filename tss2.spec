@@ -7,7 +7,7 @@
 
 Name:           tss2
 # this is the release of the TSS library
-Version:        2.3.2
+Version:        2.4.0
 # this is the release of the fedora package, goes back to 1 when version changes
 Release:        1%{?dist}
 Epoch:          1

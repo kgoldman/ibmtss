@@ -1,4 +1,16 @@
 ----------------
+Changes in 2.4.0
+----------------
+
+Add support for SHA-256, SHA-384, and SHA-512 IMA event logs. Add
+local command line support and update the API to support
+attestation. Add known value test to event regression tests. Change
+the -ty switch to -ealg for event log angorithms.
+
+Add support for EK intermediate certificates in the IWG standard
+locations.
+
+----------------
 Changes in 2.3 1
 ----------------
 
