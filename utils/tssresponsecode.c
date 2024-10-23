@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2024.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -377,7 +377,7 @@ const RC_TABLE tssTable [] = {
     {TSS_RC_RSA_SIGNATURE, "TSS_RC_RSA_SIGNATURE - RSA signature is bad"},
     {TSS_RC_EC_SIGNATURE, "TSS_RC_EC_SIGNATURE - EC signature is bad"},
     {TSS_RC_EC_KEY_CONVERT, "TSS_RC_EC_KEY_CONVERT - EC key conversion failed"},
-    {TSS_RC_X509_ERROR, "TSS_RC_X509_ERROR - X509 parse error"},
+    {TSS_RC_X509_ERROR, "TSS_RC_X509_ERROR - X509 parse or verify error"},
     {TSS_RC_PEM_ERROR, "TSS_RC_PEM_ERROR - PEM parse error"},
     {TSS_RC_BAD_SIGNATURE_ALGORITHM, "TSS_RC_BAD_SIGNATURE_ALGORITHM - Unimplemented signature algorithm"},
     {TSS_RC_COMMAND_UNIMPLEMENTED, "TSS_RC_COMMAND_UNIMPLEMENTED - Unimplemented command"},

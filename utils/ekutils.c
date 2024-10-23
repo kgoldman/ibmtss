@@ -934,7 +934,7 @@ TPM_RC verifyCertificateI(void *x509Certificate,
 	if (irc != 1) {
 	    printf("verifyCertificateI: "
 		   "Error in X509_STORE_CTX_init initializing verify context\n");
-	    rc = TSS_RC_RSA_SIGNATURE;
+	    rc = TSS_RC_X509_ERROR;
 	}
     }
     /* walk the certificate chain */
@@ -942,7 +942,7 @@ TPM_RC verifyCertificateI(void *x509Certificate,
 	int irc = X509_verify_cert(verifyCtx);
 	if (irc != 1) {
 	    printf("verifyCertificateI: Error in X509_verify_cert verifying certificate\n");
-	    rc = TSS_RC_RSA_SIGNATURE;
+	    rc = TSS_RC_X509_ERROR;
 	}
 	else {
 	    if (print) printf("EK certificate verified against the root\n");
