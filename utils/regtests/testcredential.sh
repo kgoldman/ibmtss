@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2022					#
+# (c) Copyright IBM Corporation 2015 - 2024					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -100,6 +100,27 @@ checkSuccess $?
 # It is not useful when the entire regression test runs, because a
 # later test generates a new EPS (endorsement primary seed), which
 # invalidates the EK and thus the certificate.
+#
+# The below notes are only for the regression test and for the TSS or
+# command line utilities.
+#
+# The EK certificate tests depend on a test EK CA. The self signed
+# root certificates for RSA and ECC were are created using openssl.
+#
+# openssl req -new -x509 -days 7300 -sha256 -pkeyopt rsa_keygen_bits:3072 -key cakey.pem    -out certificates/cacert.pem    -passin pass:rrrr
+# openssl req -new -x509 -days 7300 -sha256                               -key cakeyecc.pem -out certificates/cacertecc.pem -passin pass:rrrr
+#
+# They can be viewed using:
+#
+# openssl x509 -text -in certificates/cacert.pem -noout
+# openssl x509 -text -in certificates/cacertecc.pem -noout
+#
+# The regression tests require these hard coded Issuer/Subject
+# parameters for RSA and ECC:
+#
+# Issuer: C=US, ST=NY, L=Yorktown, O=IBM, CN=EK CA
+# Issuer: C=US, ST=NY, L=Yorktown, O=IBM, CN=EK EC CA
+
 
 # optional NV index for Policy C
 NVIDX=(01c07f01 01c07f02 01c07f03)
