@@ -1,4 +1,10 @@
 ----------------
+Changes in 2.4.1
+----------------
+
+Issue new test EK CA root certificates with a longer validity period.
+
+----------------
 Changes in 2.4.0
 ----------------
 
