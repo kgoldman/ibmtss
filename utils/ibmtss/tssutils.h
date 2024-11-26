@@ -58,11 +58,16 @@ extern "C" {
     typedef TPM_RC (*UnmarshalFunctionFlag_t)(void *target, uint8_t **buffer, uint32_t *size, BOOL allowNull);
     typedef TPM_RC (*MarshalFunction_t)(void *source, uint16_t *written, uint8_t **buffer, uint32_t *size);
 
+    typedef void* (*TSS_CUST_MALLOC)(size_t size);
+    typedef void* (*TSS_CUST_REALLOC)(void* ptr, size_t size);
+    typedef void (*TSS_CUST_FREE)(void* ptr);
+
     LIB_EXPORT
     TPM_RC TSS_Malloc(unsigned char **buffer, uint32_t size);
     LIB_EXPORT
     TPM_RC TSS_Realloc(unsigned char **buffer, uint32_t size);
-
+    LIB_EXPORT
+    TPM_RC TSS_Free(unsigned char** buffer);
     LIB_EXPORT
     TPM_RC TSS_Structure_Marshal(uint8_t		**buffer,
 				 uint16_t		*written,
@@ -95,6 +100,9 @@ extern "C" {
     LIB_EXPORT
     uint16_t TSS_GetDigestSize(TPM_ALG_ID hashAlg);
 #endif
+
+    LIB_EXPORT
+    TPM_RC TSS_SetMemoryFunctions(TSS_CUST_MALLOC custom_malloc, TSS_CUST_REALLOC custom_realloc, TSS_CUST_FREE custom_free);
 
 #ifdef __cplusplus
 }

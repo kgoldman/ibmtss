@@ -141,8 +141,7 @@ TPM_RC TSS_File_ReadBinaryFile(unsigned char **data,     /* must be freed by cal
     }
     if (rc != 0) {
 	if (tssVerbose) printf("TSS_File_ReadBinaryFile: Error reading %s\n", filename);
-	free(*data);
-	*data = NULL;
+	TSS_Free(data);
     }
     return rc;
 }
@@ -208,7 +207,7 @@ TPM_RC TSS_File_ReadStructure(void 			*structure,
 	buffer1 = buffer;
 	rc = unmarshalFunction(structure, &buffer1, &ilength);
     }
-    free(buffer);	/* @1 */
+	TSS_Free(&buffer);	/* @1 */
     return rc;
 }
 
@@ -240,7 +239,7 @@ TPM_RC TSS_File_ReadStructureFlag(void 				*structure,
 	buffer1 = buffer;
 	rc = unmarshalFunction(structure, &buffer1, &ilength, allowNull);
     }
-    free(buffer);	/* @1 */
+	TSS_Free(&buffer);	/* @1 */
     return rc;
 }
 
@@ -268,7 +267,7 @@ TPM_RC TSS_File_WriteStructure(void 			*structure,
 				      written,
 				      filename); 
     }
-    free(buffer);	/* @1 */
+	TSS_Free(&buffer);	/* @1 */
     return rc;
 }
 
@@ -300,7 +299,7 @@ TPM_RC TSS_File_Read2B(TPM2B 		*tpm2b,
     if (rc == 0) {
 	rc = TSS_TPM2B_Create(tpm2b, buffer, (uint16_t)length, targetSize);
     }
-    free(buffer);	/* @1 */
+	TSS_Free(&buffer);	/* @1 */
     return rc;
 }
 
