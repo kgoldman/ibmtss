@@ -15,6 +15,11 @@ c:/users/KennethGoldman/tss2/utils/certificates/NuvotonTPMRootCA2111.pem
 c:/users/KennethGoldman/tss2/utils/certificates/NuvotonTPMRootCA2112.pem
 c:/users/KennethGoldman/tss2/utils/certificates/NuvotonTPMRootCA2210.pem
 c:/users/KennethGoldman/tss2/utils/certificates/NuvotonTPMRootCA2211.pem
+c:/users/KennethGoldman/tss2/utils/certificates/NPCTxxxECC521RootCA.pem
+c:/users/KennethGoldman/tss2/utils/certificates/NPCTxxxECC384LeafCA012110.pem
+c:/users/KennethGoldman/tss2/utils/certificates/NPCTxxxECC384LeafCA012111.pem
+c:/users/KennethGoldman/tss2/utils/certificates/NPCTxxxECC384LeafCA022110.pem
+c:/users/KennethGoldman/tss2/utils/certificates/NPCTxxxECC384LeafCA022111.pem
 c:/users/KennethGoldman/tss2/utils/certificates/cacert.pem
 c:/users/KennethGoldman/tss2/utils/certificates/cacertecc.pem
 c:/users/KennethGoldman/tss2/utils/certificates/gstpmroot.pem

@@ -16,6 +16,11 @@
 /home/kgold/tss2/utils/certificates/NuvotonTPMRootCA2112.pem
 /home/kgold/tss2/utils/certificates/NuvotonTPMRootCA2210.pem
 /home/kgold/tss2/utils/certificates/NuvotonTPMRootCA2211.pem
+/home/kgold/tss2/utils/certificates/NPCTxxxECC521RootCA.pem
+/home/kgold/tss2/utils/certificates/NPCTxxxECC384LeafCA012110.pem
+/home/kgold/tss2/utils/certificates/NPCTxxxECC384LeafCA012111.pem
+/home/kgold/tss2/utils/certificates/NPCTxxxECC384LeafCA022110.pem
+/home/kgold/tss2/utils/certificates/NPCTxxxECC384LeafCA022111.pem
 /home/kgold/tss2/utils/certificates/cacert.pem
 /home/kgold/tss2/utils/certificates/cacertecc.pem
 /home/kgold/tss2/utils/certificates/gstpmroot.pem
