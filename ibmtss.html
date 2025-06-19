@@ -16,17 +16,17 @@ xmlns="http://www.w3.org/TR/REC-html40">
   <o:Author>Ken Goldman</o:Author>
   <o:LastAuthor>Kenneth Goldman</o:LastAuthor>
   <o:Revision>2</o:Revision>
-  <o:TotalTime>16</o:TotalTime>
+  <o:TotalTime>1</o:TotalTime>
   <o:LastPrinted>2018-07-26T15:23:00Z</o:LastPrinted>
-  <o:Created>2024-02-14T19:44:00Z</o:Created>
-  <o:LastSaved>2024-02-14T19:44:00Z</o:LastSaved>
-  <o:Pages>42</o:Pages>
-  <o:Words>8066</o:Words>
-  <o:Characters>45981</o:Characters>
+  <o:Created>2025-06-19T21:03:00Z</o:Created>
+  <o:LastSaved>2025-06-19T21:03:00Z</o:LastSaved>
+  <o:Pages>44</o:Pages>
+  <o:Words>7770</o:Words>
+  <o:Characters>44289</o:Characters>
   <o:Company>IBM Corporation</o:Company>
-  <o:Lines>383</o:Lines>
-  <o:Paragraphs>107</o:Paragraphs>
-  <o:CharactersWithSpaces>53940</o:CharactersWithSpaces>
+  <o:Lines>369</o:Lines>
+  <o:Paragraphs>103</o:Paragraphs>
+  <o:CharactersWithSpaces>51956</o:CharactersWithSpaces>
   <o:Version>16.00</o:Version>
  </o:DocumentProperties>
 </xml><![endif]-->
@@ -1113,21 +1113,18 @@ span.msoIns
 	mso-style-name:"";
 	text-decoration:underline;
 	text-underline:single;
-	color:blue;}
+	color:teal;}
 span.msoDel
 	{mso-style-type:export-only;
 	mso-style-name:"";
 	text-decoration:line-through;
-	color:blue;}
+	color:red;}
 span.SpellE
 	{mso-style-name:"";
 	mso-spl-e:yes;}
 span.GramE
 	{mso-style-name:"";
 	mso-gram-e:yes;}
-.MsoChpDefault
-	{mso-style-type:export-only;
-	mso-default-props:yes;}
  /* Page Definitions */
  @page
 	{mso-footnote-separator:url("ibmtss_files/header.html") fs;
@@ -3031,12 +3028,15 @@ API</p>
 
 <p class=MsoNormal align=center style='text-align:center'><span
 style='font-size:20.0pt'><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:23">January </del></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:23">April 2</ins></span><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:23">15</del></span>,
+datetime="2024-10-14T10:01">August </del></span><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:51">June</ins></span><span
+class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2024-10-14T10:01"> </ins></span><span
+class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:52">1</del></span><span
+class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:52">19</ins></span><span
+class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2024-10-14T10:01">5</del></span>,
 202<span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:31">3</ins></span><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:23">0</del></span></span><span
+datetime="2025-06-19T15:52">5</ins></span><span class=msoDel><del
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:52">4</del></span></span><span
 lang=DA style='font-size:20.0pt;mso-ansi-language:DA'><o:p></o:p></span></p>
 
 <p class=MsoNormal align=center style='text-align:center'><span lang=DA
@@ -4757,7 +4757,7 @@ caller:</p>
  <li class=MsoNormal style='mso-list:l23 level1 lfo4;tab-stops:list .5in'>Nonces
      and nonce rolling</li>
  <li class=MsoNormal style='mso-list:l23 level1 lfo4;tab-stops:list .5in'>Session
-     continue flag</li>
+     <span class=GramE>continue</span> flag</li>
  <li class=MsoNormal style='mso-list:l23 level1 lfo4;tab-stops:list .5in'>TPM
      2.0 &quot;Name&quot; and bind session tracking</li>
  <li class=MsoNormal style='mso-list:l23 level1 lfo4;tab-stops:list .5in'>Different
@@ -4802,26 +4802,28 @@ style='mso-bookmark:_Ref511735763'><![if !supportLists]><span style='font-size:
 style='mso-fareast-font-family:Arial'><span style='mso-list:Ignore'>3.1.<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><![endif]></a><span class=SpellE><span style='mso-bookmark:
-_Toc35934220'>TSS_Execute</span></span><span style='mso-bookmark:_Toc35934220'>()</span></h2>
+_Toc35934220'>TSS_<span class=GramE>Execute</span></span></span><span
+style='mso-bookmark:_Toc35934220'><span class=GramE>(</span>)</span></h2>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>#include &lt;<span class=SpellE>ibmtss</span>/<span
+<p class=MsoNormal><span class=GramE>#include</span> &lt;<span class=SpellE>ibmtss</span>/<span
 class=SpellE>tss.h</span>&gt;</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>TPM_RC <span style='mso-tab-count:1'>        </span><span
-class=SpellE>TSS_Execute</span>(TSS_CONTEXT <span style='mso-tab-count:3'>                                </span>*<span
+class=SpellE>TSS_<span class=GramE>Execute</span></span><span class=GramE>(</span>TSS_CONTEXT
+<span style='mso-tab-count:3'>                                </span>*<span
 class=SpellE>tssContext</span>,</p>
 
 <p class=MsoNormal style='margin-left:.5in'><span style='mso-tab-count:2'>                        </span><span
-style='mso-spacerun:yes'>           </span>RESPONSE_PARAMETERS <span
-style='mso-tab-count:1'>           </span>*out,</p>
+style='mso-spacerun:yes'>           </span>RESPONSE_<span class=GramE>PARAMETERS
+<span style='mso-tab-count:1'>           </span>*</span>out,</p>
 
 <p class=MsoNormal><span style='mso-tab-count:2'>                        </span><span
-style='mso-tab-count:2'>                        </span>COMMAND_PARAMETERS <span
-style='mso-tab-count:1'>         </span>*in,</p>
+style='mso-tab-count:2'>                        </span>COMMAND_<span
+class=GramE>PARAMETERS <span style='mso-tab-count:1'>         </span>*</span>in,</p>
 
 <p class=MsoNormal><span style='mso-tab-count:2'>                        </span><span
 style='mso-tab-count:2'>                        </span>EXTRA_PARAMETERS <span
@@ -4842,23 +4844,24 @@ style='mso-spacerun:yes'> </span><span style='mso-tab-count:1'>           </span
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=SpellE>tssContext</span>:<span
-style='mso-spacerun:yes'>  </span>Opaque object</p>
+<p class=MsoNormal><span class=SpellE>tssContext</span><span class=GramE>:<span
+style='mso-spacerun:yes'>  </span>Opaque</span> object</p>
 
-<p class=MsoNormal>out:<span style='mso-spacerun:yes'>  </span>The standard
-TPM2 Part 3 response parameter</p>
+<p class=MsoNormal>out<span class=GramE>:<span style='mso-spacerun:yes'> 
+</span>The</span> standard TPM2 Part 3 response parameter</p>
 
 <p class=MsoNormal>in: The standard TPM2 Part 3 command parameter</p>
 
-<p class=MsoNormal>extra:<span style='mso-spacerun:yes'>  </span>Some commands
-(only two so far) require extra parameter s.</p>
+<p class=MsoNormal>extra<span class=GramE>:<span style='mso-spacerun:yes'> 
+</span>Some</span> commands (only two so far) require extra parameter s.</p>
 
 <p class=MsoNormal>commandCode: The standard TPM2 Part 2 command code.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>. . . :<span style='mso-spacerun:yes'>  </span>A list of
-session 3-tuples , of the form</p>
+<p class=MsoNormal><span class=GramE>. . . :</span><span
+style='mso-spacerun:yes'>  </span>A list of session 3-<span class=GramE>tuples
+,</span> of the form</p>
 
 <p class=MsoNormal><span style='mso-tab-count:1'>            </span><span
 style='mso-spacerun:yes'> </span>TPMI_SH_AUTH_SESSION sessionHandle,</p>
@@ -4879,24 +4882,27 @@ name="_Toc35934221"><span style='mso-bookmark:_Ref437348825'><![if !supportLists
 style='mso-fareast-font-family:Arial'><span style='mso-list:Ignore'>3.2.<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><![endif]></span></a><span class=SpellE><span
-style='mso-bookmark:_Toc35934221'><span style='mso-bookmark:_Ref437348825'>TSS_Create</span></span></span><span
-style='mso-bookmark:_Toc35934221'><span style='mso-bookmark:_Ref437348825'>()</span></span></h2>
+style='mso-bookmark:_Toc35934221'><span style='mso-bookmark:_Ref437348825'>TSS_<span
+class=GramE>Create</span></span></span></span><span style='mso-bookmark:_Toc35934221'><span
+style='mso-bookmark:_Ref437348825'><span class=GramE>(</span>)</span></span></h2>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>#include &lt;<span class=SpellE>ibmtss</span>/<span
+<p class=MsoNormal><span class=GramE>#include</span> &lt;<span class=SpellE>ibmtss</span>/<span
 class=SpellE>tss.h</span>&gt;</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>TPM_RC <span style='mso-tab-count:1'>        </span><span
-class=SpellE>TSS_Create</span>(TSS_CONTEXT **<span class=SpellE>tssContext</span>);</p>
+class=SpellE>TSS_<span class=GramE>Create</span></span><span class=GramE>(</span>TSS_CONTEXT
+**<span class=SpellE>tssContext</span><span class=GramE>);</span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>This creates the TSS_CONTEXT used in the <span class=SpellE>TSS_Execute</span>()
-function.<span style='mso-spacerun:yes'>  </span>It is initialized with the
-default configuration, which can be then changed using <!--[if supportFields]><span
+<p class=MsoNormal>This creates the TSS_CONTEXT used in the <span class=SpellE>TSS_<span
+class=GramE>Execute</span></span><span class=GramE>(</span>) function.<span
+style='mso-spacerun:yes'>  </span>It is initialized with the default
+configuration, which can be then changed using <!--[if supportFields]><span
 style='mso-element:field-begin'></span><span
 style='mso-spacerun:yes'> </span>REF _Ref418692484 \r \h <span
 style='mso-element:field-separator'></span><![endif]-->3.4.3<!--[if gte mso 9]><xml>
@@ -4904,7 +4910,8 @@ style='mso-element:field-separator'></span><![endif]-->3.4.3<!--[if gte mso 9]><
 </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
 <!--[if supportFields]><span style='mso-element:field-begin'></span><span
 style='mso-spacerun:yes'> </span>REF _Ref418692484 \h <span style='mso-element:
-field-separator'></span><![endif]--><span class=SpellE>TSS_SetProperty</span>()<!--[if gte mso 9]><xml>
+field-separator'></span><![endif]--><span class=SpellE>TSS_<span class=GramE>SetProperty</span></span><span
+class=GramE>(</span>)<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400310038003600390032003400380034000000</w:data>
 </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->.</p>
 
@@ -4923,7 +4930,8 @@ style='mso-element:field-separator'></span><![endif]-->3.3<!--[if gte mso 9]><xm
 </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
 <!--[if supportFields]><span style='mso-element:field-begin'></span><span
 style='mso-spacerun:yes'> </span>REF _Ref437348811 \h <span style='mso-element:
-field-separator'></span><![endif]--><span class=SpellE>TSS_Delete</span>()<!--[if gte mso 9]><xml>
+field-separator'></span><![endif]--><span class=SpellE>TSS_<span class=GramE>Delete</span></span><span
+class=GramE>(</span>)<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400330037003300340038003800310031000000</w:data>
 </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->.</p>
 
@@ -4939,18 +4947,20 @@ name="_Toc35934222"><span style='mso-bookmark:_Ref437348811'><![if !supportLists
 style='mso-fareast-font-family:Arial'><span style='mso-list:Ignore'>3.3.<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span><![endif]></span></a><span class=SpellE><span
-style='mso-bookmark:_Toc35934222'><span style='mso-bookmark:_Ref437348811'>TSS_Delete</span></span></span><span
-style='mso-bookmark:_Toc35934222'><span style='mso-bookmark:_Ref437348811'>()</span></span></h2>
+style='mso-bookmark:_Toc35934222'><span style='mso-bookmark:_Ref437348811'>TSS_<span
+class=GramE>Delete</span></span></span></span><span style='mso-bookmark:_Toc35934222'><span
+style='mso-bookmark:_Ref437348811'><span class=GramE>(</span>)</span></span></h2>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>#include &lt;<span class=SpellE>ibmtss</span>/<span
+<p class=MsoNormal><span class=GramE>#include</span> &lt;<span class=SpellE>ibmtss</span>/<span
 class=SpellE>tss.h</span>&gt;</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>TPM_RC<span style='mso-tab-count:1'>         </span><span
-class=SpellE>TSS_Delete</span>(TSS_CONTEXT *<span class=SpellE>tssContext</span>);</p>
+class=SpellE>TSS_<span class=GramE>Delete</span></span><span class=GramE>(</span>TSS_CONTEXT
+*<span class=SpellE>tssContext</span><span class=GramE>);</span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -4962,7 +4972,8 @@ style='mso-element:field-separator'></span><![endif]-->3.2<!--[if gte mso 9]><xm
 </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
 <!--[if supportFields]><span style='mso-element:field-begin'></span><span
 style='mso-spacerun:yes'> </span>REF _Ref437348825 \h <span style='mso-element:
-field-separator'></span><![endif]--><span class=SpellE>TSS_Create</span>()<!--[if gte mso 9]><xml>
+field-separator'></span><![endif]--><span class=SpellE>TSS_<span class=GramE>Create</span></span><span
+class=GramE>(</span>)<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400330037003300340038003800320035000000</w:data>
 </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->.<span
 style='mso-spacerun:yes'>  </span></p>
@@ -5001,8 +5012,8 @@ the Microsoft format socket simulation.<span style='mso-spacerun:yes'> 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ol style='margin-top:0in' start=1 type=1>
- <li class=MsoNormal style='mso-list:l25 level1 lfo7'>At compile time, with a
-     compiler flag</li>
+ <li class=MsoNormal style='mso-list:l25 level1 lfo7'>At <span class=GramE>compile</span>
+     time, with a compiler flag</li>
  <li class=MsoNormal style='mso-list:l25 level1 lfo7'>At program start, using
      an environment variable</li>
  <li class=MsoNormal style='mso-list:l25 level1 lfo7'>During run time, using
@@ -5013,7 +5024,8 @@ the Microsoft format socket simulation.<span style='mso-spacerun:yes'> 
      </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
      <!--[if supportFields]><span style='mso-element:field-begin'></span><span
      style='mso-spacerun:yes'> </span>REF _Ref418692484 \h <span
-     style='mso-element:field-separator'></span><![endif]--><span class=SpellE>TSS_SetProperty</span>()<!--[if gte mso 9]><xml>
+     style='mso-element:field-separator'></span><![endif]--><span class=SpellE>TSS_<span
+     class=GramE>SetProperty</span></span><span class=GramE>(</span>)<!--[if gte mso 9]><xml>
       <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400310038003600390032003400380034000000</w:data>
      </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
      function.</li>
@@ -5022,15 +5034,17 @@ the Microsoft format socket simulation.<span style='mso-spacerun:yes'> 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>The environment variables and <span class=SpellE>TSS_SetProperty</span>
-property use the same names.<span style='mso-spacerun:yes'>  </span>The <span
-class=SpellE>makefile</span> flag uses the name with _DEFAULT appended.</p>
+property use the same <span class=GramE>names</span>.<span
+style='mso-spacerun:yes'>  </span>The <span class=SpellE>makefile</span> flag
+uses the name with _DEFAULT appended.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>The environment variable overrides the compiler flag, and
 the <!--[if supportFields]><span style='mso-element:field-begin'></span><span
 style='mso-spacerun:yes'> </span>REF _Ref418692484 \h <span style='mso-element:
-field-separator'></span><![endif]--><span class=SpellE>TSS_SetProperty</span>()<!--[if gte mso 9]><xml>
+field-separator'></span><![endif]--><span class=SpellE>TSS_<span class=GramE>SetProperty</span></span><span
+class=GramE>(</span>)<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400310038003600390032003400380034000000</w:data>
 </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
 function overrides both the compiler flag and the environment variable.</p>
@@ -5066,8 +5080,8 @@ driver:</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>&gt; <span class=SpellE>setenv</span> TPM_INTERFACE_TYPE<span
-style='mso-spacerun:yes'>  </span>dev</p>
+<p class=MsoNormal>&gt; <span class=SpellE>setenv</span> TPM_INTERFACE_<span
+class=GramE>TYPE<span style='mso-spacerun:yes'>  </span>dev</span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5075,7 +5089,8 @@ style='mso-spacerun:yes'>  </span>dev</p>
  <li class=MsoNormal style='mso-list:l6 level1 lfo8'>With the <!--[if supportFields]><span
      style='mso-element:field-begin'></span><span
      style='mso-spacerun:yes'> </span>REF _Ref418692484 \h <span
-     style='mso-element:field-separator'></span><![endif]--><span class=SpellE>TSS_SetProperty</span>()<!--[if gte mso 9]><xml>
+     style='mso-element:field-separator'></span><![endif]--><span class=SpellE>TSS_<span
+     class=GramE>SetProperty</span></span><span class=GramE>(</span>)<!--[if gte mso 9]><xml>
       <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400310038003600390032003400380034000000</w:data>
      </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
      function:</li>
@@ -5083,8 +5098,10 @@ style='mso-spacerun:yes'>  </span>dev</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=SpellE>rc</span> = <span class=SpellE>TSS_SetProperty</span>(<span
-class=SpellE>tssContext</span>, TPM_INTERFACE_TYPE, &quot;dev&quot;);</p>
+<p class=MsoNormal><span class=SpellE>rc</span> = <span class=SpellE>TSS_<span
+class=GramE>SetProperty</span></span><span class=GramE>(</span><span
+class=SpellE>tssContext</span>, TPM_INTERFACE_TYPE, &quot;dev&quot;<span
+class=GramE>);</span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5109,7 +5126,7 @@ escaped.).</p>
 <h4><a name="_Ref473273918">TPM_TRACE_LEVEL</a></h4>
 
 <p class=MsoNormal><span style='mso-tab-count:2'>                        </span>default
-- <span style='mso-spacerun:yes'> </span>0</p>
+<span class=GramE>- <span style='mso-spacerun:yes'> </span>0</span></p>
 
 <p class=MsoNormal><span style='mso-tab-count:1'>            </span>0 - no
 tracing</p>
@@ -5273,8 +5290,8 @@ state is saved in plaintext</p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>Since session state can potentially hold secrets, it should
-normally be encrypted.<span style='mso-spacerun:yes'>  </span>When the process
-terminates, the ephemeral encryption key is lost.</p>
+normally be encrypted.<span style='mso-spacerun:yes'>  </span>When the process <span
+class=GramE>terminates</span>, the ephemeral encryption key is lost.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5346,31 +5363,32 @@ name="_Toc35934226"><span style='mso-bookmark:_Ref418692484'><![if !supportLists
 style='mso-fareast-font-family:Cambria;mso-bidi-font-family:Cambria'><span
 style='mso-list:Ignore'>3.4.3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;
 </span></span></span><![endif]></span></a><span class=SpellE><span
-style='mso-bookmark:_Toc35934226'><span style='mso-bookmark:_Ref418692484'>TSS_SetProperty</span></span></span><span
-style='mso-bookmark:_Toc35934226'><span style='mso-bookmark:_Ref418692484'>()</span></span></h3>
+style='mso-bookmark:_Toc35934226'><span style='mso-bookmark:_Ref418692484'>TSS_<span
+class=GramE>SetProperty</span></span></span></span><span style='mso-bookmark:
+_Toc35934226'><span style='mso-bookmark:_Ref418692484'><span class=GramE>(</span>)</span></span></h3>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>#include &lt;<span class=SpellE>ibmtss</span>/<span
+<p class=MsoNormal><span class=GramE>#include</span> &lt;<span class=SpellE>ibmtss</span>/<span
 class=SpellE>tss.h</span>&gt;</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>TPM_RC <span class=SpellE>TSS_SetProperty</span>(TSS_CONTEXT
-*<span class=SpellE>tssContext</span>,</p>
+<p class=MsoNormal>TPM_RC <span class=SpellE>TSS_<span class=GramE>SetProperty</span></span><span
+class=GramE>(</span>TSS_CONTEXT *<span class=SpellE>tssContext</span>,</p>
 
 <p class=MsoNormal style='margin-left:1.5in;text-indent:.5in'>int property,</p>
 
-<p class=MsoNormal style='margin-left:1.5in;text-indent:.5in'>const char
-*value);</p>
+<p class=MsoNormal style='margin-left:1.5in;text-indent:.5in'>const char *value<span
+class=GramE>);</span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>The <span class=SpellE>TSS_SetProperty</span>() function
-overrides the defaults and environment variables programmatically.<span
-style='mso-spacerun:yes'>  </span></p>
+<p class=MsoNormal>The <span class=SpellE>TSS_<span class=GramE>SetProperty</span></span><span
+class=GramE>(</span>) function overrides the defaults and environment variables
+programmatically.<span style='mso-spacerun:yes'>  </span></p>
 
 <p class=MsoNormal><span style='mso-tab-count:1'>            </span></p>
 
@@ -5379,24 +5397,24 @@ connection is closed before the property is processed.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal style='margin-left:.5in'>NOTE:<span
-style='mso-spacerun:yes'>  </span>The close occurs even if the new value is the
-same as the old value.<span style='mso-spacerun:yes'>  </span>This can be used
-to close a connection without deleting the context.</p>
+<p class=MsoNormal style='margin-left:.5in'>NOTE<span class=GramE>:<span
+style='mso-spacerun:yes'>  </span>The</span> close occurs even if the new value
+is the same as the old value.<span style='mso-spacerun:yes'>  </span>This can
+be used to close a connection without deleting the context.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal style='margin-left:.5in'>Question:<span
-style='mso-spacerun:yes'>  </span>Is it good to mandate this behavior?<span
-style='mso-spacerun:yes'>  </span>It offers functionality and makes the
-implementation easier, but perhaps it's too clever?</p>
+<p class=MsoNormal style='margin-left:.5in'>Question<span class=GramE>:<span
+style='mso-spacerun:yes'>  </span>Is</span> it good to mandate this
+behavior?<span style='mso-spacerun:yes'>  </span>It offers functionality and
+makes the implementation easier, but perhaps it's too clever?</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>NOTE:<span style='mso-spacerun:yes'>  </span>The value
-parameter is always a string. For simplicity, the 'value' pointer is
-stored.<span style='mso-spacerun:yes'>  </span>The input should be a constant
-string.</p>
+<p class=MsoNormal>NOTE<span class=GramE>:<span style='mso-spacerun:yes'> 
+</span>The</span> value parameter is always a string. For simplicity, the
+'value' pointer is stored.<span style='mso-spacerun:yes'>  </span>The input
+should be a constant string.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5436,8 +5454,8 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>The extra parameter is a catch-all for any parameters that <span
-class=SpellE>TSS_Execute</span>() requires beyond the normal TPM command and
-response parameters.</p>
+class=SpellE>TSS_<span class=GramE>Execute</span></span><span class=GramE>(</span>)
+requires beyond the normal TPM command and response parameters.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5458,38 +5476,40 @@ directory.<span style='mso-spacerun:yes'>  </span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>#include &lt;<span class=SpellE>ibmtss</span>/<span
+<p class=MsoNormal><span class=GramE>#include</span> &lt;<span class=SpellE>ibmtss</span>/<span
 class=SpellE>tss.h</span>&gt;</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>The utility / demo applications cheat a bit, in that they
-call into TSS utility functions.<span style='mso-spacerun:yes'>  </span>These
-are less likely to be stable than the official API above.</p>
+<p class=MsoNormal>The utility / demo applications cheat a <span class=GramE>bit,</span>
+in that they call into TSS utility functions.<span style='mso-spacerun:yes'> 
+</span>These are less likely to be stable than the official API above.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tss.h</span>:<span
-     style='mso-spacerun:yes'>  </span>The official API</li>
+ <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tss.h</span><span
+     class=GramE>:<span style='mso-spacerun:yes'>  </span>The</span> official
+     API</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tsserror.h</span>:<span
-     style='mso-spacerun:yes'>  </span>Included by <span class=SpellE>tss.h</span>
-     for convenience.<span style='mso-spacerun:yes'>  </span>Error codes may be
-     added.</li>
+ <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tsserror.h</span><span
+     class=GramE>:<span style='mso-spacerun:yes'>  </span>Included</span> by <span
+     class=SpellE>tss.h</span> for convenience.<span style='mso-spacerun:yes'> 
+     </span>Error codes may be added.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssmarshal.h</span>:<span
-     style='mso-spacerun:yes'>  </span>Marshal structures to arrays. These are
-     likely to be stable.<span style='mso-spacerun:yes'>  </span>They are
-     similar to the TPM side functions but return errors.</li>
+ <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssmarshal.h</span><span
+     class=GramE>:<span style='mso-spacerun:yes'>  </span>Marshal</span>
+     structures to arrays. These are likely to be stable.<span
+     style='mso-spacerun:yes'>  </span>They are <span class=GramE>similar to</span>
+     the TPM side functions but <span class=GramE>return</span> errors.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
@@ -5510,9 +5530,9 @@ value for the size.</p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssresponsecode.h</span>:<span
-     style='mso-spacerun:yes'>  </span>Response code to text.<span
-     style='mso-spacerun:yes'>  </span>Useful for debugging.<span
+ <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssresponsecode.h</span><span
+     class=GramE>:<span style='mso-spacerun:yes'>  </span>Response</span> code
+     to text.<span style='mso-spacerun:yes'>  </span>Useful for debugging.<span
      style='mso-spacerun:yes'>  </span>The API should be stable, but the actual
      output may change.</li>
 </ul>
@@ -5520,49 +5540,49 @@ value for the size.</p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssprint.h</span>:<span
-     style='mso-spacerun:yes'>  </span>Functions to print structures.<span
-     style='mso-spacerun:yes'>  </span>Useful for debugging.<span
-     style='mso-spacerun:yes'>  </span>The API should be stable.<span
-     style='mso-spacerun:yes'>  </span>Functions may be added, and the output
-     is likely to change.</li>
+ <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssprint.h</span><span
+     class=GramE>:<span style='mso-spacerun:yes'>  </span>Functions</span> to
+     print structures.<span style='mso-spacerun:yes'>  </span>Useful for
+     debugging.<span style='mso-spacerun:yes'>  </span>The API should be
+     stable.<span style='mso-spacerun:yes'>  </span>Functions may be added, and
+     the output is likely to change.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssprintcmd.h</span>:<span
-     style='mso-spacerun:yes'>  </span>Functions to print command
-     parameters.<span style='mso-spacerun:yes'>  </span>Used in TSS verbose
-     tracing.<span style='mso-spacerun:yes'>  </span>The API should be stable,
-     but the actual output may change.</li>
+ <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssprintcmd.h</span><span
+     class=GramE>:<span style='mso-spacerun:yes'>  </span>Functions</span> to
+     print command parameters.<span style='mso-spacerun:yes'>  </span>Used in
+     TSS verbose tracing.<span style='mso-spacerun:yes'>  </span>The API should
+     be stable, but the actual output may change.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssutils.h</span>:<span
-     style='mso-spacerun:yes'>  </span>Demo helper functions.<span
-     style='mso-spacerun:yes'>  </span>These are useful for rapid prototyping
-     but are not recommended for production code.</li>
+ <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssutils.h</span><span
+     class=GramE>:<span style='mso-spacerun:yes'>  </span>Demo</span> helper
+     functions.<span style='mso-spacerun:yes'>  </span>These are useful for
+     rapid prototyping but are not recommended for production code.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssfile.h</span>:<span
-     style='mso-spacerun:yes'>  </span>Demo helper functions.<span
-     style='mso-spacerun:yes'>  </span>These are useful for rapid prototyping
-     but are not recommended for production code.</li>
+ <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tssfile.h</span><span
+     class=GramE>:<span style='mso-spacerun:yes'>  </span>Demo</span> helper
+     functions.<span style='mso-spacerun:yes'>  </span>These are useful for
+     rapid prototyping but are not recommended for production code.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tsscrypto.h</span>:<span
-     style='mso-spacerun:yes'>  </span>Sample crypto code.<span
-     style='mso-spacerun:yes'>  </span>These are useful for rapid prototyping
-     but are not recommended for production code.</li>
+ <li class=MsoNormal style='mso-list:l6 level1 lfo8'><span class=SpellE>tsscrypto.h</span><span
+     class=GramE>:<span style='mso-spacerun:yes'>  </span>Sample</span> crypto
+     code.<span style='mso-spacerun:yes'>  </span>These are useful for rapid
+     prototyping but are not recommended for production code.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
@@ -5610,8 +5630,9 @@ command:</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>The platform firmware initializes a hardware TPM.<span
-style='mso-spacerun:yes'>  </span>The TPM simulator requires this command:</p>
+<p class=MsoNormal>The platform firmware initializes <span class=GramE>a
+hardware</span> TPM.<span style='mso-spacerun:yes'>  </span>The TPM simulator
+requires this command:</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5651,9 +5672,9 @@ class=SpellE>StartAuthSession_Extra</span> structure.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>The caller does NOT supply the HMAC salt.<span
-style='mso-spacerun:yes'>  </span>The encryptedSalt parameter is ignored, as
-the TSS generates the salt.</p>
+<p class=MsoNormal>The caller does NOT supply <span class=GramE>the HMAC</span>
+salt.<span style='mso-spacerun:yes'>  </span>The encryptedSalt parameter is
+ignored, as the TSS generates <span class=GramE>the salt</span>.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5664,11 +5685,11 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>To bind, the caller should set bind (the bind entity handle)
-in TPM2_StartAuthSession.<span style='mso-spacerun:yes'>  </span>The caller must
-supply the extra parameter as a <span class=SpellE>StartAuthSession_Extra</span>
-structure and set the <span class=SpellE>bindPassword</span> member to the bind
-handle password.</p>
+<p class=MsoNormal>To bind, the caller should set <span class=GramE>bind</span>
+(the bind entity handle) in TPM2_StartAuthSession.<span
+style='mso-spacerun:yes'>  </span>The caller must supply the extra parameter as
+a <span class=SpellE>StartAuthSession_Extra</span> structure and set the <span
+class=SpellE>bindPassword</span> member to the bind handle password.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5819,9 +5840,9 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 
 <p class=MsoNormal>This command is unique, in that it has an optional
 parameter, TPM2B_SENSITIVE <i style='mso-bidi-font-style:normal'>inPrivate</i>.<span
-style='mso-spacerun:yes'>  </span>The caller should use the size as a
-flag:<span style='mso-spacerun:yes'>  </span>0 for not present, and non-zero
-for present.</p>
+style='mso-spacerun:yes'>  </span>The caller should use the size as a flag<span
+class=GramE>:<span style='mso-spacerun:yes'>  </span>0</span> for not present,
+and non-zero for present.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5878,8 +5899,8 @@ to simulate this persistent connection behavior.</p>
 connects as a socket server on one side and a TPM device driver on the
 other.<span style='mso-spacerun:yes'>  </span>Once the proxy starts, the Windows
 resource manager sees one persistent connection, as desired.<span
-style='mso-spacerun:yes'>  </span>The utilities use the socket interface to the
-proxy.</p>
+style='mso-spacerun:yes'>  </span>The utilities use the socket interface to <span
+class=GramE>the proxy</span>.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5940,8 +5961,8 @@ certificates directly from the TPM vendor.<span style='mso-spacerun:yes'> 
 <p class=MsoNormal>These URLs are provided for convenience.<span
 style='mso-spacerun:yes'>  </span>Observe that some URLs are http.<span
 style='mso-spacerun:yes'>  </span>I encourage all readers to ask the TPM
-vendors to offer these certificates over a secured web page, since they form
-the root of trust for TPM authenticity.</p>
+vendors to offer these certificates over a <span class=GramE>secured</span> web
+page, since they form the root of trust for TPM authenticity.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5949,8 +5970,8 @@ the root of trust for TPM authenticity.</p>
 that take a -root argument require a list of EK root certificates in a
 file.<span style='mso-spacerun:yes'>  </span>The utilities include a sample
 file …/utils/certificates/rootcerts.txt.<span style='mso-spacerun:yes'> 
-</span>The file MUST be <span class=GramE>edited, since</span> the file names
-must have a complete path to your install directory.</p>
+</span>The file MUST be edited, since the file names must have a complete path
+to your install directory.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -5989,46 +6010,30 @@ style='mso-no-proof:no'>https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=MsoHyperlink><span style='mso-no-proof:no'><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:33"><a
+<p class=MsoNormal><a
 href="https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202111.cer"><span
-style='mso-no-proof:no'>https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202111.cer</span></a><o:p></o:p></ins></span></span></span></p>
+style='mso-no-proof:no'>https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton%20TPM%20Root%20CA%202111.cer</span></a><span
+class=MsoHyperlink><span style='mso-no-proof:no'><o:p></o:p></span></span></p>
 
-<p class=MsoNormal><span class=MsoHyperlink><span style='mso-no-proof:no'><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:34"><o:p><span
- style='text-decoration:none'>&nbsp;</span></o:p></ins></span></span></span></p>
+<p class=MsoNormal><span class=MsoHyperlink><span style='mso-no-proof:no'><o:p><span
+ style='text-decoration:none'>&nbsp;</span></o:p></span></span></p>
 
-<p class=MsoNormal><span class=MsoHyperlink><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:34">https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NuvotonTPMRootCA1210.cer
-<o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span class=MsoHyperlink>https://www.nuvoton.com/security/NTC-TPM-EK-Cert/NuvotonTPMRootCA1210.cer
+<o:p></o:p></span></p>
 
-<p class=MsoNormal><span class=MsoHyperlink><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:34"><o:p><span
- style='text-decoration:none'>&nbsp;</span></o:p></ins></span></span></p>
+<p class=MsoNormal><span class=MsoHyperlink><o:p><span style='text-decoration:
+ none'>&nbsp;</span></o:p></span></p>
 
-<p class=MsoNormal><span class=MsoHyperlink><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:34">https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton
-TPM Root CA 2112.cer </ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:35"><o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span class=MsoHyperlink>https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton
+TPM Root CA 2112.cer <o:p></o:p></span></p>
 
-<p class=MsoNormal><span class=MsoHyperlink><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:36"><o:p><span
- style='text-decoration:none'>&nbsp;</span></o:p></ins></span></span></p>
+<p class=MsoNormal><span class=MsoHyperlink><o:p><span style='text-decoration:
+ none'>&nbsp;</span></o:p></span></p>
 
-<p class=MsoNormal><span class=MsoHyperlink><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:35">https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton
-TPM Root CA 1111.cer </ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:36"><o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span class=MsoHyperlink>https://www.nuvoton.com/security/NTC-TPM-EK-Cert/Nuvoton
+TPM Root CA 1111.cer <o:p></o:p></span></p>
 
-<p class=Default><span style='font-size:10.0pt'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:36"><o:p>&nbsp;</o:p></ins></span></span></p>
-
-<p class=MsoNormal><span class=MsoHyperlink><span style='mso-no-proof:no'><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2022-05-05T13:38"><o:p><span
- style='text-decoration:none'>&nbsp;</span></o:p></del></span></span></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2022-05-05T13:38"><o:p>&nbsp;</o:p></del></span></p>
+<p class=Default><span style='font-size:10.0pt'><o:p>&nbsp;</o:p></span></p>
 
 <h3 style='mso-list:l24 level3 lfo2'><a name="_Toc35934241"><![if !supportLists]><span
 style='mso-fareast-font-family:Cambria;mso-bidi-font-family:Cambria'><span
@@ -6196,9 +6201,9 @@ style='mso-list:Ignore'>4.8.5.1.<span style='font:7.0pt "Times New Roman"'>&nbsp
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>As of June 2017, the Intel PTT did not come provisioned with
-EK certificates.<span style='mso-spacerun:yes'>  </span>They must be downloaded
-using this procedure.</p>
+<p class=MsoNormal>As of June 2017, <span class=GramE>the Intel</span> PTT did
+not come provisioned with EK certificates.<span style='mso-spacerun:yes'> 
+</span>They must be downloaded using this procedure.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6213,7 +6218,8 @@ using this procedure.</p>
  </ul>
  <li class=MsoNormal style='mso-list:l7 level1 lfo17'>Calculate a SHA-256
      digest of the digest data</li>
- <li class=MsoNormal style='mso-list:l7 level1 lfo17'>Base64 encode the digest</li>
+ <li class=MsoNormal style='mso-list:l7 level1 lfo17'>Base64 <span class=GramE>encode</span>
+     the digest</li>
  <li class=MsoNormal style='mso-list:l7 level1 lfo17'>Convert the base64 to URL
      base64 by changing = to %3D, + to -, and / to _.</li>
  <li class=MsoNormal style='mso-list:l7 level1 lfo17'>Prepend <a
@@ -6228,8 +6234,8 @@ using this procedure.</p>
  <li class=MsoNormal style='mso-list:l7 level1 lfo17'>Convert the URL base64 to
      base64 by changing %3D to =, - to +, and _ to /.<span
      style='mso-spacerun:yes'>  </span>Remove all newlines.</li>
- <li class=MsoNormal style='mso-list:l7 level1 lfo17'>Base64 decode to create
-     the DER certificate.</li>
+ <li class=MsoNormal style='mso-list:l7 level1 lfo17'>Base64 <span class=GramE>decode</span>
+     to create the DER certificate.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
@@ -6281,20 +6287,21 @@ style='mso-spacerun:yes'>  </span>There are two facilities to remedy this.</p>
 <ol style='margin-top:0in' start=1 type=1>
  <li class=MsoNormal style='mso-list:l13 level1 lfo15'>For stand-alone
      debugging, save session state in plaintext.<span
-     style='mso-spacerun:yes'>   </span>For example, use an environment variable:</li>
+     style='mso-spacerun:yes'>   </span>For example, use an environment
+     variable:</li>
 </ol>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal style='text-indent:.5in'>&gt; <span class=SpellE>setenv</span>
-TPM_ENCRYPT_SESSIONS 0<span style='mso-tab-count:2'>                 </span>(<span
+TPM_ENCRYPT_SESSIONS <span class=GramE>0<span style='mso-tab-count:2'>                 </span>(</span><span
 class=SpellE>csh</span>, <span class=SpellE>tcsh</span>)</p>
 
-<p class=MsoNormal style='text-indent:.5in'>&gt; export TPM_ENCRYPT_SESSIONS=0<span
-style='mso-tab-count:2'>                </span>(bash)</p>
+<p class=MsoNormal style='text-indent:.5in'>&gt; export TPM_ENCRYPT_SESSIONS=<span
+class=GramE>0<span style='mso-tab-count:2'>                </span>(</span>bash)</p>
 
-<p class=MsoNormal style='text-indent:.5in'>&gt; set TPM_ENCRYPT_SESSIONS=0<span
-style='mso-tab-count:2'>                      </span>(windows)</p>
+<p class=MsoNormal style='text-indent:.5in'>&gt; set TPM_ENCRYPT_SESSIONS=<span
+class=GramE>0<span style='mso-tab-count:2'>                      </span>(</span>windows)</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6317,13 +6324,14 @@ equivalent compile time flag</p>
 
 <p class=MsoBodyText style='text-indent:.5in'>In the script:</p>
 
-<p class=MsoBodyText style='text-indent:.5in'>TPM_SESSION_ENCKEY=`./<span
-class=SpellE>getrandom</span> -by 16 -ns`</p>
+<p class=MsoBodyText style='text-indent:.5in'>TPM_SESSION_ENCKEY=<span
+class=GramE>`./</span><span class=SpellE>getrandom</span> -by 16 -ns`</p>
 
 <p class=MsoBodyText style='text-indent:.5in'>On the command line:</p>
 
 <p class=MsoBodyText style='text-indent:.5in'>&gt; <span class=SpellE>setenv</span>
-TPM_SESSION_ENCKEY `./<span class=SpellE>getrandom</span> -by 16 -ns`</p>
+TPM_SESSION_ENCKEY <span class=GramE>`./</span><span class=SpellE>getrandom</span>
+-by 16 -ns`</p>
 
 <p class=MsoBodyText style='text-indent:.5in'><o:p>&nbsp;</o:p></p>
 
@@ -6339,11 +6347,11 @@ _Toc35934247'>TSS for TPM 1.2</span></span></span></h2>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>This is new code in 2018.<span style='mso-spacerun:yes'> 
-</span>The TSS for TPM 1.2 uses the identical API as in section <!--[if supportFields]><span
-style='mso-element:field-begin'></span><span
-style='mso-spacerun:yes'> </span>REF _Ref511735763 \r \h <span
-style='mso-element:field-separator'></span><![endif]-->3<!--[if gte mso 9]><xml>
+<p class=MsoNormal>This is <span class=GramE>new</span> code <span class=GramE>in</span>
+2018.<span style='mso-spacerun:yes'>  </span>The TSS for TPM 1.2 uses the
+identical API as in section <!--[if supportFields]><span style='mso-element:
+field-begin'></span><span style='mso-spacerun:yes'> </span>REF _Ref511735763 \r
+\h <span style='mso-element:field-separator'></span><![endif]-->3<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003500310031003700330035003700360033000000</w:data>
 </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
 <!--[if supportFields]><span style='mso-element:field-begin'></span><span
@@ -6361,8 +6369,8 @@ specifically those commands that are required to implement an attestation
 client.<span style='mso-spacerun:yes'>  </span>It also includes support
 commands to create a SW TPM EK certificate and the activate identity blob, and
 to extend firmware and IMA event logs into a TPM for testing.<span
-style='mso-spacerun:yes'>  </span>More commands can be easily added upon user
-request.</p>
+style='mso-spacerun:yes'>  </span>More commands can be easily added upon user <span
+class=GramE>request</span>.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6392,7 +6400,8 @@ all</p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>The utilities and a basic regression test (reg.sh) are in
-the ../utils12 directory.<span style='mso-spacerun:yes'>  </span></p>
+the<span class=GramE> ..</span>/utils12 directory.<span
+style='mso-spacerun:yes'>  </span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6407,11 +6416,11 @@ the state and restart the TPM.</p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>The standard TPM 1.2 is opt-in and is shipped disabled and
-deactivated.<span style='mso-spacerun:yes'>  </span>While the<span
-style='mso-spacerun:yes'>  </span>IBM software TPM comes with tools to enable
-and activate the TPM, users may find it less of a nuisance to use '<span
-class=SpellE>makefile</span>-<span class=SpellE>en</span>-ac' to build a TPM
-that is already enabled and activated at its first start.</p>
+deactivated.<span style='mso-spacerun:yes'>  </span>While <span class=GramE>the<span
+style='mso-spacerun:yes'>  </span>IBM</span> software TPM comes with tools to
+enable and activate <span class=GramE>the TPM</span>, users may find it less of
+a nuisance to use '<span class=SpellE>makefile</span>-<span class=SpellE>en</span>-ac'
+to build a TPM that is already enabled and activated at its first start.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6460,18 +6469,18 @@ signing key policy also has an AND term for the command code 'sign'.</p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Create an EK for the
-     salt</li>
+ <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Create an EK for <span
+     class=GramE>the salt</span></li>
  <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Start an authorization
      policy session, salt with the EK</li>
- <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Use <span class=SpellE>policysecret</span>
-     to authorize the EK</li>
+ <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Use <span class=SpellE><span
+     class=GramE>policysecret</span></span> to authorize the EK</li>
  <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Create a signing key
      under the EK, permit password and policy authorization</li>
  <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Restart the policy
      session</li>
- <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Use <span class=SpellE>policysecret</span>
-     to authorize the EK</li>
+ <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Use <span class=SpellE><span
+     class=GramE>policysecret</span></span> to authorize the EK</li>
  <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Load the signing key
      under the EK, using the session</li>
  <li class=MsoNormal style='mso-list:l12 level1 lfo12'>Create an HMAC session,
@@ -6509,7 +6518,8 @@ without application coding.</p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l1 level1 lfo21'>Create an EK for the salt</li>
+ <li class=MsoNormal style='mso-list:l1 level1 lfo21'>Create an EK for <span
+     class=GramE>the salt</span></li>
  <li class=MsoNormal style='mso-list:l1 level1 lfo21'>Start a session, salt
      with EK</li>
  <li class=MsoNormal style='mso-list:l1 level1 lfo21'>Define an NV index,
@@ -6584,7 +6594,9 @@ _Toc35934254'>printattr</span></span><span style='mso-bookmark:_Toc35934254'></s
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>It supports object, session, startup, and NV attributes.</p>
+<p class=MsoNormal>It supports <span class=GramE>object</span>, <span
+class=GramE>session</span>, <span class=GramE>startup</span>, and NV
+attributes.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6634,12 +6646,12 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>These tools <span style='mso-spacerun:yes'> </span>provide
-primitive aids to calculating and debugging policies.<span
-style='mso-spacerun:yes'>  </span>The regression test script comments explain
-how the tools were used to calculate the test policies. The utils/policies
-directory holds both the 'source' <span class=SpellE>hexascii</span> and binary
-policies.</p>
+<p class=MsoNormal>These <span class=GramE>tools <span
+style='mso-spacerun:yes'> </span>provide</span> primitive aids to calculating
+and debugging policies.<span style='mso-spacerun:yes'>  </span>The regression
+test script comments explain how the tools were used to calculate the test
+policies. The utils/policies directory holds both the 'source' <span
+class=SpellE>hexascii</span> and binary policies.</p>
 
 <h3 style='mso-list:l24 level3 lfo2'><a name="_Toc35934257"><![if !supportLists]><span
 style='mso-fareast-font-family:Cambria;mso-bidi-font-family:Cambria'><span
@@ -6665,8 +6677,9 @@ it can be used to debug a policy term by term.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>-ns (no white space) traces the output in a format that can
-be used as input to a policy OR (which is just a concatenation of AND terms).</p>
+<p class=MsoNormal><span class=GramE>-ns (</span>no white space) traces the
+output in a format that can be used as input to a policy OR (which is just a concatenation
+of AND terms).</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6690,8 +6703,9 @@ per line.</p>
 <h3 style='mso-list:l24 level3 lfo2'><a name="_Toc35934259"><![if !supportLists]><span
 style='mso-fareast-font-family:Cambria;mso-bidi-font-family:Cambria'><span
 style='mso-list:Ignore'>6.2.3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;
-</span></span></span><![endif]></a><span class=SpellE><span style='mso-bookmark:
-_Toc35934259'>publicname</span></span><span style='mso-bookmark:_Toc35934259'></span></h3>
+</span></span></span><![endif]></a><span class=SpellE><span class=GramE><span
+style='mso-bookmark:_Toc35934259'>publicname</span></span></span><span
+style='mso-bookmark:_Toc35934259'></span></h3>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6700,8 +6714,8 @@ public structure, or from a PEM or DER format public key.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>This is useful for constructing policies at times that the
-TPM is not available to calculate the Name.</p>
+<p class=MsoNormal>This is useful for constructing policies at times that <span
+class=GramE>the TPM</span> is not available to calculate the Name.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6718,7 +6732,8 @@ _Toc35934261'>createek</span></span><span style='mso-bookmark:_Toc35934261'></sp
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>This tools aggregates several EK manipulation tasks:</p>
+<p class=MsoNormal><span class=GramE>This tools</span> <span class=GramE>aggregates</span>
+several EK manipulation tasks:</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6744,12 +6759,13 @@ _Toc35934262'>createekcert</span></span><span style='mso-bookmark:_Toc35934262'>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>This tools provisions an EK certificate in TPM NV for
-testing.</p>
+<p class=MsoNormal>This <span class=GramE>tools</span> <span class=GramE>provisions</span>
+an EK certificate in TPM NV for testing.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>The EK is generated based on TCG standards.</p>
+<p class=MsoNormal>The EK <span class=GramE>is generated</span> based on TCG
+standards.</p>
 
 <h3 style='mso-list:l24 level3 lfo2'><a name="_Toc35934263"><![if !supportLists]><span
 style='mso-fareast-font-family:Cambria;mso-bidi-font-family:Cambria'><span
@@ -6758,8 +6774,8 @@ style='mso-list:Ignore'>6.3.3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>This tools converts an existing TPM format public key to PEM
-format.</p>
+<p class=MsoNormal><span class=GramE>This tools</span> converts an existing TPM
+format public key to PEM format.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -6788,18 +6804,17 @@ _Toc35934265'>eventextend</span></span><span style='mso-bookmark:_Toc35934265'><
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>This tool parses a pre-OS (BIOS, UEFI) event log.<span
-style='mso-spacerun:yes'>  </span>It can:</p>
+<p class=MsoNormal>This tool <span class=GramE>parses</span> a pre-OS (BIOS,
+UEFI) event log.<span style='mso-spacerun:yes'>  </span>It can:</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l21 level1 lfo24'>Extend the events into a
-     TPM, simulating pre-OS firmware.</li>
+ <li class=MsoNormal style='mso-list:l21 level1 lfo24'>Extend the events into <span
+     class=GramE>a TPM</span>, simulating pre-OS firmware.</li>
  <li class=MsoNormal style='mso-list:l21 level1 lfo24'>Calculate expected TPM
      PCR values.</li>
- <li class=MsoNormal style='mso-list:l21 level1 lfo24'>Calculate a boot
-     aggregate.</li>
+ <li class=MsoNormal style='mso-list:l21 level1 lfo24'>Calculate a boot aggregate.</li>
 </ul>
 
 <h3 style='mso-list:l24 level3 lfo2'><a name="_Toc35934266"><![if !supportLists]><span
@@ -6871,10 +6886,10 @@ _Ref156904153'></span></h2>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>Several compile
-time macros permit building a variation of the TSS library.<span
-style='mso-spacerun:yes'>  </span>Features may be lost, but the tradeoff may be
-important in some environments.</span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>Several <span
+class=GramE>compile</span> time macros permit building a variation of the TSS
+library.<span style='mso-spacerun:yes'>  </span>Features may be lost, but the
+tradeoff may be important in some environments.</span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
@@ -6891,9 +6906,9 @@ and TPM_TPM12</a></span></h3>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>Define one or both
-of these for a TSS that supports TPM 2.0 and/or TPM 1.2.<span
-style='mso-spacerun:yes'>  </span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>Define one or <span
+class=GramE>both of these</span> for a TSS that supports TPM 2.0 and/or TPM
+1.2.<span style='mso-spacerun:yes'>  </span></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
@@ -6925,8 +6940,8 @@ or TPM_WINDOWS</a></span></h3>
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>Define one of these
-for a POSIX (Linux, AIX, <span class=SpellE>Raspian</span>, <span class=SpellE>zLinux</span>,
-etc.) or Windows TSS.</span></p>
+for <span class=GramE>a POSIX</span> (Linux, AIX, <span class=SpellE>Raspian</span>,
+<span class=SpellE>zLinux</span>, etc.) or Windows TSS.</span></p>
 
 <h3 style='mso-list:l24 level3 lfo2'><span style='mso-bookmark:_Ref156904153'><a
 name="_Toc35934271"><![if !supportLists]><span style='mso-fareast-font-family:
@@ -6935,8 +6950,8 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp; </span></span></span><![endif]
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>For Windows,
-compiles in hardware TPM support.</span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>For Windows, <span
+class=GramE>compiles</span> in hardware TPM support.</span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
@@ -6977,8 +6992,8 @@ context and is lost when the context is deleted.</span></p>
  <li class=MsoNormal style='mso-list:l19 level1 lfo11'><span style='mso-bookmark:
      _Ref156904153'>Context save and load are not implemented yet.</span></li>
  <li class=MsoNormal style='mso-list:l19 level1 lfo11'><span style='mso-bookmark:
-     _Ref156904153'>There are currently some fixed size arrays for transient
-     object and session state.</span></li>
+     _Ref156904153'>There are currently some fixed size arrays for transient <span
+     class=GramE>object</span> and session state.</span></li>
 </ul>
 
 <h3 style='mso-list:l24 level3 lfo2'><span style='mso-bookmark:_Ref156904153'><a
@@ -7051,15 +7066,16 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp; </span></span></span><![endif]
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>Defining this macro
-builds a TSS that does not call the <span class=SpellE>getenv</span>()
-function.<span style='mso-spacerun:yes'>  </span>This supports platforms that
-do not implement environment variables.</span></p>
+builds a TSS that does not call the <span class=SpellE><span class=GramE>getenv</span></span><span
+class=GramE>(</span>) function.<span style='mso-spacerun:yes'>  </span>This
+supports platforms that do not implement environment variables.</span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>The TSS properties
 still use defaults that can be changed at build time, and it still supports the
-<span class=SpellE>TSS_SetProperty</span>() function.</span></p>
+<span class=SpellE>TSS_<span class=GramE>SetProperty</span></span><span
+class=GramE>(</span>) function.</span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
@@ -7118,23 +7134,14 @@ will presumably do its own check.</span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-06T14:08">This</ins></span><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-01-06T14:08">Th</del></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-01-06T14:15">
-two</ins></span><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-01-06T14:15">e two </del></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-06T14:15"><span
-style='mso-spacerun:yes'> </span></ins></span>main use cases of this macro are:</span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span class=GramE>This
+two main use cases of this macro</span> are:</span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
 <ul style='margin-top:0in' type=disc>
  <li class=MsoNormal style='mso-list:l18 level1 lfo27'><span style='mso-bookmark:
-     _Ref156904153'>to reduce the size of the TSS library by about 1<span
-     class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-     datetime="2023-01-06T16:15">0</ins></span><span class=msoDel><del
-     cite="mailto:Kenneth%20Goldman" datetime="2023-01-06T16:15">5</del></span>%.</span></li>
+     _Ref156904153'>to reduce the size of the TSS library by about 10%.</span></li>
  <li class=MsoNormal style='mso-list:l18 level1 lfo27'><span style='mso-bookmark:
      _Ref156904153'>to permit the TSS to send error cases for TPM testing.</span></li>
 </ul>
@@ -7157,57 +7164,55 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>Defining this macro
-removes deprecated TPM functions<span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-06T14:07">.</ins></span><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-01-06T14:07">,</del></span><span
-style='mso-spacerun:yes'>  </span>This slightly reduces the library size in
-cases where the application is not using the functions<span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:24">.<o:p></o:p></ins></span></span></p>
-
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:24"><o:p>&nbsp;</o:p></ins></span></span></p>
-
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:24">To skip those
-algorithms in the regression test, set the environment variable TPM_TSS_</ins></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:25">NODEPRECATEDALGS.</ins></span></span></p>
+removes deprecated TPM functions.<span style='mso-spacerun:yes'>  </span>This
+slightly reduces the library size in cases where the application is not using
+the functions.</span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
 <h3 style='mso-list:l24 level3 lfo2'><span style='mso-bookmark:_Ref156904153'><a
-name="_Toc35934289"><![if !supportLists]><span style='mso-fareast-font-family:
-Cambria;mso-bidi-font-family:Cambria'><span style='mso-list:Ignore'>7.1.14.<span
-style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:06">TPM_TSS_NODEPRECATEDALGS<o:p></o:p></ins></span></a></span></h3>
+name="_Toc35934289"></a><a name="_Ref201241396"><span style='mso-bookmark:_Toc35934289'><![if !supportLists]><span
+style='mso-fareast-font-family:Cambria;mso-bidi-font-family:Cambria'><span
+style='mso-list:Ignore'>7.1.14.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]>TPM_TSS_NODEPRECATEDALGS</span></a><span
+style='mso-bookmark:_Toc35934289'></span></span></h3>
+
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
+style='mso-bookmark:_Toc35934289'><o:p>&nbsp;</o:p></span></span></p>
+
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
+style='mso-bookmark:_Toc35934289'>Defining this macro removes deprecated crypto
+algorithms from both the TSS and the command line utilities. If the algorithm
+is used, the TSS returns an error.</span></span></p>
+
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
+style='mso-bookmark:_Toc35934289'><o:p>&nbsp;</o:p></span></span></p>
+
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
+style='mso-bookmark:_Toc35934289'>Currently, the only algorithm removed is
+SHA-1.</span></span></p>
+
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
+style='mso-bookmark:_Toc35934289'><o:p>&nbsp;</o:p></span></span></p>
+
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
+style='mso-bookmark:_Toc35934289'>To skip those algorithms in the regression
+test, set the environment variable TPM_TSS_NODEPRECATEDALGS to 1.<span
+class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:55"><o:p></o:p></ins></span></span></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
 style='mso-bookmark:_Toc35934289'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:06"><o:p>&nbsp;</o:p></ins></span></span></span></p>
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:55"><o:p>&nbsp;</o:p></ins></span></span></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
 style='mso-bookmark:_Toc35934289'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:06">Defining this macro
-removes deprecated crypto algorithms</ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:07"> from both the TSS
-and the command line utilities.</ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:09"> If the algorithm
-is used, the TSS returns an error.</ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:07"><o:p></o:p></ins></span></span></span></p>
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:55">This is required
+for the OpenSSL packaged with Fedora, </ins></span><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:56">which removes SHA-1
+support.</ins></span></span></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
-style='mso-bookmark:_Toc35934289'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:07"><o:p>&nbsp;</o:p></ins></span></span></span></p>
-
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
-style='mso-bookmark:_Toc35934289'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:07">Currently, the only
-algorithm removed is SHA-1.</ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:06"><o:p></o:p></ins></span></span></span></p>
-
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span
-style='mso-bookmark:_Toc35934289'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:06"><o:p>&nbsp;</o:p></ins></span></span></span></p>
+style='mso-bookmark:_Toc35934289'><o:p>&nbsp;</o:p></span></span></p>
 
 <h3 style='mso-list:l24 level3 lfo2'><span style='mso-bookmark:_Ref156904153'><span
 style='mso-bookmark:_Toc35934289'><![if !supportLists]><span style='mso-fareast-font-family:
@@ -7219,21 +7224,9 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>Defining this macro
 adds TSS support for the Nuvoton proprietary TPM configuration commands.<span
-style='mso-spacerun:yes'>  </span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:05"><o:p></o:p></ins></span></span></p>
+style='mso-spacerun:yes'>  </span></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:05"><o:p>&nbsp;</o:p></ins></span></span></p>
-
-<h3 style='mso-list:l24 level3 lfo2'><span style='mso-bookmark:_Ref156904153'><![if !supportLists]><span
-style='mso-fareast-font-family:Cambria;mso-bidi-font-family:Cambria'><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:06"><span
-style='mso-list:Ignore'>1.1.1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:06"><o:p>&nbsp;</o:p></del></span></span></h3>
-
-<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-01-16T15:06"><o:p>&nbsp;</o:p></del></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
 <h2 style='mso-list:l24 level2 lfo3'><span style='mso-bookmark:_Ref156904153'><a
 name="_Toc35934290"><![if !supportLists]><span style='mso-fareast-font-family:
@@ -7291,7 +7284,7 @@ class=SpellE>tarball</span></span></p>
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>&gt; cd …</span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'>&gt; tar <span
-class=SpellE>xvf</span> ibmtssnnn.tar .</span></p>
+class=SpellE>xvf</span> <span class=GramE>ibmtssnnn.tar .</span></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Ref156904153'><o:p>&nbsp;</o:p></span></p>
 
@@ -7303,156 +7296,38 @@ Arial'><span style='mso-list:Ignore'>7.3.<span style='font:7.0pt "Times New Roma
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>These are the mainstream TPM 2.0 instructions.<span
-style='mso-spacerun:yes'>  </span><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50">For the new TPM 1.2
-support, see the application note in </del></span><!--[if supportFields]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50"><span
-style='mso-element:field-begin'></span><span
-style='mso-spacerun:yes'> </span>REF _Ref514762246 \r \h <span
-style='mso-element:field-separator'></span></del></span><![endif]--><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50">4.10<!--[if gte mso 9]><xml>
- <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003500310034003700360032003200340036000000</w:data>
-</xml><![endif]--></del></span><!--[if supportFields]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50"><span
-style='mso-element:field-end'></span></del></span><![endif]--><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50"> </del></span><!--[if supportFields]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50"><span
-style='mso-element:field-begin'></span><span
-style='mso-spacerun:yes'> </span>REF _Ref514762246 \h <span style='mso-element:
-field-separator'></span></del></span><![endif]--><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50">TSS for TPM 1.2<!--[if gte mso 9]><xml>
- <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003500310034003700360032003200340036000000</w:data>
-</xml><![endif]--></del></span><!--[if supportFields]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50"><span
-style='mso-element:field-end'></span></del></span><![endif]--><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50">.</del></span></p>
+style='mso-spacerun:yes'>  </span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>Install OpenSSL <span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50">1.0.x or<span
-style='mso-spacerun:yes'>  </span>1.1.x.</del></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50">3.x., includi</ins></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:51">ng
-the development package.</ins></span></p>
+<p class=MsoNormal>Install OpenSSL 3.x., including the development package.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:50">Note:<span style='mso-spacerun:yes'> 
-</span>OpenSSL 1.1.x cannot validate early TPM 1.2 EK certificates.<span
-style='mso-spacerun:yes'>  </span>Newer TPM 1.2 certificates and TPM 2.0
-certificates validate.<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:50"><o:p>&nbsp;</o:p></del></span></p>
 
 <p class=MsoNormal>&gt; cd …/utils</p>
 
-<p class=MsoNormal>&gt; make -f makefiletpm<span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50">20</ins></span><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:50">c</del></span></p>
+<p class=MsoNormal>&gt; make -f makefiletpm20</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span style='mso-tab-count:1'>            </span>Note:<span
-style='mso-spacerun:yes'>  </span>Linux builds must have TPM_POSIX defined.<span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:48"><o:p></o:p></del></span></p>
+<p class=MsoNormal><span style='mso-tab-count:1'>            </span>Note<span
+class=GramE>:<span style='mso-spacerun:yes'>  </span>Linux</span> builds must
+have TPM_POSIX defined.</p>
 
-<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:49"><o:p>&nbsp;</o:p></ins></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:49"><o:p>&nbsp;</o:p></ins></span></p>
-
-<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:52">After building, run the regression test against a
-running simulator.<span style='mso-spacerun:yes'>   </span></ins></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">See
-</ins></span><!--[if supportFields]><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><span
+<p class=MsoNormal>After building, run the regression test against a running
+simulator.<span style='mso-spacerun:yes'>   </span>See <!--[if supportFields]><span
 style='mso-element:field-begin'></span><span
-style='mso-spacerun:yes'> </span>REF _Ref154678203 \w \h </ins></span><span
-style='mso-element:field-separator'></span><![endif]--><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">7.5<!--[if gte mso 9]><xml>
+style='mso-spacerun:yes'> </span>REF _Ref154678203 \w \h <span
+style='mso-element:field-separator'></span><![endif]-->7.5<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003100350034003600370038003200300033000000</w:data>
-</xml><![endif]--></ins></span><!--[if supportFields]><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><span
-style='mso-element:field-end'></span></ins></span><![endif]--><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"> </ins></span><!--[if supportFields]><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><span
-style='mso-element:field-begin'></span><span
-style='mso-spacerun:yes'> </span>REF _Ref154678203 \h </ins></span><span
-style='mso-element:field-separator'></span><![endif]--><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">Regression Test<!--[if gte mso 9]><xml>
+</xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
+<!--[if supportFields]><span style='mso-element:field-begin'></span><span
+style='mso-spacerun:yes'> </span>REF _Ref154678203 \h <span style='mso-element:
+field-separator'></span><![endif]-->Regression Test<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003100350034003600370038003200300033000000</w:data>
-</xml><![endif]--></ins></span><!--[if supportFields]><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><span
-style='mso-element:field-end'></span></ins></span><![endif]--><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:52">.</ins></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47">After building, run the regression test against a
-running simulator.<span style='mso-spacerun:yes'>  </span>-h gives help. <span
-style='mso-spacerun:yes'>  </span>The Linux version takes about 1 minute.<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47">&gt; ./reg.sh -a<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47">The regression test can run against a <b
-style='mso-bidi-font-weight:normal'>software</b> TPM at /dev/tpm0.<span
-style='mso-spacerun:yes'>  </span>It will skip the power up sequence.<span
-style='mso-spacerun:yes'>  </span>However, it uses the environment variable </del></span><!--[if supportFields]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:47"><span
-style='mso-element:field-begin'></span><span
-style='mso-spacerun:yes'> </span>REF _Ref473274005 \h <span style='mso-element:
-field-separator'></span></del></span><![endif]--><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:47">TPM_INTERFACE_TYPE<!--[if gte mso 9]><xml>
- <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400370033003200370034003000300035000000</w:data>
-</xml><![endif]--></del></span><!--[if supportFields]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:47"><span
-style='mso-element:field-end'></span></del></span><![endif]--><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:47">
-as the determination.<span style='mso-spacerun:yes'>  </span>If the default </del></span><!--[if supportFields]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:47"><span
-style='mso-element:field-begin'></span><span
-style='mso-spacerun:yes'> </span>REF _Ref473274005 \h <span style='mso-element:
-field-separator'></span></del></span><![endif]--><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:47">TPM_INTERFACE_TYPE<!--[if gte mso 9]><xml>
- <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400370033003200370034003000300035000000</w:data>
-</xml><![endif]--></del></span><!--[if supportFields]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:47"><span
-style='mso-element:field-end'></span></del></span><![endif]--><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:47">
-was changed at compile time, the regression test will try the power up sequence
-unless the environment variable is also set.<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
-style='color:red'><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47">The regression test does not run against a hardware
-TPM</del></span></span></b><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47">, since the platform firmware will have set the
-platform authorization.<span style='mso-spacerun:yes'>   </span>There are
-likely to be other errors due to protected or unsupported TPM features.<span
-style='mso-spacerun:yes'>  </span><o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><b style='mso-bidi-font-weight:normal'><span
-style='color:red'><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:47">Use the regression test for TSS verification, not
-as a TPM test tool.<o:p></o:p></del></span></span></b></p>
+</xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -7481,61 +7356,22 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34">Install OpenSSL 3.1 64-bit. Install Win64 OpenSSL,
-not the &quot;Light&quot; versions, which I believe do not contain the
-development files. The usual place to get OpenSSL binaries for Windows is: <o:p></o:p></ins></span></p>
-
-<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34"><o:p>&nbsp;</o:p></ins></span></p>
-
-<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34"><a
-href="http://slproweb.com/products/Win32OpenSSL.html"><span style='mso-no-proof:
-no'>http://slproweb.com/products/Win32OpenSSL.html</span></a><o:p></o:p></ins></span></p>
-
-<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34"><o:p>&nbsp;</o:p></ins></span></p>
-
-<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34">Recent Shining Light installs point to <o:p></o:p></ins></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34">Install OpenSSL 1.1.1.<span
-style='mso-spacerun:yes'>  </span>The usual place to get OpenSSL for Windows is
-<a href="http://slproweb.com/products/Win32OpenSSL.html"><span
-style='mso-no-proof:no'>http://slproweb.com/products/Win32OpenSSL.html</span></a>.<span
-style='mso-spacerun:yes'>  </span>Install Win32 OpenSSL, not the
+<p class=MsoNormal>Install OpenSSL 3.x 64-bit. Install Win64 OpenSSL, not the
 &quot;Light&quot; versions, which I believe do not contain the development
-files. For use with mingw, use the 32-bit build.<span
-style='mso-spacerun:yes'>  </span><o:p></o:p></del></span></p>
+files. The usual place to get OpenSSL binaries for Windows is: </p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34"><o:p>&nbsp;</o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34">There is no need to build / compile from
-source.<span style='mso-spacerun:yes'>  </span>Just run the downloaded .exe.<o:p></o:p></del></span></p>
+<p class=MsoNormal><a href="http://slproweb.com/products/Win32OpenSSL.html"><span
+style='mso-no-proof:no'>http://slproweb.com/products/Win32OpenSSL.html</span></a></p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34"><o:p>&nbsp;</o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34">I put the OpenSSL DLLs in the OpenSSL binaries
-directory.<span style='mso-spacerun:yes'>  </span>I don't know if this matters.<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:34">Recent Shining Light installs point to <o:p></o:p></del></span></p>
+<p class=MsoNormal>Recent Shining Light installs point to </p>
 
 <p class=MsoNormal style='text-indent:.5in'><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal style='text-indent:.5in'>C:\OpenSSL-Win3<span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:34">64</ins></span><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:34">2
-</del></span><span style='mso-spacerun:yes'> </span></p>
+<p class=MsoNormal style='text-indent:.5in'>C:\OpenSSL-Win364 </p>
 
 <p class=MsoNormal style='text-indent:.5in'><o:p>&nbsp;</o:p></p>
 
@@ -7548,34 +7384,11 @@ Files\OpenSSL</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>If you chose not to install OpenSSL in this location, you
-must fix the build paths.<span style='mso-spacerun:yes'>  </span>In other
-words, use the recommended location.</p>
+<p class=MsoNormal>If you <span class=GramE>chose</span> not to install OpenSSL
+in this location, you must fix the <span class=GramE>build</span> paths.<span
+style='mso-spacerun:yes'>  </span>In other words, use the recommended location.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:35">After install, copy <o:p></o:p></del></span></p>
-
-<p class=MsoNormal style='text-indent:.5in'><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:35">C:\Program Files\openssl\bin\libcrypto-</del></span><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2022-10-31T16:53">1.1</del></span><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:35">.dll
-<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:35">to <o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:35">C:\Program Files\openssl\bin\libcrypto.dll.<span
-style='mso-spacerun:yes'>  </span></del></span><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:36"><o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:36">Please contribute a fix to eliminate this step.<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:36"><o:p>&nbsp;</o:p></del></span></p>
 
 <p class=MsoNormal>This directory should be added to the Path environment
 variable if it's not already there:</p>
@@ -7586,96 +7399,23 @@ variable if it's not already there:</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>Note:<span style='mso-spacerun:yes'>  </span>Windows builds
-must have TPM_WINDOWS defined.</p>
+<p class=MsoNormal>Note<span class=GramE>:<span style='mso-spacerun:yes'> 
+</span>Windows</span> builds must have TPM_WINDOWS defined.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:36">Hardware TPM development requires the Windows 10
-SDK, available here: <span class=MsoHyperlink><span style='mso-no-proof:no'>https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk</span></span><o:p></o:p></del></span></p>
-
-<p class=MsoNormal style='text-indent:.25in'><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:36"><o:p>&nbsp;</o:p></del></span></p>
 
 <p class=MsoNormal>After building, run the regression test against a running
-simulator.<span style='mso-spacerun:yes'>   </span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53">See </ins></span><!--[if supportFields]><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><span
+simulator.<span style='mso-spacerun:yes'>   </span>See <!--[if supportFields]><span
 style='mso-element:field-begin'></span><span
-style='mso-spacerun:yes'> </span>REF _Ref154678203 \w \h </ins></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><span
-style='mso-element:field-separator'></span></ins></span><![endif]--><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53">7.5<!--[if gte mso 9]><xml>
+style='mso-spacerun:yes'> </span>REF _Ref154678203 \w \h <span
+style='mso-element:field-separator'></span><![endif]-->7.5<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003100350034003600370038003200300033000000</w:data>
-</xml><![endif]--></ins></span><!--[if supportFields]><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><span
-style='mso-element:field-end'></span></ins></span><![endif]--><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"> </ins></span><!--[if supportFields]><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><span
-style='mso-element:field-begin'></span><span
-style='mso-spacerun:yes'> </span>REF _Ref154678203 \h </ins></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><span
-style='mso-element:field-separator'></span></ins></span><![endif]--><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53">Regression
-Test<!--[if gte mso 9]><xml>
+</xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->
+<!--[if supportFields]><span style='mso-element:field-begin'></span><span
+style='mso-spacerun:yes'> </span>REF _Ref154678203 \h <span style='mso-element:
+field-separator'></span><![endif]-->Regression Test<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003100350034003600370038003200300033000000</w:data>
-</xml><![endif]--></ins></span><!--[if supportFields]><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><span
-style='mso-element:field-end'></span></ins></span><![endif]--><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53">.<o:p></o:p></ins></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:53">The Windows version takes about 15 minutes.<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=MsoNormal style='margin-left:.5in'><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53">The Windows script
-assumes that typical command line tools such as touch and diff are
-installed.<span style='mso-spacerun:yes'>  </span>A typical download location
-is<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:53"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal style='text-indent:.5in'><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><a
-href="http://gnuwin32.sourceforge.net/packages.html"><span style='mso-no-proof:
-no'>http://gnuwin32.sourceforge.net/packages.html</span></a><o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:53"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal style='text-indent:.5in'><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53">See CoreUtils and
-DiffUtils.<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:53"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:53">&gt; reg.bat<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:53"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:54">The regression test script defaults to the
-executables being in the same directory as the script, …/tpm2/utils.<span
-style='mso-spacerun:yes'>  </span>This is correct for the gcc build, but not
-for the Visual Studio build.<span style='mso-spacerun:yes'>  </span>To point to
-those executables, set this environment variable.<span
-style='mso-spacerun:yes'>  </span><b style='mso-bidi-font-weight:normal'>Do not
-omit the trailing slash</b>.<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:54"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-12-28T17:54">&gt; set TPM_EXE_PATH=..\tpmutils\Debug\</del></span></p>
-
-<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+</xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->.</p>
 
 <h3 style='mso-list:l24 level3 lfo2'><a name="_Toc35934293"><![if !supportLists]><span
 style='mso-fareast-font-family:Cambria;mso-bidi-font-family:Cambria'><span
@@ -7685,12 +7425,7 @@ style='mso-list:Ignore'>7.4.1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>A <span class=SpellE>mingw</span> (Minimalist GNU for
-Windows) makefile.mak is included.<span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:38"><span
-style='mso-spacerun:yes'>  </span></del></span><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:37">mingw from <a
-href="http://www.mingw.org/"><span style='mso-no-proof:no'>http://www.mingw.org/</span></a>
-must be installed.<span style='mso-spacerun:yes'>  </span></del></span></p>
+Windows) makefile.mak is included.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -7699,15 +7434,10 @@ must be installed.<span style='mso-spacerun:yes'>  </span></del></span></p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l16 level1 lfo26'><span class=msoDel><del
-     cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:38">Shining Light
-     does not seem to supply the 64-bit OpenSSL library for mingw. Use the
-     32-bit library.<span style='mso-spacerun:yes'>  </span><o:p></o:p></del></span></li>
  <li class=MsoNormal style='mso-list:l16 level1 lfo26'><span class=SpellE>mingw</span>
-     does not seem compatible with the Windows 10<span class=msoIns><ins
-     cite="mailto:Kenneth%20Goldman" datetime="2024-01-15T14:56">/11</ins></span>
-     TBSI.<span style='mso-spacerun:yes'>  </span>Thus, the build does not have
-     hardware TPM support.</li>
+     does not seem compatible with the Windows 10/11 TBSI.<span
+     style='mso-spacerun:yes'>  </span>Thus, the <span class=GramE>build</span>
+     does not have hardware TPM support.</li>
 </ul>
 
 <p class=MsoNormal style='margin-left:.5in'><o:p>&nbsp;</o:p></p>
@@ -7716,16 +7446,8 @@ must be installed.<span style='mso-spacerun:yes'>  </span></del></span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>Contributions to fix th<span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:38">is</ins></span><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:38">ese</del></span>
-<span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:38">is</ins></span><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:38">are</del></span>
-welcome.<span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:38"><o:p></o:p></del></span></p>
-
-<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+<p class=MsoNormal>Contributions to fix this <span class=GramE>is</span>
+welcome.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -7748,42 +7470,13 @@ style='mso-bookmark:_Toc35934300'>Windows Visual Studio</span></h3>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>VS solution and project files are supplied.<span
-style='mso-spacerun:yes'>  </span>The Visual Studio 20<span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:38">22</ins></span><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T08:38">17</del></span>
-Solution is …/<span class=SpellE>tpmutils</span>/tpmutils.sln.<span
+style='mso-spacerun:yes'>  </span>The Visual Studio 2022 Solution <span
+class=GramE>is at…/<span class=SpellE>tpmutils</span>/tpmutils.sln</span>.<span
 style='mso-spacerun:yes'>  </span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:40">The .lib should be in c:\program
-files\openssl\lib\vc.<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:40"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:40">If not<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:40"><o:p>&nbsp;</o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:40">Common Properties<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:40">Expand Linker, General<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:40">Change Additional Library Directories<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:40"><span style='mso-tab-count:1'>            </span>to
-the correct path<o:p></o:p></del></span></p>
-
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T08:40"><o:p>&nbsp;</o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>The default is to connect to the socket simulator using the
 Microsoft simulator packet format.<span style='mso-spacerun:yes'>  </span>To
@@ -7795,103 +7488,137 @@ change the default from a SW TPM to a HW TPM, add the preprocessor definition:</
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<h3 style='mso-list:l24 level3 lfo2'><a name="_Toc35934301"><![if !supportLists]><span
+<h3 style='mso-list:l24 level3 lfo2'><![if !supportLists]><span
 style='mso-fareast-font-family:Cambria;mso-bidi-font-family:Cambria'><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><span
-style='mso-list:Ignore'>1.1.1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">Windows Tbsi</del></span></a><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><o:p></o:p></del></span></h3>
+style='mso-list:Ignore'>7.4.3.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;
+</span></span></span><![endif]>Windows Visual Studio Configuration</h3>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T09:05"><o:p>&nbsp;</o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T09:05">These instructions have been tested for Windows 10<o:p></o:p></del></span></p>
+<p class=MsoNormal>For other versions of Visual Studio, these <span
+class=GramE>build</span> options may work.<span style='mso-spacerun:yes'> 
+</span>They have not been tested.</p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T09:05"><o:p>&nbsp;</o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T09:05">The VS project defines TPM_WINDOWS_TBSI , so the
-TSS build supports the socket and hardware TPM interface.<span
-style='mso-spacerun:yes'>  </span>Users that use only the socket interface may
-not want to install Tbsi (Windows TPM Base Services).<span
-style='mso-spacerun:yes'>  </span>Undefine TPM_WINDOWS_TBSI.<o:p></o:p></del></span></p>
+<p class=MsoNormal>The common property sheets for the TSS and command line
+utilities are:</p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T09:05"><o:p>&nbsp;</o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T09:05"><span style='mso-tab-count:1'>            </span>Note:<span
-style='mso-spacerun:yes'>  </span>To define the macro in Visual Studio:<o:p></o:p></del></span></p>
+<p class=MsoNormal style='text-indent:.5in'>Debug: <span class=SpellE>tpmutils</span>/CommonPropoerties64.props</p>
 
-<p class=MsoNormal style='margin-left:72.3pt;text-indent:-.25in;mso-list:l3 level1 lfo13'><![if !supportLists]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><span
-style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">View - Other
-Windows - Property Manager<o:p></o:p></del></span></p>
+<p class=MsoNormal style='text-indent:.5in'>Release: <span class=SpellE>tpmutils</span>/CommonProperties64Release.props</p>
 
-<p class=MsoNormal style='margin-left:72.3pt;text-indent:-.25in;mso-list:l3 level1 lfo13'><![if !supportLists]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><span
-style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">Expand one of the
-projects<o:p></o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal style='margin-left:72.3pt;text-indent:-.25in;mso-list:l3 level1 lfo13'><![if !supportLists]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><span
-style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">Expand Debug (or
-Release if doing a release build)<o:p></o:p></del></span></p>
+<p class=MsoNormal><b>C/C++ Compiler:<o:p></o:p></b></p>
 
-<p class=MsoNormal style='margin-left:72.3pt;text-indent:-.25in;mso-list:l3 level1 lfo13'><![if !supportLists]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><span
-style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">Double click
-CommonProperties<o:p></o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal style='margin-left:72.3pt;text-indent:-.25in;mso-list:l3 level1 lfo13'><![if !supportLists]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><span
-style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">Expand Common
-Properties, then C/C++, then select Preprocessor<o:p></o:p></del></span></p>
+<p class=MsoNormal>Additional Include Directories:</p>
 
-<p class=MsoNormal style='margin-left:72.3pt;text-indent:-.25in;mso-list:l3 level1 lfo13'><![if !supportLists]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><span
-style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">Next to
-Preprocessor Definitions, click the value, then the down arrow, then
-&lt;Edit&gt;<o:p></o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal style='margin-left:72.3pt;text-indent:-.25in;mso-list:l3 level1 lfo13'><![if !supportLists]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><span
-style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">Remove the macros
-TPM_WINDOWS_TBSI and TPM_WINDOWS_TBSI_WIN8<o:p></o:p></del></span></p>
+<p class=MsoNormal>c:/program files/openssl/<span class=GramE>include;../..</span>/utils/</p>
 
-<p class=MsoNormal style='margin-left:72.3pt;text-indent:-.25in;mso-list:l3 level1 lfo13'><![if !supportLists]><span
-class=msoDel><del cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><span
-style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></del></span><![endif]><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">OK, OK<o:p></o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal><span class=msoDel><del cite="mailto:Kenneth%20Goldman"
-datetime="2023-04-03T09:05"><o:p>&nbsp;</o:p></del></span></p>
+<p class=MsoNormal>Preprocessor Definitions:</p>
 
-<p class=MsoNormal style='margin-left:.5in'><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05">Note:<span
-style='mso-spacerun:yes'>  </span>The TPM_WINDOWS_TBSI_WIN8 macro also supports
-Windows 10.<o:p></o:p></del></span></p>
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal style='text-indent:.5in'><span class=msoDel><del
-cite="mailto:Kenneth%20Goldman" datetime="2023-04-03T09:05"><o:p>&nbsp;</o:p></del></span></p>
+<p class=MsoNormal>TPM_<span class=GramE>WINDOWS;TPM</span>_TPM<span
+class=GramE>20;_</span>CRT_SECURE_NO_<span class=GramE>WARNINGS;_</span>WINSOCK_DEPRECATED_NO_<span
+class=GramE>WARNINGS;TPM</span>_ENCRYPT_SESSIONS_DEFAULT=&quot;0<span
+class=GramE>&quot;;TPM</span>_WINDOWS_<span class=GramE>TBSI;_</span>WIN8;
+TPM_WINDOWS_TBSI_WIN8</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><b>Linker:<o:p></o:p></b></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The Shining Light directory structure changes periodically.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='text-indent:.5in'>In 3.1, all the .lib files were in
+one directory with different</p>
+
+<p class=MsoNormal style='text-indent:.5in'>names.<span
+style='mso-spacerun:yes'>  </span>In 3.2, all the .lib files have the same name
+but are in</p>
+
+<p class=MsoNormal style='text-indent:.5in'>different directories.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>The <span class=SpellE>dll</span> remains in the bin
+directory, so the gcc makefile.mak is</p>
+
+<p class=MsoNormal>unchanged.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>This project supports the 3.2 layout in Visual Studio.<span
+style='mso-spacerun:yes'>  </span>To change</p>
+
+<p class=MsoNormal>between them, edit the property sheets.</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>OpenSSL 3.1</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='text-indent:.5in'>Additional dependencies</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='text-indent:.5in'>Debug<span
+style='mso-spacerun:yes'>   </span>libcrypto64mdd.lib</p>
+
+<p class=MsoNormal style='text-indent:.5in'>Release libcrypto64md.lib</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='text-indent:.5in'>Additional Library Directories</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='text-indent:.5in'>c:\program files\openssl\lib\<span
+class=SpellE>vc</span></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal>OpenSSL 3.2</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='text-indent:.5in'>Additional dependencies</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='text-indent:.5in'>libcrypto.lib</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='text-indent:.5in'>Additional Library Directories</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal style='text-indent:.5in'>Debug<span
+style='mso-spacerun:yes'>   </span>c:\program files\openssl\lib\<span
+class=SpellE>vc</span>\x64\<span class=SpellE>MDd</span></p>
+
+<p class=MsoNormal style='text-indent:.5in'>Release c:\program files\openssl\lib\<span
+class=SpellE>vc</span>\x64\MD</p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <h2 style='mso-list:l24 level2 lfo3'><a name="_Toc35934302"></a><a
 name="_Ref154678203"></a><a name="_Toc432519259"></a><a name="_Toc432519260"></a><![if !supportLists]><span
@@ -7899,174 +7626,119 @@ style='mso-bookmark:_Toc35934302'><span style='mso-bookmark:_Ref154678203'><span
 style='mso-fareast-font-family:Arial'><span style='mso-list:Ignore'>7.5.<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </span></span></span></span></span><![endif]><span style='mso-bookmark:_Toc35934302'><span
-style='mso-bookmark:_Ref154678203'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">Regression Test</ins></span></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><o:p></o:p></ins></span></span></h2>
+style='mso-bookmark:_Ref154678203'>Regression Test</span></span></h2>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">After building for
-Windows or Linux, run the regression test against a running simulator.<span
-style='mso-spacerun:yes'>  </span></ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:56"><o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'>After <span
+class=GramE>building for</span> Windows or Linux, run the regression test
+against a running simulator.<span style='mso-spacerun:yes'>  </span></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:56"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><b style='mso-bidi-font-weight:
-normal'><span style='color:red'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:56">The regression test
-does not run against a hardware TPM</ins></span></span></b><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:56">, since the
-platform firmware will have set the platform authorization.<span
-style='mso-spacerun:yes'>   </span>There are likely to be other errors due to
-protected or unsupported TPM features.<span style='mso-spacerun:yes'>  </span><o:p></o:p></ins></span></span></p>
+normal'><span style='color:red'>The regression test does not run against <span
+class=GramE>a hardware</span> TPM</span></b>, since the platform firmware will
+have set the platform authorization.<span style='mso-spacerun:yes'>  
+</span>There are likely to be other errors due to protected or unsupported TPM
+features.<span style='mso-spacerun:yes'>  </span></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:56"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
 <p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><b style='mso-bidi-font-weight:
-normal'><span style='color:red'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:56">Use the regression
-test for TSS verification, not as a TPM test tool.<o:p></o:p></ins></span></span></b></span></p>
+normal'><span style='color:red'>Use the regression test for TSS verification,
+not as a TPM test tool.<o:p></o:p></span></b></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><b><u><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">Windows</ins></span></u></b><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:52">,
-takes about 15 minutes</ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">:</ins></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=GramE><b><u>Windows</u></b>,</span>
+takes about 15 minutes:</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal style='margin-left:.5in'><span style='mso-bookmark:_Toc35934302'><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53">The
+<p class=MsoNormal style='margin-left:.5in'><span style='mso-bookmark:_Toc35934302'>The
 Windows script assumes that typical command line tools such as touch and diff
 are installed.<span style='mso-spacerun:yes'>  </span>A typical download
-location is<o:p></o:p></ins></span></span></p>
+location is</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
 <p class=MsoNormal style='text-indent:.5in'><span style='mso-bookmark:_Toc35934302'></span><a
 href="http://gnuwin32.sourceforge.net/packages.html"><span style='mso-bookmark:
-_Toc35934302'><span style='mso-no-proof:no'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53">http://gnuwin32.sourceforge.net/packages.html</ins></span></span></span></a><span
-style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><o:p></o:p></ins></span></span></p>
+_Toc35934302'><span style='mso-no-proof:no'>http://gnuwin32.sourceforge.net/packages.html</span></span><span
+style='mso-bookmark:_Toc35934302'></span></a><span style='mso-bookmark:_Toc35934302'></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal style='text-indent:.5in'><span style='mso-bookmark:_Toc35934302'><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:53">See
-<span class=SpellE>CoreUtils</span> and <span class=SpellE>DiffUtils</span>.</ins></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:54"><o:p></o:p></ins></span></span></p>
+<p class=MsoNormal style='text-indent:.5in'><span style='mso-bookmark:_Toc35934302'>See
+<span class=SpellE>CoreUtils</span> and <span class=SpellE>DiffUtils</span>.</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:54"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:54">The regression test
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'>The regression test
 script defaults to the executables being in the same directory as the script,
-…/tpm2/utils.<span style='mso-spacerun:yes'>  </span>This is correct for the
-gcc build, but not for the Visual Studio build.<span style='mso-spacerun:yes'> 
-</span>To point to those executables, set this environment variable.<span
-style='mso-spacerun:yes'>  </span><b style='mso-bidi-font-weight:normal'>Do not
-omit the trailing slash</b>.<o:p></o:p></ins></span></span></p>
+…/tpm2/utils.<span style='mso-spacerun:yes'>  </span>This is correct for the <span
+class=GramE>gcc</span> build, but not for the Visual Studio build.<span
+style='mso-spacerun:yes'>  </span>To point <span class=GramE>to</span> those
+executables, set this environment variable.<span style='mso-spacerun:yes'> 
+</span><b style='mso-bidi-font-weight:normal'>Do not omit the trailing slash</b>.</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:54"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:54">&gt; set
-TPM_EXE_PATH=..\<span class=SpellE>tpmutils</span>\x64\Debug\<o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'>&gt; set
+TPM_EXE_PATH<span class=GramE>=..</span>\<span class=SpellE>tpmutils</span>\x64\Debug\</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:54">&gt; set
-TPM_EXE_PATH=..\<span class=SpellE>tpmutils</span>\x64\Release\<o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'>&gt; set
+TPM_EXE_PATH<span class=GramE>=..</span>\<span class=SpellE>tpmutils</span>\x64\Release\</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">&gt; <span
-class=SpellE>reg,bat</span><o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'>&gt; <span
+class=SpellE><span class=GramE>reg,bat</span></span></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><b><u><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">Linux</ins></span></u></b><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:52">,
-takes about 5 minutes</ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">:<o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=GramE><b><u>Linux</u></b>,</span>
+takes about 5 minutes:</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">&gt; ./reg.sh -a<o:p></o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'>&gt; ./reg.sh -a</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:57">Selective tests can
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'>Selective tests can
 be run.<span style='mso-spacerun:yes'>  </span>See reg.sh -h for the test
-numbers.<o:p></o:p></ins></span></span></p>
+numbers.</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:57"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">The regression test
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'>The regression test
 can run against a <b style='mso-bidi-font-weight:normal'>software</b> TPM at
 /dev/tpm0.<span style='mso-spacerun:yes'>  </span>It will skip the power up
 sequence.<span style='mso-spacerun:yes'>  </span>However, it uses the
-environment variable </ins></span></span><!--[if supportFields]><span
-style='mso-bookmark:_Toc35934302'></span><span style='mso-element:field-begin'></span><span
-style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><span
-style='mso-spacerun:yes'> </span>REF _Ref473274005 \h </ins></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><span
-style='mso-element:field-separator'></span></ins></span></span><![endif]--><span
-style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">TPM_INTERFACE_TYPE<!--[if gte mso 9]><xml>
+environment variable </span><!--[if supportFields]><span style='mso-bookmark:
+_Toc35934302'></span><span style='mso-element:field-begin'></span><span
+style='mso-bookmark:_Toc35934302'><span style='mso-spacerun:yes'> </span>REF
+_Ref473274005 \h <span style='mso-element:field-separator'></span></span><![endif]--><span
+style='mso-bookmark:_Toc35934302'>TPM_INTERFACE_TYPE<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400370033003200370034003000300035000000</w:data>
-</xml><![endif]--></ins></span></span><!--[if supportFields]><span
-style='mso-bookmark:_Toc35934302'></span><span style='mso-element:field-end'></span><![endif]--><span
-style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"> as the
-determination.<span style='mso-spacerun:yes'>  </span>If the default </ins></span></span><!--[if supportFields]><span
-style='mso-bookmark:_Toc35934302'></span><span style='mso-element:field-begin'></span><span
-style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><span
-style='mso-spacerun:yes'> </span>REF _Ref473274005 \h </ins></span><span
-class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><span
-style='mso-element:field-separator'></span></ins></span></span><![endif]--><span
-style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49">TPM_INTERFACE_TYPE<!--[if gte mso 9]><xml>
+</xml><![endif]--></span><!--[if supportFields]><span style='mso-bookmark:_Toc35934302'></span><span
+style='mso-element:field-end'></span><![endif]--><span style='mso-bookmark:
+_Toc35934302'> as the determination.<span style='mso-spacerun:yes'>  </span>If
+the default </span><!--[if supportFields]><span style='mso-bookmark:_Toc35934302'></span><span
+style='mso-element:field-begin'></span><span style='mso-bookmark:_Toc35934302'><span
+style='mso-spacerun:yes'> </span>REF _Ref473274005 \h <span style='mso-element:
+field-separator'></span></span><![endif]--><span style='mso-bookmark:_Toc35934302'>TPM_INTERFACE_TYPE<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400370033003200370034003000300035000000</w:data>
-</xml><![endif]--></ins></span></span><!--[if supportFields]><span
-style='mso-bookmark:_Toc35934302'></span><span style='mso-element:field-end'></span><![endif]--><span
-style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"> was changed at
-compile time, the regression test will try the power up sequence unless the
-environment variable is also set.</ins></span><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:56"><o:p></o:p></ins></span></span></p>
+</xml><![endif]--></span><!--[if supportFields]><span style='mso-bookmark:_Toc35934302'></span><span
+style='mso-element:field-end'></span><![endif]--><span style='mso-bookmark:
+_Toc35934302'> was changed at compile time, the regression test will try the
+power up sequence unless the environment variable is also set.</span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:56"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
-<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><span class=msoIns><ins
-cite="mailto:Kenneth%20Goldman" datetime="2023-12-28T17:49"><o:p>&nbsp;</o:p></ins></span></span></p>
+<p class=MsoNormal><span style='mso-bookmark:_Toc35934302'><o:p>&nbsp;</o:p></span></p>
 
 <h2 style='mso-list:l24 level2 lfo3'><span style='mso-bookmark:_Toc35934302'><![if !supportLists]><span
 style='mso-fareast-font-family:Arial'><span style='mso-list:Ignore'>7.6.<span
@@ -8108,9 +7780,11 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt "Times New Roman"
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal style='margin-left:.25in'>PATH=/<span class=SpellE>usr</span>/local/Cellar/openssl/1.0.2m/bin/:$PATH</p>
+<p class=MsoNormal style='margin-left:.25in'>PATH=/<span class=SpellE>usr</span>/local/Cellar/openssl/1.0.2m/bin<span
+class=GramE>/:$</span>PATH</p>
 
-<p class=MsoNormal style='margin-left:.25in'>PATH=/<span class=SpellE>usr</span>/local/Cellar/gawk/4.2.0/bin/:$PATH</p>
+<p class=MsoNormal style='margin-left:.25in'>PATH=/<span class=SpellE>usr</span>/local/Cellar/gawk/4.2.0/bin<span
+class=GramE>/:$</span>PATH</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -8144,9 +7818,10 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>After building, run the regression test against a running
-Microsoft simulator.<span style='mso-spacerun:yes'>  </span>-h gives help.<span
-style='mso-spacerun:yes'>  </span>Since the TPM simulator does not run on AIX
-yet, set the <!--[if supportFields]><span style='mso-element:field-begin'></span><span
+Microsoft simulator.<span style='mso-spacerun:yes'>  </span>-<span class=GramE>h
+gives</span> help.<span style='mso-spacerun:yes'>  </span>Since the TPM
+simulator does not run on AIX yet, set the <!--[if supportFields]><span
+style='mso-element:field-begin'></span><span
 style='mso-spacerun:yes'> </span>REF _Ref473273410 \h <span style='mso-element:
 field-separator'></span><![endif]-->TPM_SERVER_NAME<!--[if gte mso 9]><xml>
  <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003400370033003200370033003400310030000000</w:data>
@@ -8288,11 +7963,11 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal># <span class=SpellE>dnf</span> install ./ibmtss-nnn-1.el6.x86_64.rpm</p>
+<p class=MsoNormal># dnf install ./ibmtss-nnn-1.el6.x86_64.rpm</p>
 
-<p class=MsoNormal># <span class=SpellE>dnf</span> install ./ibmtss-devel-nnn-1.el6.x86_64.rpm</p>
+<p class=MsoNormal># dnf install ./ibmtss-devel-nnn-1.el6.x86_64.rpm</p>
 
-<p class=MsoNormal># <span class=SpellE>dnf</span> install ./ibmtss-debuginfo-nnn-1.el6.x86_64.rpm</p>
+<p class=MsoNormal># dnf install ./ibmtss-debuginfo-nnn-1.el6.x86_64.rpm</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -8320,7 +7995,7 @@ use this process.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal># <span class=SpellE>dnf</span> install <span class=SpellE>ibmtss</span></p>
+<p class=MsoNormal># dnf install <span class=SpellE>ibmtss</span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -8443,16 +8118,16 @@ style='mso-list:Ignore'>9.1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nb
 
 <ul style='margin-top:0in' type=disc>
  <li class=MsoNormal style='mso-list:l9 level1 lfo9'>The regression test
-     scripts are sample code for how to use the utilities and the TPM to
-     perform multi-step tasks.</li>
+     scripts are sample code for how to use the utilities and the TPM to perform
+     multi-step tasks.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>NOTE:<span style='mso-spacerun:yes'>  </span>The utility
-command line arguments are not stable.<span style='mso-spacerun:yes'> 
-</span>They change occasionally to improve consistency among utilities or to
-add features</p>
+<p class=MsoNormal>NOTE<span class=GramE>:<span style='mso-spacerun:yes'> 
+</span>The</span> utility command line arguments are not stable.<span
+style='mso-spacerun:yes'>  </span>They change occasionally to improve
+consistency among utilities or to add features</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -8482,14 +8157,14 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 <p class=MsoNormal>These may &quot;just work&quot; but they have not been
 tested yet.<span style='mso-spacerun:yes'>  </span></p>
 
-<p class=MsoNormal>Users are welcome to suggest ECC tests and prioritize the
-below list.</p>
+<p class=MsoNormal>Users are welcome to suggest ECC tests and prioritize the <span
+class=GramE>below list</span>.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <ul style='margin-top:0in' type=disc>
- <li class=MsoNormal style='mso-list:l9 level1 lfo9'>ECC commands - <span
-     class=SpellE>ECDH_KeyGen</span>, <span class=SpellE>ECDH_ZGen</span> </li>
+ <li class=MsoNormal style='mso-list:l9 level1 lfo9'>ECC commands -
+     ECDH_KeyGen, <span class=SpellE>ECDH_ZGen</span> </li>
  <li class=MsoNormal style='mso-list:l9 level1 lfo9'><span class=SpellE>PolicyLocality</span></li>
  <li class=MsoNormal style='mso-list:l9 level1 lfo9'><span class=SpellE>TestParams</span>
      </li>
@@ -8520,18 +8195,20 @@ the TPM is inherently single threaded.<span style='mso-spacerun:yes'> 
 
 <ul style='margin-top:0in' type=disc>
  <li class=MsoNormal style='mso-list:l26 level1 lfo10'>There is only one
-     channel to a TPM.<span style='mso-spacerun:yes'>  </span>Two threads
-     writing bytes to a socket to a resource manager or simulator, or writing
-     bytes to the device driver, will fail.</li>
- <li class=MsoNormal style='mso-list:l26 level1 lfo10'>The TPM has session
-     state that has to be coordinated with an application.<span
-     style='mso-spacerun:yes'>  </span>For example, if a thread begins to
-     calculate an HMAC for a session, and another thread uses the session, the
-     rolling nonces will cause the first thread HMAC to fail.</li>
- <li class=MsoNormal style='mso-list:l26 level1 lfo10'>Applications have state
-     at a higher level.<span style='mso-spacerun:yes'>  </span>For example, if
-     a thread begins to use a key and another thread saves the key context and
-     flushes the key, the first thread's application will fail.</li>
+     channel to a TPM.<span style='mso-spacerun:yes'>  </span>Two <span
+     class=GramE>threads</span> writing bytes to a socket to a resource manager
+     or simulator, or writing bytes to the device driver, will fail.</li>
+ <li class=MsoNormal style='mso-list:l26 level1 lfo10'>The TPM has <span
+     class=GramE>session state</span> that <span class=GramE>has to</span> be
+     coordinated with an application.<span style='mso-spacerun:yes'> 
+     </span>For example, if a thread begins to calculate an HMAC for a session,
+     and another thread uses the session, the rolling nonces will cause the
+     first thread HMAC to fail.</li>
+ <li class=MsoNormal style='mso-list:l26 level1 lfo10'>Applications have <span
+     class=GramE>state</span> at a higher level.<span
+     style='mso-spacerun:yes'>  </span>For example, if a thread begins to use a
+     key and another thread saves the key context and flushes the key, the
+     first thread's application will fail.</li>
 </ul>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
@@ -8558,7 +8235,9 @@ letter-spacing:.4pt'><span style='mso-list:Ignore'>11.<span style='font:7.0pt "T
 <h2 style='mso-list:l24 level2 lfo3'><a name="_Toc35934316"><![if !supportLists]><span
 style='mso-fareast-font-family:Arial'><span style='mso-list:Ignore'>11.1.<span
 style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span></span></span><![endif]>Environment Variables</a></h2>
+</span></span></span><![endif]></a><span class=GramE><span style='mso-bookmark:
+_Toc35934316'>Environment</span></span><span style='mso-bookmark:_Toc35934316'>
+Variables</span></h2>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -8581,10 +8260,10 @@ syntax.</p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>Settings are local to one process (to one window).<span
-style='mso-spacerun:yes'>  </span>When the process exits (when the windows is
-closed), the setting is lost.<span style='mso-spacerun:yes'>  </span>To create
-a persistent setting, use a dotfile (Unix) or a control panel setting
-(Windows.)</p>
+style='mso-spacerun:yes'>  </span>When the process exits (when the windows <span
+class=GramE>is</span> closed), the setting is lost.<span
+style='mso-spacerun:yes'>  </span>To create a persistent setting, use a dotfile
+(Unix) or a control panel setting (Windows.)</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -8596,15 +8275,23 @@ style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>Windows blocks executables with the <span class=GramE>strings</span>
-setup, install, update, and patch in the name.<span style='mso-spacerun:yes'> 
-</span>Thus, TPM utilities like sequenceupdate.exe will not run.</p>
+<span class=GramE>setup</span>, install, update, and patch in the name.<span
+style='mso-spacerun:yes'>  </span>Thus, TPM utilities like sequenceupdate.exe
+will not run.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>One work around is to run the commands shell as
 administrator.<span style='mso-spacerun:yes'>  </span>Right click &quot;Command
 Prompt&quot; and select &quot;Run as administrator&quot;.<span
-style='mso-spacerun:yes'>  </span></p>
+style='mso-spacerun:yes'>  </span><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:54"><o:p></o:p></ins></span></p>
+
+<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T15:54"><o:p>&nbsp;</o:p></ins></span></p>
+
+<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T15:54">Windows 11 does not have this issue.</ins></span></p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -8623,11 +8310,12 @@ uninstaller, delete all the OpenSSL directories, and then install just once.</p>
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
 <p class=MsoNormal>The Windows 10 crypto library has function names that clash
-with OpenSSL, particularly in the area of X.509 support.<span
-style='mso-spacerun:yes'>  </span>Visual Studio includes it by default when
-using.<span style='mso-spacerun:yes'>  </span>To remove those headers, define
-WIN32_LEAN_AND_MEAN.<span style='mso-spacerun:yes'>  </span>Use the command
-line utilities as samples.</p>
+with OpenSSL, particularly <span class=GramE>in the area of</span> X.509
+support.<span style='mso-spacerun:yes'>  </span>Visual Studio includes it by
+default when <span class=GramE>using</span>.<span style='mso-spacerun:yes'> 
+</span>To remove those headers, define WIN32_LEAN_AND_MEAN.<span
+style='mso-spacerun:yes'>  </span>Use <span class=GramE>the command</span> line
+utilities as samples.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -8646,13 +8334,13 @@ allocated resources.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
-<p class=MsoNormal>This occurs with a hardware TPM - always on Windows and with
-Linux when connecting to /dev/tpmrm0.<span style='mso-spacerun:yes'>  </span>It
-will not occur when connecting directly with a software TPM or a hardware TPM
-at /dev/tpm0, which bypasses the resource manager.<span
-style='mso-spacerun:yes'>  </span>It will also not occur once the prototyping
-script is replaced by an executable that does not close the connection after
-each TPM command.</p>
+<p class=MsoNormal>This occurs with <span class=GramE>a hardware</span> TPM -
+always on Windows and with Linux when connecting to /dev/tpmrm0.<span
+style='mso-spacerun:yes'>  </span>It will not occur when connecting directly
+with a software TPM or a hardware TPM at /dev/tpm0, which bypasses the resource
+manager.<span style='mso-spacerun:yes'>  </span>It will also not occur once the
+prototyping script is replaced by an executable that does not close the
+connection after each TPM command.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
 
@@ -8669,6 +8357,59 @@ field-separator'></span><![endif]-->Connecting to Resource Managers<!--[if gte m
 </xml><![endif]--><!--[if supportFields]><span style='mso-element:field-end'></span><![endif]-->.</p>
 
 <p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<h2 style='mso-list:l24 level2 lfo3'><![if !supportLists]><span
+style='mso-fareast-font-family:Arial'><span style='mso-list:Ignore'>11.5.<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:56">Regression Test
+Fails on Fedora<o:p></o:p></ins></span></h2>
+
+<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T16:00"><o:p>&nbsp;</o:p></ins></span></p>
+
+<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T15:57">The </ins></span><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T15:59">OpenSSL packaged
+with Fedora </ins></span><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T16:00">removed SHA-1 support. The defau</ins></span><span
+class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:01">l</ins></span><span
+class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:00">t
+regression test fails</ins></span><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:01">.<span
+style='mso-spacerun:yes'>  </span>One possible error trace is:<o:p></o:p></ins></span></p>
+
+<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T16:01"><o:p>&nbsp;</o:p></ins></span></p>
+
+<p class=MsoNormal><span class=SpellE><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:01">verifyRSASignatureFromRSA</ins></span></span><span
+class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:01">:
+Error in <span class=SpellE>EVP_PKEY_CTX_set_signature_<span class=GramE>md</span></span><span
+class=GramE>(</span>)<o:p></o:p></ins></span></p>
+
+<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T16:01"><o:p>&nbsp;</o:p></ins></span></p>
+
+<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T16:01">The solution is to set the env</ins></span><span
+class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:02">ironment
+variable </ins></span><!--[if supportFields]><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:03"><span
+style='mso-element:field-begin'></span><span
+style='mso-spacerun:yes'> </span>REF _Ref201241396 \h </ins></span><span
+style='mso-element:field-separator'></span><![endif]--><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:03">TPM_TSS_NODEPRECATEDALGS<!--[if gte mso 9]><xml>
+ <w:data>08D0C9EA79F9BACE118C8200AA004BA90B02000000080000000E0000005F005200650066003200300031003200340031003300390036000000</w:data>
+</xml><![endif]--></ins></span><!--[if supportFields]><span class=msoIns><ins
+cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:03"><span
+style='mso-element:field-end'></span></ins></span><![endif]--><span
+class=msoIns><ins cite="mailto:Kenneth%20Goldman" datetime="2025-06-19T16:03">
+to 1.</ins></span><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T16:00"><o:p></o:p></ins></span></p>
+
+<p class=MsoNormal><span class=msoIns><ins cite="mailto:Kenneth%20Goldman"
+datetime="2025-06-19T15:56"><o:p>&nbsp;</o:p></ins></span></p>
 
 </div>
 
