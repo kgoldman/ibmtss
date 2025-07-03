@@ -77,6 +77,7 @@
 
 static void isUCS2String(int *isUCS2, uint8_t *buffer, uint32_t length);
 static void isAsciiString(int *isAscii, uint8_t *buffer, uint32_t length);
+static void isPrintableArray(int *isPrintable, uint8_t *buffer, uint32_t length);
 
 /*
   GUID Handling
@@ -501,6 +502,28 @@ static void isAsciiString(int *isAscii, uint8_t *buffer, uint32_t length)
 	}
     }
     *isAscii = 1;
+    return;
+}
+
+/* isPrintableArray() checks whether the first bytes in the buffer are printable, and whether it's
+   NUL terminated.
+
+*/
+
+static void isPrintableArray(int *isPrintable, uint8_t *buffer, uint32_t length)
+{
+    uint32_t i;
+    for (i = 1 ; i < length ; i++) {
+	if (buffer[i] == '\0') {
+	    *isPrintable = 1;	/* NUL is printable */
+	    return;
+	}
+	if (!isprint((int)buffer[i])) {
+	    *isPrintable = 0;	/* non-printable */
+	    return;
+	}
+    }
+    *isPrintable = 0;	/* no NUL means not printable */
     return;
 }
 
@@ -2369,6 +2392,14 @@ static uint32_t TSS_EfiIplPartitionData_ToJson(TSST_EFIData *efiData);
 static void     TSS_EfiCrtmVersion_Trace(TSST_EFIData *efiData);
 static uint32_t TSS_EfiCrtmVersion_ToJson(TSST_EFIData *efiData);
 
+/* EV_NONHOST_INFO */
+
+static void     TSS_EfiNonhostInfo_Trace(TSST_EFIData *efiData);
+
+/* EV_PLATFORM_CONFIG_FLAGS */
+
+static void     TSS_EfiPlatformConfigFlags_Trace(TSST_EFIData *efiData);
+
 /* EV_S_CRTM_CONTENTS */
 
 static void     TSS_EfiCrtmContents_Trace(TSST_EFIData *efiData);
@@ -2549,13 +2580,13 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL,
       NULL},
-     {EV_PLATFORM_CONFIG_FLAGS,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL},
 #endif
+     {EV_PLATFORM_CONFIG_FLAGS,
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiPlatformConfigFlags_Trace,
+      NULL},
      {EV_TABLE_OF_DEVICES,
       TSS_EfiHandoffTables_Init,
       TSS_EfiHandoffTables_Free,
@@ -2593,12 +2624,14 @@ const EFI_EVENT_TYPE_TABLE efiEventTypeTable [] =
       NULL,
       NULL,
       NULL},
+#endif
      {EV_NONHOST_INFO,
-      NULL,
-      NULL,
-      NULL,
-      NULL,
+      TSS_Efi4bBuffer_Init,
+      TSS_Efi4bBuffer_Free,
+      TSS_Efi4bBuffer_ReadBuffer,
+      TSS_EfiNonhostInfo_Trace,
       NULL},
+#if 0	/* needs a test event log */
      {EV_OMIT_BOOT_DEVICE_EVENTS,
       NULL,
       NULL,
@@ -4646,6 +4679,42 @@ static uint32_t TSS_EfiIplPartitionData_ToJson(TSST_EFIData *efiData)
     if (rc == 0) {
     }
     return rc;
+}
+
+/* EV_NONHOST_INFO */
+
+static void     TSS_EfiNonhostInfo_Trace(TSST_EFIData *efiData)
+{
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+    int isPrintable = 1;
+
+    isPrintableArray(&isPrintable, tss4bBuffer->buffer, tss4bBuffer->size);
+    /* if it's not printable, dump the buffer */
+    if (!isPrintable) {
+	TSS_PrintAll("Nonhost Info", tss4bBuffer->buffer, tss4bBuffer->size);
+    }
+    else {
+	printf("Nonhost Info: %s\n",  tss4bBuffer->buffer);
+    }
+    return;
+}
+
+/* EV_PLATFORM_CONFIG_FLAGS */
+
+static void     TSS_EfiPlatformConfigFlags_Trace(TSST_EFIData *efiData)
+{
+    TSS4B_BUFFER *tss4bBuffer = &efiData->efiData.tss4bBuffer;
+    int isAscii = 1;
+
+    isAsciiString(&isAscii, tss4bBuffer->buffer, tss4bBuffer->size);
+    /* if it's not printable, dump the buffer */
+    if (!isAscii) {
+	TSS_PrintAll("Platform Config Flags", tss4bBuffer->buffer, tss4bBuffer->size);
+    }
+    else {
+	printf("Platform Config Flags: %.*s\n", tss4bBuffer->size, tss4bBuffer->buffer);
+    }
+    return;
 }
 
 /* EV_S_CRTM_VERSION can be either a UCS-2 or a GUID. */
