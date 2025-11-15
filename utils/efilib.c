@@ -162,6 +162,8 @@ static void isPrintableArray(int *isPrintable, uint8_t *buffer, uint32_t length)
 #define EFI_JSON_CONFIG_DATA_TABLE_GUID		"87367f87-1119-41ce-aaec-8be0111f558a"
 #define EFI_JSON_CAPSULE_DATA_TABLE_GUID    	"35e7a725-8dd2-4cac-8011-33cda8109056"
 #define EFI_JSON_CAPSULE_RESULT_TABLE_GUID    	"dbc461c3-b3de-422a-b9b4-9886fd49a1e5"
+#define HPE_GUID				"f5a96b31-dba0-4faa-a42a-7a0c9832768e"
+#define SUSE_GUID                               "2879c886-57ee-45cc-b126-f92f24f906b9"
 /* these may not be endian correct */
 #define GRUB_EFI_CONSOLE_CONTROL_GUID		"f42f7782-012e-4c12-9956-49f94304f721"
 #define GRUB_EFI_PCI_IO_GUID			"4cf5b200-68b8-4ca5-9eec-b23e3f50029a"
