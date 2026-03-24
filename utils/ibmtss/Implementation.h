@@ -135,8 +135,8 @@
 #define MAX_ALG_LIST_SIZE               128	/* number of algorithms that can be in a list */
 #endif
 
-#define MAX_COMMAND_SIZE		4096	/* maximum size of a command */
-#define MAX_RESPONSE_SIZE		4096	/* maximum size of a response */
+#define MAX_COMMAND_SIZE		8192	/* maximum size of a command */
+#define MAX_RESPONSE_SIZE		8192	/* maximum size of a response */
 
 #ifdef TPM_TSS_SO_0
 #define MAX_SYM_DATA			128		/* this is the maximum number of octets that
