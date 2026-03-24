@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2023.					*/
+/* (c) Copyright IBM Corporation 2015 - 2025.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -200,6 +200,9 @@ int main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[i],"nistp384") == 0) {
 		    curveID = TPM_ECC_NIST_P384;
+		}
+		else if (strcmp(argv[i],"nistp521") == 0) {
+		    curveID = TPM_ECC_NIST_P521;
 		}
 		else {
 		    printf("Bad parameter %s for -ecc\n", argv[i]);
@@ -788,6 +791,7 @@ int main(int argc, char *argv[])
 				      out.outPublic.publicArea.unique.ecc.y.t.size);
 	}
 	if (tssUtilsVerbose) TSS_TPMS_CREATION_DATA_Print(&out.creationData.creationData, 2);
+	if (tssUtilsVerbose) TSS_TPM2B_Print("createprimary name", 0, &out.name.b);
 	if (tssUtilsVerbose) printf("createprimary: success\n");
     }
     else {
