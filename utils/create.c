@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2023					*/
+/* (c) Copyright IBM Corporation 2015 - 2025					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -697,6 +697,20 @@ int main(int argc, char *argv[])
 				    creationDataFilename);
     }
     if (rc == 0) {
+	if (algPublic == TPM_ALG_RSA) {
+	    if (tssUtilsVerbose) TSS_PrintAll("create: public modulus",
+					      out.outPublic.publicArea.unique.rsa.t.buffer,
+					      out.outPublic.publicArea.unique.rsa.t.size);
+	}
+	else if (algPublic == TPM_ALG_ECC) {
+	    if (tssUtilsVerbose) TSS_PrintAll("create: public point X",
+					      out.outPublic.publicArea.unique.ecc.x.t.buffer,
+					      out.outPublic.publicArea.unique.ecc.x.t.size);
+	    if (tssUtilsVerbose) TSS_PrintAll("create: public point Y",
+					      out.outPublic.publicArea.unique.ecc.y.t.buffer,
+					      out.outPublic.publicArea.unique.ecc.y.t.size);
+	}
+	if (tssUtilsVerbose) TSS_TPMS_CREATION_DATA_Print(&out.creationData.creationData, 2);
 	if (tssUtilsVerbose) printf("create: success\n");
     }
     else {
