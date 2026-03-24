@@ -3,9 +3,8 @@
 /*			   Load 						*/
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
-/*	      $Id: load.c 1324 2018-08-31 16:36:12Z kgoldman $			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2015 - 2019.					*/
+/* (c) Copyright IBM Corporation 2015 - 2025.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -246,6 +245,7 @@ int main(int argc, char *argv[])
     }
     if (rc == 0) {
 	printf("Handle %08x\n", out.objectHandle);
+	if (tssUtilsVerbose) TSS_TPM2B_Print("load name", 0, &out.name.b);
 	if (tssUtilsVerbose) printf("load: success\n");
     }
     else {
