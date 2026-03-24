@@ -1903,20 +1903,7 @@ void TSS_TPM2B_ECC_POINT_Print(const char *string, TPM2B_ECC_POINT *source, unsi
 
 void TSS_TPMI_ECC_CURVE_Print(const char *string, TPMI_ECC_CURVE source, unsigned int indent)
 {
-    printf("%*s", indent, "");
-    switch (source) {
-      case TPM_ECC_BN_P256:
-	printf("%s TPM_ECC_BN_P256\n", string);
-	break;
-      case TPM_ECC_NIST_P256:
-	printf("%s TPM_ECC_NIST_P256\n", string);
-	break;
-      case TPM_ECC_NIST_P384:
-	printf("%s TPM_ECC_NIST_P384\n", string);
-	break;
-      default:
-	printf("%s TPMI_ECC_CURVE %04hx unknown\n", string, source);
-    }
+    TSS_TPM_ECC_CURVE_Print(string, source, indent);
     return;
 }
 
