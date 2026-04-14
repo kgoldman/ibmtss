@@ -46,7 +46,7 @@ CC = /usr/bin/gcc
 # no-deprecated-declarations silences the compiler until the openssl
 # 3.0 port is complete.
 
-CCFLAGS += 	-DTPM_POSIX -DTPM_TSS_NODEPRECATED -DTPM_TSS_NODEV -DOPENSSL_NO_DEPRECATED
+CCFLAGS += 	-DTPM_POSIX -DTPM_TSS_NODEPRECATED -DOPENSSL_NO_DEPRECATED
 
 # example of pointing to a locally built openssl
 #CCFLAGS += 	-I/home/kgold/openssl/include
@@ -118,7 +118,7 @@ LNFLAGS += 	-DTPM_POSIX		\
 #		-fuse-ld=bfd
 
 # example of pointing to a locally built openssl
-# FLAGS +=	 -L/home/kgold/openssl
+#FLAGS +=	 -L/home/kgold/openssl
 # This also requires setting the environment variable LD_LIBRARY_PATH.  E.g.,
 # setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/home/kgold/openssl
 
