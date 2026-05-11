@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2022					#
+# (c) Copyright IBM Corporation 2015 - 2026					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -49,7 +49,8 @@ do
 
     echo "Create an RSA $BITS key pair in DER format using openssl"
 
-    openssl genpkey -out tmpkeypairrsa${BITS}.der -outform der -aes-256-cbc -algorithm rsa -pkeyopt rsa_keygen_bits:${BITS} -pass pass:rrrr > run.out 2>&1
+    openssl genpkey -out tmpkeypairrsa${BITS}.pem  -aes-256-cbc -algorithm rsa -pkeyopt rsa_keygen_bits:${BITS} -pass pass:rrrr > run.out 2>&1
+    openssl pkey -inform pem -outform der -in tmpkeypairrsa${BITS}.pem -out tmpkeypairrsa${BITS}.der -passin pass:rrrr > run.out 2>&1
 
     echo "Load the RSA $BITS signing key under the primary key"
     ${PREFIX}load -hp 80000000 -ipr signrsa${BITS}priv.bin -ipu signrsa${BITS}pub.bin -pwdp sto > run.out

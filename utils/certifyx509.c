@@ -1104,11 +1104,18 @@ TPM_RC addSignatureRsa(X509 		*x509Certificate,
     }
     /* ASN1_BIT_STRING x509Certificate->signature contains a BIT STRING with the RSA signature */
     if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
+	irc = ASN1_BIT_STRING_set1(asn1Signature,
+				   tSignature->signature.rsassa.sig.t.buffer,
+				   tSignature->signature.rsassa.sig.t.size,
+				   0);
+#else
 	irc = ASN1_BIT_STRING_set(asn1Signature,
 				  tSignature->signature.rsassa.sig.t.buffer,
 				  tSignature->signature.rsassa.sig.t.size);
 	asn1Signature->flags &= ~(ASN1_STRING_FLAG_BITS_LEFT|0x07);
 	asn1Signature->flags |= ASN1_STRING_FLAG_BITS_LEFT;
+#endif
 	if (irc == 0) {
 	    printf("addSignatureRsa: Error in ASN1_BIT_STRING_set for signature\n");
 	    rc = TSS_RC_X509_ERROR;
@@ -1223,11 +1230,18 @@ TPM_RC addSignatureEcc(X509 		*x509Certificate,
     }
     /* add the DER signature to the certificate */
     if (rc == 0) {
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L
+	irc = ASN1_BIT_STRING_set1(asn1Signature,
+				   ecdsaSigBin,
+				   ecdsaSigBinLength,
+				   0);
+#else
 	irc = ASN1_BIT_STRING_set(asn1Signature,
 				  ecdsaSigBin,
 				  ecdsaSigBinLength);
 	asn1Signature->flags&= ~(ASN1_STRING_FLAG_BITS_LEFT|0x07);
 	asn1Signature->flags|=ASN1_STRING_FLAG_BITS_LEFT;
+#endif
 	if (irc == 0) {
 	    printf("addSignatureEcc: Error in ASN1_BIT_STRING_set for signature\n");
 	    rc = TSS_RC_X509_ERROR;

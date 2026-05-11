@@ -4,7 +4,7 @@
 /*			     Written by Ken Goldman				*/
 /*		       IBM Thomas J. Watson Research Center			*/
 /*										*/
-/* (c) Copyright IBM Corporation 2016 - 2024.					*/
+/* (c) Copyright IBM Corporation 2016 - 2026.					*/
 /*										*/
 /* All rights reserved.								*/
 /* 										*/
@@ -820,7 +820,7 @@ TPM_RC getCaStore(X509_STORE **caStore,		/* freed by caller */
 	    } 
 	}
 	if ((rc == 0) && tssUtilsVerbose) {
-	    X509_NAME *x509Name;
+	    const X509_NAME *x509Name;
 	    char *subject = NULL;
 	    x509Name = X509_get_subject_name(caCert[i]);
 	    subject = X509_NAME_oneline(x509Name, NULL, 0);
@@ -988,13 +988,13 @@ TPM_RC verifyKeyUsage(X509 *ekX509Certificate,		/* X509 certificate */
 	}
     }
     if (rc == 0) {
-	if (keyUsage->length == 0) {
+	if (ASN1_STRING_length(keyUsage) == 0) {
 	    printf("verifyKeyUsage: Key usage length 0 bytes\n");
 	    rc = TSS_RC_X509_ERROR;
 	}
     }
     if (rc == 0) {
-	bitmap = keyUsage->data[0];
+	bitmap = ASN1_STRING_get0_data(keyUsage)[0];
 	keyEncipherment = bitmap & (1<<5);		/* bit 2 little endian */
 	keyAgreement = bitmap & (1<<3);			/* bit 4 little endian */
 	if (keyEncipherment) {		/* bit 2 little endian */
@@ -2046,17 +2046,19 @@ TPM_RC startCertificate(X509 *x509Certificate,	/* X509 certificate to be generat
     }
     if (rc == 0) {
 	/* can't fail, just returns a structure member */
+#if OPENSSL_VERSION_NUMBER >= 0x40000000L	/* input const removed in 4.0 */
+	ASN1_TIME *notBefore = X509_getm_notBefore(x509Certificate);
+	ASN1_TIME *notAfter = X509_getm_notAfter(x509Certificate);
+#else
 	ASN1_TIME *notBefore = X509_getm_notBefore((const X509 *)x509Certificate);
+	ASN1_TIME *notAfter = X509_getm_notAfter((const X509 *)x509Certificate);
+#endif
 	arc = X509_gmtime_adj(notBefore ,0L);			/* set to today */
 	if (arc == NULL) {
 	    printf("startCertificate: Error setting notBefore time\n");
 	    rc = TSS_RC_X509_ERROR;
 	}
-    }
-    if (rc == 0) {
-	/* can't fail, just returns a structure member */
-	ASN1_TIME *notAfter = X509_getm_notAfter((const X509 *)x509Certificate);
-	arc = X509_gmtime_adj(notAfter, CERT_DURATION);		/* set to duration */
+ 	arc = X509_gmtime_adj(notAfter, CERT_DURATION);		/* set to duration */
 	if (arc == NULL) {
 	    printf("startCertificate: Error setting notAfter time\n");
 	    rc = TSS_RC_X509_ERROR;

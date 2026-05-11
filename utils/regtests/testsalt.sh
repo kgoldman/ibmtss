@@ -7,7 +7,7 @@
 #			     Written by Ken Goldman				#
 #		       IBM Thomas J. Watson Research Center			#
 #										#
-# (c) Copyright IBM Corporation 2015 - 2020					#
+# (c) Copyright IBM Corporation 2015 - 2026					#
 # 										#
 # All rights reserved.								#
 # 										#
@@ -92,11 +92,13 @@ echo "Salt Session - Load External"
 echo ""
 
 echo "Create RSA key pair in DER format using openssl"
-  
-openssl genpkey -out tmpkeypairrsa.der -outform der -aes-256-cbc -algorithm rsa -pkeyopt rsa_keygen_bits:2048 -pass pass:rrrr > run.out 2>&1
+echo "Convert RSA key pair to plaintext DER format"
+
+openssl genpkey -out tmpkeypairrsa.pem -aes-256-cbc -algorithm rsa -pkeyopt rsa_keygen_bits:2048 -pass pass:rrrr > run.out 2>&1
+openssl pkey -inform pem -outform der -in tmpkeypairrsa.pem -out tmpkeypairrsa.der -passin pass:rrrr > run.out 2>&1
 
 echo "Create ECC key pair in PEM format using openssl"
-echo "Convert key pair to plaintext DER format"
+echo "Convert ECC key pair to plaintext DER format"
 
 openssl ecparam -name prime256v1 -genkey -noout -out tmpkeypairecc.pem > run.out 2>&1
 openssl ec -inform pem -outform der -in tmpkeypairecc.pem -out tmpkeypairecc.der -passin pass:rrrr > run.out 2>&1
