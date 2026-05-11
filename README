@@ -44,7 +44,7 @@ install the package in ${HOME}/local/bin and ${HOME}/local/lib directories
 execute the following shell commands:
 
 $ autoreconf -i
-$ ./configure --prefix=${HOME}/local --disable-hwtpm
+$ ./configure --prefix=${HOME}/local --disable-tpm-1.2
 $ make clean
 $ make
 $ make install

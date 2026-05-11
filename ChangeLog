@@ -2,6 +2,18 @@
 Changes in 2.4.1
 ----------------
 
+Add new Nuvoton CA certificates
+Support for EV_PLATFORM_CONFIG_FLAGS and EV_NONHOST_INFO in eventextend
+Add additional EFI guids
+Add mbedtls support
+Add Createprimary NIST-P521 support
+Linux makefile compiles in HW TPM support
+Minor changes for OpenSSL 4.0 compatibility
+
+----------------
+Changes in 2.4.1
+----------------
+
 Issue new test EK CA root certificates with a longer validity period.
 
 ----------------
